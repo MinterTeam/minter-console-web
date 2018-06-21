@@ -1,0 +1,188 @@
+@import "variables";
+
+
+/* https://google-webfonts-helper.herokuapp.com/fonts/ubuntu?subsets=latin,cyrillic */
+@font-face {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Ubuntu Regular'), local('Ubuntu-Regular'),
+    url('../fonts/ubuntu-v11-cyrillic_latin-regular.woff2') format('woff2'),
+    url('../fonts/ubuntu-v11-cyrillic_latin-regular.woff') format('woff');
+}
+@font-face {
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Ubuntu Bold'), local('Ubuntu-Bold'),
+    url('../fonts/ubuntu-v11-cyrillic_latin-700.woff2') format('woff2'),
+    url('../fonts/ubuntu-v11-cyrillic_latin-700.woff') format('woff');
+}
+
+
+*, *::before, *::after {box-sizing: border-box;}
+html { height: 100%; overflow-y: scroll; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; -webkit-overflow-scrolling: touch;}
+body {
+    height: 100%;
+    margin: 0;
+    //position: relative; //в данной реализации модала не актуально // чтобы не разъезжался абсолютный контент при открытии модального
+    font-family: @body-font-family;
+    font-size: 14px;
+    line-height: 1.4;
+    color: @c-black;
+    font-weight: 400;
+    background: @body-bg-color;
+}
+
+a, .link {color: inherit; outline: none; text-decoration: none; text-decoration-skip: ink; transition: 0.1s;}
+a, .link {&:hover, &:focus {/*text-decoration: underline; */outline: none;}}
+.no-link {text-decoration: none;}
+.link--main {&, &:hover, &:focus {color: @c-main;}}
+.link--opacity {
+    text-decoration: none; transition: 0.1s;
+    &:hover, &:focus {opacity: 0.65;}
+}
+.link--hover {
+    //text-decoration: none;
+    &:hover, &:focus {text-decoration: underline;}
+}
+.link--default {.link--main(); .link--hover(); font-weight: 700;}
+button {cursor: pointer; outline: none;}
+p, ul, ol {margin: 0;}
+p + p {margin-top: 10px;}
+sub, sup { font-size: 75%;}
+.no-list {
+    padding: 0; margin: 0;
+    li {list-style: none;}
+}
+
+input, textarea, select {
+    font: inherit; color: @c-black; outline: none; caret-color: @c-main;
+    &::placeholder {color: #a4a4a4; opacity: 1;}
+}
+input {vertical-align: middle;}
+textarea {resize: none;}
+
+h1, h2, h3, h4, h5, h6 {margin: 0; font-family: @heading-font-family; font-weight: 700; line-height: 1.3;}
+.h-title {font-size: 24px; text-transform: uppercase; margin-bottom: 12px;}
+
+
+hr {border: none; border-top: 1px solid @c-border;}
+.hr--margin-large {margin-top: 32px; margin-bottom: 32px;}
+
+// table
+.table-wrap {overflow: auto;}
+.table__cell-overflow--middle {}
+table {width: 100%; border-collapse: collapse;}
+th {background: #f6f6f6;}
+td, th {
+    border: 1px solid @c-border; padding: 10px; text-align: left;
+    &:first-child {border-left: none;}
+    &:last-child {border-right: none;}
+}
+@media (min-width: @breakpoint-medium-up) {
+
+}
+@media (min-width: @breakpoint-large-up) {
+    .table__cell-overflow--middle {margin-left: -2px; margin-right: -2px;}
+    td, th {padding: 15px 18px;}
+}
+
+// dl
+dl {margin: 0; padding: 20px; border-top: 1px solid @c-border;}
+dt {
+    font-weight: 700; margin-top: 15px;
+    &:first-child {margin-top: 0;}
+}
+dd {overflow-wrap: break-word; margin: 0;}
+@media (min-width: @breakpoint-medium-up) {
+    dl {display: flex; flex-wrap: wrap; border: none; padding: 0;}
+    dt, dd {padding: 15px 20px; margin: 0;}
+    dt {width: 140px; border-top: 1px solid @c-border; border-right: 1px solid @c-border; background: #f6f6f6;}
+    dd {width: calc(100% - 140px); border-top: 1px solid @c-border;}
+
+}
+
+
+
+
+
+
+
+// button
+.button {
+    display: inline-flex; align-items: center; justify-content: center; padding: 10px 26px; font-size: 16px; line-height: 18px; font-weight: 700; font-family: @heading-font-family; color: @c-black; text-align: center; border: 2px solid transparent; text-decoration: none; transition: 0.1s;
+    &:hover, &:focus {box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
+    &:active {box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+    &[disabled], &.is-disabled {
+        cursor: default;
+        &:not(.is-loading) {background: shade(#fff, 30%); box-shadow: none;}
+    }
+    &.is-loading {color: transparent;}
+}
+.button--main {
+    color: #fff; background: @c-main;
+    &:hover, &:focus {background: tint(@c-main, 10%);}
+    &:active {background: shade(@c-main, 10%);}
+}
+.button--white {
+    color: @c-main; background: #fff;
+    &:active {background: shade(#fff, 10%);}
+}
+.button--ghost-main {
+    color: @c-main; background: transparent; border-color: @c-main;
+    &:hover, &:focus {color: #fff; background: @c-main;}
+    &:active {color: #fff; background: shade(@c-main, 10%);}
+}
+.button--icon {padding-left: 0; padding-right: 0; width: 42px;}
+.button--full {display: block; width: 100%;}
+.button--trezor {
+    background: #02B757; padding-left: 48px; padding-right: 48px; position: relative;
+    &:hover, &:focus {background: tint(#02B757, 10%);}
+    &:active {background: shade(#02B757, 10%);}
+}
+.button--trezor__icon {position: absolute; left: 16px; top: 50%; transform: translateY(-50%);}
+.button--trezor__logo {vertical-align: baseline;}
+//.button--small {padding-left: 14px; padding-right: 14px;}
+//@media (min-width: @breakpoint-medium-up) {
+//    .button--small {padding-left: 26px; padding-right: 26px;}
+//}
+
+
+
+
+
+// input
+@field-input-padding: 4px;
+@field-label-height: 20px;
+@field-label-scale: 0.75;
+@field-label-top-line-height-compensation: 3px;
+@field-padding: (@field-label-height * @field-label-scale - @field-label-top-line-height-compensation);
+@field-label-top: (@field-padding + @field-input-padding);
+@field-label-translate: (-1 * (@field-label-top + @field-label-top-line-height-compensation));
+.form-row {&+& {margin-top: 20px;}}
+.form-field {
+    display: block; position: relative; cursor: pointer; font-weight: 400; padding-top: @field-padding; pointer-events: none;
+    &.is-disabled {opacity: 0.6;}
+}
+.form-field__input {
+    padding: @field-input-padding 0 4px; font-size: 16px; line-height: 22px; color: inherit; background: transparent; border: none; border-bottom: 1px solid #a1a3a4; transition: 0.15s; display: block; width: 100%; pointer-events: auto; border-radius: 0; opacity: 1; /* safari disabled fix */ -webkit-text-fill-color: currentcolor; /* safari disabled fix */
+    &:focus {border-color: @c-main;}
+    .is-error > & {border-color: @c-red;}
+}
+.form-field__label {
+    font-size: 16px; line-height: @field-label-height; color: @c-black-light; position: absolute; left: 0; top: @field-label-top; transition: 0.15s; transform-origin: 0 0; user-select: none; white-space: nowrap;
+    .form-field__input:focus ~ &, .is-not-empty ~ & {transform: translateY(@field-label-translate) scale(@field-label-scale);}
+    .form-field__input:focus ~ & {color: @c-main;}
+    .form-field.is-error > & {color: @c-red;}
+}
+.form-field__help {margin-top: 8px; display: block;}
+.error-text() {font-size: 12px; color: @c-red;}
+.form-field__error {
+    .error-text(); margin-top: 8px; display: none;
+    .is-error + & {display: block;}
+}
+
+
+
+

@@ -1,0 +1,63 @@
+@import "variables";
+
+
+
+// container
+.u-container {padding: 0 16px; margin: 0 auto;}
+@media (min-width: @breakpoint-small-up) {
+    .u-container {padding: 0 @container-padding;}
+}
+@media (min-width: @breakpoint-medium-up) {
+    .u-container {padding: 0 @container-padding-large;}
+    .u-container--medium {max-width: @container-width + @container-padding-large * 2; }
+    .u-container--large {max-width: @container-width-large;}
+}
+
+
+.u-section {padding-top: 56px; padding-bottom: 56px;}
+
+
+
+
+
+// grid
+.u-grid {
+    display: flex; flex-wrap: wrap; margin-left: -@grid-horizontal-margin;
+    & > .u-cell { padding-left: @grid-horizontal-margin;}
+}
+.u-grid--small {
+    margin-left: -16px;
+    & > .u-cell { padding-left: 16px;}
+}
+.u-grid--vertical-margin {
+    margin-top: -@grid-vertical-margin;
+    & > .u-cell { padding-top: @grid-vertical-margin;}
+}
+.u-grid--vertical-margin--large {
+    margin-top: -32px;
+    & > .u-cell { padding-top: 32px;}
+}
+.u-grid--vertical-margin--small {
+    margin-top: -16px;
+    & > .u-cell { padding-top: 16px;}
+}
+.u-grid--align-center {align-items: center;}
+
+.u-cell { width: 100%;}
+.u-cell--1-2 { width: 50%;}
+.u-cell--1-3 { width: 33.3333%;}
+.u-cell--2-3 { width: 66.6666%;}
+@media (min-width: @breakpoint-small-up) {
+    .u-cell--small--1-2 {width: 50%;}
+    .u-cell--small--1-3 {width: 33.3333%;}
+}
+@media (min-width: @breakpoint-medium-up) {
+    .u-cell--medium--1-2 { width: 50%;}
+    .u-cell--medium--1-3 { width: 33.3333%;}
+    .u-cell--medium--2-3 { width: 66.6666%;}
+    .u-cell--medium--4-10 { width: 40%;}
+    .u-cell--medium--6-10 { width: 60%;}
+}
+@media (min-width: @breakpoint-large-up) {
+    .u-cell--large--1-2 {width: 50%;}
+}

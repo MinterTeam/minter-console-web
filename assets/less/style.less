@@ -1,0 +1,96 @@
+// normalize-css подключается с помощью postcss-normalize
+@import "include/variables";
+@import "include/utils";
+@import "include/general";
+@import "include/layout";
+
+
+// common
+.main-wrap {display: flex; flex-direction: column; min-height: 100vh;}
+.main-content {width: 100%; flex-grow: 2;}
+// nuxt page transition
+.page-leave-active {transition: opacity .1s;}
+.page-enter-active {transition: opacity .25s;}
+.page-enter, .page-leave-to {opacity: 0;}
+// common panel
+.panel {
+    background: #fff; color: @c-black; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    &+& {margin-top: @grid-vertical-margin;}
+}
+.panel__section, .panel__header {
+    padding: 24px; border-bottom: 1px solid @c-border;
+    &:last-child {border-bottom: none;}
+}
+.panel-title() {font: inherit; font-weight: 700; text-transform: uppercase; margin: 0;}
+.panel__header {padding: 11px 16px; display: flex; justify-content: space-between; align-items: center;}
+.panel__header-title {.panel-title(); display: flex; align-items: center;}
+.panel__header-title-icon {margin-right: 8px;}
+
+
+.v-transition-fade-enter-active, .v-transition-fade-leave-active {
+    transition: opacity 0.15s;
+}
+.v-transition-fade-enter, .v-transition-fade-leave-to {
+    opacity: 0;
+}
+
+@keyframes fade-in {
+    0% {opacity: 0;}
+    100% {opacity: 1;}
+}
+@keyframes fade-out {
+    0% {opacity: 1;}
+    100% {opacity: 0;}
+}
+
+
+@header-transition: 0.3s;
+.header {box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #2c2c2c; color: #fff; width: 100%;}
+.header__container {display: flex; justify-content: space-between; align-items: center; height: 64px;}
+.header__logo {display: flex; align-items: center;transition: @header-transition;}
+.header__logo-image {margin-right: 20px; margin-left: 2px; font-size: 0;}
+.header__logo-text {font-size: 26px; line-height: 32px; white-space: nowrap}
+
+
+
+// footer
+.footer {background: #3c3c3c; color: #fff; padding: 38px 0; width: 100%;}
+.footer__container {display: flex; justify-content: center; flex-wrap: wrap;}
+.footer__logo-link {}
+.footer__logo {width: 76px; display: block;}
+.footer__menu {width: 100%; margin-top: 20px; text-align: center;}
+.footer__menu-item {
+    font-size: 14px; font-weight: 700; display: inline-block;
+    &::after {content: ' | '; margin: 0 3px;}
+    &:last-child::after {content: none;}
+}
+@media (min-width: @breakpoint-large-up) {
+    .footer__container {align-items: center; justify-content: space-between;}
+    .footer__logo {margin-top: -8px;}
+    .footer__menu {width: auto; margin-top: 0;}
+}
+
+
+
+
+.auth {background: url(../img/index-bg.svg) no-repeat 50% 0, linear-gradient(to bottom, #161616, #313131); color: #fff; background-blend-mode: soft-light;}
+
+
+
+.features__list {margin-top: (32px - 32px); /* compensate -32px grid margin */}
+.features__item {display: flex; align-items: flex-start;}
+.features__icon {flex-shrink: 0; margin-right: 20px;}
+.features__title {color: @c-main;}
+@media (min-width: @breakpoint-small-up) {
+    .features__icon {width: 60px; height: 60px;}
+}
+
+.services__list--horizontal {margin-top: (24px - 16px); max-width: 480px;}
+.services__link {background: url(../img/minter-logo-circle.svg) no-repeat 0 50%; background-size: 24px; padding-left: 40px; display: inline-block; font-weight: 700; line-height: 24px;}
+@media (min-width: @breakpoint-small-up) {
+    .services__item--next-row {order: 2;}
+}
+
+
+
+
