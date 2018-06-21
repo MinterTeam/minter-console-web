@@ -134,6 +134,11 @@ dd {overflow-wrap: break-word; margin: 0;}
     &:hover, &:focus {color: #fff; background: @c-main;}
     &:active {color: #fff; background: shade(@c-main, 10%);}
 }
+.button--ghost-white {
+    color: #fff; background: transparent; border-color: #fff;
+    &:hover, &:focus {color: @c-black; background: #fff;}
+    &:active {color: @c-black; background: shade(#fff, 10%);}
+}
 .button--icon {padding-left: 0; padding-right: 0; width: 42px;}
 .button--full {display: block; width: 100%;}
 .button--trezor {

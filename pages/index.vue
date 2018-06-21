@@ -13,8 +13,8 @@
         },
         directives: {
         },
-        asyncData () {
-
+        fetch({ store }) {
+            store.commit('SET_SECTION_NAME', '');
         },
         data() {
             return {
@@ -69,7 +69,7 @@
                                     Sign in with seed phrase
                                 </h1>
                             </div>
-                            <AuthAdvancedForm/>
+                            <AuthAdvancedForm :isAuthAddress="true"/>
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-register.svg" alt="" role="presentation" width="40" height="40">
@@ -79,19 +79,21 @@
                             <AuthAdvancedGenerate/>
                         </div>
 
+                        <!--
                         <div class="panel">
                             <form class="panel__section">
-                                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                                <div class="u-grid u-grid&#45;&#45;small u-grid&#45;&#45;vertical-margin&#45;&#45;small">
                                     <div class="u-cell">
-                                        <button class="button button--main button--full button--trezor">
-                                            <img class="button--trezor__icon" src="/img/icon-auth-trezor.svg" alt="" role="presentation">
+                                        <button class="button button&#45;&#45;main button&#45;&#45;full button&#45;&#45;trezor">
+                                            <img class="button&#45;&#45;trezor__icon" src="/img/icon-auth-trezor.svg" alt="" role="presentation">
                                             Sign In with
-                                            <img class="button--trezor__logo" src="/img/icon-auth-trezor-logo.svg" alt="Trezor">
+                                            <img class="button&#45;&#45;trezor__logo" src="/img/icon-auth-trezor-logo.svg" alt="Trezor">
                                         </button>
                                     </div>
                                 </div>
                             </form>
                         </div>
+                        -->
                     </div>
                 </div>
             </div>

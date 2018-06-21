@@ -152,8 +152,8 @@ export function thousandsFilter(value) {
     return decode(thousands(value, '&thinsp;'));
 }
 
-export function shortFilter(value, endLength = 6, minLengthToShort) {
-    const startLength = endLength + 'Mx'.length - 1;
+export function shortHashFilter(value, endLength = 6, minLengthToShort) {
+    const startLength = (endLength <= 4 ? endLength : endLength - 1)  + 'Mx'.length;
     minLengthToShort = minLengthToShort || startLength + endLength;
     value = value.toString();
     const isLong = value.length > minLengthToShort;

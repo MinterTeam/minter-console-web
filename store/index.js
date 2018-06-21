@@ -7,6 +7,7 @@ import getters from './getters'
 export default function createStore () {
     return new Vuex.Store({
         state: {
+            sectionName: '',
             auth: {
                 /** @type Array<Address> */
                 advanced: [],
@@ -19,14 +20,14 @@ export default function createStore () {
             },
             /** @type Array<Address> */
             profileAddressList: [],
-            balance: {
-                coinList: {},
-            },
-            transactionListInfo: {
-                data: [],
-                meta: {},
-            },
-            history: [],
+            // balance: {
+            //     coinList: {},
+            // },
+            // transactionListInfo: {
+            //     data: [],
+            //     meta: {},
+            // },
+            // history: [],
         },
         actions,
         mutations,

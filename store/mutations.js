@@ -1,6 +1,9 @@
 import {setAuthToken} from "~/api/myminter";
 
 export default {
+    SET_SECTION_NAME: (state, sectionName) => {
+        state.sectionName = sectionName;
+    },
     SET_AUTH_PROFILE: (state, {user, token, password}) => {
         state.auth.user = user;
         state.auth.token = token;
