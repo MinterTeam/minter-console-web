@@ -1,17 +1,17 @@
 <script>
-    import {getBlockList, getStatus, getTransactionList} from "~/api";
-    import {NETWORK} from "~/assets/variables";
-    import checkEmpty from '~/assets/v-check-empty';
-
-
-    let timer = null;
+    import AuthSignInForm from "~/components/AuthSignInForm";
+    import AuthRegisterForm from "~/components/AuthRegisterForm";
+    import AuthAdvancedForm from "~/components/AuthAdvancedForm";
+    import AuthAdvancedGenerate from "~/components/AuthAdvancedGenerate";
 
     export default {
         components: {
-
+            AuthAdvancedGenerate,
+            AuthRegisterForm,
+            AuthSignInForm,
+            AuthAdvancedForm,
         },
         directives: {
-            checkEmpty,
         },
         asyncData () {
 
@@ -50,62 +50,14 @@
                                     Sign in with username
                                 </h1>
                             </div>
-                            <form class="panel__section">
-                                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                                    <div class="u-cell u-cell--1-2">
-                                        <label class="form-field">
-                                            <input class="form-field__input" type="text" v-check-empty>
-                                            <span class="form-field__label">Username</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell u-cell--1-2">
-                                        <label class="form-field">
-                                            <input class="form-field__input" type="password" v-check-empty>
-                                            <span class="form-field__label">Password</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell">
-                                        <button class="button button--main button--full">Sign In</button>
-                                    </div>
-                                </div>
-                            </form>
+                            <AuthSignInForm/>
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-register.svg" alt="" role="presentation" width="40" height="40">
                                     Register
                                 </h1>
                             </div>
-                            <form class="panel__section">
-                                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                                    <div class="u-cell u-cell--1-2">
-                                        <label class="form-field">
-                                            <input class="form-field__input" type="text" v-check-empty>
-                                            <span class="form-field__label">Choose username</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell u-cell--1-2">
-                                        <label class="form-field">
-                                            <input class="form-field__input" type="text" v-check-empty>
-                                            <span class="form-field__label">E-mail (Optional)</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell u-cell--1-2">
-                                        <label class="form-field">
-                                            <input class="form-field__input" type="password" v-check-empty>
-                                            <span class="form-field__label">Set your password</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell u-cell--1-2">
-                                        <label class="form-field">
-                                            <input class="form-field__input" type="password" v-check-empty>
-                                            <span class="form-field__label">Confirm password</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell">
-                                        <button class="button button--main button--full">Register</button>
-                                    </div>
-                                </div>
-                            </form>
+                            <AuthRegisterForm/>
                         </div>
                     </div>
 
@@ -117,32 +69,14 @@
                                     Sign in with seed phrase
                                 </h1>
                             </div>
-                            <form class="panel__section">
-                                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                                    <div class="u-cell">
-                                        <label class="form-field">
-                                            <textarea class="form-field__input" rows="3" v-check-empty style="height: 53px;"></textarea>
-                                            <span class="form-field__label">Your seed phrase</span>
-                                        </label>
-                                    </div>
-                                    <div class="u-cell">
-                                        <button class="button button--main button--full">Sign In</button>
-                                    </div>
-                                </div>
-                            </form>
+                            <AuthAdvancedForm/>
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-register.svg" alt="" role="presentation" width="40" height="40">
                                     Register with seed phrase
                                 </h1>
                             </div>
-                            <form class="panel__section">
-                                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                                    <div class="u-cell">
-                                        <button class="button button--main button--full">Click To Generate Seed Phrase</button>
-                                    </div>
-                                </div>
-                            </form>
+                            <AuthAdvancedGenerate/>
                         </div>
 
                         <div class="panel">
@@ -241,10 +175,10 @@
                     <a class="services__link link--hover" href="https://explorer.beta.minter.network" target="_blank">Explorer</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
-                    <a class="services__link link--hover" href="https://status.beta.minter.network" target="_blank">API</a>
+                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank">API</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://status.beta.minter.network" target="_blank">SDK</a>
+                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/sdk.html" target="_blank">SDK</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
                     <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">Calculator</a>

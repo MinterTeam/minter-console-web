@@ -35,11 +35,13 @@ module.exports = {
         linkActiveClass: '',
         linkExactActiveClass: 'is-active',
         middleware: [
+            'auth',
             // 'history',
+            'profile',
         ],
     },
     plugins: [
-        //'~/plugins/history',
+        { src: '~/plugins/persistedState.js', ssr: false }
     ],
     env: envConfig.error ? {} : envConfig.parsed,
     /*

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Service" default="config.build">
+
+    <target name="config.build" description="Собираем все конфигурационные файлы"
+            depends="validate.variables,config.build.env"/>
+
+    <target name="config.build.env" description="Собираем .env файл ">
+        <copy file="${project.basedir}/config/dist.env" tofile="${project.basedir}/../.env" overwrite="true">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+    </target>
+    <target name="validate.variables" description="Проверяем все ли переменные определены">
+        <fail unless="env.app_env" message="app_env environment variable is not set"/>
+    </target>
+</project>

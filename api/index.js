@@ -35,83 +35,101 @@
  * @property {number} data.amount
  */
 
-import axios from '~/api/axios';
-
-
-
 /**
- * @typedef {Object} Status
- * @property {number} marketCap - in $
- * @property {number} bipPriceUsd
- * @property {number} bipPriceBtc
- * @property {number} bipPriceChange - in %
- * @property {number} latestBlockHeight - block count
- * @property {number} averageBlockTime - in seconds
- * @property {number} totalTransactions - tx count
- * @property {number} transactionsPerSecond - tps
+ * @typedef {Object} Address
+ * @property {number} id
+ * @property {string} address
+ * @property {boolean} isMain
+ * @property {boolean} isServerSecured
+ * @property {string} [encrypted] - Encrypted mnemonic (if isServerSecured)
+ * @property {string} [mnemonic] - Stored mnemonic (if not isServerSecured)
  */
 
-/**
- * @return {Promise<Status>}
- */
-export function getStatus() {
-    return axios.get('status')
-        .then((response) => response.data)
+import myminter from '~/api/myminter';
+// import explorer from '~/api/explorer';
+import {generateMnemonic, getPasswordToSend, getPasswordToStore, addressEncryptedFromMnemonic} from "~/assets/utils";
+
+const formDataHeaders = { 'Content-Type': 'multipart/form-data' };
+
+export function register(data) {
+    const passwordToStore = getPasswordToStore(data.password);
+    const passwordToSend = getPasswordToSend(passwordToStore);
+    let userData = {
+        ...data,
+        password: passwordToSend,
+    };
+    delete userData.passwordConfirm;
+
+    const mnemonic = generateMnemonic();
+
+    return new Promise((resolve, reject) => {
+        myminter.post('register', {
+                ...userData,
+                mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true)
+            })
+            .then(() => {
+                login(data)
+                    .then((authData) => {
+                        resolve({
+                            ...authData,
+                            password: passwordToStore,
+                        });
+                    })
+                    .catch(reject);
+            })
+            .catch(reject);
+    });
 }
 
-export function getTxChartData() {
-    return axios.get('txCountChartData')
-        .then((response) => {
-            let chartData = response.data.data;
-            if (!Array.isArray(chartData)) {
-                throw new Error('Not valid response from api');
-                //chartData = [];
-            }
-
-            let lastData = chartData.length > 14 ? chartData.slice(0, 14 - 1) : chartData;
-
-            // format data for line chart.js
-            return lastData.reduce((accum, item) => {
-                accum.data.push(item.txCount);
-                accum.labels.push(item.date);
-                return accum;
-            }, {data: [], labels: []});
-        });
-}
-
 /**
- * @typedef {Object} BlockListInfo
- * @property {Array<Block>} data
- * @property {Object} meta - pagination
+ * @param username
+ * @param password
+ * @return {Promise<User>}
  */
+export function login({username, password}) {
+    const passwordToStore = getPasswordToStore(password);
+    const passwordToSend = getPasswordToSend(passwordToStore);
 
-/**
- * @param {Object} [params]
- * @param {number} params.page
- * @return {Promise<BlockListInfo>}
- */
-export function getBlockList(params) {
-    return axios.get('blocks', {
-            params,
+    return myminter.post('login', {
+            username,
+            password: passwordToSend,
         })
         .then((response) => {
-            return response.data;
+            return {
+                ...response.data.data,
+                password: passwordToStore,
+            }
         });
 }
 
 /**
- * @typedef {Object} BlockInfo
- * @property {Block} data
- * @property {Object} meta
- * @property {number} meta.latestBlockHeight
+ * @return {Promise<User>}
  */
+export function getProfile() {
+    return myminter.get('profile')
+        .then((response) => response.data.data);
+}
+
+export function putProfile(profile) {
+    let dataToSend = Object.assign({}, profile);
+    if (dataToSend.password) {
+        dataToSend.password = getPasswordToSend(getPasswordToStore(dataToSend.password));
+    }
+    if (dataToSend.passwordConfirm) {
+        delete dataToSend.passwordConfirm;
+    }
+    return myminter.put('profile', dataToSend);
+}
 
 /**
- * @param {number} height
- * @return {Promise<Block>}
+ * @param avatar
+ * @return {Promise<UserAvatar>}
  */
-export function getBlock(height) {
-    return axios.get('block/' + height)
+export function putProfileAvatar(avatar) {
+    return myminter
+        .post('profile/avatar', makeFormData({avatar}), {
+            headers: formDataHeaders,
+        })
         .then((response) => response.data.data);
 }
 
@@ -125,39 +143,127 @@ export function getBlock(height) {
  * @param {Object} [params]
  * @param {number} [params.block]
  * @param {number} [params.address]
+ * @param {number} [params.addresses]
  * @param {number} [params.page]
  * @return {Promise<TransactionListInfo>}
  */
 export function getTransactionList(params) {
-    return axios.get('transactions', {
+    return explorer
+        .get('transactions', {
             params,
         })
-        .then((response) => response.data);
-}
-
-/**
- * @typedef {Object} TransactionInfo
- * @property {Transaction} data
- * @property {Object} meta
- * @property {string} meta.prevTxHash
- * @property {string} meta.nextTxHash
- */
-
-/**
- * @param {string} hash
- * @return {Promise<TransactionInfo>}
- */
-export function getTransaction(hash) {
-    return axios.get('transaction/' + hash)
         .then((response) => {
-            if (!response.data.data || !response.data.data.hash) {
-                throw new Error('Not valid response from api');
-            }
-            return response.data
+            const addressList = params.addresses || [params.address];
+            response.data.data.forEach((tx) => {
+                addressList.some((address) => {
+                    if (address === tx.data.to) {
+                        tx.data.direction = 'income';
+                        return true;
+                    }
+                    if (address === tx.data.from) {
+                        tx.data.direction = 'outcome';
+                        return true;
+                    }
+                });
+            });
+
+            return response.data;
         });
 }
 
-export function getAddress(address) {
-    return axios.get('address/' + address)
-        .then((response) => response.data.data);
+export function getBalance(addressHash) {
+    return explorer.get('address/' + addressHash)
+        .then((response) => {
+            let coinList = {};
+            response.data.data.balance.forEach((item) => {
+                Object.keys(item).forEach((coinName) => {
+                    if (!coinList[coinName]) {
+                        coinList[coinName] = {};
+                    }
+                    coinList[coinName].amount = item[coinName];
+                });
+            });
+            response.data.data.balanceUsd.forEach((item) => {
+                Object.keys(item).forEach((coinName) => {
+                    if (!coinList[coinName]) {
+                        coinList[coinName] = {};
+                    }
+                    coinList[coinName].amountUsd = item[coinName];
+                });
+            });
+            delete response.data.data.balance;
+            delete response.data.data.balanceUsd;
+            return {
+                ...response.data.data,
+                coinList: Object.keys(coinList).reduce((accumulator, coinName) => {
+                    accumulator.push({
+                        ...coinList[coinName],
+                        coin: coinName,
+                    });
+                    return accumulator;
+                }, []),
+            }
+        });
 }
+
+
+/**
+ * Get addresses saved in profile
+ * @return {Promise<[Address]>}
+ */
+export function getProfileAddressList() {
+    return myminter.get('addresses')
+        .then((response) => response.data.data.map(markSecured));
+}
+
+export function getProfileAddressEncrypted(id) {
+    return myminter.get('addresses/' + id + '/encrypted')
+        .then((response) => markSecured(response.data.data));
+}
+
+export function addProfileAddress(address) {
+    return myminter.post('addresses', address);
+}
+
+export function setMainProfileAddress(id) {
+    return myminter.put('addresses/' + id, {isMain: true});
+}
+
+export function deleteProfileAddress(id) {
+    return myminter.delete('addresses/' + id);
+}
+
+/**
+ * @param {Object} params
+ * @param {string} [params.username]
+ * @param {string} [params.email]
+ * @param {CancelToken} [cancelToken]
+ * @return {Promise<Object>}
+ */
+export function getAddressInfo(params, cancelToken) {
+    return myminter
+        .get('info/address/by/contact', {
+            params,
+            cancelToken,
+        })
+        .then((response) => response.data.data)
+}
+
+function makeFormData(data) {
+    let formData = new FormData();
+    Object.keys(data).forEach((key) => {
+        formData.append(key, data[key]);
+    });
+
+    return formData;
+}
+
+// @TODO all addresses from server should be serverSecured
+function markSecured(address) {
+    return {
+        ...address,
+        isServerSecured: true,
+    }
+}
+
+

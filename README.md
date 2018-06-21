@@ -1,6 +1,6 @@
-# Minter Explorer Website
+# My Minter Website
 
-This is the repository containing the code for the official Minter Explorer website [explorer.minter.network](https://explorer.minter.network)
+This is the repository containing the code for the official My Minterwebsite [my.minter.network](https://my.minter.network)
 
 
 ## Deployment script
