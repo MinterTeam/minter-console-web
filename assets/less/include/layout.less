@@ -4,12 +4,13 @@
 
 // container
 .u-container {padding: 0 16px; margin: 0 auto;}
+.u-container-margin {margin: 0 auto;}
 @media (min-width: @breakpoint-small-up) {
     .u-container {padding: 0 @container-padding;}
 }
 @media (min-width: @breakpoint-medium-up) {
-    .u-container {padding: 0 @container-padding-large;}
-    .u-container--medium {max-width: @container-width + @container-padding-large * 2; }
+    /*.u-container {padding: 0 @container-padding-large;}*/
+    .u-container--medium {max-width: @container-width + @container-padding * 2; }
     .u-container--large {max-width: @container-width-large;}
 }
 

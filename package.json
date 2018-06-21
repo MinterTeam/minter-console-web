@@ -27,7 +27,8 @@
     "nuxt-edge": "^2.0.0-25481399.feabdca",
     "thousands": "^1.0.1",
     "vue-imask": "^3.4.1",
-    "vuelidate": "^0.7.4"
+    "vuelidate": "^0.7.4",
+    "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
     "autoprefixer": "^8.6.3",

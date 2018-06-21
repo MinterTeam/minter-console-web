@@ -39,7 +39,7 @@
 
 <template>
     <div>
-        <div class="auth u-section">
+        <div class="auth u-section" v-if="!$store.getters.isAuthorized">
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
                     <div class="u-cell u-cell--medium--1-2">
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <div class="u-section u-container u-container--medium">
+        <div class="u-section u-container u-container--medium" v-if="!$store.getters.isAuthorized">
             <h1 class="h-title">What is my minter?</h1>
             <p>My Minter lets you manage all the activities in blockchain network and offchain services. It is by far the most advanced  part of our project, and here are just the few features you get inside:</p>
             <ul class="features__list u-grid u-grid--vertical-margin--large no-list">
@@ -186,7 +186,6 @@
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
                     <a class="services__link link--hover" href="https://help.beta.minter.network" target="_blank">Help/FAQ</a>
                 </li>
-
             </ul>
         </div>
     </div>
