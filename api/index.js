@@ -49,7 +49,7 @@ import myminter from '~/api/myminter';
 // import explorer from '~/api/explorer';
 import {generateMnemonic, getPasswordToSend, getPasswordToStore, addressEncryptedFromMnemonic} from "~/assets/utils";
 
-const formDataHeaders = { 'Content-Type': 'multipart/form-data' };
+const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
 export function register(data) {
     const passwordToStore = getPasswordToStore(data.password);
@@ -64,9 +64,9 @@ export function register(data) {
 
     return new Promise((resolve, reject) => {
         myminter.post('register', {
-                ...userData,
-                mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true)
-            })
+            ...userData,
+            mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true)
+        })
             .then(() => {
                 login(data)
                     .then((authData) => {
@@ -91,9 +91,9 @@ export function login({username, password}) {
     const passwordToSend = getPasswordToSend(passwordToStore);
 
     return myminter.post('login', {
-            username,
-            password: passwordToSend,
-        })
+        username,
+        password: passwordToSend,
+    })
         .then((response) => {
             return {
                 ...response.data.data,
@@ -132,6 +132,15 @@ export function putProfileAvatar(avatar) {
         })
         .then((response) => response.data.data);
 }
+
+
+export function postLinkConfirmation({id, code}) {
+    const methodUrl = 'profile/link/' + id + '/confirm';
+    return myminter.post(methodUrl, {
+        'code': code
+    }).then((response) => response.data.data);
+}
+
 
 /**
  * @typedef {Object} TransactionListInfo

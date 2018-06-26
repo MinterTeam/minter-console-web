@@ -11,6 +11,13 @@ export default function ({store, route, redirect, error}) {
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });
+
+    const urlRequiresNonAuth = [
+        /^\/profile\/confirm/,
+    ].some((pathRegex) => {
+        return pathRegex.test(route.path);
+    });
+
     // const urlRequiresNonAuth = /^\/auth(\/|$)/.test(route.path);
     // const urlRequiresUserWithProfile = [
     //     /^\/settings\/profile-/,
@@ -19,7 +26,7 @@ export default function ({store, route, redirect, error}) {
     // });
 
 
-    if (!store.getters.isAuthorized && urlRequiresAuth) {
+    if (!store.getters.isAuthorized && urlRequiresAuth && !urlRequiresNonAuth) {
         console.log('-- restricted: redirect to auth');
         return redirect('/');
     }
