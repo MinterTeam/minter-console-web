@@ -100,70 +100,70 @@
         </div>
 
         <div class="u-section u-container u-container--medium" v-if="!$store.getters.isAuthorized">
-            <h1 class="h-title">What is my minter?</h1>
-            <p>My Minter lets you manage all the activities in blockchain network and offchain services. It is by far the most advanced  part of our project, and here are just the few features you get inside:</p>
+            <h1 class="h-title">What Is My Minter?</h1>
+            <p>My Minter is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:</p>
             <ul class="features__list u-grid u-grid--vertical-margin--large no-list">
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Send and receive any coins</strong>
-                        <p>Aaron waved the breasts and the right thigh before the LORD as a wave offering, as Moses commanded. </p>
+                        <strong class="features__title">Send and Receive Any Coins</strong>
+                        <p>Transact cryptocurrencies with your friends, family members, and business partners. Almost instantly and fee-free.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Create and manage checks</strong>
-                        <p>Princes have been hung up by their hands; elders are shown no respect.</p>
+                        <strong class="features__title">Create and Manage Checks</strong>
+                        <p>Paper is no more needed to issue or redeem the check. My Minter will help you get the job done—wherever you are and whenever you need it.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Coin delegation and unbounding for mining</strong>
-                        <p>Do not lose heart or be afraid when rumors are heard in the land; one rumor comes this year, another the next, rumors of violence in the land and of ruler against ruler.</p>
+                        <strong class="features__title">Delegate or Unbind Tokens</strong>
+                        <p>Delegate your tokens to start receiving payouts. In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbinding.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-node-management.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Masternode setup and management</strong>
-                        <p>Again, truly I tell you that if two of you on earth agree about anything you ask for, it will be done for you by my Father in heaven.</p>
+                        <strong class="features__title">Set Up and Manage a Masternode</strong>
+                        <p>With our user-friendly, easy-to-navigate interface, running a masternode has never been easier.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">New coin creation</strong>
-                        <p>By the power of signs and wonders, through the power of the Spirit of God. So from Jerusalem all the way around to Illyricum, I have fully proclaimed the gospel of Christ.</p>
+                        <strong class="features__title">Create New Coins</strong>
+                        <p>Don’t hesitate too long—starting your own cryptocurrency is just a few clicks away!</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">Perpetual Coin Offering management</strong>
-                        <p>And now, God of Israel, let your word that you promised your servant David my father come true.</p>
+                        <p>ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In My Minter, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">this</a> paper).</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">Developers’ DAO voting</strong>
-                        <p>Has not the LORD Almighty determined that the people's labor is only fuel for the fire, that the nations exhaust themselves for nothing?</p>
+                        <p>Become one of the top nine validators in terms of personal funds in order to get the right to vote in a DAO.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">Account management</strong>
-                        <p>When the disciples heard this, they fell facedown to the ground, terrified.</p>
+                        <p>Edit your account information, such as username, e-mail address, and password.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-support.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">Support</strong>
-                        <p>When the wall collapses, will people not ask you, "Where is the whitewash you covered it with?"</p>
+                        <p>Coping with all the razzle-dazzle technical features can sometimes be challenging. But don’t worry, our customer support team will always be there for you.</p>
                     </div>
                 </li>
             </ul>
