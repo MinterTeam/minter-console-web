@@ -1,5 +1,5 @@
 import bip39 from 'bip39';
-import hdkey from 'minterjs-wallet/dist/hdkey';
+import {walletFromMnemonic} from 'minterjs-wallet';
 import ethUtil from 'ethereumjs-util';
 import aesjs from 'aes-js';
 import thousands from 'thousands';
@@ -18,12 +18,7 @@ export function generateMnemonic() {
  * @return {boolean}
  */
 export function isValidMnemonic(mnemonic) {
-    return mnemonic.trim().split(/\s+/g).length >= 12 && bip39.validateMnemonic(mnemonic)
-}
-
-export function walletFromMnemonic(mnemonic) {
-    const seed = bip39.mnemonicToSeed(mnemonic);
-    return hdkey.fromMasterSeed(seed).derivePath("m/44'/60'/0'/0").deriveChild(0).getWallet();
+    return typeof mnemonic === 'string' && mnemonic.trim().split(/\s+/g).length >= 12 && bip39.validateMnemonic(mnemonic)
 }
 
 export function addressFromMnemonic(mnemonic, isMain = false) {
@@ -111,7 +106,7 @@ function getSha256Hex(value) {
  * @return {string}
  */
 export function getNameLetter(name) {
-    return name.replace(/^@/, '').replace(/^Mx/, '')[0];
+    return name && name.replace(/^@/, '').replace(/^Mx/, '')[0];
 }
 
 export function removeEmptyKeys(obj) {

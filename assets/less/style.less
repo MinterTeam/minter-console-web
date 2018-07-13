@@ -11,7 +11,7 @@
 .main-content--grid {display: flex;}
 .main-content__aside {width: 256px; flex-shrink: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
 .main-content__aside-section {padding-top: 24px; padding-bottom: 24px;}
-.main-content__main {flex-grow: 2;}
+.main-content__main {flex-grow: 2; width: calc(100% - 256px);}
 // nuxt page transition
 .page-leave-active {transition: opacity .1s;}
 .page-enter-active {transition: opacity .25s;}
@@ -26,9 +26,9 @@
     &:last-child {border-bottom: none;}
 }
 .panel-title() {font: inherit; font-weight: 700; text-transform: uppercase; margin: 0;}
-.panel__header {padding: 11px 16px; display: flex; justify-content: space-between; align-items: center;}
+.panel__header {padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;}
 .panel__header-title {.panel-title(); display: flex; align-items: center;}
-.panel__header-title-icon {margin-right: 8px;}
+.panel__header-title-icon {margin-right: 8px; margin-left: -8px; margin-top: -8px; margin-bottom: -8px;}
 
 
 .v-transition-fade-enter-active, .v-transition-fade-leave-active {

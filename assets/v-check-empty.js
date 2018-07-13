@@ -1,12 +1,32 @@
 
 export default {
     bind(el, binding, vnode) {
-        checkInputElementIsEmpty(el);
-        el.addEventListener('input', handleInputEvent);
+        if (isSelect(el)) {
+            // wait select options to render
+            setTimeout(() => {
+                checkInputElementIsEmpty(el);
+            }, 0);
+            el.addEventListener('change', handleInputEvent);
+        } else {
+            checkInputElementIsEmpty(el);
+            el.addEventListener('input', handleInputEvent);
+        }
     },
     unbind(el) {
-        el.removeEventListener('input', handleInputEvent);
+        if (isSelect(el)) {
+            el.removeEventListener('change', handleInputEvent);
+        } else {
+            el.removeEventListener('input', handleInputEvent);
+        }
     },
+}
+
+/**
+ * @param {HTMLElement} el
+ * @return {boolean}
+ */
+function isSelect(el) {
+    return el.nodeName.toUpperCase() === 'SELECT';
 }
 
 /**

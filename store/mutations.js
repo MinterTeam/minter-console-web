@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import {setAuthToken} from "~/api/myminter";
 
 export default {
@@ -5,69 +6,48 @@ export default {
         state.sectionName = sectionName;
     },
     SET_AUTH_PROFILE: (state, {user, token, password}) => {
-        state.auth.user = user;
         state.auth.token = token;
         state.auth.password = password;
         setAuthToken(token);
+        SET_PROFILE_USER(state, user)
     },
-    ADD_AUTH_ADVANCED: (state, address) => {
-        state.auth.advanced.push(address);
-    },
-    DELETE_ADVANCED_ADDRESS: (state, addressHash) => {
-        let indexToDelete;
-        state.auth.advanced.some((address, index) => {
-            if (address.address = addressHash) {
-                indexToDelete = index;
-                return true;
-            }
-        });
-        state.auth.advanced.splice(indexToDelete, 1);
-    },
-    SET_MAIN_ADVANCED_ADDRESS: (state, addressHash) => {
-        state.auth.advanced.some((address) => {
-            if (address.address = addressHash) {
-                address.isMain = true;
-                return true;
-            }
-        });
+    SET_AUTH_ADVANCED: (state, address) => {
+        state.auth.advanced = address;
     },
     LOGOUT: (state) => {
-        state.auth.user = {};
+        state.user = {};
         state.auth.token = {};
         state.auth.password = null;
-        state.auth.advanced = [];
+        state.auth.advanced = null;
     },
-    SET_PROFILE_USER: (state, profile) => {
-        state.auth.user = profile;
+    SET_PROFILE_USER,
+    SET_PROFILE_ADDRESS: (state, address) => {
+        Vue.set(state.user, 'mainAddress', address);
     },
     UPDATE_PROFILE_PASSWORD: (state, password) => {
         state.auth.password = password;
     },
-    CHECK_MAIN_ADDRESS: (state, newProfileAddressList) => {
-        let isProfileAddressMain = newProfileAddressList.some((address) => {
-            if (address.isMain) {
-                return true;
-            }
-        });
-        if (isProfileAddressMain) {
-            state.auth.advanced.forEach((address) => {
-                address.isMain = false;
-            });
-        }
-    },
-    SET_PROFILE_ADDRESS_LIST: (state, addressList) => {
-        state.profileAddressList = addressList;
-    },
+    // SET_PROFILE_ADDRESS_LIST: (state, addressList) => {
+    //     state.profileAddressList = addressList;
+    // },
     // SET_TRANSACTION_LIST: (state, txListInfo) => {
     //     state.transactionListInfo = txListInfo;
     // },
-    // SET_BALANCE: (state, balance) => {
-    //     state.balance = balance;
-    // },
+    SET_BALANCE: (state, balance) => {
+        state.balance = balance;
+    },
     // PUSH_HISTORY: (state, historyItem) => {
     //     state.history.push(historyItem);
     // },
     // POP_HISTORY: (state) => {
     //     state.history.pop();
     // },
+}
+
+function SET_PROFILE_USER (state, profile) {
+    // save encrypted data on refresh
+    if (!profile.mainAddress.encrypted && state.user.mainAddress && state.user.mainAddress.address === profile.mainAddress.address) {
+        profile.mainAddress.encrypted = state.user.mainAddress.encrypted;
+    }
+    state.user = profile;
 }

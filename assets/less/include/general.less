@@ -183,10 +183,7 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 .form-field__help {margin-top: 8px; display: block;}
 .error-text() {font-size: 12px; color: @c-red;}
-.form-field__error {
-    .error-text(); margin-top: 8px; display: none;
-    .is-error + & {display: block;}
-}
+.form-field__error {.error-text(); margin-top: 8px; overflow-wrap: break-word;}
 
 
 

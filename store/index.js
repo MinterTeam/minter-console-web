@@ -9,20 +9,22 @@ export default function createStore () {
         state: {
             sectionName: '',
             auth: {
-                /** @type Array<Address> */
-                advanced: [],
-                /** @type User */
-                user: {},
+                /** @type string|null - mnemonic */
+                advanced: null,
                 /** @type TokenData */
                 token: {},
                 /** @type string|null - stored password */
                 password: null,
             },
-            /** @type Array<Address> */
-            profileAddressList: [],
-            // balance: {
-            //     coinList: {},
-            // },
+            /** @type User */
+            user: {
+                /** @type Address */
+                mainAddress: {}
+            },
+            balance: {
+                coinList: {},
+            },
+            wallet: null,
             // transactionListInfo: {
             //     data: [],
             //     meta: {},
@@ -66,6 +68,7 @@ export default function createStore () {
  * @property {string} phone}
  * @property {string} language
  * @property {UserAvatar} avatar
+ * @property {Address} mainAddress
  */
 
 /**

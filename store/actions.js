@@ -1,4 +1,4 @@
-import {getBalance, getProfile, getProfileAddressList, getTransactionList} from "~/api";
+import {getBalance, getProfile, getProfileAddressEncrypted, getProfileAddressList, getTransactionList} from "~/api";
 // import explorer from "~/api/explorer";
 
 export default {
@@ -6,17 +6,24 @@ export default {
         return getProfile()
             .then((profile) => commit('SET_PROFILE_USER', profile));
     },
-    FETCH_PROFILE_ADDRESS_LIST: ({ commit, getters }) => {
-        if (getters.isUserWithProfile) {
-            return getProfileAddressList().then((addressList) => {
-                commit('CHECK_MAIN_ADDRESS', addressList);
-                commit('SET_PROFILE_ADDRESS_LIST', addressList);
-                return addressList;
-            });
-        } else {
+    FETCH_ADDRESS_ENCRYPTED: ({ state, commit, getters }) => {
+        if (getters.isUserAdvanced) {
             return Promise.resolve();
         }
+        return getProfileAddressEncrypted(state.user.mainAddress.id)
+            .then((address) => commit('SET_PROFILE_ADDRESS', address));
     },
+    // FETCH_PROFILE_ADDRESS_LIST: ({ commit, getters }) => {
+    //     if (getters.isUserWithProfile) {
+    //         return getProfileAddressList().then((addressList) => {
+    //             // commit('CHECK_MAIN_ADDRESS', addressList);
+    //             commit('SET_PROFILE_ADDRESS_LIST', addressList);
+    //             return addressList;
+    //         });
+    //     } else {
+    //         return Promise.resolve();
+    //     }
+    // },
     // FETCH_TRANSACTION_LIST: ({ commit, dispatch, getters }) => {
     //     return new Promise((resolve, reject) => {
     //         dispatch('FETCH_PROFILE_ADDRESS_LIST')
@@ -38,23 +45,23 @@ export default {
     //             return txListInfo;
     //         });
     // },
-    // FETCH_BALANCE: ({ commit, dispatch, getters }) => {
-    //     return new Promise((resolve, reject) => {
-    //         dispatch('FETCH_PROFILE_ADDRESS_LIST')
-    //             .then(() => {
-    //                 dispatch('FETCH_BALANCE_STANDALONE')
-    //                     .then(resolve)
-    //                     .catch(reject);
-    //             })
-    //             .catch(reject);
-    //     });
-    // },
-    // FETCH_BALANCE_STANDALONE: ({ commit, getters }) => {
-    //     // use only 1 address
-    //     return getBalance(getters.addressList[0].address)
-    //         .then((balance) => {
-    //             commit('SET_BALANCE', balance);
-    //             return balance;
-    //         });
-    // }
+    FETCH_BALANCE: ({ commit, dispatch, getters }) => {
+        return new Promise((resolve, reject) => {
+            dispatch('FETCH_PROFILE')
+                .then(() => {
+                    dispatch('FETCH_BALANCE_STANDALONE')
+                        .then(resolve)
+                        .catch(reject);
+                })
+                .catch(reject);
+        });
+    },
+    FETCH_BALANCE_STANDALONE: ({ commit, getters }) => {
+        // use only 1 address
+        return getBalance(getters.address)
+            .then((balance) => {
+                commit('SET_BALANCE', balance);
+                return balance;
+            });
+    }
 }

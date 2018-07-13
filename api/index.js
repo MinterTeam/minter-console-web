@@ -46,7 +46,7 @@
  */
 
 import myminter from '~/api/myminter';
-// import explorer from '~/api/explorer';
+import explorer from '~/api/explorer';
 import {generateMnemonic, getPasswordToSend, getPasswordToStore, addressEncryptedFromMnemonic} from "~/assets/utils";
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
@@ -183,35 +183,9 @@ export function getTransactionList(params) {
 export function getBalance(addressHash) {
     return explorer.get('address/' + addressHash)
         .then((response) => {
-            let coinList = {};
-            response.data.data.balance.forEach((item) => {
-                Object.keys(item).forEach((coinName) => {
-                    if (!coinList[coinName]) {
-                        coinList[coinName] = {};
-                    }
-                    coinList[coinName].amount = item[coinName];
-                });
-            });
-            response.data.data.balanceUsd.forEach((item) => {
-                Object.keys(item).forEach((coinName) => {
-                    if (!coinList[coinName]) {
-                        coinList[coinName] = {};
-                    }
-                    coinList[coinName].amountUsd = item[coinName];
-                });
-            });
-            delete response.data.data.balance;
-            delete response.data.data.balanceUsd;
-            return {
-                ...response.data.data,
-                coinList: Object.keys(coinList).reduce((accumulator, coinName) => {
-                    accumulator.push({
-                        ...coinList[coinName],
-                        coin: coinName,
-                    });
-                    return accumulator;
-                }, []),
-            }
+            response.data.data.coinList = response.data.data.coins;
+            delete response.data.data.coins;
+            return response.data.data;
         });
 }
 

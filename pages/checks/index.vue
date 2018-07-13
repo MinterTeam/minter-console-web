@@ -1,7 +1,11 @@
 <script>
     import getTitle from '~/assets/get-title';
+    import CheckRedeemForm from '~/components/CheckRedeemForm';
 
     export default {
+        components: {
+            CheckRedeemForm,
+        },
         fetch({ store }) {
             store.commit('SET_SECTION_NAME', 'Checks');
         },
@@ -19,7 +23,14 @@
 </script>
 
 <template>
-    <div>
-
-    </div>
+    <section class="u-section u-container">
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    Redeem check
+                </h1>
+            </div>
+            <CheckRedeemForm/>
+        </div>
+    </section>
 </template>

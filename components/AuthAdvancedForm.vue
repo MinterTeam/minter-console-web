@@ -36,8 +36,8 @@
                     this.$v.$touch();
                     return;
                 }
-                this.$store.commit('ADD_AUTH_ADVANCED', addressFromMnemonic(this.mnemonic, this.isAuthAddress));
-                this.$emit('addressAdded');
+                this.$store.commit('SET_AUTH_ADVANCED', this.mnemonic);
+                // this.$emit('addressAdded');
             }
         }
     }
