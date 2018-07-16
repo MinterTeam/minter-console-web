@@ -146,10 +146,7 @@
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
-                <!--<span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">Enter password</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">Password is too short</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">Password is too long</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>-->
+                <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">Enter coin</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

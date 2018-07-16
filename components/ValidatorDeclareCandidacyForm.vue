@@ -168,6 +168,7 @@
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
+                <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">Enter coin</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

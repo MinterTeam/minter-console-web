@@ -2,6 +2,7 @@
     import {mapState} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {buyCoins} from "minter-js-sdk/src/coin";
     import checkEmpty from '~/assets/v-check-empty';
@@ -39,6 +40,8 @@
                 },
                 coinTo: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 message: {
                     maxLength: maxLength(128),
@@ -119,6 +122,8 @@
                     <span class="form-field__label">Coin to buy</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">Min 3 letters</span>
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">Max 10 letters</span>
             </div>
             <div class="u-cell">
                 <label class="form-field">
@@ -130,6 +135,7 @@
                     </select>
                     <span class="form-field__label">Coin to spend</span>
                 </label>
+                <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">Enter coin</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

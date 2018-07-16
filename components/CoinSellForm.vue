@@ -2,6 +2,7 @@
     import {mapState} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {sellCoins} from "minter-js-sdk/src/coin";
     import checkEmpty from '~/assets/v-check-empty';
@@ -39,6 +40,8 @@
                 },
                 coinTo: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 message: {
                     maxLength: maxLength(128),
@@ -119,6 +122,7 @@
                     </select>
                     <span class="form-field__label">Coin to sell</span>
                 </label>
+                <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">Enter coin</span>
             </div>
             <div class="u-cell">
                 <label class="form-field">

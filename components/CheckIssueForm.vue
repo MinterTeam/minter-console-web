@@ -1,5 +1,6 @@
 <script>
     import {mapState} from 'vuex';
+    import QrcodeVue from 'qrcode.vue'
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import {issueCheck} from "minter-js-sdk/src/check";
@@ -7,6 +8,9 @@
     import {getErrorText} from "~/assets/server-error";
 
     export default {
+        components: {
+            QrcodeVue,
+        },
         directives: {
             checkEmpty,
         },
@@ -19,12 +23,13 @@
             return {
                 isFormSending: false,
                 serverError: '',
+                check: null,
                 form: {
                     nonce: null,
                     dueBlock: 999999999,
                     value: null,
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
-                    password: '',
+                    passPhrase: '',
                 },
             }
         },
@@ -42,7 +47,7 @@
                 coinSymbol: {
                     required,
                 },
-                password: {
+                passPhrase: {
                     required,
                 },
 
@@ -62,26 +67,24 @@
                     this.$v.$touch();
                     return;
                 }
+                this.check = null;
                 this.isFormSending = true;
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        issueCheck({
-                            privateKey: this.$store.getters.privateKey,
-                            check: this.form.check,
-                            password: this.form.password,
-                        }).then((response) => {
-                            this.isFormSending = false;
-                            alert('Tx sent');
+                        try {
+                            this.check = issueCheck({
+                                privateKey: this.$store.getters.privateKey,
+                                ...this.form,
+                            });
                             this.clearForm();
-                        }).catch((error) => {
-                            console.log(error)
-                            this.isFormSending = false;
+                        } catch (error) {
                             this.serverError = getErrorText(error)
-                        })
+                        }
+                        this.isFormSending = false;
                     })
                     .catch((error) => {
                         this.isFormSending = false;
-                        this.serverError = getErrorText(error)
+                        this.serverError = getErrorText(error);
                     })
             },
             clearForm() {
@@ -89,7 +92,7 @@
                 this.form.dueBlock = null;
                 this.form.value = null;
                 this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
-                this.form.password = '';
+                this.form.passPhrase = '';
                 this.$v.$reset();
             }
         }
@@ -139,20 +142,27 @@
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin</span>
             </div>
             <div class="u-cell">
-                <label class="form-field" :class="{'is-error': $v.form.password.$error}">
+                <label class="form-field" :class="{'is-error': $v.form.passPhrase.$error}">
                     <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.password"
-                           @blur="$v.form.password.$touch()"
+                           v-model.trim="form.passPhrase"
+                           @blur="$v.form.passPhrase.$touch()"
                     >
-                    <span class="form-field__label">Password</span>
+                    <span class="form-field__label">Pass phrase</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">Enter password</span>
+                <span class="form-field__error" v-if="$v.form.passPhrase.$dirty && !$v.form.passPhrase.required">Enter pass phrase</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Redeem</button>
+                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Issue</button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+            </div>
+            <div class="u-cell" v-if="check">
+                <b>Signed check:</b> {{ check }} <br>
+                <b>Pass Phrase:</b> {{ form.passPhrase }}
+                <br> <br>
+                <qrcode-vue :value="check" :size="200" level="L"></qrcode-vue>
             </div>
         </div>
     </form>
