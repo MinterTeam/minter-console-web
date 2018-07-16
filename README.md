@@ -1,6 +1,6 @@
-# My Minter Website
+# Minter Console Website
 
-This is the repository containing the code for the official My Minterwebsite [my.minter.network](https://my.minter.network)
+This is the repository containing the code for the official Minter Console website [console.minter.network](https://console.minter.network)
 
 
 ## Deployment script

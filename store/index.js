@@ -24,7 +24,6 @@ export default function createStore () {
             balance: {
                 coinList: {},
             },
-            wallet: null,
             // transactionListInfo: {
             //     data: [],
             //     meta: {},

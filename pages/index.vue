@@ -100,8 +100,8 @@
         </div>
 
         <div class="u-section u-container u-container--medium" v-if="!$store.getters.isAuthorized">
-            <h1 class="h-title">What Is My Minter?</h1>
-            <p>My Minter is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:</p>
+            <h1 class="h-title">What Is Minter Console?</h1>
+            <p>Minter Console is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:</p>
             <ul class="features__list u-grid u-grid--vertical-margin--large no-list">
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
@@ -114,7 +114,7 @@
                     <img class="features__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">Create and Manage Checks</strong>
-                        <p>Paper is no more needed to issue or redeem the check. My Minter will help you get the job done—wherever you are and whenever you need it.</p>
+                        <p>Paper is no more needed to issue or redeem the check. Minter Console will help you get the job done—wherever you are and whenever you need it.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
@@ -142,7 +142,7 @@
                     <img class="features__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">Perpetual Coin Offering management</strong>
-                        <p>ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In My Minter, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">this</a> paper).</p>
+                        <p>ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">this</a> paper).</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">

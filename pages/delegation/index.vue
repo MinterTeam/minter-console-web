@@ -2,6 +2,8 @@
     import getTitle from '~/assets/get-title';
     import ValidatorDelegateUnboundForm from '~/components/ValidatorDelegateUnboundForm';
 
+    let balanceInterval;
+
     export default {
         components: {
             ValidatorDelegateUnboundForm,
@@ -20,6 +22,14 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                 ],
             }
+        },
+        mounted() {
+            balanceInterval = setInterval(() => {
+                this.$store.dispatch('FETCH_BALANCE');
+            }, 10000);
+        },
+        beforeDestroy() {
+            clearInterval(balanceInterval);
         },
     }
 </script>

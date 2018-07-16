@@ -10,7 +10,6 @@ const postcss = require('gulp-postcss');
 const postcssNormalize = require('postcss-normalize');
 const autoprefixer = require('autoprefixer');
 const cleanCss = require('gulp-clean-css');
-const multiProcess = require('gulp-multi-process');
 // images
 const del = require('del');
 const path = require('path');
@@ -99,7 +98,7 @@ gulp.task('imagemin:clean-cache', function() {
 
 // Полная сборка с вотчем
 gulp.task('default', ['less', 'imagemin'], function() {
-    gulp.watch(paths.watch.less, () => multiProcess(['less'], () => {}));
+    gulp.watch(paths.watch.less, ['less']);
     gulp.watch(paths.src.img, ['imagemin']).on('change', function(event) {
         if (event.type === 'deleted') {
             del(paths.dest.img + path.basename(event.path));

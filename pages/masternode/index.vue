@@ -3,6 +3,8 @@
     import ValidatorDeclareCandidacyForm from '~/components/ValidatorDeclareCandidacyForm';
     import ValidatorSetCandidateOnOffForm from '~/components/ValidatorSetCandidateOnOffForm';
 
+    let balanceInterval;
+
     export default {
         components: {
             ValidatorDeclareCandidacyForm,
@@ -21,6 +23,14 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                 ],
             }
+        },
+        mounted() {
+            balanceInterval = setInterval(() => {
+                this.$store.dispatch('FETCH_BALANCE');
+            }, 10000);
+        },
+        beforeDestroy() {
+            clearInterval(balanceInterval);
         },
     }
 </script>
