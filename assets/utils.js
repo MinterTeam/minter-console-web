@@ -6,6 +6,7 @@ import thousands from 'thousands';
 import decode from 'entity-decode';
 import toDate from "date-fns/esm/toDate";
 import format from "date-fns/esm/format";
+import {EXPLORER_URL} from "~/assets/variables";
 
 
 export function generateMnemonic() {
@@ -137,6 +138,10 @@ export function getTimeStamp(timestamp) {
     const time = format(toDate(timestamp), 'dd MMMM YYYY HH:mm:ss (O)');
 
     return time && time !== 'Invalid Date' ? time : false;
+}
+
+export function getTxUrl(txHash) {
+    return EXPLORER_URL + '/transactions/' + txHash;
 }
 
 

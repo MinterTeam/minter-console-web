@@ -8,6 +8,7 @@
     import {createCoin} from "minter-js-sdk/src/coin";
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
+    import {getTxUrl} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
 
     const MIN_CRR = 10;
@@ -30,6 +31,7 @@
             return {
                 isFormSending: false,
                 serverError: '',
+                serverSuccess: '',
                 form: {
                     coinName: '',
                     coinSymbol: '',
@@ -79,6 +81,8 @@
                     return;
                 }
                 this.isFormSending = true;
+                this.serverError = '';
+                this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
                         createCoin({
@@ -87,7 +91,7 @@
                             ...this.form,
                         }).then((response) => {
                             this.isFormSending = false;
-                            alert('Tx sent');
+                            this.serverSuccess = response.data.result;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error)
@@ -108,7 +112,8 @@
                 this.form.initialReserve = null;
                 this.form.message = '';
                 this.$v.$reset();
-            }
+            },
+            getTxUrl,
         }
     }
 </script>
@@ -183,6 +188,9 @@
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Create</button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+            </div>
+            <div class="u-cell" v-if="serverSuccess">
+                <strong>Tx sent:</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
     </form>

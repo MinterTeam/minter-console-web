@@ -7,4 +7,4 @@ export const EXPLORER_MAINNET_URL = process.env.APP_EXPLORER_MAINNET_URL || 'htt
 export const EXPLORER_TESTNET_URL = process.env.APP_EXPLORER_TESTNET_URL || 'https://testnet.explorer.minter.network';
 export const EXPLORER_URL = process.env.APP_ENV === 'production' ? EXPLORER_MAINNET_URL : EXPLORER_TESTNET_URL;
 export const EXPLORER_API_URL = EXPLORER_URL + '/api/v1/';
-export const NODE_URL = 'https://minter-node-1.testnet.minter.network';
+export const NODE_URL = process.env.APP_NODE_URL || 'https://minter-node-1.testnet.minter.network';

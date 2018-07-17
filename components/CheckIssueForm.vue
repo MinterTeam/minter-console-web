@@ -69,6 +69,7 @@
                 }
                 this.check = null;
                 this.isFormSending = true;
+                this.serverError = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
                         try {

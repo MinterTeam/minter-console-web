@@ -7,6 +7,7 @@
     import {isValidPublic} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
+    import {getTxUrl} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
 
     export default {
@@ -27,6 +28,7 @@
             return {
                 isFormSending: false,
                 serverError: '',
+                serverSuccess: '',
                 form: {
                     publicKey: '',
                     message: '',
@@ -37,9 +39,7 @@
             form: {
                 publicKey: {
                     required,
-                    // @TODO public validation
-                    // validPublicKey: isValidPublic,
-                    validPublicKey: () => true,
+                    validPublicKey: isValidPublic,
                 },
                 message: {
                     maxLength: maxLength(128),
@@ -57,6 +57,8 @@
                     return;
                 }
                 this.isFormSending = true;
+                this.serverError = '';
+                this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
                         const txSendFn = this.formType === 'on' ? setCandidateOn : setCandidateOff;
@@ -68,7 +70,7 @@
                             message: this.form.message
                         }).then((response) => {
                             this.isFormSending = false;
-                            alert('Tx sent');
+                            this.serverSuccess = response.data.result;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error)
@@ -85,7 +87,8 @@
                 this.form.publicKey = '';
                 this.form.message = '';
                 this.$v.$reset();
-            }
+            },
+            getTxUrl,
         }
     }
 </script>
@@ -117,6 +120,9 @@
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Set candidate {{ formType }}</button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+            </div>
+            <div class="u-cell" v-if="serverSuccess">
+                <strong>Tx sent:</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
     </form>
