@@ -42,9 +42,7 @@
                 },
                 publicKey: {
                     required,
-                    // @TODO public validation
-                    // validPublicKey: isValidPublic,
-                    validPublicKey: () => true,
+                    validPublicKey: isValidPublic,
                 },
                 commission: {
                     required,

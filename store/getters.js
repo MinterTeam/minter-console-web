@@ -42,12 +42,9 @@ export default {
     privateKey(state, getters) {
         return getters.wallet ? getters.wallet.getPrivateKeyString() : '';
     },
-    // pub(state, getters) {
-    //     if (!getters.isAuthorized) {
-    //         return '';
-    //     }
-    //     return getters.wallet.getPublicKeyString();
-    // },
+    publicKey(state, getters) {
+        return getters.wallet ? getters.wallet.getPublicKeyString() : '';
+    },
     username(state, getters) {
         return getters.isUserWithProfile ? '@' + state.user.username : getters.address;
     },
