@@ -39,6 +39,9 @@ export default {
             return state.user.mainAddress ? state.user.mainAddress.address : '';
         }
     },
+    mnemonic(state, getters) {
+        return getters.wallet ? getters.wallet.getMnemonic() : '';
+    },
     privateKey(state, getters) {
         return getters.wallet ? getters.wallet.getPrivateKeyString() : '';
     },

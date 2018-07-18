@@ -3,6 +3,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
+    import between from 'vuelidate/lib/validators/between';
     import {declareCandidacy} from "minter-js-sdk/src/validator";
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
@@ -46,6 +47,7 @@
                 },
                 commission: {
                     required,
+                    between: between(0, 100),
                 },
                 stake: {
                     required,
@@ -150,6 +152,7 @@
                     <span class="form-field__label">Commission</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">Enter commission</span>
+                <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">Must be between 0 and 100</span>
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">

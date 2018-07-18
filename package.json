@@ -13,6 +13,7 @@
     "generate": "nuxt generate",
     "analyze": "gulp once && nuxt build --spa --analyze",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "lint:fix": "eslint --ext .js,.vue --ignore-path .gitignore --fix .",
     "precommit": "npm run lint"
   },
   "dependencies": {
@@ -23,8 +24,8 @@
     "entity-decode": "^1.0.1",
     "ethereumjs-util": "^5.2.0",
     "minter-js-sdk": "0.0.7",
-    "minterjs-util": "0.0.4",
-    "minterjs-wallet": "^2.0.4",
+    "minterjs-util": "0.0.6",
+    "minterjs-wallet": "^2.1.0",
     "nuxt-edge": "^2.0.0-25523369.7c85202",
     "qrcode.vue": "^1.6.0",
     "thousands": "^1.0.1",
@@ -33,13 +34,13 @@
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
-    "autoprefixer": "^8.6.5",
+    "autoprefixer": "^9.0.0",
     "babel-eslint": "^8.2.6",
     "beeper": "^1.1.1",
     "cross-env": "^5.2.0",
     "del": "^3.0.0",
     "dotenv": "^6.0.0",
-    "eslint": "^4.19.1",
+    "eslint": "^5.1.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^2.0.0",
     "eslint-plugin-vue": "^4.7.0",
