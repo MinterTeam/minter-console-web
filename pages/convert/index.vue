@@ -1,15 +1,17 @@
 <script>
     import getTitle from '~/assets/get-title';
-    import CoinSendForm from '~/components/CoinSendForm';
+    import CoinSellForm from '~/components/CoinSellForm';
+    import CoinBuyForm from '~/components/CoinBuyForm';
 
     let balanceInterval;
 
     export default {
         components: {
-            CoinSendForm,
+            CoinSellForm,
+            CoinBuyForm,
         },
         fetch({ store }) {
-            store.commit('SET_SECTION_NAME', 'Wallet');
+            store.commit('SET_SECTION_NAME', 'Convert');
             return store.dispatch('FETCH_BALANCE');
         },
         head() {
@@ -38,10 +40,18 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Send Coins
+                    Sell Coins
                 </h1>
             </div>
-            <CoinSendForm/>
+            <CoinSellForm/>
+        </div>
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    Buy Coins
+                </h1>
+            </div>
+            <CoinBuyForm/>
         </div>
     </section>
 </template>

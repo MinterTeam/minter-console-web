@@ -40,18 +40,18 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Issue check
-                </h1>
-            </div>
-            <CheckIssueForm/>
-        </div>
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
                     Redeem check
                 </h1>
             </div>
             <CheckRedeemForm/>
+        </div>
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    Issue check
+                </h1>
+            </div>
+            <CheckIssueForm/>
         </div>
     </section>
 </template>

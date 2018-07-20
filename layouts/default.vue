@@ -57,6 +57,12 @@
                             </nuxt-link>
                         </li>
                         <li class="menu__item u-cell">
+                            <nuxt-link class="menu__link link--hover" to="/convert">
+                                <img class="menu__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
+                                Convert
+                            </nuxt-link>
+                        </li>
+                        <li class="menu__item u-cell">
                             <nuxt-link class="menu__link link--hover" to="/checks">
                                 <img class="menu__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
                                 Checks
@@ -80,24 +86,26 @@
                                 Coiner
                             </nuxt-link>
                         </li>
+                        <!--
                         <li class="menu__item u-cell">
-                            <nuxt-link class="menu__link link--hover" to="/pco">
+                            <nuxt-link class="menu__link link&#45;&#45;hover" to="/pco">
                                 <img class="menu__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                                 PCO
                             </nuxt-link>
                         </li>
                         <li class="menu__item u-cell">
-                            <nuxt-link class="menu__link link--hover" to="/dao">
+                            <nuxt-link class="menu__link link&#45;&#45;hover" to="/dao">
                                 <img class="menu__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
                                 DAO
                             </nuxt-link>
                         </li>
                         <li class="menu__item u-cell">
-                            <nuxt-link class="menu__link link--hover" to="/wallet">
+                            <nuxt-link class="menu__link link&#45;&#45;hover" to="/wallet">
                                 <img class="menu__icon" src="/img/icon-feature-support.svg" alt="" role="presentation">
                                 Support
                             </nuxt-link>
                         </li>
+                        -->
                         <li class="menu__item u-cell">
                             <nuxt-link class="menu__link link--hover" to="/account">
                                 <img class="menu__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">

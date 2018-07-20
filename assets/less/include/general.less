@@ -89,7 +89,7 @@ td, th {
 }
 
 // dl
-dl {margin: 0; padding: 20px; border-top: 1px solid @c-border;}
+dl {margin: 0; padding: 20px;}
 dt {
     font-weight: 700; margin-top: 15px;
     &:first-child {margin-top: 0;}
@@ -97,10 +97,12 @@ dt {
 dd {overflow-wrap: break-word; margin: 0;}
 @media (min-width: @breakpoint-medium-up) {
     dl {display: flex; flex-wrap: wrap; border: none; padding: 0;}
-    dt, dd {padding: 15px 20px; margin: 0;}
-    dt {width: 140px; border-top: 1px solid @c-border; border-right: 1px solid @c-border; background: #f6f6f6;}
-    dd {width: calc(100% - 140px); border-top: 1px solid @c-border;}
-
+    dt, dd {
+        padding: 15px 20px; margin: 0; border-top: 1px solid @c-border;
+        &:first-of-type {border-top: none;}
+    }
+    dt {width: 140px; border-right: 1px solid @c-border; background: #f6f6f6;}
+    dd {width: calc(100% - 140px);}
 }
 
 
