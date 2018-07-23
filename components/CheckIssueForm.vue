@@ -24,6 +24,7 @@
                 isFormSending: false,
                 serverError: '',
                 check: null,
+                password: '',
                 form: {
                     nonce: null,
                     dueBlock: 999999999,
@@ -68,6 +69,7 @@
                     return;
                 }
                 this.check = null;
+                this.password = '';
                 this.isFormSending = true;
                 this.serverError = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
@@ -77,6 +79,7 @@
                                 privateKey: this.$store.getters.privateKey,
                                 ...this.form,
                             });
+                            this.password = this.form.passPhrase;
                             this.clearForm();
                         } catch (error) {
                             this.serverError = getErrorText(error)
@@ -160,9 +163,14 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="check">
-                <b>Signed check:</b> {{ check }} <br>
-                <b>Pass Phrase:</b> {{ form.passPhrase }}
-                <br> <br>
+                <dl>
+                    <dt>Signed check:</dt>
+                    <dd class="u-select-all">{{ check }}</dd>
+
+                    <dt>Pass Phrase:</dt>
+                    <dd class="u-select-all">{{ password }}</dd>
+                </dl>
+                <br>
                 <qrcode-vue :value="check" :size="200" level="L"></qrcode-vue>
             </div>
         </div>

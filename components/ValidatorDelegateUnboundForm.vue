@@ -105,7 +105,7 @@
                 this.form.publicKey = '';
                 this.form.stake = null;
                 this.form.coin = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
-                this.form.feeCoinSymbol = false,
+                this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
             },

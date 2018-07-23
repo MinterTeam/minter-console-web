@@ -88,20 +88,23 @@ td, th {
 }
 
 // dl
-dl {margin: 0; padding: 20px;}
+dl {margin: 0;}
 dt {
     font-weight: 700; margin-top: 15px;
     &:first-child {margin-top: 0;}
 }
 dd {overflow-wrap: break-word; margin: 0;}
+.dl--table {padding: 20px;}
 @media (min-width: @breakpoint-medium-up) {
-    dl {display: flex; flex-wrap: wrap; border: none; padding: 0;}
-    dt, dd {
-        padding: 15px 20px; margin: 0; border-top: 1px solid @c-border;
-        &:first-of-type {border-top: none;}
+    .dl--table {
+        display: flex; flex-wrap: wrap; border: none; padding: 0;
+        dt, dd {
+            padding: 15px 20px; margin: 0; border-top: 1px solid @c-border;
+            &:first-of-type {border-top: none;}
+        }
+        dt {width: 140px; border-right: 1px solid @c-border; background: #f6f6f6;}
+        dd {width: calc(100% - 140px);}
     }
-    dt {width: 140px; border-right: 1px solid @c-border; background: #f6f6f6;}
-    dd {width: calc(100% - 140px);}
 }
 
 

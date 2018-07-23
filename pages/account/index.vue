@@ -50,7 +50,7 @@
                     Account
                 </h1>
             </div>
-            <dl>
+            <dl class="dl--table">
                 <dt v-if="username">Username:</dt>
                 <dd v-if="username">{{ username }}</dd>
 
