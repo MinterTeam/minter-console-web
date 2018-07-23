@@ -9,8 +9,10 @@
             CoinCreateForm,
         },
         fetch({ store }) {
-            store.commit('SET_SECTION_NAME', 'Coiner');
-            return store.dispatch('FETCH_BALANCE');
+            return store.dispatch('FETCH_BALANCE')
+                .then(() => {
+                    store.commit('SET_SECTION_NAME', 'Coiner');
+                });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName);

@@ -11,8 +11,10 @@
             CheckIssueForm,
         },
         fetch({ store }) {
-            store.commit('SET_SECTION_NAME', 'Checks');
-            return store.dispatch('FETCH_BALANCE');
+            return store.dispatch('FETCH_BALANCE')
+                .then(() => {
+                    store.commit('SET_SECTION_NAME', 'Checks');
+                });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName);

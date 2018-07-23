@@ -9,9 +9,11 @@
             ValidatorDelegateUnboundForm,
         },
         fetch({ store }) {
-            store.commit('SET_SECTION_NAME', 'Delegation');
             //@TODO fetch balance in middleware
-            return store.dispatch('FETCH_BALANCE');
+            return store.dispatch('FETCH_BALANCE')
+                .then(() => {
+                    store.commit('SET_SECTION_NAME', 'Delegation');
+                });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName);

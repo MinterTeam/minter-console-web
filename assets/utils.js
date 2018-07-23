@@ -220,3 +220,20 @@ export function round(value, power) {
     let tenPower = Math.pow(10, power);
     return Math.round(value * tenPower) / tenPower;
 }
+
+
+
+// support
+export let support = {};
+support.passiveListener = (function () {
+    let supportsPassive = false;
+    try {
+        let opts = Object.defineProperty({}, 'passive', {
+            get: function() {
+                supportsPassive = true;
+            }
+        });
+        window.addEventListener('testPassiveListener', null, opts);
+    } catch (e) {}
+    return supportsPassive;
+})();

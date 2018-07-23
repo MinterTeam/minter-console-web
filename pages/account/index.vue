@@ -4,8 +4,10 @@
 
     export default {
         fetch({ store }) {
-            store.commit('SET_SECTION_NAME', 'Account');
-            return store.dispatch('FETCH_ADDRESS_ENCRYPTED');
+            return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
+                .then(() => {
+                    store.commit('SET_SECTION_NAME', 'Account');
+                });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName);
