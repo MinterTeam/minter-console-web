@@ -135,7 +135,7 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field">
-                    <select class="form-field__input" v-check-empty
+                    <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
                     >

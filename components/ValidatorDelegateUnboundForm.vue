@@ -137,7 +137,7 @@
             </div>
             <div class="u-cell u-cell--1-2">
                 <label class="form-field">
-                    <select class="form-field__input" v-check-empty
+                    <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coin"
                             @blur="$v.form.coin.$touch()"
                     >
@@ -158,7 +158,12 @@
                 <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">Max 128 bytes</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">{{ formType === 'delegate' ? 'Delegate' : 'Unbound' }}</button>
+                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <span class="button__content">{{ formType === 'delegate' ? 'Delegate' : 'Unbound' }}</span>
+                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
+                    </svg>
+                </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">

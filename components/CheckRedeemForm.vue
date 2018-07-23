@@ -109,7 +109,12 @@
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">Enter password</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Redeem</button>
+                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <span class="button__content">Redeem</span>
+                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
+                    </svg>
+                </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">

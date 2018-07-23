@@ -113,14 +113,14 @@ dd {overflow-wrap: break-word; margin: 0;}
 
 // button
 .button {
-    display: inline-flex; align-items: center; justify-content: center; padding: 10px 26px; font-size: 16px; line-height: 18px; font-weight: 700; font-family: @heading-font-family; color: @c-black; text-align: center; border: 2px solid transparent; text-decoration: none; transition: 0.1s;
+    display: inline-flex; align-items: center; justify-content: center; padding: 10px 26px; font-size: 16px; line-height: 18px; font-weight: 700; font-family: @heading-font-family; color: @c-black; text-align: center; border: 2px solid transparent; text-decoration: none; transition: 0.1s; position: relative; overflow: hidden;
     &:hover, &:focus {box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
     &:active {box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
     &[disabled], &.is-disabled {
         cursor: default;
         &:not(.is-loading) {background: shade(#fff, 30%); box-shadow: none;}
     }
-    &.is-loading {color: transparent;}
+    &.is-loading .button__content {color: transparent;}
 }
 .button--main {
     color: #fff; background: @c-main;
@@ -150,10 +150,29 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 .button--trezor__icon {position: absolute; left: 16px; top: 50%; transform: translateY(-50%);}
 .button--trezor__logo {vertical-align: baseline;}
+/*.button__content {transition: 0.1s;}*/
 //.button--small {padding-left: 14px; padding-right: 14px;}
 //@media (min-width: @breakpoint-medium-up) {
 //    .button--small {padding-left: 26px; padding-right: 26px;}
 //}
+
+
+// button-loader
+@loader-length: 12 * 3.14 * 2; // длина окружности
+.button-loader {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 42px; height: 42px; margin: auto; opacity: 0; pointer-events: none; animation: button-loader-rotate 2s linear infinite; /*transition: 0.05s;*/ /*intensive js calculations interrupts css transition*/
+    .is-loading > & { opacity: 1; /*transition: 0.1s 0.1s;*/}
+}
+.button-loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: button-loader-dash 1.5s ease-in-out infinite; }
+@keyframes button-loader-rotate {
+    0% {transform: rotate(-90deg);}
+    100% { transform: rotate(270deg); }
+}
+@keyframes button-loader-dash {
+    0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: @loader-length * 0.8, 200; stroke-dashoffset: 0; }
+    100% { stroke-dasharray: @loader-length * 0.8, 200; stroke-dashoffset: -@loader-length + 1px; }
+}
 
 
 
@@ -177,6 +196,7 @@ dd {overflow-wrap: break-word; margin: 0;}
     &:focus {border-color: @c-main;}
     .is-error > & {border-color: @c-red;}
 }
+.form-field__input--select {appearance: none; background: url(../img/icon-dropdown.svg) no-repeat 100% 50%; padding-right: 24px;}
 .form-field__label {
     font-size: 16px; line-height: @field-label-height; color: @c-black-light; position: absolute; left: 0; top: @field-label-top; transition: 0.15s; transform-origin: 0 0; user-select: none; white-space: nowrap;
     .form-field__input:focus ~ &, .is-not-empty ~ & {transform: translateY(@field-label-translate) scale(@field-label-scale);}
