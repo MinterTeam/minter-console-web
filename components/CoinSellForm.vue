@@ -28,6 +28,7 @@
                     sellAmount: null,
                     coinFrom: coinList && coinList.length ? coinList[0].coin : '',
                     coinTo: '',
+                    feeCoinSymbol: false,
                     message: '',
                 },
             }
@@ -73,9 +74,7 @@
                         sellCoins({
                             nodeUrl: NODE_URL,
                             privateKey: this.$store.getters.privateKey,
-                            sellAmount: this.form.sellAmount,
-                            coinFrom: this.form.coinFrom,
-                            coinTo: this.form.coinTo.toUpperCase(),
+                            ...this.form,
                         }).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result;
@@ -96,6 +95,7 @@
                 this.form.sellAmount = null;
                 this.form.coinFrom = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.from.coinTo = '';
+                this.from.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -129,7 +129,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">Enter coin</span>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--1-2">
                 <label class="form-field">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.coinTo"
@@ -138,6 +138,18 @@
                     <span class="form-field__label">Coin to get</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">Enter coin</span>
+            </div>
+            <div class="u-cell u-cell--1-2">
+                <label class="form-field">
+                    <select class="form-field__input form-field__input--select" v-check-empty
+                            v-model="form.feeCoinSymbol"
+                            @blur="$v.form.feeCoinSymbol.$touch()"
+                    >
+                        <option :value="false">Same as coin to sell</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                    </select>
+                    <span class="form-field__label">Coin to pay fee</span>
+                </label>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

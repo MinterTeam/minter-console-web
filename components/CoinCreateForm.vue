@@ -28,6 +28,7 @@
             uppercase: (value) => value.toUpperCase(),
         },
         data() {
+            const coinList = this.$store.state.balance.coinList;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -38,6 +39,7 @@
                     initialAmount: null,
                     crr: null,
                     initialReserve: null,
+                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
             }
@@ -63,6 +65,9 @@
                 initialReserve: {
                     required,
                 },
+                feeCoinSymbol: {
+                    required,
+                },
                 message: {
                     maxLength: maxLength(128),
                 },
@@ -70,6 +75,9 @@
             }
         },
         computed: {
+            ...mapState({
+                balance: 'balance',
+            }),
         },
         methods: {
             submit() {
@@ -110,6 +118,7 @@
                 this.form.initialAmount = null;
                 this.form.crr = null;
                 this.form.initialReserve = null;
+                this.form.feeCoinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -174,6 +183,18 @@
                     <span class="form-field__label">Initial reserve</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.required">Enter reserve</span>
+            </div>
+            <div class="u-cell">
+                <label class="form-field">
+                    <select class="form-field__input form-field__input--select" v-check-empty
+                            v-model="form.feeCoinSymbol"
+                            @blur="$v.form.feeCoinSymbol.$touch()"
+                    >
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                    </select>
+                    <span class="form-field__label">Coin to pay fee</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">Enter coin</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

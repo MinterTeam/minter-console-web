@@ -31,6 +31,7 @@
                     commission: null,
                     stake: null,
                     coin: coinList && coinList.length ? coinList[0].coin : '',
+                    feeCoinSymbol: false,
                     message: '',
                 },
             }
@@ -88,6 +89,7 @@
                             commission: this.form.commission,
                             stake: this.form.stake,
                             coinSymbol: this.form.coin,
+                            feeCoinSymbol: this.form.feeCoinSymbol,
                             message: this.form.message
                         }).then((response) => {
                             this.isFormSending = false;
@@ -110,6 +112,7 @@
                 this.form.commission = null;
                 this.form.stake = null;
                 this.form.coin = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.feeCoinSymbol = false,
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -143,18 +146,7 @@
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">Enter public key</span>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">Public key is invalid</span>
             </div>
-            <div class="u-cell u-cell--medium--1-3">
-                <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.commission"
-                           @blur="$v.form.commission.$touch()"
-                    >
-                    <span class="form-field__label">Commission</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">Enter commission</span>
-                <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">Must be between 0 and 100</span>
-            </div>
-            <div class="u-cell u-cell--medium--1-3">
+            <div class="u-cell u-cell--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
                            v-model.number="form.stake"
@@ -164,7 +156,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">Enter stake</span>
             </div>
-            <div class="u-cell u-cell--medium--1-3">
+            <div class="u-cell u-cell--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coin"
@@ -175,6 +167,29 @@
                     <span class="form-field__label">Coin</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">Enter coin</span>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
+                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model.number="form.commission"
+                           @blur="$v.form.commission.$touch()"
+                    >
+                    <span class="form-field__label">Commission</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">Enter commission</span>
+                <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">Must be between 0 and 100</span>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field">
+                    <select class="form-field__input form-field__input--select" v-check-empty
+                            v-model="form.feeCoinSymbol"
+                            @blur="$v.form.feeCoinSymbol.$touch()"
+                    >
+                        <option :value="false">Same as stake coin</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                    </select>
+                    <span class="form-field__label">Coin to pay fee</span>
+                </label>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

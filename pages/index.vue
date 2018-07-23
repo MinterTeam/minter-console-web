@@ -1,10 +1,12 @@
 <script>
+    import {mapGetters} from 'vuex';
     import AuthSignInForm from "~/components/AuthSignInForm";
     import AuthRegisterForm from "~/components/AuthRegisterForm";
     import AuthAdvancedForm from "~/components/AuthAdvancedForm";
     import AuthAdvancedGenerate from "~/components/AuthAdvancedGenerate";
 
     export default {
+        layout: 'nonAuth',
         components: {
             AuthAdvancedGenerate,
             AuthRegisterForm,
@@ -13,13 +15,24 @@
         },
         directives: {
         },
-        fetch({ store }) {
-            store.commit('SET_SECTION_NAME', '');
+        fetch({ store, redirect }) {
+            if (store.getters.isAuthorized) {
+                return redirect('/wallet');
+            } else {
+                store.commit('SET_SECTION_NAME', '');
+            }
         },
         data() {
             return {
 
             }
+        },
+        watch: {
+            isAuthorized(newVal) {
+                if (newVal) {
+                    return this.$router.replace('/wallet');
+                }
+            },
         },
         created() {
 
@@ -28,7 +41,7 @@
 
         },
         computed: {
-
+            ...mapGetters(['isAuthorized']),
         },
         methods: {
 
@@ -39,7 +52,7 @@
 
 <template>
     <div>
-        <div class="auth u-section" v-if="!$store.getters.isAuthorized">
+        <div class="auth u-section">
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
                     <div class="u-cell u-cell--medium--1-2">
@@ -99,7 +112,7 @@
             </div>
         </div>
 
-        <div class="u-section u-container u-container--medium" v-if="!$store.getters.isAuthorized">
+        <div class="u-section u-container u-container--medium">
             <h1 class="h-title">What Is Minter Console?</h1>
             <p>Minter Console is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:</p>
             <ul class="features__list u-grid u-grid--vertical-margin--large no-list">

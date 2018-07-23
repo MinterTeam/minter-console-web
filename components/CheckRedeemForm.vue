@@ -7,7 +7,7 @@
     import {isValidCheck} from "minterjs-util";
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getTxUrl} from "~/assets/utils";
-    import {NODE_URL} from "~/assets/variables";
+    import {NODE_URL, COIN_NAME} from "~/assets/variables";
 
     export default {
         directives: {
@@ -59,6 +59,7 @@
                             privateKey: this.$store.getters.privateKey,
                             check: this.form.check,
                             password: this.form.password,
+                            feeCoinSymbol: COIN_NAME,
                         }).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result;

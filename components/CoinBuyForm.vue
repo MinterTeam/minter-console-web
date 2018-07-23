@@ -28,6 +28,7 @@
                     buyAmount: null,
                     coinFrom: coinList && coinList.length ? coinList[0].coin : '',
                     coinTo: '',
+                    feeCoinSymbol: false,
                     message: '',
                 },
             }
@@ -73,9 +74,7 @@
                         buyCoins({
                             nodeUrl: NODE_URL,
                             privateKey: this.$store.getters.privateKey,
-                            buyAmount: this.form.buyAmount,
-                            coinFrom: this.form.coinFrom,
-                            coinTo: this.form.coinTo.toUpperCase(),
+                            ...this.form,
                         }).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result;
@@ -96,6 +95,7 @@
                 this.form.buyAmount = null;
                 this.form.coinFrom = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.from.coinTo = '';
+                this.from.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -130,7 +130,7 @@
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">Min 3 letters</span>
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">Max 10 letters</span>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinFrom"
@@ -141,6 +141,18 @@
                     <span class="form-field__label">Coin to spend</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">Enter coin</span>
+            </div>
+            <div class="u-cell u-cell--1-2">
+                <label class="form-field">
+                    <select class="form-field__input form-field__input--select" v-check-empty
+                            v-model="form.feeCoinSymbol"
+                            @blur="$v.form.feeCoinSymbol.$touch()"
+                    >
+                        <option :value="false">Same as coin to spend</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                    </select>
+                    <span class="form-field__label">Coin to pay fee</span>
+                </label>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -154,7 +166,7 @@
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">Send</span>
+                    <span class="button__content">Buy</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>

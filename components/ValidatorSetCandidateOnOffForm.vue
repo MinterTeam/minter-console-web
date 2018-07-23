@@ -25,12 +25,14 @@
             }
         },
         data() {
+            const coinList = this.$store.state.balance.coinList;
             return {
                 isFormSending: false,
                 serverError: '',
                 serverSuccess: '',
                 form: {
                     publicKey: '',
+                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
             }
@@ -41,11 +43,19 @@
                     required,
                     validPublicKey: isValidPublic,
                 },
+                feeCoinSymbol: {
+                    required,
+                },
                 message: {
                     maxLength: maxLength(128),
                 }
 
             }
+        },
+        computed: {
+            ...mapState({
+                balance: 'balance',
+            }),
         },
         methods: {
             submit() {
@@ -66,8 +76,7 @@
                         txSendFn({
                             nodeUrl: NODE_URL,
                             privateKey: this.$store.getters.privateKey,
-                            publicKey: this.form.publicKey,
-                            message: this.form.message
+                            ...this.form,
                         }).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result;
@@ -85,6 +94,7 @@
             },
             clearForm() {
                 this.form.publicKey = '';
+                this.form.feeCoinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -106,6 +116,18 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">Enter public key</span>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">Public key is invalid</span>
+            </div>
+            <div class="u-cell">
+                <label class="form-field">
+                    <select class="form-field__input form-field__input--select" v-check-empty
+                            v-model="form.feeCoinSymbol"
+                            @blur="$v.form.feeCoinSymbol.$touch()"
+                    >
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                    </select>
+                    <span class="form-field__label">Coin to pay fee</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">Enter coin</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

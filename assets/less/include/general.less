@@ -21,9 +21,8 @@
 
 
 *, *::before, *::after {box-sizing: border-box;}
-html { height: 100%; overflow-y: scroll; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; -webkit-overflow-scrolling: touch;}
+html { overflow-y: scroll; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; -webkit-overflow-scrolling: touch;}
 body {
-    height: 100%;
     margin: 0;
     //position: relative; //в данной реализации модала не актуально // чтобы не разъезжался абсолютный контент при открытии модального
     font-family: @body-font-family;
@@ -31,7 +30,7 @@ body {
     line-height: 1.4;
     color: @c-black;
     font-weight: 400;
-    background: @body-bg-color;
+    background: linear-gradient(to bottom, #2c2c2c 64px, transparent 64px), linear-gradient(to top, #3c3c3c 95.6px, transparent 95.6px), @body-bg-color;
 }
 
 a, .link {color: inherit; outline: none; text-decoration: none; text-decoration-skip: ink; transition: 0.1s;}

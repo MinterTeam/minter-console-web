@@ -1,6 +1,7 @@
 <script>
     import getTitle from '~/assets/get-title';
     import CoinSellForm from '~/components/CoinSellForm';
+    import CoinSellAllForm from '~/components/CoinSellAllForm';
     import CoinBuyForm from '~/components/CoinBuyForm';
 
     let balanceInterval;
@@ -8,6 +9,7 @@
     export default {
         components: {
             CoinSellForm,
+            CoinSellAllForm,
             CoinBuyForm,
         },
         fetch({ store }) {
@@ -46,6 +48,14 @@
                 </h1>
             </div>
             <CoinSellForm/>
+        </div>
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    Sell All Coins
+                </h1>
+            </div>
+            <CoinSellAllForm/>
         </div>
         <div class="panel">
             <div class="panel__header">

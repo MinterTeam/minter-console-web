@@ -63,13 +63,13 @@
                     <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
                     <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
                 </nuxt-link>
-                <div class="header__user u-hidden-medium-down" v-if="$store.getters.isAuthorized">
+                <div class="header__user u-hidden-medium-down">
                     <nuxt-link class="button button--ghost-white" to="/account">{{ username }}</nuxt-link>
                     <button class="header__user-logout u-semantic-button" @click="logout">
                         <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
                     </button>
                 </div>
-                <button class="header__offcanvas-button u-semantic-button u-hidden-medium-up" :class="{'is-active': isMenuActive}" v-if="$store.getters.isAuthorized" @click="toggleMenu">
+                <button class="header__offcanvas-button u-semantic-button u-hidden-medium-up" :class="{'is-active': isMenuActive}" @click="toggleMenu">
                     <span class="header__offcanvas-icon-wrap">
                         <span class="header__offcanvas-icon">Меню</span>
                     </span>
@@ -78,10 +78,7 @@
         </header>
 
 
-        <main class="main-content" v-if="!$store.getters.isAuthorized">
-            <nuxt/>
-        </main>
-        <div class="main-content main-content--grid u-container-margin u-container--large" v-else>
+        <div class="main-content main-content--grid u-container-margin u-container--large">
             <transition name="v-transition-fade">
                 <aside class="main-content__aside" v-show="isMenuActive || isDesktop">
                     <div class="u-container main-content__aside-section">
