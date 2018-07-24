@@ -64,7 +64,7 @@
                     <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
                 </nuxt-link>
                 <div class="header__user u-hidden-medium-down">
-                    <nuxt-link class="button button--ghost-white" to="/account">{{ username }}</nuxt-link>
+                    <nuxt-link class="button button--ghost-white" to="/account" v-if="username">{{ username }}</nuxt-link>
                     <button class="header__user-logout u-semantic-button" @click="logout">
                         <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
                     </button>
