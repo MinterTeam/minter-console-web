@@ -93,7 +93,7 @@
                             message: this.form.message
                         }).then((response) => {
                             this.isFormSending = false;
-                            this.serverSuccess = response.data.result;
+                            this.serverSuccess = response.data.result.hash;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error)

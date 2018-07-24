@@ -27,4 +27,5 @@ export function setAuthToken (tokenData) {
 
 export function resetAuthToken () {
     delete instance.defaults.headers.common['Authorization'];
+    localStorage.removeItem(TOKEN_KEY);
 }

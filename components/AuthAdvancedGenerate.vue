@@ -32,9 +32,7 @@
             <div class="u-cell" v-if="!mnemonic">
                 <button class="button button--main button--full" @click="generate">Click To Generate Seed Phrase</button>
             </div>
-            <div class="u-cell" v-if="mnemonic">
-                {{ mnemonic }}
-            </div>
+            <div class="u-cell" v-if="mnemonic">{{ mnemonic }}</div>
             <div class="u-cell" v-if="mnemonic">
                 <button class="button button--main button--full" v-if="isClipboardSupported" @click="copyMnemonic">Copy</button>
             </div>

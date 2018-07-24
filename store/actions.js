@@ -55,15 +55,19 @@ export default {
     //         });
     // },
     FETCH_BALANCE: ({ commit, dispatch, getters }) => {
-        return new Promise((resolve, reject) => {
-            dispatch('FETCH_PROFILE')
-                .then(() => {
-                    dispatch('FETCH_BALANCE_STANDALONE')
-                        .then(resolve)
-                        .catch(reject);
-                })
-                .catch(reject);
-        });
+        if (getters.isUserAdvanced) {
+            return dispatch('FETCH_BALANCE_STANDALONE');
+        } else {
+            return new Promise((resolve, reject) => {
+                dispatch('FETCH_PROFILE')
+                    .then(() => {
+                        dispatch('FETCH_BALANCE_STANDALONE')
+                            .then(resolve)
+                            .catch(reject);
+                    })
+                    .catch(reject);
+            });
+        }
     },
     FETCH_BALANCE_STANDALONE: ({ commit, getters }) => {
         // use only 1 address
