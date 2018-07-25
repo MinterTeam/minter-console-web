@@ -6,21 +6,13 @@ export default {
         return getProfile()
             .then((profile) => commit('SET_PROFILE_USER', profile));
     },
-    FETCH_ADDRESS_ENCRYPTED: ({ state, commit, getters, dispatch }) => {
+    FETCH_ADDRESS_ENCRYPTED: ({ state, commit, getters }) => {
         if (getters.isUserAdvanced) {
             return Promise.resolve();
         }
-        //@TODO double profile fetch
-        return new Promise((resolve, reject) => {
-            dispatch('FETCH_PROFILE')
-                .then(() => {
-                    getProfileAddressEncrypted(state.user.mainAddress.id)
-                        .then((address) => commit('SET_PROFILE_ADDRESS', address))
-                        .then(resolve)
-                        .catch(reject);
-                })
-                .catch(reject);
-        });
+        // profile address fetched in the middleware
+        return getProfileAddressEncrypted(state.user.mainAddress.id)
+            .then((address) => commit('SET_PROFILE_ADDRESS', address));
     },
     // FETCH_PROFILE_ADDRESS_LIST: ({ commit, getters }) => {
     //     if (getters.isUserWithProfile) {
@@ -54,27 +46,13 @@ export default {
     //             return txListInfo;
     //         });
     // },
-    FETCH_BALANCE: ({ commit, dispatch, getters }) => {
-        if (getters.isUserAdvanced) {
-            return dispatch('FETCH_BALANCE_STANDALONE');
-        } else {
-            return new Promise((resolve, reject) => {
-                dispatch('FETCH_PROFILE')
-                    .then(() => {
-                        dispatch('FETCH_BALANCE_STANDALONE')
-                            .then(resolve)
-                            .catch(reject);
-                    })
-                    .catch(reject);
-            });
-        }
-    },
-    FETCH_BALANCE_STANDALONE: ({ commit, getters }) => {
+    FETCH_BALANCE: ({ commit, getters }) => {
+        // profile address fetched in the middleware
         // use only 1 address
         return getBalance(getters.address)
             .then((balance) => {
                 commit('SET_BALANCE', balance);
                 return balance;
             });
-    }
+    },
 }

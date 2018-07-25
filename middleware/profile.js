@@ -3,8 +3,8 @@ export default function ({store}) {
         return;
     }
     if (store.getters.isUserWithProfile) {
-        // async update
-        store.dispatch('FETCH_PROFILE');
+        // wait for profile, bc its data need for all pages
+        return store.dispatch('FETCH_PROFILE');
     }
 
     return Promise.resolve();

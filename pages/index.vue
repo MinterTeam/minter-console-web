@@ -17,6 +17,7 @@
         },
         fetch({ store, redirect }) {
             if (store.getters.isAuthorized) {
+                //@TODO bug with redirect: render "/wallet" without layout (instead of "/index" with nonAuth layout) and transition it to "/wallet" with layout
                 return redirect('/wallet');
             } else {
                 store.commit('SET_SECTION_NAME', '');
