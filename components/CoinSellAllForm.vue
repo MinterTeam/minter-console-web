@@ -7,7 +7,7 @@
     import {sellAllCoins} from "minter-js-sdk/src/coin";
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl} from "~/assets/utils";
+    import {getTxUrl, pretty2} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
 
     export default {
@@ -16,6 +16,7 @@
         },
         mixins: [validationMixin],
         filters: {
+            pretty2,
             uppercase: (value) => value.toUpperCase(),
         },
         data() {
@@ -106,7 +107,7 @@
                             v-model="form.coinFrom"
                             @blur="$v.form.coinFrom.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin to sell</span>
                 </label>

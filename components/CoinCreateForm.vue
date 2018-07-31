@@ -6,9 +6,10 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
     import {createCoin} from "minter-js-sdk/src/coin";
+    import {VMoney} from 'v-money';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl} from "~/assets/utils";
+    import {getTxUrl, pretty2} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
 
     const MIN_CRR = 10;
@@ -21,10 +22,12 @@
 
     export default {
         directives: {
+            money: VMoney,
             checkEmpty,
         },
         mixins: [validationMixin],
         filters: {
+            pretty2,
             uppercase: (value) => value.toUpperCase(),
         },
         data() {
@@ -41,6 +44,15 @@
                     initialReserve: null,
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
+                },
+                crrFormatted: '0',
+                vMoneyOptions: {
+                    decimal: '.',
+                    thousands: '', // thin space
+                    prefix: '',
+                    suffix: ' %',
+                    precision: 0,
+                    masked: false, // not work with directive, so bind `amountFormatted` to input, and convert it in `amount` during $watch
                 },
             }
         },
@@ -79,6 +91,15 @@
                 balance: 'balance',
             }),
         },
+        watch: {
+            crrFormatted: {
+                handler(newVal) {
+                    newVal = parseFloat(newVal);
+                    this.form.crr = newVal === 0 ? null : newVal;
+                },
+                immediate: true,
+            },
+        },
         methods: {
             submit() {
                 if (this.isFormSending) {
@@ -104,12 +125,12 @@
                         }).catch((error) => {
                             console.log(error)
                             this.isFormSending = false;
-                            this.serverError = getErrorText(error)
+                            this.serverError = getErrorText(error);
                         })
                     })
                     .catch((error) => {
                         this.isFormSending = false;
-                        this.serverError = getErrorText(error)
+                        this.serverError = getErrorText(error);
                     })
             },
             clearForm() {
@@ -166,7 +187,8 @@
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.form.crr.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.crr"
+                           v-model.number="crrFormatted"
+                           v-money="vMoneyOptions"
                            @blur="$v.form.crr.$touch()"
                     >
                     <span class="form-field__label">Constant reserve ratio</span>
@@ -190,7 +212,7 @@
                             v-model="form.feeCoinSymbol"
                             @blur="$v.form.feeCoinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin to pay fee</span>
                 </label>

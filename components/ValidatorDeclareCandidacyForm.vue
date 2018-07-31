@@ -6,17 +6,20 @@
     import between from 'vuelidate/lib/validators/between';
     import {declareCandidacy} from "minter-js-sdk/src/validator";
     import {isValidPublic, isValidAddress} from "minterjs-util";
+    import {VMoney} from 'v-money';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl} from "~/assets/utils";
+    import {getTxUrl, pretty2} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
 
     export default {
         directives: {
+            money: VMoney,
             checkEmpty,
         },
         mixins: [validationMixin],
         filters: {
+            pretty2,
             uppercase: (value) => value.toUpperCase(),
         },
         data() {
@@ -33,6 +36,15 @@
                     coin: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: false,
                     message: '',
+                },
+                commissionFormatted: '0',
+                vMoneyOptions: {
+                    decimal: '.',
+                    thousands: '', // thin space
+                    prefix: '',
+                    suffix: ' %',
+                    precision: 0,
+                    masked: false, // not work with directive, so bind `amountFormatted` to input, and convert it in `amount` during $watch
                 },
             }
         },
@@ -66,6 +78,15 @@
             ...mapState({
                 balance: 'balance',
             }),
+        },
+        watch: {
+            commissionFormatted: {
+                handler(newVal) {
+                    newVal = parseFloat(newVal);
+                    this.form.commission = newVal === 0 ? null : newVal;
+                },
+                immediate: true,
+            },
         },
         methods: {
             submit() {
@@ -162,7 +183,7 @@
                             v-model="form.coin"
                             @blur="$v.form.coin.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
@@ -171,9 +192,11 @@
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.commission"
+                           v-model.number="commissionFormatted"
+                           v-money="vMoneyOptions"
                            @blur="$v.form.commission.$touch()"
                     >
+                    <!--v-model.number="form.commission"-->
                     <span class="form-field__label">Commission</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">Enter commission</span>
@@ -183,10 +206,9 @@
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
-                            @blur="$v.form.feeCoinSymbol.$touch()"
                     >
                         <option :value="false">Same as stake coin</option>
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin to pay fee</span>
                 </label>

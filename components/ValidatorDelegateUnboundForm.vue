@@ -7,7 +7,7 @@
     import {isValidPublic} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl} from "~/assets/utils";
+    import {getTxUrl, pretty2} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
 
     export default {
@@ -16,6 +16,7 @@
         },
         mixins: [validationMixin],
         filters: {
+            pretty2,
             uppercase: (value) => value.toUpperCase(),
         },
         props: {
@@ -144,7 +145,7 @@
                             v-model="form.coin"
                             @blur="$v.form.coin.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
@@ -157,7 +158,7 @@
                             @blur="$v.form.feeCoinSymbol.$touch()"
                     >
                         <option :value="false">Same as stake coin</option>
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin to pay fee</span>
                 </label>
