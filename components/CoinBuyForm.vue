@@ -9,8 +9,12 @@
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
+    import InputUppercase from '~/components/InputUppercase';
 
     export default {
+        components: {
+            InputUppercase,
+        },
         directives: {
             checkEmpty,
         },
@@ -121,13 +125,13 @@
 
             <div class="u-cell u-cell--1-2">
                 <label class="form-field">
-                    <input class="form-field__input" type="text" v-check-empty
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.coinTo"
                            @blur="$v.form.coinTo.$touch()"
-                    >
+                    />
                     <span class="form-field__label">Coin to buy</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">Enter coin symbol</span>
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">Min 3 letters</span>
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">Max 10 letters</span>
             </div>

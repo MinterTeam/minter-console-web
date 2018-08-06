@@ -11,6 +11,7 @@
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
     import {NODE_URL} from "~/assets/variables";
+    import InputUppercase from '~/components/InputUppercase';
 
     const MIN_CRR = 10;
     const MAX_CRR = 100;
@@ -21,6 +22,9 @@
     });
 
     export default {
+        components: {
+            InputUppercase,
+        },
         directives: {
             money: VMoney,
             checkEmpty,
@@ -164,10 +168,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.coinSymbol"
                            @blur="$v.form.coinSymbol.$touch()"
-                    >
+                    />
                     <span class="form-field__label">Coin symbol</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin symbol</span>
