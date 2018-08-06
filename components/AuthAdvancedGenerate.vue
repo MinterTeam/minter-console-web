@@ -1,6 +1,6 @@
 <script>
     import {generateMnemonic} from "~/assets/utils";
-    import * as clipboard from '~/assets/clipboard';
+    import * as clipboard from 'clipbrd';
 
     export default {
         data() {
@@ -19,8 +19,11 @@
                 this.mnemonic = generateMnemonic();
             },
             copyMnemonic() {
-                clipboard.copy(this.mnemonic);
-                this.isToastVisible = true;
+                const isCopied = clipboard.copy(this.mnemonic);
+                if (isCopied) {
+                    // show snackbar
+                    this.$store.commit('SET_SNACKBAR_ACTIVE');
+                }
             },
         }
     }

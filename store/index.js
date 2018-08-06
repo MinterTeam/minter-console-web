@@ -29,6 +29,7 @@ export default function createStore () {
             //     meta: {},
             // },
             // history: [],
+            isSnackbarActive: false,
         },
         actions,
         mutations,

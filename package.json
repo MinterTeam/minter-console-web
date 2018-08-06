@@ -17,9 +17,11 @@
     "precommit": "npm run lint"
   },
   "dependencies": {
+    "@material/snackbar": "^0.38.0",
     "aes-js": "^3.1.1",
     "axios": "^0.18.0",
     "bip39": "^2.5.0",
+    "clipbrd": "^1.0.2",
     "date-fns": "^2.0.0-alpha.16",
     "entity-decode": "^1.0.1",
     "ethereumjs-util": "^5.2.0",
@@ -29,6 +31,7 @@
     "nuxt-edge": "^2.0.0-25559759.b37855a",
     "pretty-num": "0.0.1",
     "qrcode.vue": "^1.6.0",
+    "v-autosize": "^1.0.0",
     "v-money": "github:shrpne/v-money#features",
     "vue-imask": "^3.4.1",
     "vuelidate": "^0.7.4",

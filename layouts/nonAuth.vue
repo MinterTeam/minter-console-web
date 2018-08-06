@@ -1,6 +1,9 @@
 <script>
+    import Snackbar from '~/components/Snackbar';
     export default {
-
+        components: {
+            Snackbar,
+        }
     }
 </script>
 
@@ -49,6 +52,8 @@
                 </div>
             </div>
         </footer>
+
+        <Snackbar/>
     </div>
 </template>
 

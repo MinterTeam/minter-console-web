@@ -2,6 +2,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import withParams from 'vuelidate/lib/withParams';
+    import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidMnemonic, addressFromMnemonic} from "~/assets/utils";
 
@@ -11,6 +12,7 @@
         mixins: [validationMixin],
         directives: {
             checkEmpty,
+            autosize,
         },
         props: {
             // address used for sign in
@@ -48,7 +50,7 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.mnemonic.$error, 'is-success': !$v.mnemonic.$invalid}">
-                    <textarea class="form-field__input" rows="3" v-check-empty style="height: 53px;"
+                    <textarea class="form-field__input" rows="1" v-check-empty v-autosize
                               v-model="mnemonic"
                               @blur="$v.mnemonic.$touch()"
                     ></textarea>

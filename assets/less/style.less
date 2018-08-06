@@ -1,8 +1,19 @@
 // normalize-css подключается с помощью postcss-normalize
+@import (inline) '../../node_modules/@material/snackbar/dist/mdc.snackbar.css';
 @import "include/variables";
 @import "include/utils";
 @import "include/general";
 @import "include/layout";
+
+
+
+// vendor
+// mdc
+.mdc-snackbar__action-button {color: #fff;}
+// nuxt page transition
+.page-leave-active {transition: opacity .1s;}
+.page-enter-active {transition: opacity .25s;}
+.page-enter, .page-leave-to {opacity: 0;}
 
 
 // common
