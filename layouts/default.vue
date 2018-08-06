@@ -185,25 +185,25 @@
                 <img class="footer__logo" src="/img/minter-logo-white.svg" alt="Minter">
                 <div class="footer__menu">
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#intro" target="_blank">Intro</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#intro" target="_blank">Intro</a>
                     </div>
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#white-paper" target="_blank">White Paper</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#white-paper" target="_blank">White Paper</a>
                     </div>
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#help" target="_blank">Help & FAQ</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#help" target="_blank">Help & FAQ</a>
                     </div>
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#network" target="_blank">Network Status</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#network" target="_blank">Network Status</a>
                     </div>
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#api" target="_blank">API & SDK</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#api" target="_blank">API & SDK</a>
                     </div>
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#documents" target="_blank">Documents</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#documents" target="_blank">Documents</a>
                     </div>
                     <div class="footer__menu-item">
-                        <a class="footer__link link--hover" href="https://www.minter.network#dao" target="_blank">Developers</a>
+                        <a class="footer__link link--hover" href="https://about.minter.network#dao" target="_blank">Developers</a>
                     </div>
                 </div>
             </div>
