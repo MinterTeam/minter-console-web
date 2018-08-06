@@ -15,7 +15,7 @@
         },
         mixins: [validationMixin],
         filters: {
-            uppercase: (value) => value.toUpperCase(),
+            uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
             return {

@@ -32,7 +32,7 @@
         mixins: [validationMixin],
         filters: {
             pretty2,
-            uppercase: (value) => value.toUpperCase(),
+            uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
             const coinList = this.$store.state.balance.coinList;

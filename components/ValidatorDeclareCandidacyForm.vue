@@ -20,7 +20,7 @@
         mixins: [validationMixin],
         filters: {
             pretty2,
-            uppercase: (value) => value.toUpperCase(),
+            uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
             const coinList = this.$store.state.balance.coinList;
@@ -133,7 +133,7 @@
                 this.form.commission = null;
                 this.form.stake = null;
                 this.form.coin = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
-                this.form.feeCoinSymbol = false,
+                this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
             },
