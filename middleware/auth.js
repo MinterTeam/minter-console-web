@@ -12,7 +12,7 @@ export default function ({store, route, redirect, error}) {
         return pathRegex.test(route.path);
     });
 
-    const urlRequiresNonAuth = [
+    const urlAllowsNonAuth = [
         /^\/profile\/confirm/,
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
@@ -26,7 +26,7 @@ export default function ({store, route, redirect, error}) {
     // });
 
 
-    if (!store.getters.isAuthorized && urlRequiresAuth && !urlRequiresNonAuth) {
+    if (!store.getters.isAuthorized && urlRequiresAuth && !urlAllowsNonAuth) {
         console.log('-- restricted: redirect to auth');
         return redirect('/');
     }

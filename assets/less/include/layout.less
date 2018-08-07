@@ -4,9 +4,11 @@
 
 // container
 .u-container {padding: 0 16px; margin: 0 auto;}
+.u-container--small {max-width: 360px + 16px * 2;}
 .u-container-margin {margin: 0 auto;}
 @media (min-width: @breakpoint-small-up) {
     .u-container {padding: 0 @container-padding;}
+    .u-container--small {max-width: 360px + @container-padding * 2;}
 }
 @media (min-width: @breakpoint-medium-up) {
     /*.u-container {padding: 0 @container-padding-large;}*/

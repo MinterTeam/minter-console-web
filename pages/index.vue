@@ -52,7 +52,7 @@
 </script>
 
 <template>
-    <div>
+    <main>
         <div class="auth u-section">
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
@@ -204,5 +204,5 @@
                 </li>
             </ul>
         </div>
-    </div>
+    </main>
 </template>

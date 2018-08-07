@@ -20,9 +20,7 @@
         </header>
 
 
-        <main class="main-content">
-            <nuxt/>
-        </main>
+        <nuxt class="main-content"/>
 
         <footer class="footer">
             <div class="footer__container u-container u-container--large">
