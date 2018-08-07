@@ -157,7 +157,7 @@
                                 <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">Status</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://explorer.beta.minter.network" target="_blank">Explorer</a>
+                                <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
                                 <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank">API</a>
