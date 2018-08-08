@@ -155,7 +155,6 @@
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
-                            @blur="$v.form.feeCoinSymbol.$touch()"
                     >
                         <option :value="false">Same as stake coin</option>
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>

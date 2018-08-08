@@ -99,8 +99,8 @@
                 this.form.address = '';
                 this.form.buyAmount = null;
                 this.form.coinFrom = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
-                this.from.coinTo = '';
-                this.from.feeCoinSymbol = false;
+                this.form.coinTo = '';
+                this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -151,7 +151,6 @@
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
-                            @blur="$v.form.feeCoinSymbol.$touch()"
                     >
                         <option :value="false">Same as coin to spend</option>
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>

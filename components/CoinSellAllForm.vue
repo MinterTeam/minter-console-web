@@ -93,7 +93,7 @@
             clearForm() {
                 this.form.address = '';
                 this.form.coinFrom = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
-                this.from.coinTo = '';
+                this.form.coinTo = '';
                 this.form.message = '';
                 this.$v.$reset();
             },
