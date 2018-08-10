@@ -46,6 +46,7 @@
                 <h1 class="panel__header-title">
                     Sell Coins
                 </h1>
+                <p class="panel__header-description">Choose one of the coins that you own and specify the amount you would like to sell.</p>
             </div>
             <CoinSellForm/>
         </div>
@@ -54,6 +55,7 @@
                 <h1 class="panel__header-title">
                     Sell All Coins
                 </h1>
+                <p class="panel__header-description">Sell all of the coins that you possess in a single click.</p>
             </div>
             <CoinSellAllForm/>
         </div>
@@ -62,6 +64,7 @@
                 <h1 class="panel__header-title">
                     Buy Coins
                 </h1>
+                <p class="panel__header-description">If you want to buy a specific coin, you can do it here.</p>
             </div>
             <CoinBuyForm/>
         </div>

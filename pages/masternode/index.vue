@@ -44,6 +44,7 @@
                 <h1 class="panel__header-title">
                     Declare candidacy
                 </h1>
+                <p class="panel__header-description">If you want to set up and run your own masternode, you can declare your candidacy here.</p>
             </div>
             <ValidatorDeclareCandidacyForm/>
         </div>
@@ -52,6 +53,7 @@
                 <h1 class="panel__header-title">
                     Set candidate on
                 </h1>
+                <p class="panel__header-description">This will include the node of yours in the list of active validators.</p>
             </div>
             <ValidatorSetCandidateOnOffForm form-type="on"/>
         </div>
@@ -60,6 +62,7 @@
                 <h1 class="panel__header-title">
                     Set candidate off
                 </h1>
+                <p class="panel__header-description">If you no longer want your node to be in the list mentioned above, fill out this form.</p>
             </div>
             <ValidatorSetCandidateOnOffForm form-type="off"/>
         </div>

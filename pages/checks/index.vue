@@ -44,6 +44,7 @@
                 <h1 class="panel__header-title">
                     Redeem check
                 </h1>
+                <p class="panel__header-description">Claim a check someone has written out to you.</p>
             </div>
             <CheckRedeemForm/>
         </div>
@@ -52,6 +53,7 @@
                 <h1 class="panel__header-title">
                     Issue check
                 </h1>
+                <p class="panel__header-description">Issue a check that will later be redeemed by the person of your choice.</p>
             </div>
             <CheckIssueForm/>
         </div>

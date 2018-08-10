@@ -42,6 +42,7 @@
                 <h1 class="panel__header-title">
                     Create Coin
                 </h1>
+                <p class="panel__header-description">Create your own coin from scratch. It is completely up to you to decide what role it will play — that of a currency, a security, a utility token, a right, a vote, or something else.</p>
             </div>
             <CoinCreateForm/>
         </div>

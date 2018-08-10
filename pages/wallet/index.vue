@@ -42,6 +42,7 @@
                 <h1 class="panel__header-title">
                     Send Coins
                 </h1>
+                <p class="panel__header-description">Transfer your coins to whomever you want—friends, family members, or business partners.</p>
             </div>
             <CoinSendForm/>
         </div>

@@ -134,8 +134,8 @@
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Delegate or Unbind Tokens</strong>
-                        <p>Delegate your tokens to start receiving payouts. In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbinding.</p>
+                        <strong class="features__title">Delegate or Unbond Tokens</strong>
+                        <p>Delegate your tokens to start receiving payouts. In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
@@ -155,21 +155,21 @@
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Perpetual Coin Offering management</strong>
+                        <strong class="features__title">Perpetual Coin Offering Management</strong>
                         <p>ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">this</a> paper).</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Developers’ DAO voting</strong>
+                        <strong class="features__title">Developers’ DAO Voting</strong>
                         <p>Become one of the top nine validators in terms of personal funds in order to get the right to vote in a DAO.</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Account management</strong>
+                        <strong class="features__title">Account Management</strong>
                         <p>Edit your account information, such as username, e-mail address, and password.</p>
                     </div>
                 </li>
@@ -182,7 +182,7 @@
                 </li>
             </ul>
             <hr class="hr--margin-large">
-            <p>Keep in mind that even without Minter account you still can use following services and software:</p>
+            <p>Keep in mind that even without a Minter account, you still can use the following services and software:</p>
             <ul class="services__list--horizontal no-list u-grid u-grid--vertical-margin--small">
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
                     <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">Status</a>
