@@ -4,11 +4,11 @@
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {sellCoins} from "minter-js-sdk/src/coin";
+    import {SellCoinsTxParams} from "minter-js-sdk/src/coin";
+    import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
-    import {NODE_URL} from "~/assets/variables";
     import InputUppercase from '~/components/InputUppercase';
 
     export default {
@@ -76,11 +76,10 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        sellCoins({
-                            nodeUrl: NODE_URL,
+                        sendTx(new SellCoinsTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                        }).then((response) => {
+                        })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();

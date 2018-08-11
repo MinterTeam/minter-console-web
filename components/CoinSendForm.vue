@@ -3,12 +3,12 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {sendCoins} from "minter-js-sdk/src/coin";
+    import {SendCoinsTxParams} from "minter-js-sdk/src/coin";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidAddress} from "minterjs-util";
+    import {sendTx} from '~/api/minter-node';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
-    import {NODE_URL} from "~/assets/variables";
 
     export default {
         directives: {
@@ -28,14 +28,14 @@
                 form: {
                     address: '',
                     amount: null,
-                    coin: coinList && coinList.length ? coinList[0].coin : '',
+                    coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: false,
                     message: '',
                 },
                 sve: {
                     address: {invalid: false, isActual: false, message: ''},
                     amount: {invalid: false, isActual: false, message: ''},
-                    coin: {invalid: false, isActual: false, message: ''},
+                    coinSymbol: {invalid: false, isActual: false, message: ''},
                     message: {invalid: false, isActual: false, message: ''},
                 },
             }
@@ -51,9 +51,9 @@
                     required,
                     server: getServerValidator('amount'),
                 },
-                coin: {
+                coinSymbol: {
                     required,
-                    server: getServerValidator('coin'),
+                    server: getServerValidator('coinSymbol'),
                 },
                 message: {
                     maxLength: maxLength(128),
@@ -81,15 +81,10 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        sendCoins({
-                            nodeUrl: NODE_URL,
+                        sendTx(new SendCoinsTxParams({
                             privateKey: this.$store.getters.privateKey,
-                            address: this.form.address,
-                            amount: this.form.amount,
-                            coinSymbol: this.form.coin,
-                            message: this.form.message,
-                            feeCoinSymbol: this.form.feeCoinSymbol,
-                        }).then((response) => {
+                            ...this.form,
+                        })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
@@ -107,7 +102,7 @@
             clearForm() {
                 this.form.address = '';
                 this.form.amount = null;
-                this.form.coin = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
@@ -148,14 +143,14 @@
             <div class="u-cell u-cell--xlarge--1-3 u-cell--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
-                            v-model="form.coin"
-                            @blur="$v.form.coin.$touch()"
+                            v-model="form.coinSymbol"
+                            @blur="$v.form.coinSymbol.$touch()"
                     >
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-3">
                 <label class="form-field">

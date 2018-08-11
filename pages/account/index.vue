@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex'
     import getTitle from '~/assets/get-title';
+    import {EXPLORER_URL} from '~/assets/variables';
 
     export default {
         fetch({ store }) {
@@ -37,6 +38,9 @@
             },
             email() {
                 return this.$store.state.user.email;
+            },
+            addressUrl() {
+                return EXPLORER_URL + '/address/' + this.address;
             }
         },
     }
@@ -58,7 +62,7 @@
                 <dd v-if="email">{{ email }}</dd>
 
                 <dt>Address:</dt>
-                <dd><span class="u-select-all">{{ address }}</span></dd>
+                <dd><a class="link--default" :href="addressUrl" target="_blank">{{ address }}</a></dd>
 
                 <dt>Public key:</dt>
                 <dd><span class="u-select-all">{{ publicKey }}</span></dd>

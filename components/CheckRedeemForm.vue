@@ -1,13 +1,13 @@
 <script>
-    import {mapState} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
-    import {redeemCheck} from "minter-js-sdk/src/check";
+    import {RedeemCheckTxParams} from "minter-js-sdk/src/check";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidCheck} from "minterjs-util";
-    import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
+    import {sendTx} from '~/api/minter-node';
+    import {getErrorText} from "~/assets/server-error";
     import {getTxUrl} from "~/assets/utils";
-    import {NODE_URL, COIN_NAME} from "~/assets/variables";
+    import {COIN_NAME} from "~/assets/variables";
 
     export default {
         directives: {
@@ -54,13 +54,11 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        redeemCheck({
-                            nodeUrl: NODE_URL,
+                        sendTx(new RedeemCheckTxParams({
                             privateKey: this.$store.getters.privateKey,
-                            check: this.form.check,
-                            password: this.form.password,
+                            ...this.form,
                             feeCoinSymbol: COIN_NAME,
-                        }).then((response) => {
+                        })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();

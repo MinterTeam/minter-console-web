@@ -3,12 +3,12 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {setCandidateOn, setCandidateOff} from "minter-js-sdk/src/validator";
+    import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic} from "minterjs-util";
+    import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
-    import {NODE_URL} from "~/assets/variables";
 
     export default {
         directives: {
@@ -72,13 +72,12 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        const txSendFn = this.formType === 'on' ? setCandidateOn : setCandidateOff;
+                        const TxParams = this.formType === 'on' ? SetCandidateOnTxParams : SetCandidateOffTxParams;
 
-                        txSendFn({
-                            nodeUrl: NODE_URL,
+                        sendTx(new TxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                        }).then((response) => {
+                        })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();

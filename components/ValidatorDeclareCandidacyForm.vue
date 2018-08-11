@@ -4,13 +4,13 @@
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
-    import {declareCandidacy} from "minter-js-sdk/src/validator";
+    import {DeclareCandidacyTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import {VMoney} from 'v-money';
+    import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
-    import {NODE_URL} from "~/assets/variables";
 
     export default {
         directives: {
@@ -29,11 +29,11 @@
                 serverError: '',
                 serverSuccess: '',
                 form: {
-                    address: '',
+                    address: this.$store.getters.address,
                     publicKey: '',
                     commission: null,
                     stake: null,
-                    coin: coinList && coinList.length ? coinList[0].coin : '',
+                    coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: false,
                     message: '',
                 },
@@ -65,7 +65,7 @@
                 stake: {
                     required,
                 },
-                coin: {
+                coinSymbol: {
                     required,
                 },
                 message: {
@@ -102,17 +102,10 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        declareCandidacy({
-                            nodeUrl: NODE_URL,
+                        sendTx(new DeclareCandidacyTxParams({
                             privateKey: this.$store.getters.privateKey,
-                            address: this.form.address,
-                            publicKey: this.form.publicKey,
-                            commission: this.form.commission,
-                            stake: this.form.stake,
-                            coinSymbol: this.form.coin,
-                            feeCoinSymbol: this.form.feeCoinSymbol,
-                            message: this.form.message
-                        }).then((response) => {
+                            ...this.form,
+                        })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
@@ -132,7 +125,7 @@
                 this.form.publicKey = '';
                 this.form.commission = null;
                 this.form.stake = null;
-                this.form.coin = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
@@ -180,14 +173,14 @@
             <div class="u-cell u-cell--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
-                            v-model="form.coin"
-                            @blur="$v.form.coin.$touch()"
+                            v-model="form.coinSymbol"
+                            @blur="$v.form.coinSymbol.$touch()"
                     >
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin</span>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.commission.$error}">

@@ -3,12 +3,12 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {delegate, unbound} from "minter-js-sdk/src/validator";
+    import {DelegateTxParams, UnbondTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic} from "minterjs-util";
+    import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
-    import {NODE_URL} from "~/assets/variables";
 
     export default {
         directives: {
@@ -34,7 +34,7 @@
                 form: {
                     publicKey: '',
                     stake: null,
-                    coin: coinList && coinList.length ? coinList[0].coin : '',
+                    coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: false,
                     message: '',
                 },
@@ -49,7 +49,7 @@
                 stake: {
                     required,
                 },
-                coin: {
+                coinSymbol: {
                     required,
                 },
                 message: {
@@ -77,17 +77,12 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        const txSendFn = this.formType === 'delegate' ? delegate : unbound;
+                        const TxParams = this.formType === 'delegate' ? DelegateTxParams : UnbondTxParams;
 
-                        txSendFn({
-                            nodeUrl: NODE_URL,
+                        sendTx(new TxParams({
                             privateKey: this.$store.getters.privateKey,
-                            publicKey: this.form.publicKey,
-                            stake: this.form.stake,
-                            coinSymbol: this.form.coin,
-                            feeCoinSymbol: this.form.feeCoinSymbol,
-                            message: this.form.message
-                        }).then((response) => {
+                            ...this.form,
+                        })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
@@ -105,7 +100,7 @@
             clearForm() {
                 this.form.publicKey = '';
                 this.form.stake = null;
-                this.form.coin = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
@@ -142,14 +137,14 @@
             <div class="u-cell u-cell--1-2 u-cell--xlarge--1-3">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
-                            v-model="form.coin"
-                            @blur="$v.form.coin.$touch()"
+                            v-model="form.coinSymbol"
+                            @blur="$v.form.coinSymbol.$touch()"
                     >
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-3">
                 <label class="form-field">
@@ -174,7 +169,7 @@
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ formType === 'delegate' ? 'Delegate' : 'Unbound' }}</span>
+                    <span class="button__content">{{ formType === 'delegate' ? 'Delegate' : 'Unbond' }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
