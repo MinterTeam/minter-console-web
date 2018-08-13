@@ -7,7 +7,7 @@ export default function ({store, redirect}) {
         return store.dispatch('FETCH_PROFILE')
             .catch((error) => {
                 // Unauthorized: logout bc. auth data is not approved by server
-                if (error.response.status === 401) {
+                if (error.response && error.response.status === 401) {
                     store.commit('LOGOUT');
                     redirect('/');
                 }
