@@ -83,7 +83,8 @@
                     .then((authData) => {
                         this.$store.commit('SET_AUTH_PROFILE', authData);
                         this.$router.push('/');
-                        this.isFormSending = false;
+                        // don't remove loader during redirect
+                        // this.isFormSending = false;
                     })
                     .catch((error) => {
                         let hasValidationErrors = fillServerErrors(error, this.sve);
@@ -151,7 +152,12 @@
                 <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && $v.form.passwordConfirm.required && !$v.form.passwordConfirm.sameAsPassword">Passwords don't match</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Register</button>
+                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <span class="button__content">Register</span>
+                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
+                    </svg>
+                </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
         </div>

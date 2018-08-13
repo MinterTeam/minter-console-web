@@ -12,6 +12,9 @@ export default {
             el.addEventListener('input', handleInputEvent);
         }
     },
+    componentUpdated(el) {
+        checkInputElementIsEmpty(el);
+    },
     unbind(el) {
         if (isSelect(el)) {
             el.removeEventListener('change', handleInputEvent);
