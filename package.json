@@ -38,7 +38,7 @@
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
-    "autoprefixer": "^9.1.0",
+    "autoprefixer": "^9.1.1",
     "babel-eslint": "^8.2.6",
     "beeper": "^1.1.1",
     "cross-env": "^5.2.0",
@@ -64,6 +64,6 @@
     "> 0.5%",
     "last 2 versions",
     "Firefox ESR",
-    "not Blackberry <= 10"
+    "not dead"
   ]
 }
