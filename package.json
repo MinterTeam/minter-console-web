@@ -25,6 +25,7 @@
     "date-fns": "^2.0.0-alpha.16",
     "entity-decode": "^1.0.1",
     "ethereumjs-util": "^5.2.0",
+    "minter-footer-links": "github:MinterTeam/minter-footer-links",
     "minter-js-sdk": "0.2.2",
     "minterjs-util": "0.0.6",
     "minterjs-wallet": "^2.1.1",

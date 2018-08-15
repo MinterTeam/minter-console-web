@@ -112,7 +112,7 @@
 .footer__menu {width: 100%; margin-top: 20px; text-align: center;}
 .footer__menu-item {
     font-size: 14px; font-weight: 700; display: inline-block;
-    &::after {content: ' | '; margin: 0 3px;}
+    &::after {content: ' | '; /* mid spaces U+2005, bc. last regular space not preserved */ margin: 0 3px;}
     &:last-child::after {content: none;}
 }
 @media (min-width: @breakpoint-large-up) {
