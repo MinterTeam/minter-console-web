@@ -52,7 +52,7 @@
                 <h1 class="panel__header-title">
                     Unbond
                 </h1>
-                <p class="panel__header-description">In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 14 days after the request has been sent.</p>
+                <p class="panel__header-description">In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 30 days after the request has been sent.</p>
             </div>
             <ValidatorDelegateUnbondForm form-type="unbond"/>
         </div>
