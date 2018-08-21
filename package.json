@@ -33,7 +33,7 @@
     "pretty-num": "0.0.1",
     "qrcode.vue": "^1.6.0",
     "v-autosize": "^1.0.0",
-    "v-money": "github:shrpne/v-money#features",
+    "vue-autonumeric": "^1.2.5",
     "vue-imask": "^3.4.1",
     "vuelidate": "^0.7.4",
     "vuex-persistedstate": "^2.5.4"

@@ -6,7 +6,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
     import {CreateCoinTxParams} from "minter-js-sdk/src/coin";
-    import {VMoney} from 'v-money';
+    import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -23,10 +23,10 @@
 
     export default {
         components: {
+            VueAutonumeric,
             InputUppercase,
         },
         directives: {
-            money: VMoney,
             checkEmpty,
         },
         mixins: [validationMixin],
@@ -49,15 +49,7 @@
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
-                crrFormatted: '0',
-                vMoneyOptions: {
-                    decimal: '.',
-                    thousands: '', // thin space
-                    prefix: '',
-                    suffix: ' %',
-                    precision: 0,
-                    masked: false, // not work with directive, so bind `amountFormatted` to input, and convert it in `amount` during $watch
-                },
+                crrFormatted: '',
             }
         },
         validations: {
@@ -96,6 +88,7 @@
             }),
         },
         watch: {
+            //@TODO maybe autonumeric can produce empty raw value
             crrFormatted: {
                 handler(newVal) {
                     newVal = parseFloat(newVal);
@@ -189,11 +182,23 @@
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.form.crr.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="crrFormatted"
-                           v-money="vMoneyOptions"
-                           @blur="$v.form.crr.$touch()"
-                    >
+                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
+                                    v-model="crrFormatted"
+                                    @blur.native="$v.form.crr.$touch()"
+                                    :options="{
+                                        allowDecimalPadding: false,
+                                        decimalPlaces: 0,
+                                        digitGroupSeparator: '',
+                                        emptyInputBehavior: 'press',
+                                        currencySymbol: '\u2009%',
+                                        currencySymbolPlacement: 's',
+                                        minimumValue: '10',
+                                        maximumValue: '100',
+                                        overrideMinMaxLimits: 'ignore',
+                                        unformatOnHover: false,
+                                        wheelStep: 1,
+                                    }"
+                    />
                     <span class="form-field__label">Constant reserve ratio</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.crr.$dirty && !$v.form.crr.required">Enter CRR</span>

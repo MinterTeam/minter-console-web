@@ -11,16 +11,29 @@ export default {
             checkInputElementIsEmpty(el);
             el.addEventListener('input', handleInputEvent);
         }
+        if (binding.value) {
+            el.addEventListener(binding.value, handleInputEvent);
+        }
     },
-    componentUpdated(el) {
+    componentUpdated(el, binding) {
         checkInputElementIsEmpty(el);
+        if (binding.oldValue !== binding.value) {
+            el.removeEventListener(binding.oldValue, handleInputEvent);
+        }
+        if (binding.value) {
+            el.addEventListener(binding.value, handleInputEvent);
+        }
     },
-    unbind(el) {
+    unbind(el, binding) {
         if (isSelect(el)) {
             el.removeEventListener('change', handleInputEvent);
         } else {
             el.removeEventListener('input', handleInputEvent);
         }
+        if (binding.value) {
+            el.removeEventListener(binding.value, handleInputEvent);
+        }
+
     },
 }
 

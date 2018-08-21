@@ -6,15 +6,17 @@
     import between from 'vuelidate/lib/validators/between';
     import {DeclareCandidacyTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic, isValidAddress} from "minterjs-util";
-    import {VMoney} from 'v-money';
+    import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty2} from "~/assets/utils";
 
     export default {
+        components: {
+            VueAutonumeric,
+        },
         directives: {
-            money: VMoney,
             checkEmpty,
         },
         mixins: [validationMixin],
@@ -38,14 +40,6 @@
                     message: '',
                 },
                 commissionFormatted: '0',
-                vMoneyOptions: {
-                    decimal: '.',
-                    thousands: '', // thin space
-                    prefix: '',
-                    suffix: ' %',
-                    precision: 0,
-                    masked: false, // not work with directive, so bind `amountFormatted` to input, and convert it in `amount` during $watch
-                },
             }
         },
         validations: {
@@ -184,12 +178,23 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="commissionFormatted"
-                           v-money="vMoneyOptions"
-                           @blur="$v.form.commission.$touch()"
-                    >
-                    <!--v-model.number="form.commission"-->
+                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
+                                    v-model="commissionFormatted"
+                                    @blur.native="$v.form.commission.$touch()"
+                                    :options="{
+                                        allowDecimalPadding: false,
+                                        decimalPlaces: 0,
+                                        digitGroupSeparator: '',
+                                        emptyInputBehavior: 'press',
+                                        currencySymbol: '\u2009%',
+                                        currencySymbolPlacement: 's',
+                                        minimumValue: '0',
+                                        maximumValue: '100',
+                                        overrideMinMaxLimits: 'ignore',
+                                        unformatOnHover: false,
+                                        wheelStep: 1,
+                                    }"
+                    />
                     <span class="form-field__label">Commission</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">Enter commission</span>
