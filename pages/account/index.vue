@@ -29,7 +29,6 @@
         computed: {
             ...mapGetters([
                 'privateKey',
-                'publicKey',
                 'mnemonic',
                 'address',
             ]),
@@ -63,9 +62,6 @@
 
                 <dt>Address:</dt>
                 <dd><a class="link--default" :href="addressUrl" target="_blank">{{ address }}</a></dd>
-
-                <dt>Public key:</dt>
-                <dd><span class="u-select-all">{{ publicKey }}</span></dd>
 
                 <dt>Private key:</dt>
                 <dd>
