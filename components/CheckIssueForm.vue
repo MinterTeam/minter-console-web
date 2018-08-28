@@ -6,7 +6,7 @@
     import {issueCheck} from 'minter-js-sdk/src/check';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
-    import {pretty2} from '~/assets/utils';
+    import {pretty} from '~/assets/utils';
 
     export default {
         components: {
@@ -17,7 +17,7 @@
         },
         mixins: [validationMixin],
         filters: {
-            pretty2,
+            pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
@@ -144,7 +144,8 @@
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                            uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>

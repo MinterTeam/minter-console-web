@@ -8,7 +8,7 @@
     import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl, pretty2} from "~/assets/utils";
+    import {getTxUrl, pretty} from "~/assets/utils";
 
     export default {
         directives: {
@@ -16,7 +16,7 @@
         },
         mixins: [validationMixin],
         filters: {
-            pretty2,
+            pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         props: {
@@ -140,7 +140,8 @@
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                            uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">Coin</span>
                 </label>
@@ -152,7 +153,8 @@
                             v-model="form.feeCoinSymbol"
                     >
                         <option :value="false">Same as stake coin</option>
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty2 }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                            uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">Coin to pay fee</span>
                 </label>

@@ -144,9 +144,6 @@ export function getTxUrl(txHash) {
     return EXPLORER_URL + '/transactions/' + txHash;
 }
 
-export function pretty2(value) {
-    return decode(prettyNum(value, {precision: 2, thousandsSeparator: '&thinsp;'}));
-}
 export function pretty(value) {
     return decode(prettyNum(value, {precision: 4, thousandsSeparator: '&thinsp;'}));
 }
