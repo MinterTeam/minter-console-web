@@ -92,9 +92,9 @@
                     />
                     <span class="form-field__label">{{ tt('Username', 'index.auth-sign-in-username') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">Enter username</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">Username is too short</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">Username is too long</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">{{ tt('Enter username', 'index.auth-error-username-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">{{ tt('Username is too short', 'index.auth-error-username-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ tt('Username is too long', 'index.auth-error-username-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
@@ -106,9 +106,9 @@
                     >
                     <span class="form-field__label">{{ tt('Password', 'index.auth-sign-in-password') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">Enter password</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">Password is too short</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">Password is too long</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ tt('Enter password', 'index.auth-error-password-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">{{ tt('Password is too short', 'index.auth-error-password-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ tt('Password is too long', 'index.auth-error-password-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>
             </div>
             <div class="u-cell">

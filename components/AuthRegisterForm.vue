@@ -49,6 +49,7 @@
                 password: {
                     required,
                     minLength: minLength(6),
+                    maxLength: maxLength(100),
                     server: getServerValidator('password'),
                 },
                 passwordConfirm: {
@@ -110,9 +111,9 @@
                     />
                     <span class="form-field__label">{{ tt('Choose username', 'index.auth-sign-up-username') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">Enter username</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">Username is too short</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">Username is too long</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">{{ tt('Enter username', 'index.auth-error-username-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">{{ tt('Username is too short', 'index.auth-error-username-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ tt('Username is too long', 'index.auth-error-username-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
@@ -124,7 +125,7 @@
                     >
                     <span class="form-field__label">{{ tt('E-mail (Optional)', 'index.auth-sign-up-email') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.email">Not valid email</span>
+                <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.email">{{ tt('Not valid email', 'index.auth-error-email-invalid') }}</span>
                 <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.server">{{ sve.email.message }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
@@ -136,8 +137,9 @@
                     >
                     <span class="form-field__label">{{ tt('Set your password', 'index.auth-sign-up-password') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">Enter password</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">Password is too short</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ tt('Enter password', 'index.auth-error-password-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">{{ tt('Password is too short', 'index.auth-error-password-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ tt('Password is too long', 'index.auth-error-password-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
@@ -148,8 +150,8 @@
                     >
                     <span class="form-field__label">{{ tt('Confirm password', 'index.auth-sign-up-password-confirm') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && !$v.form.passwordConfirm.required">Confirm password</span>
-                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && $v.form.passwordConfirm.required && !$v.form.passwordConfirm.sameAsPassword">Passwords don't match</span>
+                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && !$v.form.passwordConfirm.required">{{ tt('Confirm password', 'index.auth-error-confirm-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && $v.form.passwordConfirm.required && !$v.form.passwordConfirm.sameAsPassword">{{ tt('Passwords don\'t match', 'index.auth-error-confirm-match') }}</span>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">

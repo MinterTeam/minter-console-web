@@ -56,8 +56,8 @@
                     ></textarea>
                     <span class="form-field__label">{{ tt('Your seed phrase', 'index.auth-sign-in-seed-text') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.mnemonic.$dirty && !$v.mnemonic.required">Enter phrase</span>
-                <span class="form-field__error" v-if="$v.mnemonic.$dirty && $v.mnemonic.required && !$v.mnemonic.validMnemonic">Invalid phrase</span>
+                <span class="form-field__error" v-if="$v.mnemonic.$dirty && !$v.mnemonic.required">{{ tt('Enter phrase', 'index.auth-error-seed-required') }}</span>
+                <span class="form-field__error" v-if="$v.mnemonic.$dirty && $v.mnemonic.required && !$v.mnemonic.validMnemonic">{{ tt('Invalid phrase', 'index.auth-error-seed-invalid') }}</span>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">{{ tt('Sign In', 'index.auth-sign-in-seed-button') }}</button>
