@@ -6,6 +6,7 @@
     let balanceInterval;
 
     export default {
+        nuxtI18n: false,
         components: {
             CheckRedeemForm,
             CheckIssueForm,

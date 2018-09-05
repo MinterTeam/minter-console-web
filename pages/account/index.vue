@@ -4,6 +4,7 @@
     import {EXPLORER_URL} from '~/assets/variables';
 
     export default {
+        nuxtI18n: false,
         fetch({ store }) {
             return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                 .then(() => {

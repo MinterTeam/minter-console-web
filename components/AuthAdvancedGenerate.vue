@@ -33,11 +33,11 @@
     <div class="panel__section">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell" v-if="!mnemonic">
-                <button class="button button--main button--full" @click="generate">Click To Generate Seed Phrase</button>
+                <button class="button button--main button--full" @click="generate">{{ tt('Click To Generate Seed Phrase', 'index.auth-sign-up-seed-generate') }}</button>
             </div>
             <div class="u-cell" v-if="mnemonic">{{ mnemonic }}</div>
             <div class="u-cell" v-if="mnemonic">
-                <button class="button button--main button--full" v-if="isClipboardSupported" @click="copyMnemonic">Copy</button>
+                <button class="button button--main button--full" v-if="isClipboardSupported" @click="copyMnemonic">{{ tt('Copy', 'index.auth-sign-up-seed-copy') }}</button>
             </div>
         </div>
     </div>

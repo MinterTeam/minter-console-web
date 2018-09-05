@@ -17,6 +17,8 @@
     "precommit": "npm run lint"
   },
   "dependencies": {
+    "@material/list": "^0.39.1",
+    "@material/menu": "^0.39.1",
     "@material/snackbar": "^0.39.0",
     "aes-js": "^3.1.1",
     "axios": "^0.18.0",
@@ -25,11 +27,13 @@
     "date-fns": "^2.0.0-alpha.16",
     "entity-decode": "^1.0.1",
     "ethereumjs-util": "^5.2.0",
-    "minter-footer-links": "github:MinterTeam/minter-footer-links",
+    "lodash-es": "^4.17.10",
+    "minter-footer-links": "github:MinterTeam/minter-footer-links#v2.0.0",
     "minter-js-sdk": "0.2.2",
     "minterjs-util": "0.0.6",
     "minterjs-wallet": "^2.1.1",
     "nuxt-edge": "^2.0.0-25586998.83d9dc4",
+    "nuxt-i18n": "^5.2.1",
     "pretty-num": "0.1.1",
     "qrcode.vue": "^1.6.0",
     "v-autosize": "^1.0.0",

@@ -2,6 +2,7 @@
     import {postLinkConfirmation} from "~/api/index";
 
     export default {
+        nuxtI18n: false,
         layout: 'nonAuth',
         directives: {
 

@@ -10,6 +10,8 @@ export default function ({store, redirect}) {
                 if (error.response && error.response.status === 401) {
                     store.commit('LOGOUT');
                     redirect('/');
+                } else {
+                    throw error;
                 }
             })
     }

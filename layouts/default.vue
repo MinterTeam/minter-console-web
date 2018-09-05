@@ -1,10 +1,10 @@
 <script>
-    import footerLinksData from 'minter-footer-links';
     import {shortHashFilter, support} from "~/assets/utils";
+    import Footer from '~/layouts/_footer';
 
     export default {
-        footerLinkList: footerLinksData,
         components: {
+            Footer,
         },
         data() {
             return {
@@ -16,7 +16,7 @@
             username() {
                 const username = this.$store.getters.username;
                 return username.substr(0, 2) === 'Mx' ? shortHashFilter(username, 4) : username;
-            }
+            },
         },
         watch: {
             '$route' (to, from) {
@@ -32,7 +32,7 @@
         methods: {
             logout() {
                 this.$store.commit('LOGOUT');
-                this.$router.push('/');
+                this.$router.push(this.localePath('index'));
             },
             toggleMenu() {
                 this.isMenuActive = !this.isMenuActive;
@@ -61,7 +61,7 @@
     <div class="main-wrap">
         <header class="header">
             <div class="header__container u-container u-container--large">
-                <nuxt-link class="header__logo no-link" to="/">
+                <nuxt-link class="header__logo no-link" :to="localePath('index')">
                     <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
                     <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
                 </nuxt-link>
@@ -182,16 +182,7 @@
             </main>
         </div>
 
-        <footer class="footer">
-            <div class="footer__container u-container u-container--large">
-                <img class="footer__logo" src="/img/minter-logo-white.svg" alt="Minter">
-                <div class="footer__menu">
-                    <div class="footer__menu-item" v-for="link in $options.footerLinkList" :key="link.slug">
-                        <a class="footer__link link--hover" :href="link.url" target="_blank" rel="nofollow noopener">{{ link.title }}</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <Footer/>
     </div>
 </template>
 

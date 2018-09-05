@@ -83,28 +83,28 @@
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.username.$error}">
                     <InputMaskedName class="form-field__input" v-check-empty
                                      @accept="onAcceptUsername"
                                      @blur.native="$v.form.username.$touch()"
                                      @input.native="sve.username.isActual = false"
                     />
-                    <span class="form-field__label">Username</span>
+                    <span class="form-field__label">{{ tt('Username', 'index.auth-sign-in-username') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">Enter username</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">Username is too short</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">Username is too long</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
                     <input class="form-field__input" type="password" v-check-empty
                            v-model="form.password"
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
                     >
-                    <span class="form-field__label">Password</span>
+                    <span class="form-field__label">{{ tt('Password', 'index.auth-sign-in-password') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">Enter password</span>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">Password is too short</span>
@@ -113,7 +113,7 @@
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">Sign In</span>
+                    <span class="button__content">{{ tt('Sign In', 'index.auth-sign-in-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>

@@ -61,14 +61,14 @@
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
-                                    Sign in with username
+                                    {{ tt('Sign in with username', 'index.auth-sign-in-title') }}
                                 </h1>
                             </div>
                             <AuthSignInForm/>
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-register.svg" alt="" role="presentation" width="40" height="40">
-                                    Register
+                                    {{ tt('Register', 'index.auth-sign-up-title') }}
                                 </h1>
                             </div>
                             <AuthRegisterForm/>
@@ -80,14 +80,14 @@
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
-                                    Sign in with seed phrase
+                                    {{ tt('Sign in with seed phrase', 'index.auth-sign-in-seed-title') }}
                                 </h1>
                             </div>
                             <AuthAdvancedForm :isAuthAddress="true"/>
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-register.svg" alt="" role="presentation" width="40" height="40">
-                                    Register with seed phrase
+                                    {{ tt('Register with seed phrase', 'index.auth-sign-up-seed-title') }}
                                 </h1>
                             </div>
                             <AuthAdvancedGenerate/>
@@ -114,81 +114,81 @@
         </div>
 
         <div class="u-section u-container u-container--medium">
-            <h1 class="h-title">What Is Minter Console?</h1>
-            <p>Minter Console is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:</p>
+            <h1 class="h-title">{{ tt('What Is Minter Console?', 'index.features-title') }}</h1>
+            <p>{{ tt('Minter Console is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:', 'index.features-description') }}</p>
             <ul class="features__list u-grid u-grid--vertical-margin--large no-list">
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Send and Receive Any Coins</strong>
-                        <p>Transact cryptocurrencies with your friends, family members, and business partners. Almost instantly and fee-free.</p>
+                        <strong class="features__title">{{ tt('Send and Receive Any Coins', 'index.features-transfer-title') }}</strong>
+                        <p>{{ tt('Transact cryptocurrencies with your friends, family members, and business partners. Almost instantly and fee-free.', 'index.features-transfer-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Create and Manage Checks</strong>
-                        <p>Paper is no more needed to issue or redeem the check. Minter Console will help you get the job done—wherever you are and whenever you need it.</p>
+                        <strong class="features__title">{{ tt('Create and Manage Checks', 'index.features-check-title') }}</strong>
+                        <p>{{ tt('Paper is no more needed to issue or redeem the check. Minter Console will help you get the job done—wherever you are and whenever you need it.', 'index.features-check-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Delegate or Unbond Tokens</strong>
-                        <p>Delegate your tokens to start receiving payouts. In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding.</p>
+                        <strong class="features__title">{{ tt('Delegate or Unbond Tokens', 'index.features-mining-title') }}</strong>
+                        <p>{{ tt('Delegate your tokens to start receiving payouts. In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding.', 'index.features-mining-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-node-management.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Set Up and Manage a Masternode</strong>
-                        <p>With our user-friendly, easy-to-navigate interface, running a masternode has never been easier.</p>
+                        <strong class="features__title">{{ tt('Set Up and Manage a Masternode', 'index.features-masternode-title') }}</strong>
+                        <p>{{ tt('With our user-friendly, easy-to-navigate interface, running a masternode has never been easier.', 'index.features-masternode-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Create New Coins</strong>
-                        <p>Don’t hesitate too long—starting your own cryptocurrency is just a few clicks away!</p>
+                        <strong class="features__title">{{ tt('Create New Coins', 'index.features-creation-title') }}</strong>
+                        <p>{{ tt('Don’t hesitate too long—starting your own cryptocurrency is just a few clicks away!', 'index.features-creation-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Perpetual Coin Offering Management</strong>
-                        <p>ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">this</a> paper).</p>
+                        <strong class="features__title">{{ tt('Perpetual Coin Offering Management', 'index.features-pco-title') }}</strong>
+                        <p>{{ tt('ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of', 'index.features-pco-description') }} <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">{{ tt('this', 'index.features-pco-description-link') }}</a>{{ tt(' paper).', 'index.features-pco-description2') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Developers’ DAO Voting</strong>
-                        <p>Become one of the top nine validators in terms of personal funds in order to get the right to vote in a DAO.</p>
+                        <strong class="features__title">{{ tt('Developers’ DAO Voting', 'index.features-vote-title') }}</strong>
+                        <p>{{ tt('Become one of the top nine validators in terms of personal funds in order to get the right to vote in a DAO.', 'index.features-vote-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Account Management</strong>
-                        <p>Edit your account information, such as username, e-mail address, and password.</p>
+                        <strong class="features__title">{{ tt('Account Management', 'index.features-account-title') }}</strong>
+                        <p>{{ tt('Edit your account information, such as username, e-mail address, and password.', 'index.features-account-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" src="/img/icon-feature-support.svg" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">Support</strong>
-                        <p>Coping with all the razzle-dazzle technical features can sometimes be challenging. But don’t worry, our customer support team will always be there for you.</p>
+                        <strong class="features__title">{{ tt('Support', 'index.features-support-title') }}</strong>
+                        <p>{{ tt('Coping with all the razzle-dazzle technical features can sometimes be challenging. But don’t worry, our customer support team will always be there for you.', 'index.features-support-description') }}</p>
                     </div>
                 </li>
             </ul>
             <hr class="hr--margin-large">
-            <p>Keep in mind that even without a Minter account, you still can use the following services and software:</p>
+            <p>{{ tt('Keep in mind that even without a Minter account, you still can use the following services and software:', 'index.links-description') }}</p>
             <ul class="services__list--horizontal no-list u-grid u-grid--vertical-margin--small">
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
-                    <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">Status</a>
+                    <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">{{ tt('Status', 'index.links-status') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://explorer.beta.minter.network" target="_blank">Explorer</a>
+                    <a class="services__link link--hover" href="https://explorer.beta.minter.network" target="_blank">{{ tt('Explorer', 'index.links-explorer') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
                     <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank">API</a>
@@ -197,10 +197,10 @@
                     <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/sdk.html" target="_blank">SDK</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
-                    <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">Calculator</a>
+                    <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">{{ tt('Calculator', 'index.links-calculator') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://help.beta.minter.network" target="_blank">Help/FAQ</a>
+                    <a class="services__link link--hover" href="https://help.beta.minter.network" target="_blank">{{ tt('Help/FAQ', 'index.links-help') }}</a>
                 </li>
             </ul>
         </div>

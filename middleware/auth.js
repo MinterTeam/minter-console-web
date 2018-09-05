@@ -7,7 +7,16 @@ export default function ({store, route, redirect, error}) {
     console.log('-- path', route.path);
 
     const urlRequiresAuth = [
-        /^\/.+/,
+        /^\/account(\/|$)/,
+        /^\/checks(\/|$)/,
+        /^\/coiner(\/|$)/,
+        /^\/convert(\/|$)/,
+        /^\/dao(\/|$)/,
+        /^\/delegation(\/|$)/,
+        /^\/masternode(\/|$)/,
+        /^\/pco(\/|$)/,
+        /^\/support(\/|$)/,
+        /^\/wallet(\/|$)/,
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });
