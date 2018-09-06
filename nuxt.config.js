@@ -86,6 +86,10 @@ module.exports = {
         //         name: true
         //     }
         // },
+        watch: [
+            './api/',
+            `./lang/`,
+        ],
         /*
         ** Run ESLint on save
         */

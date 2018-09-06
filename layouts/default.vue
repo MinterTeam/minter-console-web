@@ -66,7 +66,7 @@
                     <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
                 </nuxt-link>
                 <div class="header__user u-hidden-medium-down">
-                    <nuxt-link class="button button--ghost-white" to="/account" v-if="username">{{ username }}</nuxt-link>
+                    <nuxt-link class="button button--ghost-white" :to="localePath('account')" v-if="username">{{ username }}</nuxt-link>
                     <button class="header__user-logout u-semantic-button" @click="logout">
                         <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
                     </button>
@@ -86,63 +86,63 @@
                     <div class="u-container main-content__aside-section">
                         <menu class="menu no-list u-grid u-grid--vertical-margin--small">
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" to="/wallet" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="localePath('wallet')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
                                     Wallet
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" to="/convert" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="localePath('convert')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-convert.svg" alt="" role="presentation">
                                     Convert
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" to="/checks" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="localePath('checks')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
                                     Checks
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" to="/delegation" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="localePath('delegation')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
                                     Delegation
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" to="/masternode" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="localePath('masternode')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-node-management.svg" alt="" role="presentation">
                                     Masternode
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" to="/coiner" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="localePath('coiner')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">
                                     Coiner
                                 </nuxt-link>
                             </li>
                             <!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" to="/pco" @click.native="linkClick">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="localePath('pco')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                                     PCO
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" to="/dao" @click.native="linkClick">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="localePath('dao')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
                                     DAO
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" to="/wallet" @click.native="linkClick">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="localePath('wallet')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-support.svg" alt="" role="presentation">
                                     Support
                                 </nuxt-link>
                             </li>
                             -->
                             <li class="menu__item menu__user u-cell">
-                                <nuxt-link class="menu__link menu__user-link link--hover" to="/account" @click.native="linkClick">
+                                <nuxt-link class="menu__link menu__user-link link--hover" :to="localePath('account')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
                                     <span class="menu__user-name">{{ $store.state.user.username || 'Account' }}</span>
                                 </nuxt-link>

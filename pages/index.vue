@@ -18,7 +18,7 @@
         fetch({ store, redirect }) {
             if (store.getters.isAuthorized) {
                 //@TODO bug with redirect: render "/wallet" without layout (instead of "/index" with nonAuth layout) and transition it to "/wallet" with layout
-                return redirect('/wallet');
+                return redirect(this.localePath('wallet'));
             } else {
                 store.commit('SET_SECTION_NAME', '');
             }
@@ -31,7 +31,7 @@
         watch: {
             isAuthorized(newVal) {
                 if (newVal) {
-                    return this.$router.replace('/wallet');
+                    return this.$router.replace(this.localePath('wallet'));
                 }
             },
         },
