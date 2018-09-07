@@ -32,7 +32,7 @@
         methods: {
             logout() {
                 this.$store.commit('LOGOUT');
-                this.$router.push(this.localePath('index'));
+                this.$router.push(this.getLocalePath('index'));
             },
             toggleMenu() {
                 this.isMenuActive = !this.isMenuActive;

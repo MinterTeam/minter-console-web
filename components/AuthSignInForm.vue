@@ -64,7 +64,7 @@
                 login(this.form)
                     .then((authData) => {
                         this.$store.commit('SET_AUTH_PROFILE', authData);
-                        this.$router.push(this.localePath('index'));
+                        this.$router.push(this.getLocalePath('index'));
                         // don't remove loader during redirect
                         // this.isFormSending = false;
                     })

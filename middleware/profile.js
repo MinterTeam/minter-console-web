@@ -9,7 +9,7 @@ export default function ({app, store, redirect}) {
                 // Unauthorized: logout bc. auth data is not approved by server
                 if (error.response && error.response.status === 401) {
                     store.commit('LOGOUT');
-                    redirect(app.localePath('index'));
+                    redirect(app.getLocalePath('index'));
                 } else {
                     throw error;
                 }

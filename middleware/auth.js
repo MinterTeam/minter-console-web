@@ -37,7 +37,7 @@ export default function ({app, store, route, redirect, error}) {
 
     if (!store.getters.isAuthorized && urlRequiresAuth && !urlAllowsNonAuth) {
         console.log('-- restricted: redirect to auth');
-        return redirect(app.localePath('index'));
+        return redirect(app.getLocalePath('index'));
     }
     // if (store.getters.isAuthorized && urlRequiresNonAuth) {
     //     console.log('-- restricted: redirect to index');

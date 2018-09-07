@@ -1,5 +1,7 @@
 <script>
     import {MDCMenu} from '@material/menu';
+    import Cookies from 'js-cookie'
+    import {LANGUAGE_COOKIE_KEY} from '~/assets/variables';
 
     export default {
         data() {
@@ -20,6 +22,16 @@
         beforeDestroy () {
             this.mdcMenu.destroy();
         },
+        methods: {
+            switchLocaleCookie(localeCode) {
+                this.$store.commit('SET_PREFERRED_LOCALE', localeCode);
+                const date = new Date();
+                Cookies.set(LANGUAGE_COOKIE_KEY, localeCode, {
+                    expires: new Date(date.setDate(date.getDate() + 365)),
+                    domain: window.location.host.split('.').slice(-2).join('.'),
+                });
+            }
+        },
     }
 </script>
 
@@ -36,7 +48,13 @@
                     <img class="mdc-list-item__meta" :src="`/img/icon-flag-${currentLocale.code}.png`" :srcset="`/img/icon-flag-${currentLocale.code}@2x.png 2x`" alt="" width="24" height="24" role="presentation">
                 </nuxt-link>
                 <!--list of other locales -->
-                <nuxt-link class="mdc-list-item" :to="switchLocalePath(locale.code)" v-for="locale in $i18n.locales" :key="locale.code" v-if="locale.code !== currentLocale.code">
+                <nuxt-link class="mdc-list-item"
+                           v-for="locale in $i18n.locales"
+                           :key="locale.code"
+                           :to="switchLocalePath(locale.code)"
+                           @click.native="switchLocaleCookie(locale.code)"
+                           v-if="locale.code !== currentLocale.code"
+                >
                     <span class="mdc-list-item__text header__language-text">{{ locale.name }}</span>
                     <img class="mdc-list-item__meta" :src="`/img/icon-flag-${locale.code}.png`" :srcset="`/img/icon-flag-${locale.code}@2x.png 2x`" alt="" width="24" height="24" role="presentation">
                 </nuxt-link>
