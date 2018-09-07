@@ -30,6 +30,7 @@ export default function createStore () {
             // },
             // history: [],
             isSnackbarActive: false,
+            preferredLocale: null,
         },
         actions,
         mutations,

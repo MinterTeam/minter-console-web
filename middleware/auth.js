@@ -7,22 +7,22 @@ export default function ({app, store, route, redirect, error}) {
     console.log('-- path', route.path);
 
     const urlRequiresAuth = [
-        /^\/account(\/|$)/,
-        /^\/checks(\/|$)/,
-        /^\/coiner(\/|$)/,
-        /^\/convert(\/|$)/,
-        /^\/dao(\/|$)/,
-        /^\/delegation(\/|$)/,
-        /^\/masternode(\/|$)/,
-        /^\/pco(\/|$)/,
-        /^\/support(\/|$)/,
-        /^\/wallet(\/|$)/,
+        /^(\/ru)?\/account(\/|$)/,
+        /^(\/ru)?\/checks(\/|$)/,
+        /^(\/ru)?\/coiner(\/|$)/,
+        /^(\/ru)?\/convert(\/|$)/,
+        /^(\/ru)?\/dao(\/|$)/,
+        /^(\/ru)?\/delegation(\/|$)/,
+        /^(\/ru)?\/masternode(\/|$)/,
+        /^(\/ru)?\/pco(\/|$)/,
+        /^(\/ru)?\/support(\/|$)/,
+        /^(\/ru)?\/wallet(\/|$)/,
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });
 
     const urlAllowsNonAuth = [
-        /^\/profile\/confirm/,
+        /^(\/ru)?\/profile\/confirm/,
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });

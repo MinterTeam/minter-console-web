@@ -1,5 +1,4 @@
 import Vue from 'vue';
-console.log('get locale3')
 
 Vue.mixin({
     methods: {
@@ -25,7 +24,7 @@ function getLocalePathFactory(storePath, routerPath, i18nPath) {
         const store = this[storePath];
         const router = this[routerPath];
         const i18n = this[i18nPath];
-        console.log('get locale call')
+
         // Abort if no route
         if (!route) {
             return;
@@ -68,12 +67,3 @@ function getLocalePathFactory(storePath, routerPath, i18nPath) {
         }
     }
 }
-
-
-
-
-
-
-
-
-

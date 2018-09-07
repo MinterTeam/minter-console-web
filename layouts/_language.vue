@@ -30,7 +30,7 @@
                     expires: new Date(date.setDate(date.getDate() + 365)),
                     domain: window.location.host.split('.').slice(-2).join('.'),
                 });
-            }
+            },
         },
     }
 </script>

@@ -9,34 +9,34 @@ export default ({ app, req, route, store, redirect, isHMR }) => {
     }
 
     app.router.onReady(() => {
-        window.Cookies = Cookies;
-        // Helpers
-        const locales = getLocaleCodes(app.i18n.locales);
-        const preferredLocale = getCookie();
+        // without timeout i18n locale and messages not set correctly according to new redirected url
+        setTimeout(() => {
+            window.Cookies = Cookies;
+            // Helpers
+            const locales = getLocaleCodes(app.i18n.locales);
+            const preferredLocale = getCookie();
 
-        // redirect to saved locale
-        if (preferredLocale && locales.indexOf(preferredLocale) !== -1) {
-            store.commit('SET_PREFERRED_LOCALE', preferredLocale)
+            // redirect to saved locale
+            if (preferredLocale && locales.indexOf(preferredLocale) !== -1) {
+                store.commit('SET_PREFERRED_LOCALE', preferredLocale)
 
-            if (preferredLocale !== app.i18n.locale) {
-                const routeName = route && route.name ? app.getRouteBaseName(route) : 'index';
-                redirect(app.localePath(Object.assign({}, route , {
-                    name: routeName,
-                }), preferredLocale));
+                if (preferredLocale !== app.i18n.locale) {
+                    const routeName = route && route.name ? app.getRouteBaseName(route) : 'index';
+                    redirect(app.localePath(Object.assign({}, route , {
+                        name: routeName,
+                    }), preferredLocale));
+                }
             }
-        }
 
-        function getCookie() {
-            if (process.client) {
-                return Cookies.get(LANGUAGE_COOKIE_KEY);
-            } else if (req && typeof req.headers.cookie !== 'undefined') {
-                const cookies = req.headers && req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
-                return cookies[LANGUAGE_COOKIE_KEY];
+            function getCookie() {
+                if (process.client) {
+                    return Cookies.get(LANGUAGE_COOKIE_KEY);
+                } else if (req && typeof req.headers.cookie !== 'undefined') {
+                    const cookies = req.headers && req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
+                    return cookies[LANGUAGE_COOKIE_KEY];
+                }
+                return null;
             }
-            return null;
-        }
+        }, 0)
     });
 }
-
-
-
