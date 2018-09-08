@@ -2,9 +2,13 @@ import {hasAuthToken} from "~/api/myminter";
 
 export default function ({app, store, redirect}) {
     if (process.server) {
-        return;
+        return Promise.resolve();
     }
-    if (!store.getters.isUserAdvanced && hasAuthToken()) {
+
+    if (store.getters.isUserAdvanced) {
+        return Promise.resolve();
+    }
+    if (hasAuthToken()) {
         // wait for profile, bc its data need for all pages
         return store.dispatch('FETCH_PROFILE')
             .catch((resError) => {
@@ -17,6 +21,9 @@ export default function ({app, store, redirect}) {
                     throw resError;
                 }
             })
+    } else if (store.getters.isUserWithProfile) {
+        // no auth token but password stored
+        store.commit('LOGOUT');
     }
 
     return Promise.resolve();
