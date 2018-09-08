@@ -14,14 +14,14 @@ export default {
      * @return {boolean}
      */
     isUserAdvanced(state) {
-        return state.auth.advanced && isValidMnemonic(state.auth.advanced);
+        return !!(state.auth.advanced && isValidMnemonic(state.auth.advanced));
     },
     /**
      * Checks if user is authorized by server
      * @return {boolean}
      */
     isUserWithProfile(state) {
-        return !!(state.auth.token && state.auth.token.accessToken);
+        return !!state.auth.password;
     },
     wallet(state, getters) {
         if (getters.isUserAdvanced) {

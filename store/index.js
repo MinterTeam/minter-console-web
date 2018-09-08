@@ -11,8 +11,6 @@ export default function createStore () {
             auth: {
                 /** @type string|null - mnemonic */
                 advanced: null,
-                /** @type TokenData */
-                token: {},
                 /** @type string|null - stored password */
                 password: null,
             },

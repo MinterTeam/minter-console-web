@@ -6,7 +6,6 @@ export default {
         state.sectionName = sectionName;
     },
     SET_AUTH_PROFILE: (state, {user, token, password}) => {
-        state.auth.token = token;
         state.auth.password = password;
         setAuthToken(token);
         SET_PROFILE_USER(state, user)
@@ -16,7 +15,6 @@ export default {
     },
     LOGOUT: (state) => {
         state.user = {};
-        state.auth.token = {};
         state.auth.password = null;
         state.auth.advanced = null;
         resetAuthToken();

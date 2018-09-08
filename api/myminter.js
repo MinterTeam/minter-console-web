@@ -29,3 +29,7 @@ export function resetAuthToken () {
     delete instance.defaults.headers.common['Authorization'];
     localStorage.removeItem(TOKEN_KEY);
 }
+
+export function hasAuthToken() {
+    return 'Authorization' in instance.defaults.headers.common;
+}
