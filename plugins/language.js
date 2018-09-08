@@ -11,20 +11,17 @@ export default ({ app, req, route, store, redirect, isHMR }) => {
     app.router.onReady(() => {
         // without timeout i18n locale and messages not set correctly according to new redirected url
         setTimeout(() => {
-            window.Cookies = Cookies;
             // Helpers
             const locales = getLocaleCodes(app.i18n.locales);
             const preferredLocale = getCookie();
 
             // redirect to saved locale
             if (preferredLocale && locales.indexOf(preferredLocale) !== -1) {
-                store.commit('SET_PREFERRED_LOCALE', preferredLocale)
+                store.commit('SET_PREFERRED_LOCALE', preferredLocale);
 
-                if (preferredLocale !== app.i18n.locale) {
-                    const routeName = route && route.name ? app.getRouteBaseName(route) : 'index';
-                    redirect(app.localePath(Object.assign({}, route , {
-                        name: routeName,
-                    }), preferredLocale));
+                const baseRoute =  route && route.name && {name: app.getRouteBaseName(route)};
+                if (preferredLocale !== app.i18n.locale && baseRoute && app.hasLocalizedRoute(baseRoute, preferredLocale)) {
+                    redirect(app.localePath(Object.assign({}, route , baseRoute), preferredLocale));
                 }
             }
 
