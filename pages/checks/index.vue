@@ -6,15 +6,14 @@
     let balanceInterval;
 
     export default {
-        nuxtI18n: false,
         components: {
             CheckRedeemForm,
             CheckIssueForm,
         },
-        fetch({ store }) {
+        fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', 'Checks');
+                    store.commit('SET_SECTION_NAME', app.tt('Checks', 'common.page-checks'));
                 });
         },
         head() {
@@ -43,18 +42,22 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Redeem check
+                    {{ tt('Redeem check', 'checks.redeem-title') }}
                 </h1>
-                <p class="panel__header-description">Claim a check someone has written out to you.</p>
+                <p class="panel__header-description">
+                    {{ tt('Claim a check someone has written out to you.', 'checks.redeem-description') }}
+                </p>
             </div>
             <CheckRedeemForm/>
         </div>
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Issue check
+                    {{ tt('Issue check', 'checks.issue-title') }}
                 </h1>
-                <p class="panel__header-description">Issue a check that will later be redeemed by the person of your choice.</p>
+                <p class="panel__header-description">
+                    {{ tt('Issue a check that will later be redeemed by the person of your choice.', 'checks.issue-description') }}
+                </p>
             </div>
             <CheckIssueForm/>
         </div>

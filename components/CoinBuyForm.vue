@@ -52,7 +52,7 @@
                     maxLength: maxLength(10),
                 },
                 message: {
-                    maxLength: maxLength(128),
+                    maxLength: maxLength(1024),
                 }
 
             }
@@ -117,9 +117,9 @@
                            v-model.number="form.buyAmount"
                            @blur="$v.form.buyAmount.$touch()"
                     >
-                    <span class="form-field__label">Buy amount</span>
+                    <span class="form-field__label">{{ tt('Buy amount', 'form.convert-buy-amount') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">Enter amount</span>
+                <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">{{ tt('Enter amount', 'form.amount-error-required') }}</span>
             </div>
 
             <div class="u-cell u-cell--1-2">
@@ -128,11 +128,11 @@
                            v-model.trim="form.coinTo"
                            @blur="$v.form.coinTo.$touch()"
                     />
-                    <span class="form-field__label">Coin to buy</span>
+                    <span class="form-field__label">{{ tt('Coin to buy', 'form.convert-buy-coin-buy') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">Enter coin symbol</span>
-                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">Min 3 letters</span>
-                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">Max 10 letters</span>
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ tt('Enter coin symbol', 'form.coin-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ tt('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ tt('Max 10 letters', 'form.coin-error-max') }}{{ tt('Check', 'form.convert-buy-check') }}</span>
             </div>
             <div class="u-cell u-cell--1-2">
                 <label class="form-field">
@@ -143,20 +143,20 @@
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">Coin to spend</span>
+                    <span class="form-field__label">{{ tt('Coin to spend', 'form.convert-buy-coin-spend') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ tt('Enter coin', 'form.coin-error-required') }}{{ tt('Check', 'form.convert-buy-check') }}</span>
             </div>
             <div class="u-cell u-cell--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
                     >
-                        <option :value="false">Same as coin to spend</option>
+                        <option :value="false">{{ tt('Same as coin to spend', 'form.convert-buy-fee-same') }}</option>
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">Coin to pay fee</span>
+                    <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                 </label>
             </div>
             <div class="u-cell">
@@ -165,13 +165,14 @@
                            v-model.trim="form.message"
                            @blur="$v.form.message.$touch()"
                     >
-                    <span class="form-field__label">Message</span>
+                    <span class="form-field__label">{{ tt('Message', 'form.message') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">Max 128 bytes</span>
+                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
+                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1&thinsp;024&nbsp;symbols.', 'form.message-help') }}</div>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">Buy</span>
+                    <span class="button__content">{{ tt('Buy', 'form.convert-buy-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
@@ -179,11 +180,11 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">
-                <strong>Tx sent:</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
         <div v-else>
-            You don't have coins to spend
+            {{ tt('You don\'t have coins to spend', 'form.convert-buy-error') }}
         </div>
     </form>
 </template>

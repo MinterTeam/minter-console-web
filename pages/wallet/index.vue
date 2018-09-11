@@ -5,14 +5,13 @@
     let balanceInterval;
 
     export default {
-        nuxtI18n: false,
         components: {
             CoinSendForm,
         },
-        fetch({ store }) {
+        fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', 'Wallet');
+                    store.commit('SET_SECTION_NAME', app.tt('Wallet', 'common.page-wallet'));
                 });
         },
         head() {
@@ -41,9 +40,11 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Send Coins
+                    {{ tt('Send Coins', 'wallet.send-title') }}
                 </h1>
-                <p class="panel__header-description">Transfer your coins to whomever you want—friends, family members, or business partners.</p>
+                <p class="panel__header-description">
+                    {{ tt('Transfer your coins to whomever you want—friends, family members, or business partners.', 'wallet.send-description') }}
+                </p>
             </div>
             <CoinSendForm/>
         </div>

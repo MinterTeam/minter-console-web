@@ -114,9 +114,10 @@
                            v-model.number="form.nonce"
                            @blur="$v.form.nonce.$touch()"
                     >
-                    <span class="form-field__label">Nonce</span>
+                    <span class="form-field__label">{{ tt('Nonce', 'form.checks-issue-nonce') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.nonce.$dirty && !$v.form.nonce.required">Enter nonce</span>
+                <span class="form-field__error" v-if="$v.form.nonce.$dirty && !$v.form.nonce.required">{{ tt('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <div class="form-field__help">{{ tt('Check\'s unique ID. Used for issuing several identical checks.', 'form.checks-issue-nonce-help') }}</div>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
@@ -124,9 +125,9 @@
                            v-model.number="form.dueBlock"
                            @blur="$v.form.dueBlock.$touch()"
                     >
-                    <span class="form-field__label">Due block</span>
+                    <span class="form-field__label">{{ tt('Due block', 'form.checks-issue-due') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.dueBlock.$dirty && !$v.form.dueBlock.required">Enter block number</span>
+                <span class="form-field__error" v-if="$v.form.dueBlock.$dirty && !$v.form.dueBlock.required">{{ tt('Enter block number', 'form.checks-issue-due-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.value.$error}">
@@ -134,9 +135,9 @@
                            v-model.number="form.value"
                            @blur="$v.form.value.$touch()"
                     >
-                    <span class="form-field__label">Value</span>
+                    <span class="form-field__label">{{ tt('Amount', 'form.checks-issue-amount') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">Enter value</span>
+                <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ tt('Enter amount', 'form.amount-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field">
@@ -147,9 +148,9 @@
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">Coin</span>
+                    <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.passPhrase.$error}">
@@ -157,20 +158,20 @@
                            v-model.trim="form.passPhrase"
                            @blur="$v.form.passPhrase.$touch()"
                     >
-                    <span class="form-field__label">Pass phrase</span>
+                    <span class="form-field__label">{{ tt('Pass phrase', 'form.checks-issue-pass') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.passPhrase.$dirty && !$v.form.passPhrase.required">Enter pass phrase</span>
+                <span class="form-field__error" v-if="$v.form.passPhrase.$dirty && !$v.form.passPhrase.required">{{ tt('Enter pass phrase', 'form.checks-issue-pass-error-required') }}</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">Issue</button>
+                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">{{ tt('Issue', 'form.checks-issue-button') }}</button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="check">
                 <dl>
-                    <dt>Signed check:</dt>
+                    <dt>{{ tt('Signed check:', 'form.checks-issue-result-check') }}</dt>
                     <dd class="u-select-all">{{ check }}</dd>
 
-                    <dt>Pass Phrase:</dt>
+                    <dt>{{ tt('Pass Phrase:', 'form.checks-issue-result-pass') }}</dt>
                     <dd class="u-select-all">{{ password }}</dd>
                 </dl>
                 <br>

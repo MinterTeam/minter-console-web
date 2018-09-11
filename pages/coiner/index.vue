@@ -5,14 +5,13 @@
     let balanceInterval;
 
     export default {
-        nuxtI18n: false,
         components: {
             CoinCreateForm,
         },
-        fetch({ store }) {
+        fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', 'Coiner');
+                    store.commit('SET_SECTION_NAME', app.tt('Coiner', 'common.page-coiner'));
                 });
         },
         head() {
@@ -41,9 +40,15 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Create Coin
+
                 </h1>
-                <p class="panel__header-description">Create your own coin from scratch. It is completely up to you to decide what role it will play — that of a currency, a security, a utility token, a right, a vote, or something else.</p>
+                <p class="panel__header-description"></p>
+                <h1 class="panel__header-title">
+                    {{ tt('Create Coin', 'coiner.create-title') }}
+                </h1>
+                <p class="panel__header-description">
+                    {{ tt('Create your own coin from scratch. It is completely up to you to decide what role it will play — that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
+                </p>
             </div>
             <CoinCreateForm/>
         </div>

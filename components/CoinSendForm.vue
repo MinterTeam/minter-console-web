@@ -56,7 +56,7 @@
                     server: getServerValidator('coinSymbol'),
                 },
                 message: {
-                    maxLength: maxLength(128),
+                    maxLength: maxLength(1024),
                     server: getServerValidator('message'),
                 }
 
@@ -122,10 +122,10 @@
                            @blur="$v.form.address.$touch()"
                            @input="sve.address.isActual = false"
                     >
-                    <span class="form-field__label">Address</span>
+                    <span class="form-field__label">{{ tt('Address', 'form.wallet-send-address') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">Enter address</span>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">Address is invalid</span>
+                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ tt('Enter address', 'form.wallet-send-address-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ tt('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
                 <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.server">{{ sve.address.message }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-3 u-cell--1-2">
@@ -135,9 +135,9 @@
                            @blur="$v.form.amount.$touch()"
                            @input="sve.amount.isActual = false"
                     >
-                    <span class="form-field__label">Amount</span>
+                    <span class="form-field__label">{{ tt('Amount', 'form.wallet-send-amount') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">Enter amount</span>
+                <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ tt('Enter amount', 'form.amount-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.server">{{ sve.amount.message }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-3 u-cell--1-2">
@@ -149,20 +149,20 @@
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">Coin</span>
+                    <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">Enter coin</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-3">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
                     >
-                        <option :value="false">Same as coin to send</option>
+                        <option :value="false">{{ tt('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
                         <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">Coin to pay fee</span>
+                    <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                 </label>
             </div>
             <div class="u-cell">
@@ -172,14 +172,15 @@
                            @blur="$v.form.message.$touch()"
                            @input="sve.message.isActual = false"
                     >
-                    <span class="form-field__label">Message</span>
+                    <span class="form-field__label">{{ tt('Message', 'form.message') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">Max 128 bytes</span>
+                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.server">{{ sve.message.message }}</span>
+                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1&thinsp;024&nbsp;symbols.', 'form.message-help') }}</div>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">Send</span>
+                    <span class="button__content">{{ tt('Send', 'form.wallet-send-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
@@ -187,11 +188,11 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">
-                <strong>Tx sent:</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
         <div v-else>
-            You don't have coins to send
+            {{ tt('You don\'t have coins to send', 'form.wallet-send-error') }}
         </div>
     </form>
 </template>

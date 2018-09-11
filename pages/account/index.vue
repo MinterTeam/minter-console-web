@@ -4,11 +4,14 @@
     import {EXPLORER_URL} from '~/assets/variables';
 
     export default {
-        nuxtI18n: false,
-        fetch({ store }) {
+        fetch({ app, store }) {
             return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', 'Account');
+                    console.log(app)
+                    window.aaa = app;
+                    console.log(this)
+                    window.ttt = this
+                    store.commit('SET_SECTION_NAME', app.tt('Account', 'common.page-account'));
                 });
         },
         head() {
@@ -51,29 +54,29 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Account
+                    {{ tt('Account', 'account.title') }}
                 </h1>
             </div>
             <dl class="dl--table">
-                <dt v-if="username">Username:</dt>
+                <dt v-if="username">{{ tt('Username:', 'account.username') }}</dt>
                 <dd v-if="username">{{ username }}</dd>
 
-                <dt v-if="email">Email:</dt>
+                <dt v-if="email">{{ tt('Email:', 'account.email') }}</dt>
                 <dd v-if="email">{{ email }}</dd>
 
-                <dt>Address:</dt>
+                <dt>{{ tt('Address:', 'account.address') }}</dt>
                 <dd><a class="link--default" :href="addressUrl" target="_blank">{{ address }}</a></dd>
 
-                <dt>Private key:</dt>
+                <dt>{{ tt('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <span class="u-select-all" v-if="visiblePrivate">{{ privateKey }}</span>
-                    <span v-else><button class="u-semantic-button link--default" @click="visiblePrivate = true">Click to view</button></span>
+                    <span v-else><button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ tt('Click to view:', 'account.click-view') }}</button></span>
                 </dd>
 
-                <dt>Mnemonic:</dt>
+                <dt>{{ tt('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <span class="u-select-all"  v-if="visibleMnemonic">{{ mnemonic }}</span>
-                    <span v-else><button class="u-semantic-button link--default" @click="visibleMnemonic = true">Click to view</button></span>
+                    <span v-else><button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ tt('Click to view:', 'account.click-view') }}</button></span>
                 </dd>
             </dl>
         </div>

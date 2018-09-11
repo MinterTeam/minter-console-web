@@ -7,16 +7,15 @@
     let balanceInterval;
 
     export default {
-        nuxtI18n: false,
         components: {
             CoinSellForm,
             CoinSellAllForm,
             CoinBuyForm,
         },
-        fetch({ store }) {
+        fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', 'Convert');
+                    store.commit('SET_SECTION_NAME', app.tt('Convert', 'common.page-convert'));
                 });
         },
         head() {
@@ -45,27 +44,33 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Sell Coins
+                    {{ tt(' Sell Coins', 'convert.sell-title') }}
                 </h1>
-                <p class="panel__header-description">Choose one of the coins that you own and specify the amount you would like to sell.</p>
+                <p class="panel__header-description">
+                    {{ tt('Choose one of the coins that you own and specify the amount you would like to sell.', 'convert.sell-description') }}
+                </p>
             </div>
             <CoinSellForm/>
         </div>
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Sell All Coins
+                    {{ tt('Sell All Coins', 'convert.sell-all-title') }}
                 </h1>
-                <p class="panel__header-description">Sell all of the coins that you possess in a single click.</p>
+                <p class="panel__header-description">
+                    {{ tt('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
+                </p>
             </div>
             <CoinSellAllForm/>
         </div>
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    Buy Coins
+                    {{ tt('Buy Coins', 'convert.buy-title') }}
                 </h1>
-                <p class="panel__header-description">If you want to buy a specific coin, you can do it here.</p>
+                <p class="panel__header-description">
+                    {{ tt('If you want to buy a specific coin, you can do it here.', 'convert.buy-description') }}
+                </p>
             </div>
             <CoinBuyForm/>
         </div>

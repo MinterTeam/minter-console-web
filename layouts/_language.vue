@@ -37,7 +37,7 @@
 
 <template>
     <div class="mdc-menu-surface--anchor">
-        <button class="header__control-language u-semantic-button" @click="mdcMenu.open = true">
+        <button class="header__language-button u-semantic-button" @click="mdcMenu.open = true">
             <img :src="`/img/icon-flag-${currentLocale.code}.png`" :srcset="`/img/icon-flag-${currentLocale.code}@2x.png 2x`" :alt="currentLocale.name" width="24" height="24">
         </button>
         <div class="mdc-menu mdc-menu-surface" tabindex="-1">
