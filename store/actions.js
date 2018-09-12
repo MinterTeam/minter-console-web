@@ -3,6 +3,10 @@ import {getBalance, getProfile, getProfileAddressEncrypted, getProfileAddressLis
 
 export default {
     FETCH_PROFILE: ({ commit }) => {
+        // don't fetch more often than 10s
+        if (Date.now() - state.userTimeStamp < 10000) {
+            return Promise.resolve();
+        }
         return getProfile()
             .then((profile) => commit('SET_PROFILE_USER', profile));
     },

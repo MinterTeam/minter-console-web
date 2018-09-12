@@ -64,4 +64,5 @@ function SET_PROFILE_USER (state, profile) {
         profile.mainAddress.encrypted = state.user.mainAddress.encrypted;
     }
     state.user = profile;
+    state.userTimeStamp = Date.now();
 }

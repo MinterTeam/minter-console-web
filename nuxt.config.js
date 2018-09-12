@@ -38,6 +38,7 @@ module.exports = {
         middleware: [
             'profile',
             'auth',
+            'language',
         ],
     },
     plugins: [
@@ -48,7 +49,6 @@ module.exports = {
         { src: '~/plugins/seo-fb.js', ssr: false },
         { src: '~/plugins/seo-vk.js', ssr: false },
         '~/plugins/translate.js',
-        '~/plugins/language.js',
         '~/plugins/get-locale-path.js',
     ],
     env: envConfig.error ? {} : envConfig.parsed,

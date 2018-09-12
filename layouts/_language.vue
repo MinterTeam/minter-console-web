@@ -28,7 +28,7 @@
                 const date = new Date();
                 Cookies.set(LANGUAGE_COOKIE_KEY, localeCode, {
                     expires: new Date(date.setDate(date.getDate() + 365)),
-                    domain: window.location.host.split('.').slice(-2).join('.'),
+                    domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
                 });
             },
         },

@@ -19,6 +19,7 @@ export default function createStore () {
                 /** @type Address */
                 mainAddress: {}
             },
+            userTimeStamp: 0,
             balance: {
                 coinList: {},
             },
