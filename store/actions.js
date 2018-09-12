@@ -2,7 +2,7 @@ import {getBalance, getProfile, getProfileAddressEncrypted, getProfileAddressLis
 // import explorer from "~/api/explorer";
 
 export default {
-    FETCH_PROFILE: ({ commit }) => {
+    FETCH_PROFILE: ({ state, commit }) => {
         // don't fetch more often than 10s
         if (Date.now() - state.userTimeStamp < 10000) {
             return Promise.resolve();
