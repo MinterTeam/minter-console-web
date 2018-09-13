@@ -34,7 +34,7 @@
                     coinTo: '',
                     message: '',
                 },
-            }
+            };
         },
         validations: {
             form: {
@@ -48,9 +48,9 @@
                 },
                 message: {
                     maxLength: maxLength(1024),
-                }
+                },
 
-            }
+            },
         },
         computed: {
             ...mapState({
@@ -79,15 +79,15 @@
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
                         }).catch((error) => {
-                            console.log(error)
+                            console.log(error);
                             this.isFormSending = false;
-                            this.serverError = getErrorText(error)
-                        })
+                            this.serverError = getErrorText(error);
+                        });
                     })
                     .catch((error) => {
                         this.isFormSending = false;
-                        this.serverError = getErrorText(error)
-                    })
+                        this.serverError = getErrorText(error);
+                    });
             },
             clearForm() {
                 this.form.address = '';
@@ -97,14 +97,14 @@
                 this.$v.$reset();
             },
             getTxUrl,
-        }
-    }
+        },
+    };
 </script>
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance.coinList && balance.coinList.length">
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinFrom"
@@ -117,7 +117,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field">
                     <InputUppercase class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.coinTo"

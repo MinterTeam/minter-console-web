@@ -8,8 +8,8 @@
             Snackbar,
             Language,
             Footer,
-        }
-    }
+        },
+    };
 </script>
 
 <template>

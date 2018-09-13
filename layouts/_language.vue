@@ -1,6 +1,6 @@
 <script>
     import {MDCMenu} from '@material/menu';
-    import Cookies from 'js-cookie'
+    import Cookies from 'js-cookie';
     import {LANGUAGE_COOKIE_KEY} from '~/assets/variables';
 
     export default {
@@ -9,17 +9,17 @@
                 mdcMenu: {
                     open: false,
                 },
-            }
+            };
         },
         computed: {
             currentLocale() {
                 return this.$i18n.locales.find((locale) => locale.code === this.$i18n.locale);
-            }
+            },
         },
-        mounted () {
+        mounted() {
             this.mdcMenu = new MDCMenu(this.$el.querySelector('.mdc-menu'));
         },
-        beforeDestroy () {
+        beforeDestroy() {
             this.mdcMenu.destroy();
         },
         methods: {
@@ -32,7 +32,7 @@
                 });
             },
         },
-    }
+    };
 </script>
 
 <template>

@@ -1,6 +1,6 @@
-import cookie from 'cookie'
-import Cookies from 'js-cookie'
-import {getLocaleCodes} from 'nuxt-i18n/src/helpers/utils'
+import cookie from 'cookie';
+import Cookies from 'js-cookie';
+import {getLocaleCodes} from 'nuxt-i18n/src/helpers/utils';
 import {LANGUAGE_COOKIE_KEY} from '~/assets/variables';
 
 const DETECT_BROWSER = false;
@@ -9,7 +9,7 @@ let isExecuted = false;
 
 export default function({ app, req, res, route, store, redirect, isHMR }) {
     if (isHMR) {
-        return
+        return;
     }
 
     if (isExecuted) {
@@ -37,7 +37,7 @@ export default function({ app, req, res, route, store, redirect, isHMR }) {
 
         const baseRoute =  route && route.name && {name: app.getRouteBaseName(route)};
         if (newLocale !== app.i18n.locale && baseRoute && app.hasLocalizedRoute(baseRoute, newLocale)) {
-            return redirect(app.localePath(Object.assign({}, route , baseRoute), newLocale));
+            return redirect(app.localePath(Object.assign({}, route, baseRoute), newLocale));
         }
     }
 

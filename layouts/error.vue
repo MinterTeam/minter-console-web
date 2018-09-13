@@ -3,7 +3,7 @@
     export default {
         layout: 'nonAuth',
         props: ['error'],
-    }
+    };
 </script>
 
 <template>

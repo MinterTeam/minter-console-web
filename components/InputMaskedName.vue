@@ -24,16 +24,16 @@
                     },
                 },
                 usernameMasked: this.initialValue,
-            }
+            };
         },
         methods: {
             onAcceptUsername(e) {
                 this.usernameMasked = e.detail._value;
                 e.detail._unmaskedValue = this.usernameMasked.replace(/^@/, '');
-                this.$emit('accept', e)
+                this.$emit('accept', e);
             },
-        }
-    }
+        },
+    };
 </script>
 
 <template>

@@ -1,4 +1,4 @@
-export default function ({app, store, route, redirect, error}) {
+export default function({app, store, route, redirect, error}) {
     if (process.server) {
         return;
     }

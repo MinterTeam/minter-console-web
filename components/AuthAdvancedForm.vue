@@ -19,18 +19,18 @@
             isAuthAddress: {
                 type: Boolean,
                 default: false,
-            }
+            },
         },
         data() {
             return {
                 mnemonic: '',
-            }
+            };
         },
         validations: {
             mnemonic: {
                 required,
                 validMnemonic: mnemonicValidator,
-            }
+            },
         },
         methods: {
             addAddress() {
@@ -40,9 +40,9 @@
                 }
                 this.$store.commit('SET_AUTH_ADVANCED', this.mnemonic);
                 // this.$emit('addressAdded');
-            }
-        }
-    }
+            },
+        },
+    };
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapGetters} from 'vuex';
     import getTitle from '~/assets/get-title';
     import {EXPLORER_URL} from '~/assets/variables';
 
@@ -7,10 +7,10 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                 .then(() => {
-                    console.log(app)
+                    console.log(app);
                     window.aaa = app;
-                    console.log(this)
-                    window.ttt = this
+                    console.log(this);
+                    window.ttt = this;
                     store.commit('SET_SECTION_NAME', app.tt('Account', 'common.page-account'));
                 });
         },
@@ -22,13 +22,13 @@
                 meta: [
                     { hid: 'og-title', name: 'og:title', content: title },
                 ],
-            }
+            };
         },
         data() {
             return {
                 visiblePrivate: false,
                 visibleMnemonic: false,
-            }
+            };
         },
         computed: {
             ...mapGetters([
@@ -44,9 +44,9 @@
             },
             addressUrl() {
                 return EXPLORER_URL + '/address/' + this.address;
-            }
+            },
         },
-    }
+    };
 </script>
 
 <template>

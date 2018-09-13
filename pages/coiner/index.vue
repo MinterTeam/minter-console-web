@@ -22,7 +22,7 @@
                 meta: [
                     { hid: 'og-title', name: 'og:title', content: title },
                 ],
-            }
+            };
         },
         mounted() {
             balanceInterval = setInterval(() => {
@@ -32,7 +32,7 @@
         beforeDestroy() {
             clearInterval(balanceInterval);
         },
-    }
+    };
 </script>
 
 <template>
@@ -47,7 +47,7 @@
                     {{ tt('Create Coin', 'coiner.create-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ tt('Create your own coin from scratch. It is completely up to you to decide what role it will play — that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
+                    {{ tt('Create your own coin from scratch. It is completely up to you to decide what role it will play&nbsp;— that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
                 </p>
             </div>
             <CoinCreateForm/>

@@ -1,17 +1,17 @@
 <script>
     import {MDCSnackbar} from '@material/snackbar';
-    import {strings as snackbarStrings} from '@material/snackbar/constants'
+    import {strings as snackbarStrings} from '@material/snackbar/constants';
 
     export default {
         data() {
             return {
                 snackbar: {},
-            }
+            };
         },
         watch: {
             // react when snackbar status set to active
             // during active phase SET_SNACKBAR_ACTIVE will do nothing
-            '$store.state.isSnackbarActive': function (newVal) {
+            '$store.state.isSnackbarActive': function(newVal) {
                 if (newVal) {
                     this.snackbar.show({
                         message: 'Copied to clipboard',
@@ -20,7 +20,7 @@
                         actionHandler: () => {},
                     });
                 }
-            }
+            },
         },
         mounted() {
             // init snackbar
@@ -36,8 +36,8 @@
             }
         },
         methods: {
-        }
-    }
+        },
+    };
 </script>
 
 <template>

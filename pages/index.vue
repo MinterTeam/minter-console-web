@@ -26,7 +26,7 @@
         data() {
             return {
 
-            }
+            };
         },
         watch: {
             isAuthorized(newVal) {
@@ -46,9 +46,9 @@
         },
         methods: {
 
-        }
+        },
 
-    }
+    };
 </script>
 
 <template>

@@ -13,18 +13,18 @@
                 return listeners;
             },
         },
-        mounted: function () {
+        mounted: function() {
             this.updateValue(this.$refs.input.value);
         },
         methods: {
-            updateValue: function (newValue) {
+            updateValue: function(newValue) {
                 newValue = newValue.toUpperCase();
                 if (newValue !== this.value) {
                     this.$emit('input', newValue);
                 }
             },
-        }
-    }
+        },
+    };
 
 
 </script>

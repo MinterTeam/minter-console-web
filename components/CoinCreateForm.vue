@@ -50,7 +50,7 @@
                     message: '',
                 },
                 crrFormatted: '',
-            }
+            };
         },
         validations: {
             form: {
@@ -80,7 +80,7 @@
                     maxLength: maxLength(1024),
                 },
 
-            }
+            },
         },
         computed: {
             ...mapState({
@@ -119,15 +119,15 @@
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
                         }).catch((error) => {
-                            console.log(error)
+                            console.log(error);
                             this.isFormSending = false;
                             this.serverError = getErrorText(error);
-                        })
+                        });
                     })
                     .catch((error) => {
                         this.isFormSending = false;
                         this.serverError = getErrorText(error);
-                    })
+                    });
             },
             clearForm() {
                 this.form.coinName = '';
@@ -140,8 +140,8 @@
                 this.$v.$reset();
             },
             getTxUrl,
-        }
-    }
+        },
+    };
 </script>
 
 <template>

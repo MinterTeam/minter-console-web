@@ -7,7 +7,7 @@
             return {
                 mnemonic: '',
                 isToastVisible: false,
-            }
+            };
         },
         computed: {
             isClipboardSupported() {
@@ -25,8 +25,8 @@
                     this.$store.commit('SET_SNACKBAR_ACTIVE');
                 }
             },
-        }
-    }
+        },
+    };
 </script>
 
 <template>

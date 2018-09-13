@@ -1,10 +1,10 @@
-import Vuex from 'vuex'
+import Vuex from 'vuex';
 
-import actions from './actions'
-import mutations from './mutations'
-import getters from './getters'
+import actions from './actions';
+import mutations from './mutations';
+import getters from './getters';
 
-export default function createStore () {
+export default function createStore() {
     return new Vuex.Store({
         state: {
             sectionName: '',
@@ -17,7 +17,7 @@ export default function createStore () {
             /** @type User */
             user: {
                 /** @type Address */
-                mainAddress: {}
+                mainAddress: {},
             },
             userTimeStamp: 0,
             balance: {
@@ -37,7 +37,7 @@ export default function createStore () {
         /**
          * vuex-persistedstate enabled in nuxt.config.js
          */
-    })
+    });
 }
 
 

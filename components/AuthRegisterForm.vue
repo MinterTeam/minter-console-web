@@ -27,16 +27,16 @@
                     username: '',
                     password: '',
                     passwordConfirm: '',
-                    email: '',
+                    // email: '',
                     phone: '',
                 },
                 sve: {
                     username: {invalid: false, isActual: false, message: ''},
                     password: {invalid: false, isActual: false, message: ''},
-                    email: {invalid: false, isActual: false, message: ''},
+                    // email: {invalid: false, isActual: false, message: ''},
                     phone: {invalid: false, isActual: false, message: ''},
                 },
-            }
+            };
         },
         validations: {
             form: {
@@ -56,16 +56,16 @@
                     required,
                     sameAsPassword: sameAs('password'),
                 },
-                email: {
-                    email,
-                    server: getServerValidator('email'),
-                },
+                // email: {
+                //     email,
+                //     server: getServerValidator('email'),
+                // },
                 phone: {
                     minLength: minLength(11),
                     maxLength: maxLength(13),
                     server: getServerValidator('phone'),
                 },
-            }
+            },
         },
         methods: {
             onAcceptUsername: makeAccepter('username', true),
@@ -94,15 +94,15 @@
                         }
                         this.isFormSending = false;
                     });
-            }
-        }
-    }
+            },
+        },
+    };
 </script>
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.username.$error}">
                     <InputMaskedName class="form-field__input" v-check-empty
                                      @accept="onAcceptUsername"
@@ -116,7 +116,7 @@
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ tt('Username is too long', 'index.auth-error-username-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <!--<div class="u-cell u-cell&#45;&#45;small&#45;&#45;1-2">
                 <label class="form-field" :class="{'is-error': $v.form.email.$error}">
                     <input class="form-field__input" type="email" v-check-empty
                            v-model="form.email"
@@ -127,7 +127,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.email">{{ tt('Not valid email', 'index.auth-error-email-invalid') }}</span>
                 <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.server">{{ sve.email.message }}</span>
-            </div>
+            </div>-->
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
                     <input class="form-field__input" type="password" v-check-empty

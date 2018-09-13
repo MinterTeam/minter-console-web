@@ -12,7 +12,7 @@
             return {
                 isMenuActive: false,
                 isDesktop: isDesktop(),
-            }
+            };
         },
         computed: {
             username() {
@@ -21,7 +21,7 @@
             },
         },
         watch: {
-            '$route' (to, from) {
+            '$route'(to, from) {
                 this.isMenuActive = false;
             },
         },
@@ -45,7 +45,7 @@
                 }
             },
         },
-    }
+    };
 
     function checkDesktop() {
         this.isDesktop = isDesktop();

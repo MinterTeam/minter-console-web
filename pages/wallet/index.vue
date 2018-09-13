@@ -22,7 +22,7 @@
                 meta: [
                     { hid: 'og-title', name: 'og:title', content: title },
                 ],
-            }
+            };
         },
         mounted() {
             balanceInterval = setInterval(() => {
@@ -32,7 +32,7 @@
         beforeDestroy() {
             clearInterval(balanceInterval);
         },
-    }
+    };
 </script>
 
 <template>

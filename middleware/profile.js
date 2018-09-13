@@ -1,6 +1,6 @@
 import {hasAuthToken} from "~/api/myminter";
 
-export default function ({app, store, redirect}) {
+export default function({app, store, redirect}) {
     if (process.server) {
         return Promise.resolve();
     }
@@ -20,7 +20,7 @@ export default function ({app, store, redirect}) {
                 } else {
                     throw resError;
                 }
-            })
+            });
     } else if (store.getters.isUserWithProfile) {
         // no auth token but password stored
         store.commit('LOGOUT');

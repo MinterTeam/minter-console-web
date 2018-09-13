@@ -5,7 +5,7 @@ import withParams from 'vuelidate/lib/withParams';
  * Возвращает валидатор, который проверяет наличие ошибки в this.sve
  * @param {string} fieldName
  */
-export const getServerValidator = (fieldName) => withParams({type: 'server'}, function () {
+export const getServerValidator = (fieldName) => withParams({type: 'server'}, function() {
     // function - чтобы withParams мог прибиндить контекст
     // нет актуальной серверной ошибки - true, есть ошибка - false
     return !(this.sve && this.sve[fieldName] && this.sve[fieldName].invalid && this.sve[fieldName].isActual);
@@ -64,7 +64,7 @@ export function getValidationError(error, startErrorText = 'Error: ') {
  * @returns {String}
  */
 export function getErrorText(error, startErrorText = 'Error: ') {
-    console.log(error)
+    console.log(error);
     if (error.response && error.response.data && (error.response.data.message || error.response.data.error || error.response.data.log)) {
         // server error
         return startErrorText + ((error.response.data.error && error.response.data.error.message) || error.response.data.message || error.response.data.log);

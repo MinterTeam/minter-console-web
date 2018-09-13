@@ -1,4 +1,4 @@
-export default ({ app }) => {
+export default function({ app }) {
     /*
     ** Only run on client-side and only in production mode
     */
@@ -24,5 +24,5 @@ export default ({ app }) => {
         if (typeof window.VK === 'object') {
             window.VK.Retargeting.Hit();
         }
-    })
+    });
 }

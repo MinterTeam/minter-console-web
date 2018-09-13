@@ -36,7 +36,7 @@
                     feeCoinSymbol: false,
                     message: '',
                 },
-            }
+            };
         },
         validations: {
             form: {
@@ -53,9 +53,9 @@
                 },
                 message: {
                     maxLength: maxLength(1024),
-                }
+                },
 
-            }
+            },
         },
         computed: {
             ...mapState({
@@ -84,15 +84,15 @@
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
                         }).catch((error) => {
-                            console.log(error)
+                            console.log(error);
                             this.isFormSending = false;
-                            this.serverError = getErrorText(error)
-                        })
+                            this.serverError = getErrorText(error);
+                        });
                     })
                     .catch((error) => {
                         this.isFormSending = false;
-                        this.serverError = getErrorText(error)
-                    })
+                        this.serverError = getErrorText(error);
+                    });
             },
             clearForm() {
                 this.form.address = '';
@@ -104,14 +104,14 @@
                 this.$v.$reset();
             },
             getTxUrl,
-        }
-    }
+        },
+    };
 </script>
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance.coinList && balance.coinList.length">
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.sellAmount.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
                            v-model.number="form.sellAmount"
@@ -121,7 +121,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.sellAmount.$dirty && !$v.form.sellAmount.required">{{ tt('Enter amount', 'form.amount-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinFrom"
@@ -134,7 +134,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field">
                     <InputUppercase class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.coinTo"
@@ -146,7 +146,7 @@
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ tt('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ tt('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
-            <div class="u-cell u-cell--1-2">
+            <div class="u-cell u-cell--small--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"

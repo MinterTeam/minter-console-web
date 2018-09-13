@@ -65,7 +65,7 @@ export function register(data) {
     return new Promise((resolve, reject) => {
         myminter.post('register', {
             ...userData,
-            mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true)
+            mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true),
         })
             .then(() => {
                 login(data)
@@ -98,7 +98,7 @@ export function login({username, password}) {
             return {
                 ...response.data.data,
                 password: passwordToStore,
-            }
+            };
         });
 }
 
@@ -137,7 +137,7 @@ export function putProfileAvatar(avatar) {
 export function postLinkConfirmation({id, code}) {
     const methodUrl = 'profile/link/' + id + '/confirm';
     return myminter.post(methodUrl, {
-        'code': code
+        'code': code,
     }).then((response) => response.data.data);
 }
 
@@ -229,7 +229,7 @@ export function getAddressInfo(params, cancelToken) {
             params,
             cancelToken,
         })
-        .then((response) => response.data.data)
+        .then((response) => response.data.data);
 }
 
 function makeFormData(data) {
@@ -246,7 +246,7 @@ function markSecured(address) {
     return {
         ...address,
         isServerSecured: true,
-    }
+    };
 }
 
 

@@ -25,7 +25,7 @@ export default {
     },
     wallet(state, getters) {
         if (getters.isUserAdvanced) {
-            return walletFromMnemonic(state.auth.advanced)
+            return walletFromMnemonic(state.auth.advanced);
         } else if (getters.isUserWithProfile && state.user.mainAddress && state.user.mainAddress.encrypted) {
             const profileMnemonic = decryptMnemonic(state.user.mainAddress.encrypted, state.auth.password);
             return walletFromMnemonic(profileMnemonic);
@@ -56,6 +56,6 @@ export default {
     },
     avatar(state) {
         return state.user && state.user.avatar && state.user.avatar.src;
-    }
+    },
 
-}
+};

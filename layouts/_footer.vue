@@ -14,7 +14,7 @@
                 return this.$i18n.locale || 'en';
             },
         },
-    }
+    };
 </script>
 
 <template>

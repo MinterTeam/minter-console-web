@@ -19,7 +19,7 @@ export function generateMnemonic() {
  * @return {boolean}
  */
 export function isValidMnemonic(mnemonic) {
-    return typeof mnemonic === 'string' && mnemonic.trim().split(/\s+/g).length >= 12 && bip39.validateMnemonic(mnemonic)
+    return typeof mnemonic === 'string' && mnemonic.trim().split(/\s+/g).length >= 12 && bip39.validateMnemonic(mnemonic);
 }
 
 export function addressFromMnemonic(mnemonic, isMain = false) {
@@ -46,11 +46,11 @@ export function addressEncryptedFromMnemonic(mnemonic, password, isMain = false)
 
 const MINTER_IV = prepareIV('Minter seed'); // 16 bytes, should be same on all clients
 export function encryptMnemonic(mnemonic, password) {
-    return aesEncrypt(mnemonic, password, MINTER_IV)
+    return aesEncrypt(mnemonic, password, MINTER_IV);
 }
 
 export function decryptMnemonic(encrypted, password) {
-    return aesDecrypt(encrypted, password, MINTER_IV)
+    return aesDecrypt(encrypted, password, MINTER_IV);
 }
 
 /**
@@ -130,7 +130,7 @@ export function removeEmptyKeys(obj) {
 export function makeAccepter(propName, isAcceptUnmasked) {
     return function(e) {
         this.form[propName] = isAcceptUnmasked ? e.detail._unmaskedValue : e.detail._value;
-    }
+    };
 }
 
 
@@ -162,13 +162,14 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
 
 // support
 export let support = {};
-support.passiveListener = (function () {
+support.passiveListener = (function() {
     let supportsPassive = false;
     try {
+        /* eslint getter-return: 0 */
         let opts = Object.defineProperty({}, 'passive', {
             get: function() {
                 supportsPassive = true;
-            }
+            },
         });
         window.addEventListener('testPassiveListener', null, opts);
     } catch (e) {}

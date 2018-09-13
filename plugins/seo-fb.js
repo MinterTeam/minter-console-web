@@ -1,4 +1,4 @@
-export default ({ app }) => {
+export default function({ app }) {
     /*
     ** Only run on client-side and only in production mode
     */
@@ -10,9 +10,9 @@ export default ({ app }) => {
         return;
     }
 
-    let windowFbq = window.fbq = function () {
+    let windowFbq = window.fbq = function() {
         windowFbq.callMethod ?
-            windowFbq.callMethod.apply(windowFbq, arguments) : windowFbq.queue.push(arguments)
+            windowFbq.callMethod.apply(windowFbq, arguments) : windowFbq.queue.push(arguments);
     };
     if (!window._fbq) {
         window._fbq = windowFbq;
@@ -39,5 +39,5 @@ export default ({ app }) => {
     */
     app.router.afterEach((to, from) => {
         fbq('track', 'PageView');
-    })
+    });
 }

@@ -8,7 +8,7 @@ export default {
     SET_AUTH_PROFILE: (state, {user, token, password}) => {
         state.auth.password = password;
         setAuthToken(token);
-        SET_PROFILE_USER(state, user)
+        SET_PROFILE_USER(state, user);
     },
     SET_AUTH_ADVANCED: (state, address) => {
         state.auth.advanced = address;
@@ -56,9 +56,9 @@ export default {
     SET_PREFERRED_LOCALE: (state, locale) => {
         state.preferredLocale = locale;
     },
-}
+};
 
-function SET_PROFILE_USER (state, profile) {
+function SET_PROFILE_USER(state, profile) {
     // save encrypted data on refresh
     if (!profile.mainAddress.encrypted && state.user.mainAddress && state.user.mainAddress.address === profile.mainAddress.address) {
         profile.mainAddress.encrypted = state.user.mainAddress.encrypted;

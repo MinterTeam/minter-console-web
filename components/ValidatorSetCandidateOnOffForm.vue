@@ -23,7 +23,7 @@
             formType: {
                 type: String,
                 required: true,
-            }
+            },
         },
         data() {
             const coinList = this.$store.state.balance.coinList;
@@ -36,7 +36,7 @@
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
-            }
+            };
         },
         validations: {
             form: {
@@ -49,9 +49,9 @@
                 },
                 message: {
                     maxLength: maxLength(1024),
-                }
+                },
 
-            }
+            },
         },
         computed: {
             ...mapState({
@@ -82,15 +82,15 @@
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
                         }).catch((error) => {
-                            console.log(error)
+                            console.log(error);
                             this.isFormSending = false;
-                            this.serverError = getErrorText(error)
-                        })
+                            this.serverError = getErrorText(error);
+                        });
                     })
                     .catch((error) => {
                         this.isFormSending = false;
-                        this.serverError = getErrorText(error)
-                    })
+                        this.serverError = getErrorText(error);
+                    });
             },
             clearForm() {
                 this.form.publicKey = '';
@@ -99,8 +99,8 @@
                 this.$v.$reset();
             },
             getTxUrl,
-        }
-    }
+        },
+    };
 </script>
 
 <template>

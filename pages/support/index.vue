@@ -13,9 +13,9 @@
                 meta: [
                     { hid: 'og-title', name: 'og:title', content: title },
                 ],
-            }
+            };
         },
-    }
+    };
 </script>
 
 <template>

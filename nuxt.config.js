@@ -23,7 +23,7 @@ module.exports = {
         link: [
             { rel: 'icon', href: '/favicon.png' },
             { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
-        ]
+        ],
     },
     css: [
         './static/css/style.min.css',
@@ -74,11 +74,11 @@ module.exports = {
                 messages: {
                     ru: langRu,
                     en: {},
-                }
+                },
             },
             seo: false,
             detectBrowserLanguage: false,
-        }]
+        }],
     ],
     /*
     ** Build configuration
@@ -97,14 +97,14 @@ module.exports = {
         /*
         ** Run ESLint on save
         */
-        extend (config, { isDev, isClient, isServer }) {
+        extend(config, { isDev, isClient, isServer }) {
             if (isDev && isClient) {
                 config.module.rules.push({
                     enforce: 'pre',
                     test: /\.(js|vue)$/,
                     loader: 'eslint-loader',
-                    exclude: /(node_modules)/
-                })
+                    exclude: /(node_modules)/,
+                });
             }
             /*
             ** process some node_modules through webpack in server build
@@ -112,10 +112,10 @@ module.exports = {
             if (isServer) {
                 config.externals = [
                     nodeExternals({
-                        whitelist: [/^date-fns\/esm/]
-                    })
-                ]
+                        whitelist: [/^date-fns\/esm/],
+                    }),
+                ];
             }
-        }
+        },
     },
 };

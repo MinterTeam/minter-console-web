@@ -1,7 +1,7 @@
-import createPersistedState from 'vuex-persistedstate'
+import createPersistedState from 'vuex-persistedstate';
 
 export default ({store}) => {
     createPersistedState({
         paths: ['auth'],
-    })(store)
-}
+    })(store);
+};

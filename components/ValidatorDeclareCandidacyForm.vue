@@ -40,7 +40,7 @@
                     message: '',
                 },
                 commissionFormatted: '0',
-            }
+            };
         },
         validations: {
             form: {
@@ -64,9 +64,9 @@
                 },
                 message: {
                     maxLength: maxLength(1024),
-                }
+                },
 
-            }
+            },
         },
         computed: {
             ...mapState({
@@ -104,15 +104,15 @@
                             this.serverSuccess = response.data.result.hash;
                             this.clearForm();
                         }).catch((error) => {
-                            console.log(error)
+                            console.log(error);
                             this.isFormSending = false;
-                            this.serverError = getErrorText(error)
-                        })
+                            this.serverError = getErrorText(error);
+                        });
                     })
                     .catch((error) => {
                         this.isFormSending = false;
-                        this.serverError = getErrorText(error)
-                    })
+                        this.serverError = getErrorText(error);
+                    });
             },
             clearForm() {
                 this.form.address = '';
@@ -125,8 +125,8 @@
                 this.$v.$reset();
             },
             getTxUrl,
-        }
-    }
+        },
+    };
 </script>
 
 <template>

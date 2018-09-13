@@ -1,6 +1,6 @@
 <script>
     import {mapState} from 'vuex';
-    import QrcodeVue from 'qrcode.vue'
+    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import {issueCheck} from 'minter-js-sdk/src/check';
@@ -34,7 +34,7 @@
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     passPhrase: '',
                 },
-            }
+            };
         },
         validations: {
             form: {
@@ -54,7 +54,7 @@
                     required,
                 },
 
-            }
+            },
         },
         computed: {
             ...mapState({
@@ -84,14 +84,14 @@
                             this.password = this.form.passPhrase;
                             this.clearForm();
                         } catch (error) {
-                            this.serverError = getErrorText(error)
+                            this.serverError = getErrorText(error);
                         }
                         this.isFormSending = false;
                     })
                     .catch((error) => {
                         this.isFormSending = false;
                         this.serverError = getErrorText(error);
-                    })
+                    });
             },
             clearForm() {
                 this.form.nonce = null;
@@ -100,9 +100,9 @@
                 this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.passPhrase = '';
                 this.$v.$reset();
-            }
-        }
-    }
+            },
+        },
+    };
 </script>
 
 <template>

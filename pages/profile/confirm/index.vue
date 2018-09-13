@@ -15,14 +15,14 @@
                 currentMessage: 'Waiting for profile data confirmation',
                 successMessage: 'Thank you for the confirmation!',
                 failMessage: 'Can\'t confirm this profile link',
-                isFailed: false
-            }
+                isFailed: false,
+            };
         },
         created() {
             if (this.$route.query.id && this.$route.query.code) {
                 postLinkConfirmation({
                     id: this.$route.query.id,
-                    code: this.$route.query.code
+                    code: this.$route.query.code,
                 }).then((result) => {
                     this.currentMessage = this.successMessage;
                 }).catch((error) => {
@@ -36,9 +36,9 @@
 
         },
         computed: {},
-        methods: {}
+        methods: {},
 
-    }
+    };
 </script>
 
 <template>

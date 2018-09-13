@@ -1,4 +1,4 @@
-export default ({ app }) => {
+export default function({ app }) {
     /*
     ** Only run on client-side and only in production mode
     */
@@ -6,14 +6,14 @@ export default ({ app }) => {
         return;
     }
 
-    (window["yandex_metrika_callbacks2"] = window["yandex_metrika_callbacks2"] || []).push(function () {
+    (window["yandex_metrika_callbacks2"] = window["yandex_metrika_callbacks2"] || []).push(function() {
         try {
             window.yaCounter49878307 = new Ya.Metrika2({
                 id: 49878307,
                 clickmap: false,
                 trackLinks: true,
                 accurateTrackBounce: true,
-                webvisor: false
+                webvisor: false,
             });
         } catch (e) {}
     });
@@ -33,5 +33,5 @@ export default ({ app }) => {
         if(typeof window.yaCounter49878307 === 'object') {
             window.yaCounter49878307.hit(to.fullPath);
         }
-    })
+    });
 }
