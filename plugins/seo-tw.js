@@ -6,11 +6,11 @@ export default function({ app }) {
         return;
     }
 
-    !function (s) {
+    !function(s) {
         if (window.twq) {
             return;
         }
-        let windowTwq = window.twq = function () {
+        let windowTwq = window.twq = function() {
             windowTwq.exe ? windowTwq.exe.apply(s, arguments) : windowTwq.queue.push(arguments);
         };
         windowTwq.version = '1.1';

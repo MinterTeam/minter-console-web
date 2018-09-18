@@ -72,7 +72,7 @@ export default {
         'username': 'Имя пользователя',
         'email': '',
         'address': 'Адрес',
-        'private-key': 'Приватынй ключ',
+        'private-key': 'Приватный ключ',
         'mnemonic': 'Мнемоническая фраза',
         'click-view': 'Показать',
     },
