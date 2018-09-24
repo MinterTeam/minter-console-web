@@ -69,17 +69,17 @@
                 </nuxt-link>
 
                 <div class="header__controls">
-                    <Language class="header__control-language"/>
                     <div class="header__user u-hidden-medium-down">
                         <nuxt-link class="button button--ghost-white" :to="getLocalePath('account')" v-if="username">{{ username }}</nuxt-link>
                         <button class="header__user-logout u-semantic-button" @click="logout">
                             <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
                         </button>
                     </div>
+                    <Language class="header__control-language"/>
                     <button class="header__offcanvas-button u-semantic-button u-hidden-medium-up" :class="{'is-active': isMenuActive}" @click="toggleMenu">
-                    <span class="header__offcanvas-icon-wrap">
-                        <span class="header__offcanvas-icon">Menu</span>
-                    </span>
+                        <span class="header__offcanvas-icon-wrap">
+                            <span class="header__offcanvas-icon">Menu</span>
+                        </span>
                     </button>
                 </div>
             </div>

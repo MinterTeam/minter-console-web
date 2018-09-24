@@ -76,10 +76,10 @@
 .header__logo {display: flex; align-items: center;}
 .header__logo-image {margin-right: 20px; margin-left: 2px; font-size: 0;}
 .header__logo-text {font-size: 20px; line-height: 1.25; white-space: nowrap;}
-.header__user {display: flex; align-items: center;}
+.header__user {display: flex; align-items: center; margin-right: 16px;}
 .header__user-logout {font-size: 0; margin-left: 16px;}
 .header__controls {display: flex; align-items: center;}
-.header__control-language {margin-right: 20px;}
+.header__control-language {}
 .header__language-button {font-size: 0; display: block;}
 .header__language-text {margin-right: 16px;}
 @media (min-width: @breakpoint-mini-up) {
@@ -91,7 +91,7 @@
 @menu-icon-size: 26px;
 @menu-icon-transition: .25s;
 @menu-icon-color: currentColor;
-.header__offcanvas-button { width: @menu-icon-size; height: @menu-icon-size; position: relative; text-align: center;}
+.header__offcanvas-button { width: @menu-icon-size; height: @menu-icon-size; position: relative; text-align: center; margin-left: 20px;}
 .header__offcanvas-icon-wrap {width: 40px; height: 40px; position: absolute; left: 50%; top: 50%; margin-top: -20px; margin-left: -20px;}
 .header__offcanvas-icon {
     transition: @menu-icon-transition; background: @menu-icon-color; position: absolute; height: 2px; width: @menu-icon-size; left: 50%; top: 50%; margin-left: -@menu-icon-size / 2; margin-top: -1px; font-size: 0;

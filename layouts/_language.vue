@@ -20,7 +20,9 @@
             this.mdcMenu = new MDCMenu(this.$el.querySelector('.mdc-menu'));
         },
         beforeDestroy() {
-            this.mdcMenu.destroy();
+            if (this.mdcMenu.destroy) {
+                this.mdcMenu.destroy();
+            }
         },
         methods: {
             switchLocaleCookie(localeCode) {

@@ -67,10 +67,12 @@ export default function({ app, req, res, route, store, redirect, isHMR }) {
         if (process.client) {
             Cookies.set(LANGUAGE_COOKIE_KEY, value, {
                 expires: new Date(date.setDate(date.getDate() + 365)),
+                domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
             });
         } else if (res) {
             const redirectCookie = cookie.serialize(LANGUAGE_COOKIE_KEY, value, {
                 expires: new Date(date.setDate(date.getDate() + 365)),
+                domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
             });
             res.setHeader('Set-Cookie', redirectCookie);
         }
