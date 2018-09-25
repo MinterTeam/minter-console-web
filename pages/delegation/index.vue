@@ -1,12 +1,14 @@
 <script>
     import getTitle from '~/assets/get-title';
-    import ValidatorDelegateUnbondForm from '~/components/ValidatorDelegateUnbondForm';
+    import ValidatorDelegateForm from '~/components/ValidatorDelegateForm';
+    import ValidatorUnbondForm from '~/components/ValidatorUnbondForm';
 
     let balanceInterval;
 
     export default {
         components: {
-            ValidatorDelegateUnbondForm,
+            ValidatorDelegateForm,
+            ValidatorUnbondForm,
         },
         fetch({ app, store }) {
             //@TODO fetch balance in middleware
@@ -47,7 +49,7 @@
                     {{ tt('You can delegate your tokens to validators and receive related payments in accordance with the terms of participation.', 'delegation.delegate-description') }}
                 </p>
             </div>
-            <ValidatorDelegateUnbondForm form-type="delegate"/>
+            <ValidatorDelegateForm/>
         </div>
         <div class="panel">
             <div class="panel__header">
@@ -58,7 +60,7 @@
                     {{ tt('In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 30 days after the request has been sent.', 'delegation.unbond-description') }}
                 </p>
             </div>
-            <ValidatorDelegateUnbondForm form-type="unbond"/>
+            <ValidatorUnbondForm/>
         </div>
     </section>
 </template>

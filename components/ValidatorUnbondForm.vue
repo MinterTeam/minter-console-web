@@ -2,15 +2,20 @@
     import {mapState} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {DelegateTxParams, UnbondTxParams} from "minter-js-sdk/src/validator";
+    import {UnbondTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic} from "minterjs-util";
     import {sendTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty} from "~/assets/utils";
+    import InputUppercase from '~/components/InputUppercase';
 
     export default {
+        components: {
+            InputUppercase,
+        },
         directives: {
             checkEmpty,
         },
@@ -18,12 +23,6 @@
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
-        },
-        props: {
-            formType: {
-                type: String,
-                required: true,
-            },
         },
         data() {
             const coinList = this.$store.state.balance.coinList;
@@ -34,8 +33,8 @@
                 form: {
                     publicKey: '',
                     stake: null,
-                    coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
-                    feeCoinSymbol: false,
+                    coinSymbol: '',
+                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
             };
@@ -50,6 +49,11 @@
                     required,
                 },
                 coinSymbol: {
+                    required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
+                },
+                feeCoinSymbol: {
                     required,
                 },
                 message: {
@@ -77,9 +81,7 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        const TxParams = this.formType === 'delegate' ? DelegateTxParams : UnbondTxParams;
-
-                        sendTx(new TxParams({
+                        sendTx(new UnbondTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                         })).then((response) => {
@@ -100,8 +102,8 @@
             clearForm() {
                 this.form.publicKey = '';
                 this.form.stake = null;
-                this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
-                this.form.feeCoinSymbol = false;
+                this.form.coinSymbol = '';
+                this.form.feeCoinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -135,29 +137,28 @@
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ tt('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--1-2 u-cell--xlarge--1-3">
-                <label class="form-field">
-                    <select class="form-field__input form-field__input--select" v-check-empty
-                            v-model="form.coinSymbol"
-                            @blur="$v.form.coinSymbol.$touch()"
-                    >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                            uppercase }} ({{ coin.amount | pretty }})</option>
-                    </select>
+                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
+                                    v-model.trim="form.coinSymbol"
+                                    @blur="$v.form.coinSymbol.$touch()"
+                    />
                     <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ tt('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ tt('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-3">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
+                            @blur="$v.form.feeCoinSymbol.$touch()"
                     >
-                        <option :value="false">{{ tt('Same as stake coin', 'form.masternode-fee-same') }}</option>
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                            uppercase }} ({{ coin.amount | pretty }})</option>
+                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                 </label>
+                <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -172,7 +173,7 @@
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ tt(formType === 'delegate' ? 'Delegate' : 'Unbond', `form.delegation-${formType}-button`) }}</span>
+                    <span class="button__content">{{ tt('Unbond', `form.delegation-unbond-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
@@ -184,7 +185,7 @@
             </div>
         </div>
         <div v-else>
-            {{ tt(`You don't have coins to ${formType}`, 'form.masternode-error') }}
+            {{ tt(`You don't have coins to unbond`, 'form.masternode-error') }}
         </div>
     </form>
 </template>
