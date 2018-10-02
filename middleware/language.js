@@ -12,7 +12,8 @@ export default function({ app, req, res, route, store, redirect, isHMR }) {
         return;
     }
 
-    if (isExecuted) {
+    // process only on first load
+    if (process.client && isExecuted) {
         return;
     }
     isExecuted = true;
@@ -20,22 +21,26 @@ export default function({ app, req, res, route, store, redirect, isHMR }) {
     // Helpers
     const locales = getLocaleCodes(app.i18n.locales);
     const preferredLocale = getCookie();
+    const isRootPath = route.path === '/';
 
-    if (preferredLocale && locales.indexOf(preferredLocale) !== -1) {
+    // redirect only on root page, on other pages just set current locale as preferred
+    if (isRootPath && preferredLocale && locales.indexOf(preferredLocale) !== -1) {
         return setLocale(preferredLocale);
-    } else if (DETECT_BROWSER) {
+    } else if (isRootPath && DETECT_BROWSER) {
         const browserLocale = getBrowserLocale();
         if (browserLocale && locales.indexOf(browserLocale) !== -1) {
-            setCookie(browserLocale);
             return setLocale(browserLocale);
         }
+    } else if (!isRootPath) {
+        return setLocale(app.i18n.locale);
     }
 
     // redirect to saved locale
     function setLocale(newLocale) {
+        setCookie(newLocale);
         store.commit('SET_PREFERRED_LOCALE', newLocale);
 
-        const baseRoute =  route && route.name && {name: app.getRouteBaseName(route)};
+        const baseRoute = route && route.name && {name: app.getRouteBaseName(route)};
         if (newLocale !== app.i18n.locale && baseRoute && app.hasLocalizedRoute(baseRoute, newLocale)) {
             return redirect(app.localePath(Object.assign({}, route, baseRoute), newLocale));
         }
@@ -69,10 +74,10 @@ export default function({ app, req, res, route, store, redirect, isHMR }) {
                 expires: new Date(date.setDate(date.getDate() + 365)),
                 domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
             });
-        } else if (res) {
+        } else if (res && req) {
             const redirectCookie = cookie.serialize(LANGUAGE_COOKIE_KEY, value, {
                 expires: new Date(date.setDate(date.getDate() + 365)),
-                domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
+                domain: req.headers.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
             });
             res.setHeader('Set-Cookie', redirectCookie);
         }

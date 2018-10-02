@@ -1,5 +1,6 @@
 <script>
     import {mapGetters} from 'vuex';
+    import getTitle from '~/assets/get-title';
     import AuthSignInForm from "~/components/AuthSignInForm";
     import AuthRegisterForm from "~/components/AuthRegisterForm";
     import AuthAdvancedForm from "~/components/AuthAdvancedForm";
@@ -22,6 +23,21 @@
             } else {
                 store.commit('SET_SECTION_NAME', '');
             }
+        },
+        head() {
+            const title = getTitle(null, this.$i18n.locale);
+            const description = this.tt('Minter Console is by far the most advanced part of our project that lets you manage all your activities on our test network.', 'index.seo-description');
+            const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
+
+            return {
+                title: title,
+                meta: [
+                    { hid: 'og-title', name: 'og:title', content: title },
+                    { hid: 'description', name: 'description', content: description },
+                    { hid: 'og-description', name: 'og:description', content: description },
+                    { hid: 'og-image', name: 'og:image', content: `/social-share${localeSuffix}.png` },
+                ],
+            };
         },
         data() {
             return {

@@ -7,20 +7,21 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                 .then(() => {
-                    console.log(app);
-                    window.aaa = app;
-                    console.log(this);
-                    window.ttt = this;
                     store.commit('SET_SECTION_NAME', app.tt('Account', 'common.page-account'));
                 });
         },
         head() {
-            const title = getTitle(this.$store.state.sectionName);
+            const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
+            const description = this.tt('Get your account information, such as username, address, private key, and seed phrase.', 'account.seo-description');
+            const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
                 title: title,
                 meta: [
                     { hid: 'og-title', name: 'og:title', content: title },
+                    { hid: 'description', name: 'description', content: description },
+                    { hid: 'og-description', name: 'og:description', content: description },
+                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-account${localeSuffix}.png` },
                 ],
             };
         },
@@ -70,13 +71,13 @@
                 <dt>{{ tt('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <span class="u-select-all" v-if="visiblePrivate">{{ privateKey }}</span>
-                    <span v-else><button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ tt('Click to view:', 'account.click-view') }}</button></span>
+                    <span v-else><button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ tt('Click to view', 'account.click-view') }}</button></span>
                 </dd>
 
                 <dt>{{ tt('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <span class="u-select-all"  v-if="visibleMnemonic">{{ mnemonic }}</span>
-                    <span v-else><button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ tt('Click to view:', 'account.click-view') }}</button></span>
+                    <span v-else><button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ tt('Click to view', 'account.click-view') }}</button></span>
                 </dd>
             </dl>
         </div>
