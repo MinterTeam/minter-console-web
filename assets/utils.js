@@ -165,8 +165,8 @@ export let support = {};
 support.passiveListener = (function() {
     let supportsPassive = false;
     try {
-        /* eslint getter-return: 0 */
         let opts = Object.defineProperty({}, 'passive', {
+            /* eslint-disable-next-line getter-return */
             get: function() {
                 supportsPassive = true;
             },

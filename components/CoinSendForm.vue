@@ -3,10 +3,10 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {SendCoinsTxParams} from "minter-js-sdk/src/coin";
+    import {SendTxParams} from "minter-js-sdk/src/coin";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidAddress} from "minterjs-util";
-    import {sendTx} from '~/api/minter-node';
+    import {postTx} from '~/api/minter-node';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty} from "~/assets/utils";
 
@@ -81,7 +81,7 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        sendTx(new SendCoinsTxParams({
+                        postTx(new SendTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                         })).then((response) => {

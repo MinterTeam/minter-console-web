@@ -5,7 +5,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic} from "minterjs-util";
-    import {sendTx} from '~/api/minter-node';
+    import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty} from "~/assets/utils";
@@ -74,7 +74,7 @@
                     .then(() => {
                         const TxParams = this.formType === 'on' ? SetCandidateOnTxParams : SetCandidateOffTxParams;
 
-                        sendTx(new TxParams({
+                        postTx(new TxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                         })).then((response) => {

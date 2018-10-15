@@ -4,7 +4,7 @@
     import {RedeemCheckTxParams} from "minter-js-sdk/src/check";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidCheck} from "minterjs-util";
-    import {sendTx} from '~/api/minter-node';
+    import {postTx} from '~/api/minter-node';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl} from "~/assets/utils";
     import {COIN_NAME} from "~/assets/variables";
@@ -54,7 +54,7 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        sendTx(new RedeemCheckTxParams({
+                        postTx(new RedeemCheckTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                             feeCoinSymbol: COIN_NAME,

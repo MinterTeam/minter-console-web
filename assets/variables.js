@@ -1,6 +1,6 @@
-export const BASE_TITLE_NETWORK = process.env.APP_ENV === 'production' ? 'Mainnet' : 'Testnet';
+export const BASE_TITLE_NETWORK = process.env.APP_ENV === 'production' ? '' : 'Testnet ';
 export const BASE_TITLE_END = ' — Minter';
-export const BASE_TITLE = BASE_TITLE_NETWORK + ' Console' + BASE_TITLE_END;
+export const BASE_TITLE = BASE_TITLE_NETWORK + 'Console' + BASE_TITLE_END;
 export const BASE_DESCRIPTION = 'Minter Console is by far the most advanced part of our project that lets you manage all your activities on our test network.';
 export const MYMINTER_API_URL = (process.env.APP_MYMINTER_URL || 'https://my.minter.network') + '/api/v1/';
 export const NETWORK = process.env.APP_ENV === 'production' ? 'mainnet' : 'testnet';

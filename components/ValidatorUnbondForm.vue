@@ -6,7 +6,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {UnbondTxParams} from "minter-js-sdk/src/validator";
     import {isValidPublic} from "minterjs-util";
-    import {sendTx} from '~/api/minter-node';
+    import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getTxUrl, pretty} from "~/assets/utils";
@@ -81,7 +81,7 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        sendTx(new UnbondTxParams({
+                        postTx(new UnbondTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                         })).then((response) => {
