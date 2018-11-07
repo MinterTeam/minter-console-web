@@ -45,9 +45,10 @@
  * @property {string} [mnemonic] - Stored mnemonic (if not isServerSecured)
  */
 
+import {generateMnemonic} from 'minterjs-wallet';
 import myminter from '~/api/myminter';
 import explorer from '~/api/explorer';
-import {generateMnemonic, getPasswordToSend, getPasswordToStore, addressEncryptedFromMnemonic} from "~/assets/utils";
+import {getPasswordToSend, getPasswordToStore, addressEncryptedFromMnemonic} from "~/assets/utils";
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 

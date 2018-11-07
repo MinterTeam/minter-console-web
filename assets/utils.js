@@ -1,4 +1,3 @@
-import bip39 from 'bip39';
 import {walletFromMnemonic} from 'minterjs-wallet';
 import ethUtil from 'ethereumjs-util';
 import aesjs from 'aes-js';
@@ -8,19 +7,6 @@ import toDate from "date-fns/esm/toDate";
 import format from "date-fns/esm/format";
 import {EXPLORER_URL} from "~/assets/variables";
 
-
-export function generateMnemonic() {
-    return bip39.generateMnemonic();
-}
-
-/**
- * Check that mnemonic phrase has 12 words and represents valid entropy
- * @param {string} mnemonic
- * @return {boolean}
- */
-export function isValidMnemonic(mnemonic) {
-    return typeof mnemonic === 'string' && mnemonic.trim().split(/\s+/g).length >= 12 && bip39.validateMnemonic(mnemonic);
-}
 
 export function addressFromMnemonic(mnemonic, isMain = false) {
     const wallet = walletFromMnemonic(mnemonic);
@@ -102,7 +88,7 @@ function getSha256Hex(value) {
 }
 
 /**
- * Get first letter fron name string
+ * Get first letter from name string
  * @param {string} name
  * @return {string}
  */

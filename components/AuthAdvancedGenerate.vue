@@ -1,5 +1,5 @@
 <script>
-    import {generateMnemonic} from "~/assets/utils";
+    import {generateMnemonic} from "minterjs-wallet";
     import * as clipboard from 'clipbrd';
 
     export default {

@@ -204,19 +204,19 @@
                     <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">{{ tt('Status', 'index.links-status') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://explorer.beta.minter.network" target="_blank">{{ tt('Explorer', 'index.links-explorer') }}</a>
+                    <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">{{ tt('Explorer', 'index.links-explorer') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
-                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank">API</a>
+                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank" rel="noopener">API</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/sdk.html" target="_blank">SDK</a>
+                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/sdk.html" target="_blank" rel="noopener">SDK</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
                     <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">{{ tt('Calculator', 'index.links-calculator') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://help.beta.minter.network" target="_blank">{{ tt('Help/FAQ', 'index.links-help') }}</a>
+                    <a class="services__link link--hover" href="https://help.minter.network" target="_blank">{{ tt('Help/FAQ', 'index.links-help') }}</a>
                 </li>
             </ul>
         </div>

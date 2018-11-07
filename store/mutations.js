@@ -6,19 +6,16 @@ export default {
         state.sectionName = sectionName;
     },
     SET_AUTH_PROFILE: (state, {user, token, password}) => {
+        LOGOUT(state);
         state.auth.password = password;
         setAuthToken(token);
         SET_PROFILE_USER(state, user);
     },
     SET_AUTH_ADVANCED: (state, address) => {
+        LOGOUT(state);
         state.auth.advanced = address;
     },
-    LOGOUT: (state) => {
-        state.user = {};
-        state.auth.password = null;
-        state.auth.advanced = null;
-        resetAuthToken();
-    },
+    LOGOUT,
     SET_PROFILE_USER,
     SET_PROFILE_ADDRESS: (state, address) => {
         Vue.set(state.user, 'mainAddress', address);
@@ -56,6 +53,13 @@ export default {
     SET_PREFERRED_LOCALE: (state, locale) => {
         state.preferredLocale = locale;
     },
+};
+
+function LOGOUT(state) {
+    state.user = {};
+    state.auth.password = null;
+    state.auth.advanced = null;
+    resetAuthToken();
 };
 
 function SET_PROFILE_USER(state, profile) {

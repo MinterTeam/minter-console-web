@@ -1,5 +1,5 @@
-import {walletFromMnemonic} from 'minterjs-wallet';
-import {getNameLetter, isValidMnemonic, decryptMnemonic} from "~/assets/utils";
+import {walletFromMnemonic, isValidMnemonic} from 'minterjs-wallet';
+import {getNameLetter, decryptMnemonic} from "~/assets/utils";
 
 export default {
     /**
