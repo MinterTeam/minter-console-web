@@ -99,14 +99,14 @@ module.exports = {
         ** Run ESLint on save
         */
         extend(config, { isDev, isClient, isServer }) {
-            if (isDev && isClient) {
-                config.module.rules.push({
-                    enforce: 'pre',
-                    test: /\.(js|vue)$/,
-                    loader: 'eslint-loader',
-                    exclude: /(node_modules)/,
-                });
-            }
+            // if (isDev && isClient) {
+            //     config.module.rules.push({
+            //         enforce: 'pre',
+            //         test: /\.(js|vue)$/,
+            //         loader: 'eslint-loader',
+            //         exclude: /(node_modules)/,
+            //     });
+            // }
             /*
             ** process some node_modules through webpack in server build
             */

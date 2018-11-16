@@ -6,7 +6,6 @@
         data() {
             return {
                 mnemonic: '',
-                isToastVisible: false,
             };
         },
         computed: {

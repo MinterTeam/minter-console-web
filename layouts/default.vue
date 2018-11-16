@@ -1,10 +1,12 @@
 <script>
     import {shortHashFilter, support} from "~/assets/utils";
+    import Snackbar from '~/components/Snackbar';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
     export default {
         components: {
+            Snackbar,
             Language,
             Footer,
         },
@@ -189,6 +191,8 @@
         </div>
 
         <Footer/>
+
+        <Snackbar/>
     </div>
 </template>
 
