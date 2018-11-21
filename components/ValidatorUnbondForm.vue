@@ -9,7 +9,7 @@
     import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
     import InputUppercase from '~/components/InputUppercase';
 
     export default {
@@ -66,6 +66,9 @@
             ...mapState({
                 balance: 'balance',
             }),
+            feeValue() {
+                return pretty(getFeeValue(100, this.form.message.length));
+            },
         },
         methods: {
             submit() {
@@ -107,7 +110,7 @@
                 this.form.message = '';
                 this.$v.$reset();
             },
-            getTxUrl,
+            getExplorerTxUrl,
         },
     };
 </script>
@@ -159,6 +162,7 @@
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
+                <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.state.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.state.COIN_NAME}) }}</div>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -181,7 +185,7 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">
-                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
         <div v-else>

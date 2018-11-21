@@ -22,11 +22,7 @@
         },
         computed: {
             coinList() {
-                let coinList = this.$store.state.balance.slice(0);
-                coinList.sort((a, b) => {
-                    return b.baseCoinAmount - a.baseCoinAmount;
-                });
-                return this.isFullListActive ? coinList : coinList.slice(0, 5);
+                return this.isFullListActive ? this.$store.state.balance : this.$store.state.balance.slice(0, 5);
             },
         },
         methods: {

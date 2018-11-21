@@ -60,7 +60,7 @@ function LOGOUT(state) {
     state.auth.password = null;
     state.auth.advanced = null;
     resetAuthToken();
-};
+}
 
 function SET_PROFILE_USER(state, profile) {
     // save encrypted data on refresh

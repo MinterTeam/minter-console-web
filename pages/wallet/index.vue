@@ -71,7 +71,7 @@
                 this.$store.dispatch('FETCH_BALANCE');
                 getTransactionList({address: this.address})
                     .then((txListInfo) => {
-                        this.txList = txListInfo.data
+                        this.txList = txListInfo.data;
                     });
             }, 10000);
         },

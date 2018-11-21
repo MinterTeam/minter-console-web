@@ -140,7 +140,9 @@ export function getTransactionList(params) {
  */
 export function getBalance(addressHash) {
     return explorer.get('address/' + addressHash)
-        .then((response) => response.data.data.coins);
+        .then((response) => response.data.data.coins.sort((a, b) => {
+            return b.baseCoinAmount - a.baseCoinAmount;
+        }));
 }
 
 

@@ -1,7 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
-    import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter} from '~/assets/utils';
-    import {TX_TYPES, EXPLORER_URL} from '~/assets/variables';
+    import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl} from '~/assets/utils';
+    import {TX_TYPES} from '~/assets/variables';
     import TableLink from '~/components/TableLink';
 
     export default {
@@ -81,18 +81,10 @@
                     return tx.data.value_to_buy;
                 }
             },
-            getExplorerBlockUrl(block) {
-                return EXPLORER_URL + '/blocks/' + block;
-            },
-            getExplorerTxUrl(hash) {
-                return EXPLORER_URL + '/transactions/' + hash;
-            },
-            getExplorerAddressUrl(address) {
-                return EXPLORER_URL + '/address/' + address;
-            },
-            getExplorerValidatorUrl(pubKey) {
-                return EXPLORER_URL + '/validator/' + pubKey;
-            },
+            getExplorerBlockUrl,
+            getExplorerTxUrl,
+            getExplorerAddressUrl,
+            getExplorerValidatorUrl,
         },
     };
 </script>

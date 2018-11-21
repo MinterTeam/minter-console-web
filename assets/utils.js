@@ -132,8 +132,20 @@ export function getTimeZone(timestamp) {
     return time && time !== 'Invalid Date' ? time : false;
 }
 
-export function getTxUrl(txHash) {
-    return EXPLORER_URL + '/transactions/' + txHash;
+export function getExplorerBlockUrl(block) {
+    return EXPLORER_URL + '/blocks/' + block;
+}
+
+export function getExplorerTxUrl(hash) {
+    return EXPLORER_URL + '/transactions/' + hash;
+}
+
+export function getExplorerAddressUrl(address) {
+    return EXPLORER_URL + '/address/' + address;
+}
+
+export function getExplorerValidatorUrl(pubKey) {
+    return EXPLORER_URL + '/validator/' + pubKey;
 }
 
 export function pretty(value) {
@@ -160,6 +172,21 @@ export function txTypeFilter(value) {
     value = value.toLowerCase(); // convert capitalized words to lower case
     value = value.charAt(0).toUpperCase() + value.slice(1); // capitalize the first letter
     return value;
+}
+
+export function getFeeValue(baseUnits, payloadLength, tickerLength) {
+    const TICKER_FEES = {
+        3: 1000000,
+        4: 100000,
+        5: 10000,
+        6: 1000,
+        7: 100,
+        8: 10,
+    };
+    const COIN_UNIT = 0.001;
+    const COIN_UNIT_PART = 1 / COIN_UNIT; // negate js math quirks, ex.: 18 * 0.001 = 0.018000000000000002
+    const tickerFee = TICKER_FEES[tickerLength] || 0; // value in base coin (not in units)
+    return (baseUnits + payloadLength * 2) / COIN_UNIT_PART + tickerFee;
 }
 
 

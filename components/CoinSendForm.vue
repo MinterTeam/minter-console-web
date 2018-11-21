@@ -8,7 +8,7 @@
     import {isValidAddress} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
-    import {getTxUrl, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty, getFeeValue} from "~/assets/utils";
     import Modal from '~/components/Modal';
 
     export default {
@@ -77,6 +77,9 @@
             ...mapState({
                 balance: 'balance',
             }),
+            feeValue() {
+                return pretty(getFeeValue(10, this.form.message.length));
+            },
         },
         methods: {
             submitConfirm() {
@@ -125,7 +128,7 @@
                 this.form.message = '';
                 this.$v.$reset();
             },
-            getTxUrl,
+            getExplorerTxUrl,
         },
     };
 </script>
@@ -195,6 +198,7 @@
                         </select>
                         <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                     </label>
+                    <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.state.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.state.COIN_NAME}) }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -227,7 +231,7 @@
                     <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
                 </div>
                 <div class="u-cell u-cell--order-2" v-if="serverSuccess">
-                    <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                    <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
             </div>
             <div v-else>

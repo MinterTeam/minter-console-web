@@ -6,7 +6,7 @@
     import {isValidCheck} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
     import {getErrorText} from "~/assets/server-error";
-    import {getTxUrl} from "~/assets/utils";
+    import {getExplorerTxUrl} from "~/assets/utils";
     import {COIN_NAME} from "~/assets/variables";
 
     export default {
@@ -78,7 +78,7 @@
                 this.form.password = '';
                 this.$v.$reset();
             },
-            getTxUrl,
+            getExplorerTxUrl,
         },
     };
 </script>
@@ -118,7 +118,7 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">
-                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
     </form>

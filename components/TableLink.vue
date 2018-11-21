@@ -61,7 +61,7 @@
                 }
 
                 return elData;
-            }
+            },
         },
         render(createElement) {
             return createElement(
