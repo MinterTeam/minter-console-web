@@ -121,7 +121,13 @@ export function makeAccepter(propName, isAcceptUnmasked) {
 
 
 export function getTimeStamp(timestamp) {
-    const time = format(toDate(timestamp), 'dd MMMM YYYY HH:mm:ss (O)');
+    const time = format(toDate(timestamp), 'dd MMM yyyy HH:mm:ss');
+
+    return time && time !== 'Invalid Date' ? time : false;
+}
+
+export function getTimeZone(timestamp) {
+    const time = format(toDate(timestamp), 'O');
 
     return time && time !== 'Invalid Date' ? time : false;
 }
@@ -131,7 +137,11 @@ export function getTxUrl(txHash) {
 }
 
 export function pretty(value) {
-    return decode(prettyNum(value, {precision: 4, thousandsSeparator: '&thinsp;'}));
+    if (value > 0.001 || value < -0.001) {
+        return decode(prettyNum(value, {precision: 4, rounding: 'fixed', thousandsSeparator: '&thinsp;'}));
+    } else {
+        return decode(prettyNum(value, {precision: 2, rounding: 'significant', thousandsSeparator: '&thinsp;'}));
+    }
 }
 
 export function shortHashFilter(value, endLength = 6, minLengthToShort) {
@@ -142,6 +152,14 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
 
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 
+}
+
+export function txTypeFilter(value) {
+    value = value.replace(/Data$/, ''); // remove "Data" from the end
+    value = value.replace( /([A-Z])/g, " $1" ); // add space before capital letters
+    value = value.toLowerCase(); // convert capitalized words to lower case
+    value = value.charAt(0).toUpperCase() + value.slice(1); // capitalize the first letter
+    return value;
 }
 
 

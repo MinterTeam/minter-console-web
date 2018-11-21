@@ -25,7 +25,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance.coinList;
+            const coinList = this.$store.state.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -119,7 +119,7 @@
                 this.form.publicKey = '';
                 this.form.commission = null;
                 this.form.stake = null;
-                this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
                 this.$v.$reset();
@@ -131,7 +131,7 @@
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
-        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance.coinList && balance.coinList.length">
+        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.address.$error}">
                     <input class="form-field__input" type="text" v-check-empty
@@ -171,7 +171,7 @@
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>
@@ -208,7 +208,7 @@
                             v-model="form.feeCoinSymbol"
                     >
                         <option :value="false">{{ tt('Same as stake coin', 'form.masternode-fee-same') }}</option>
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>

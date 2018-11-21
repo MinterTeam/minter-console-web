@@ -21,7 +21,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance.coinList;
+            const coinList = this.$store.state.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -97,7 +97,7 @@
                 this.form.nonce = null;
                 this.form.dueBlock = null;
                 this.form.value = null;
-                this.form.coinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.passPhrase = '';
                 this.$v.$reset();
             },
@@ -145,7 +145,7 @@
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>

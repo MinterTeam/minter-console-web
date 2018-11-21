@@ -26,7 +26,7 @@
             },
         },
         data() {
-            const coinList = this.$store.state.balance.coinList;
+            const coinList = this.$store.state.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -94,7 +94,7 @@
             },
             clearForm() {
                 this.form.publicKey = '';
-                this.form.feeCoinSymbol = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.message = '';
                 this.$v.$reset();
             },
@@ -123,7 +123,7 @@
                             v-model="form.feeCoinSymbol"
                             @blur="$v.form.feeCoinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>

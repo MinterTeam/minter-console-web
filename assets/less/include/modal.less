@@ -1,0 +1,34 @@
+@import "variables";
+
+@modal-padding-vertical: 60px;
+
+.modal {
+    display: flex; padding-top: @modal-padding-vertical; position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 15; overflow-x: hidden; background: rgba(0,0,0,0.8); color: #fff; transition: opacity 0.3s; -webkit-tap-highlight-color: transparent; outline: none; // outline can emit transitionEnd
+    button, a {-webkit-tap-highlight-color: initial; /* revert after .modal */}
+}
+//@supports (backdrop-filter: blur(10px)) {
+//    .modal {background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);}
+//}
+.v-transition-modal-enter {opacity: 0;}
+.v-transition-modal-leave-active {opacity: 0; transition: opacity 0.2s;}
+.modal__wrap {display: flex; width: 100%;}
+.modal__close {width: 40px; height: 40px; position: absolute; right: (16px - 7px); top: 11px; z-index: 3; font-size: 0;}
+.modal__close-icon {
+    &::before, &::after {content: ''; position: absolute; height: 4px; width: 28px; left: 50%; top: 50%; margin-left: -14px; margin-top: -2px; background: currentColor;}
+    &::before {transform: rotate(45deg);}
+    &::after {transform: rotate(-45deg);}
+}
+.modal__container {max-width: 450px; margin: auto; text-align: center; padding-bottom: @modal-padding-vertical;}
+.modal__title {margin-bottom: 10px;}
+.modal__text {max-width: 480px; margin: 0 auto 20px; &:last-child {margin-bottom: 0;}}
+
+@media (min-width: @breakpoint-small-up) {
+    .modal__close {right: (@container-padding - 7px);}
+}
+
+@media (min-width: @breakpoint-large-up) {
+    .modal__close {right: 64px; top: 64px;}
+    .modal__close-icon {
+        &::before, &::after {width: 36px; margin-left: -18px;}
+    }
+}

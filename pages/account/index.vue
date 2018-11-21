@@ -3,7 +3,6 @@
     import * as clipboard from 'clipbrd';
     import {SimpleSVG} from 'vue-simple-svg';
     import getTitle from '~/assets/get-title';
-    import {EXPLORER_URL} from '~/assets/variables';
 
     export default {
         components: {
@@ -41,15 +40,13 @@
                 'privateKey',
                 'mnemonic',
                 'address',
+                'addressUrl',
             ]),
             username() {
                 return this.$store.state.user.username;
             },
             email() {
                 return this.$store.state.user.email;
-            },
-            addressUrl() {
-                return EXPLORER_URL + '/address/' + this.address;
             },
             isClipboardSupported() {
                 return clipboard.isSupported();
@@ -84,7 +81,7 @@
 
                 <dt>{{ tt('Address:', 'account.address') }}</dt>
                 <dd class="u-icon-wrap">
-                    <a class="link--default" :href="addressUrl" target="_blank">{{ address }}</a>
+                    <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
                     <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
                             @click="copy(address)"
                             v-if="isClipboardSupported"
@@ -96,7 +93,7 @@
                 <dt>{{ tt('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
-                        <span class="u-select-all">{{ privateKey }}</span>
+                        <span class="u-select-all u-icon-text">{{ privateKey }}</span>
                         <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
                                 @click="copy(privateKey)"
                                 v-if="isClipboardSupported"
@@ -112,8 +109,7 @@
                 <dt>{{ tt('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
-                        <span class="u-select-all"></span>
-                        {{ mnemonic }}
+                        <span class="u-select-all u-icon-text">{{ mnemonic }}</span>
                         <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
                                 @click="copy(mnemonic)"
                                 v-if="isClipboardSupported"

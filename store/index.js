@@ -1,4 +1,5 @@
 import Vuex from 'vuex';
+import {COIN_NAME} from '~/assets/variables';
 
 import actions from './actions';
 import mutations from './mutations';
@@ -7,6 +8,7 @@ import getters from './getters';
 export default function createStore() {
     return new Vuex.Store({
         state: {
+            COIN_NAME,
             sectionName: '',
             auth: {
                 /** @type string|null - mnemonic */
@@ -20,9 +22,8 @@ export default function createStore() {
                 mainAddress: {},
             },
             userTimeStamp: 0,
-            balance: {
-                coinList: {},
-            },
+            /** @type Array<CoinItem> */
+            balance: [],
             // transactionListInfo: {
             //     data: [],
             //     meta: {},

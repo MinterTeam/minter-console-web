@@ -1,5 +1,5 @@
 <script>
-    import {MDCSnackbar} from '@material/snackbar';
+    import {MDCSnackbar} from '@material/snackbar/index';
     import {strings as snackbarStrings} from '@material/snackbar/constants';
 
     export default {

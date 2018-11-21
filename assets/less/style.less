@@ -7,6 +7,7 @@
 @import "include/utils";
 @import "include/general";
 @import "include/layout";
+@import "include/modal";
 
 
 
@@ -32,8 +33,9 @@
     .main-content__main {flex-grow: 2; width: calc(100% - 256px);}
 }
 .u-icon-wrap {display: flex; align-items: center;}
+.u-icon-text {flex: 0 1 auto; overflow-wrap: break-word; overflow: hidden;}
 .u-icon--copy {
-    display: inline-block; vertical-align: middle; margin-top: -2px; margin-bottom: -2px;
+    display: inline-block; vertical-align: middle; margin-top: -2px; margin-bottom: -2px; flex: 0 0 24px;
     svg {fill: currentColor; vertical-align: top;}
 }
 .u-icon--copy--right {margin-left: 16px;}
@@ -49,14 +51,17 @@
     &+& {margin-top: @grid-vertical-margin;}
 }
 .panel__section, .panel__header {
-    padding: 24px; border-bottom: 1px solid @c-border;
-    &:last-child {border-bottom: none;}
+    padding: 20px;
+    &+& {border-top: 1px solid @c-border;}
 }
 .panel-title() {font: inherit; font-weight: 700; text-transform: uppercase; margin: 0;}
-.panel__header {padding: 18px 24px; /*display: flex; justify-content: space-between; align-items: center;*/}
+.panel__header {padding-top: 18px; padding-bottom: 18px; /*display: flex; justify-content: space-between; align-items: center;*/}
 .panel__header-title {.panel-title(); display: flex; align-items: center;}
 .panel__header-title-icon {margin-right: 8px; margin-left: -8px; margin-top: -8px; margin-bottom: -8px;}
 .panel__header-description {margin-top: 4px;}
+@media (min-width: @breakpoint-small-up) {
+    .panel__section, .panel__header {padding-left: 24px; padding-right: 24px;}
+}
 
 
 .v-transition-fade-enter-active, .v-transition-fade-leave-active {
@@ -159,6 +164,23 @@
 .services__link {background: url(../img/minter-logo-circle.svg) no-repeat 0 50%; background-size: 24px; padding-left: 40px; display: inline-block; font-weight: 700; line-height: 24px;}
 @media (min-width: @breakpoint-small-up) {
     .services__item--next-row {order: 2;}
+}
+
+
+
+
+.wallet__info {background: #2C2C2C; color: #fff; }
+.wallet__value {font-size: 20px; line-height: 1.25; font-weight: 700; margin-top: 1px;}
+.wallet__address {display: flex; align-items: center; margin-bottom: 20px;}
+.wallet__address-icon {margin-right: 24px; flex-shrink: 0; margin-top: 4px;}
+.wallet__address-content {overflow: hidden;}
+.wallet__balance {flex-grow: 2;}
+.wallet__coin-icon {margin-right: 10px; margin-top: -6px; margin-bottom: -5px; border-radius: 50%; box-shadow: 0 1px 9px rgba(0,0,0,0.2); vertical-align: middle;}
+.wallet__coin-name {font-weight: 700; vertical-align: middle;}
+
+@media (min-width: @breakpoint-xlarge-up) {
+    .wallet__info {display: flex; justify-content: space-between;}
+    .wallet__address {flex-grow: 1; margin-right: 24px; margin-bottom: 0;}
 }
 
 

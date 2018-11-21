@@ -1,5 +1,5 @@
 <script>
-    import {MDCMenu} from '@material/menu';
+    import {MDCMenu} from '@material/menu/index';
     import Cookies from 'js-cookie';
     import {LANGUAGE_COOKIE_KEY} from '~/assets/variables';
 

@@ -24,7 +24,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance.coinList;
+            const coinList = this.$store.state.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -97,7 +97,7 @@
             clearForm() {
                 this.form.address = '';
                 this.form.buyAmount = null;
-                this.form.coinFrom = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinFrom = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.coinTo = '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
@@ -110,7 +110,7 @@
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
-        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance.coinList && balance.coinList.length">
+        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.buyAmount.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
@@ -140,7 +140,7 @@
                             v-model="form.coinFrom"
                             @blur="$v.form.coinFrom.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to spend', 'form.convert-buy-coin-spend') }}</span>
@@ -153,7 +153,7 @@
                             v-model="form.feeCoinSymbol"
                     >
                         <option :value="false">{{ tt('Same as coin to spend', 'form.convert-buy-fee-same') }}</option>
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>

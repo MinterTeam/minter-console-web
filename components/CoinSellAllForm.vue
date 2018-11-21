@@ -24,7 +24,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance.coinList;
+            const coinList = this.$store.state.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -91,7 +91,7 @@
             },
             clearForm() {
                 this.form.address = '';
-                this.form.coinFrom = this.balance.coinList && this.balance.coinList.length ? this.balance.coinList[0].coin : '';
+                this.form.coinFrom = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.coinTo = '';
                 this.form.message = '';
                 this.$v.$reset();
@@ -103,14 +103,14 @@
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
-        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance.coinList && balance.coinList.length">
+        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinFrom"
                             @blur="$v.form.coinFrom.$touch()"
                     >
-                        <option v-for="coin in balance.coinList" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to sell', 'form.convert-sell-coin-sell') }}</span>
