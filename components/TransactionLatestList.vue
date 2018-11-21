@@ -128,7 +128,7 @@
                         </td>
                         <!-- block -->
                         <td class="u-hidden-small-down">
-                            <TableLink :link-text="tx.block" :link-path="getExplorerBlockUrl(tx.block)"/>
+                            <TableLink :link-text="tx.block" :link-path="getExplorerBlockUrl(tx.block)" :should-not-shorten="true"/>
                         </td>
                         <!-- time -->
                         <td class="u-hidden-xlarge-down">{{ tx.timestamp | time }}</td>
