@@ -40,7 +40,7 @@ export default {
             return state.user.mainAddress ? state.user.mainAddress.address : '';
         }
     },
-    addressUrl(getters) {
+    addressUrl(state, getters) {
         return getExplorerAddressUrl(getters.address);
     },
     mnemonic(state, getters) {
