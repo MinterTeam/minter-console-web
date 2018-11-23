@@ -32,6 +32,11 @@
                     feeCoinSymbol: false,
                     message: '',
                 },
+                formAdvanced: {
+                    feeCoinSymbol: false,
+                    message: '',
+                },
+                isModeAdvanced: false,
             };
         },
         validations: {
@@ -92,12 +97,29 @@
                         this.serverError = getErrorText(error);
                     });
             },
+            switchToAdvanced() {
+                this.isModeAdvanced = true;
+                // restore advanced data
+                this.form.feeCoinSymbol = this.formAdvanced.feeCoinSymbol;
+                this.form.message = this.formAdvanced.message;
+            },
+            switchToSimple() {
+                this.isModeAdvanced = false;
+                // save advanced data
+                this.formAdvanced.feeCoinSymbol = this.form.feeCoinSymbol;
+                this.formAdvanced.message = this.form.message;
+                // clear advanced form
+                this.form.feeCoinSymbol = false;
+                this.form.message = '';
+            },
             clearForm() {
                 this.form.publicKey = '';
                 this.form.stake = null;
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
+                this.formAdvanced.feeCoinSymbol = false;
+                this.formAdvanced.message = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -108,7 +130,7 @@
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
-            <div class="u-cell">
+            <div class="u-cell u-cell--xlarge--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.publicKey.$error}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.publicKey"
@@ -119,7 +141,7 @@
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ tt('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ tt('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>
-            <div class="u-cell u-cell--1-2 u-cell--xlarge--1-3">
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
                            v-model.number="form.stake"
@@ -129,7 +151,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ tt('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--1-2 u-cell--xlarge--1-3">
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinSymbol"
@@ -142,7 +164,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--xlarge--1-3">
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
@@ -155,7 +177,7 @@
                 </label>
                 <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.state.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.state.COIN_NAME}) }}</div>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.message"
@@ -164,9 +186,17 @@
                     <span class="form-field__label">{{ tt('Message', 'form.message') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
-                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1&thinsp;024&nbsp;symbols.', 'form.message-help') }}</div>
+                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
+                <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
+                    {{ tt('Simple mode', 'form.toggle-simple-mode') }}
+                </button>
+                <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
+                    {{ tt('Advanced mode', 'form.toggle-advanced-mode') }}
+                </button>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ tt('Delegate', `form.delegation-delegate-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -175,7 +205,7 @@
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
-            <div class="u-cell" v-if="serverSuccess">
+            <div class="u-cell u-cell--order-2" v-if="serverSuccess">
                 <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>

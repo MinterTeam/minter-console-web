@@ -50,6 +50,11 @@
                     message: '',
                 },
                 crrFormatted: '',
+                formAdvanced: {
+                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
+                    message: '',
+                },
+                isModeAdvanced: false,
             };
         },
         validations: {
@@ -132,6 +137,21 @@
                         this.serverError = getErrorText(error);
                     });
             },
+            switchToAdvanced() {
+                this.isModeAdvanced = true;
+                // restore advanced data
+                this.form.feeCoinSymbol = this.formAdvanced.feeCoinSymbol;
+                this.form.message = this.formAdvanced.message;
+            },
+            switchToSimple() {
+                this.isModeAdvanced = false;
+                // save advanced data
+                this.formAdvanced.feeCoinSymbol = this.form.feeCoinSymbol;
+                this.formAdvanced.message = this.form.message;
+                // clear advanced form
+                this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
+                this.form.message = '';
+            },
             clearForm() {
                 this.form.coinName = '';
                 this.form.coinSymbol = '';
@@ -140,6 +160,8 @@
                 this.form.initialReserve = null;
                 this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.message = '';
+                this.formAdvanced.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
+                this.formAdvanced.message = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -220,7 +242,7 @@
                 <span class="form-field__error" v-else-if="$v.form.crr.$dirty && !$v.form.crr.between">{{ tt('CRR should be between 10 and 100', 'form.coiner-create-crr-error-between') }}</span>
                 <div class="form-field__help">{{ tt('CRR (Constant Reserve Ratio) reflects the volume of BIP reserves backing a newly issued coin. The higher the coefficient, the higher the reserves and thus the lower the volatility. And vice versa. The value should be integer and fall in the range from 10 to 100.', 'form.coiner-create-crr-help') }}</div>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
@@ -234,7 +256,7 @@
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
                 <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.state.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.state.COIN_NAME}) }}</div>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.message"
@@ -243,9 +265,17 @@
                     <span class="form-field__label">{{ tt('Message', 'form.message') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
-                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1&thinsp;024&nbsp;symbols.', 'form.message-help') }}</div>
+                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
             </div>
-            <div class="u-cell">
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
+                <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
+                    {{ tt('Simple mode', 'form.toggle-simple-mode') }}
+                </button>
+                <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
+                    {{ tt('Advanced mode', 'form.toggle-advanced-mode') }}
+                </button>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ tt('Create', 'form.coiner-create-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -254,10 +284,10 @@
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
-            <div class="u-cell" v-if="serverSuccess">
+            <div class="u-cell u-cell--order-2" v-if="serverSuccess">
                 <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
-            <div class="u-cell" v-if="$i18n.locale === 'en'">
+            <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'en'">
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
@@ -270,7 +300,7 @@
                     9-10 letters — only standard transaction fee <br>
                 </p>
             </div>
-            <div class="u-cell" v-if="$i18n.locale === 'ru'">
+            <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'ru'">
                 <p>Вы можете проверить как работает связь между выпуском, резером и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
                 <p>Комиссии на длину тикера:</p>
                 <p>

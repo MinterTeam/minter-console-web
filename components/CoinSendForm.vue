@@ -36,6 +36,10 @@
                     feeCoinSymbol: false,
                     message: '',
                 },
+                formAdvanced: {
+                    feeCoinSymbol: false,
+                    message: '',
+                },
                 sve: {
                     address: {invalid: false, isActual: false, message: ''},
                     amount: {invalid: false, isActual: false, message: ''},
@@ -46,8 +50,8 @@
                 isConfirmModalVisible: false,
             };
         },
-        validations() {
-            let form = {
+        validations: {
+            form: {
                 address: {
                     required,
                     validAddress: isValidAddress,
@@ -61,17 +65,11 @@
                     required,
                     server: getServerValidator('coinSymbol'),
                 },
-                message: {},
-            };
-
-            if (this.isModeAdvanced) {
-                form.message = {
+                message: {
                     maxLength: maxLength(1024),
                     server: getServerValidator('message'),
-                };
-            }
-
-            return {form};
+                },
+            },
         },
         computed: {
             ...mapState({
@@ -102,8 +100,6 @@
                         postTx(new SendTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                            feeCoinSymbol: this.isModeAdvanced ? this.form.feeCoinSymbol : false,
-                            message: this.isModeAdvanced ? this.form.message : '',
                         })).then((response) => {
                             this.isFormSending = false;
                             this.serverSuccess = response.data.result.hash;
@@ -119,13 +115,29 @@
                         this.serverError = getErrorText(error);
                     });
             },
-
+            switchToAdvanced() {
+                this.isModeAdvanced = true;
+                // restore advanced data
+                this.form.feeCoinSymbol = this.formAdvanced.feeCoinSymbol;
+                this.form.message = this.formAdvanced.message;
+            },
+            switchToSimple() {
+                this.isModeAdvanced = false;
+                // save advanced data
+                this.formAdvanced.feeCoinSymbol = this.form.feeCoinSymbol;
+                this.formAdvanced.message = this.form.message;
+                // clear advanced form
+                this.form.feeCoinSymbol = false;
+                this.form.message = '';
+            },
             clearForm() {
                 this.form.address = '';
                 this.form.amount = null;
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = false;
                 this.form.message = '';
+                this.formAdvanced.feeCoinSymbol = false;
+                this.formAdvanced.message = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -211,13 +223,13 @@
                     </label>
                     <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
                     <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.server">{{ sve.message.message }}</span>
-                    <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1&thinsp;024&nbsp;symbols.', 'form.message-help') }}</div>
+                    <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
-                    <button class="link--default u-semantic-button" type="button" @click="isModeAdvanced = false" v-if="isModeAdvanced">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
                         {{ tt('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
-                    <button class="link--default u-semantic-button" type="button" @click="isModeAdvanced = true" v-if="!isModeAdvanced">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
                         {{ tt('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
