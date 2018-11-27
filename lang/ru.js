@@ -98,6 +98,7 @@ export default {
         'sell-all-description': 'Указываем, какую монету хотим получить в обмен на все монеты определенного типа на&nbsp;балансе.',
         'buy-title': 'Покупка монет',
         'buy-description': 'Указываем, какую монету хотим получить и в каком количестве.',
+        'convert-title': 'Конвертация монет',
     },
     delegation: {
         'seo-description': 'Делегируйте свои токены, чтобы начать получать выплаты. Здесь вы также можете подать заявку на отзыв своих монет.',
@@ -209,12 +210,20 @@ export default {
         'convert-sell-button': 'Продать',
         'convert-sell-error': 'Нет монет для продажи',
 
+        'convert-sell-confirm-send': 'Вы отправляете',
+        'convert-sell-confirm-receive': 'Вы получите приблизительно *',
+
         'convert-buy-amount': 'Сколько покупаем',
         'convert-buy-coin-buy': 'Что покупаем',
         'convert-buy-coin-spend': 'Что тратим',
         'convert-buy-fee-same': 'Та же, которую тратим',
         'convert-buy-button': 'Купить',
         'convert-buy-error': 'Нет монет для траты',
+
+        'convert-buy-confirm-get': 'Вы покупаете',
+        'convert-buy-confirm-pay': 'Вы заплатите примерно *',
+
+        'convert-confirm-note': '* Итоговая сумма зависит от текущего курса непосредственно в момент обмена и может отличаться от представленной выше.',
 
         'masternode-address': 'Адрес',
         'masternode-address-help': 'Адрес владельца мастерноды, куда будет приходить&nbsp;награда',

@@ -3,7 +3,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src/validator";
+    import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src";
     import {isValidPublic} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
@@ -85,9 +85,9 @@
                         postTx(new TxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                        })).then((response) => {
+                        })).then((txHash) => {
                             this.isFormSending = false;
-                            this.serverSuccess = response.data.result.hash;
+                            this.serverSuccess = txHash;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error);

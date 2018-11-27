@@ -3,7 +3,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {SendTxParams} from "minter-js-sdk/src/coin";
+    import {SendTxParams} from "minter-js-sdk/src";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidAddress} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
@@ -100,9 +100,9 @@
                         postTx(new SendTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                        })).then((response) => {
+                        })).then((txHash) => {
                             this.isFormSending = false;
-                            this.serverSuccess = response.data.result.hash;
+                            this.serverSuccess = txHash;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error);
@@ -275,7 +275,7 @@
                                 <input class="form-field__input is-not-empty" type="text" readonly
                                        :value="form.address"
                                 >
-                                <span class="form-field__label">{{ tt('To the Address', 'form.wallet-send-confirm address') }}</span>
+                                <span class="form-field__label">{{ tt('To the Address', 'form.wallet-send-confirm-address') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">

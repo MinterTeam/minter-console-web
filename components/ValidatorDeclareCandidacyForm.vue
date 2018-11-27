@@ -4,7 +4,7 @@
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
-    import {DeclareCandidacyTxParams} from "minter-js-sdk/src/validator";
+    import {DeclareCandidacyTxParams} from "minter-js-sdk/src";
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import {postTx} from '~/api/minter-node';
@@ -107,9 +107,9 @@
                         postTx(new DeclareCandidacyTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                        })).then((response) => {
+                        })).then((txHash) => {
                             this.isFormSending = false;
-                            this.serverSuccess = response.data.result.hash;
+                            this.serverSuccess = txHash;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error);

@@ -5,7 +5,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
-    import {CreateCoinTxParams} from "minter-js-sdk/src/coin";
+    import {CreateCoinTxParams} from "minter-js-sdk/src";
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
@@ -122,9 +122,9 @@
                         postTx(new CreateCoinTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                        })).then((response) => {
+                        })).then((txHash) => {
                             this.isFormSending = false;
-                            this.serverSuccess = response.data.result.hash;
+                            this.serverSuccess = txHash;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error);

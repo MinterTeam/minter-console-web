@@ -1,7 +1,7 @@
 <script>
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
-    import {RedeemCheckTxParams} from "minter-js-sdk/src/check";
+    import {RedeemCheckTxParams} from "minter-js-sdk/src";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidCheck} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
@@ -58,9 +58,9 @@
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                             feeCoinSymbol: COIN_NAME,
-                        })).then((response) => {
+                        })).then((txHash) => {
                             this.isFormSending = false;
-                            this.serverSuccess = response.data.result.hash;
+                            this.serverSuccess = txHash;
                             this.clearForm();
                         }).catch((error) => {
                             console.log(error);

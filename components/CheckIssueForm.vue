@@ -3,7 +3,7 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
-    import {issueCheck} from 'minter-js-sdk/src/check';
+    import issueCheck from 'minter-js-sdk/src/issue-check';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
