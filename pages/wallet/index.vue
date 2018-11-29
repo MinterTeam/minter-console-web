@@ -1,10 +1,9 @@
 <script>
     import {mapGetters} from 'vuex';
-    import * as clipboard from 'clipbrd';
-    import {SimpleSVG} from 'vue-simple-svg';
     import {getTransactionList} from "~/api";
     import getTitle from '~/assets/get-title';
     import {pretty} from '~/assets/utils';
+    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';
@@ -13,7 +12,7 @@
 
     export default {
         components: {
-            'SimpleSvg': SimpleSVG,
+            ButtonCopyIcon,
             CoinSendForm,
             CoinList,
             TransactionLatestList,
@@ -62,9 +61,6 @@
                 'addressUrl',
                 'baseCoin',
             ]),
-            isClipboardSupported() {
-                return clipboard.isSupported();
-            },
         },
         mounted() {
             balanceInterval = setInterval(() => {
@@ -78,15 +74,6 @@
         beforeDestroy() {
             clearInterval(balanceInterval);
         },
-        methods: {
-            copy(str) {
-                const isCopied = clipboard.copy(str);
-                if (isCopied) {
-                    // show snackbar
-                    this.$store.commit('SET_SNACKBAR_ACTIVE');
-                }
-            },
-        },
     };
 </script>
 
@@ -99,12 +86,7 @@
                     <div>{{ tt('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
-                        <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
-                                @click="copy(address)"
-                                v-if="isClipboardSupported"
-                        >
-                            <SimpleSvg filepath="/img/icon-copy.svg" width="24px" height="24px"/>
-                        </button>
+                        <ButtonCopyIcon :copy-text="address"/>
                     </div>
                 </div>
             </div>

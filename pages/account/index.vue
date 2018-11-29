@@ -1,12 +1,11 @@
 <script>
     import {mapGetters} from 'vuex';
-    import * as clipboard from 'clipbrd';
-    import {SimpleSVG} from 'vue-simple-svg';
     import getTitle from '~/assets/get-title';
+    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
 
     export default {
         components: {
-            'SimpleSvg': SimpleSVG,
+            ButtonCopyIcon,
         },
         fetch({ app, store }) {
             return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
@@ -48,18 +47,6 @@
             email() {
                 return this.$store.state.user.email;
             },
-            isClipboardSupported() {
-                return clipboard.isSupported();
-            },
-        },
-        methods: {
-            copy(str) {
-                const isCopied = clipboard.copy(str);
-                if (isCopied) {
-                    // show snackbar
-                    this.$store.commit('SET_SNACKBAR_ACTIVE');
-                }
-            },
         },
     };
 </script>
@@ -82,24 +69,14 @@
                 <dt>{{ tt('Address:', 'account.address') }}</dt>
                 <dd class="u-icon-wrap">
                     <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
-                    <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
-                            @click="copy(address)"
-                            v-if="isClipboardSupported"
-                    >
-                        <SimpleSvg filepath="/img/icon-copy.svg" width="24px" height="24px"/>
-                    </button>
+                    <ButtonCopyIcon :copy-text="address"/>
                 </dd>
 
                 <dt>{{ tt('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
                         <span class="u-select-all u-icon-text">{{ privateKey }}</span>
-                        <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
-                                @click="copy(privateKey)"
-                                v-if="isClipboardSupported"
-                        >
-                            <SimpleSvg filepath="/img/icon-copy.svg" width="24px" height="24px"/>
-                        </button>
+                        <ButtonCopyIcon :copy-text="privateKey"/>
                     </div>
                     <div v-else>
                         <button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ tt('Click to view', 'account.click-view') }}</button>
@@ -110,12 +87,7 @@
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
                         <span class="u-select-all u-icon-text">{{ mnemonic }}</span>
-                        <button class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy"
-                                @click="copy(mnemonic)"
-                                v-if="isClipboardSupported"
-                        >
-                            <SimpleSvg filepath="/img/icon-copy.svg" width="24px" height="24px"/>
-                        </button>
+                        <ButtonCopyIcon :copy-text="mnemonic"/>
                     </div>
                     <div v-else>
                         <button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ tt('Click to view', 'account.click-view') }}</button>

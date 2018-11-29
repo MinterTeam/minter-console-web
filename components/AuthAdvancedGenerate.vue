@@ -1,28 +1,19 @@
 <script>
     import {generateMnemonic} from "minterjs-wallet";
-    import * as clipboard from 'clipbrd';
+    import ButtonCopy from '~/components/ButtonCopy';
 
     export default {
+        components: {
+            ButtonCopy,
+        },
         data() {
             return {
                 mnemonic: '',
             };
         },
-        computed: {
-            isClipboardSupported() {
-                return clipboard.isSupported();
-            },
-        },
         methods: {
             generate() {
                 this.mnemonic = generateMnemonic();
-            },
-            copyMnemonic() {
-                const isCopied = clipboard.copy(this.mnemonic);
-                if (isCopied) {
-                    // show snackbar
-                    this.$store.commit('SET_SNACKBAR_ACTIVE');
-                }
             },
         },
     };
@@ -36,7 +27,9 @@
             </div>
             <div class="u-cell" v-if="mnemonic">{{ mnemonic }}</div>
             <div class="u-cell" v-if="mnemonic">
-                <button class="button button--main button--full" v-if="isClipboardSupported" @click="copyMnemonic">{{ tt('Copy', 'index.auth-sign-up-seed-copy') }}</button>
+                <ButtonCopy class="button button--main button--full" :copy-text="mnemonic">
+                    {{ tt('Copy', 'index.auth-sign-up-seed-copy') }}
+                </ButtonCopy>
             </div>
         </div>
     </div>

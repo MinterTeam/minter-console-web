@@ -7,10 +7,12 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
+    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
 
     export default {
         components: {
             QrcodeVue,
+            ButtonCopyIcon,
         },
         directives: {
             checkEmpty,
@@ -169,7 +171,12 @@
             <div class="u-cell" v-if="check">
                 <dl>
                     <dt>{{ tt('Signed check:', 'form.checks-issue-result-check') }}</dt>
-                    <dd class="u-select-all">{{ check }}</dd>
+                    <dd class="u-icon-wrap">
+                        <span class="u-select-all u-icon-text">
+                            {{ check }}
+                        </span>
+                        <ButtonCopyIcon :copy-text="check"/>
+                    </dd>
 
                     <dt>{{ tt('Pass Phrase:', 'form.checks-issue-result-pass') }}</dt>
                     <dd class="u-select-all">{{ password }}</dd>
