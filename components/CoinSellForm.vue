@@ -4,7 +4,7 @@
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {SellTxParams} from "minter-js-sdk/src";
+    import SellTxParams from "minter-js-sdk/src/tx-params/convert-sell";
     import {postTx, estimateCoinSell} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -171,7 +171,7 @@
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                     <label class="form-field" :class="{'is-error': $v.form.sellAmount.$error}">
                         <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                               v-model.number="form.sellAmount"
+                               v-model="form.sellAmount"
                                @blur="$v.form.sellAmount.$touch()"
                         >
                         <span class="form-field__label">{{ tt('Sell amount', 'form.convert-sell-amount') }}</span>

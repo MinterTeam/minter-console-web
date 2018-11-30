@@ -3,7 +3,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {SendTxParams} from "minter-js-sdk/src";
+    import SendTxParams from "minter-js-sdk/src/tx-params/send";
     import checkEmpty from '~/assets/v-check-empty';
     import {isValidAddress} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
