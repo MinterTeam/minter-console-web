@@ -116,6 +116,9 @@ export default {
         'off-title': '«Выключение» мастерноды',
         'off-description': 'Если вы больше не хотите, чтобы ваша нода была в списке активных валидаторов, то заполните эту форму. Эту&nbsp;транзакцию можно произвести только с того аккаунта, с которого была декларирована&nbsp;нода.',
     },
+    multisig: {
+        'create-title': 'Создание Multisig',
+    },
     wallet: {
         'seo-description': 'Проводите транзакции в MNT и других монетах, выпущенных в Minter Testnet. Практически мгновенно и практически без комиссий.',
         'send-title': 'Отправка монет',
@@ -165,6 +168,7 @@ export default {
         'coin-error-min': 'Минимум 3 символа',
         'coin-error-max': 'Максимум 10 символов',
         'amount-error-required': 'Укажите количество',
+        'number-invalid': 'Укажите положительное целое число',
         'fee': 'Монета для оплаты комиссии',
         'fee-help': 'В эквиваленте {value} {coin}',
         'message': 'Сообщение',
@@ -244,6 +248,15 @@ export default {
         'masternode-off-button': '«Выключить» мастерноду',
         'delegation-delegate-button': 'Делегировать',
         'delegation-unbond-button': 'Отозвать',
+
+        'multisig-create-address': 'Адрес кошелька',
+        'multisig-create-weight': 'Вес голоса',
+        'multisig-create-weight-error-required': 'Укажите вес',
+        'multisig-create-remove-participant': 'Удалить адрес',
+        'multisig-create-add-participant': 'Добавить адрес',
+        'multisig-create-threshold': 'Порог',
+        'multisig-create-threshold-error-required': 'Укажите порог',
+        'multisig-create-threshold-error-max': 'Порог не должен превышать сумму всех весов',
 
         'coiner-create-name': 'Название монеты',
         'coiner-create-name-error-required': 'Укажите название',

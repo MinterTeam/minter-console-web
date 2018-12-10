@@ -15,6 +15,9 @@
             currentLocale() {
                 return this.$i18n.locales.find((locale) => locale.code === this.$i18n.locale);
             },
+            otherLocaleList() {
+                return this.$i18n.locales.filter((localeItem) => localeItem.code !== this.currentLocale.code);
+            },
         },
         mounted() {
             this.mdcMenu = new MDCMenu(this.$el.querySelector('.mdc-menu'));
@@ -51,11 +54,10 @@
                 </nuxt-link>
                 <!--list of other locales -->
                 <nuxt-link class="mdc-list-item"
-                           v-for="locale in $i18n.locales"
+                           v-for="locale in otherLocaleList"
                            :key="locale.code"
                            :to="switchLocalePath(locale.code)"
                            @click.native="switchLocaleCookie(locale.code)"
-                           v-if="locale.code !== currentLocale.code"
                 >
                     <span class="mdc-list-item__text header__language-text">{{ locale.name }}</span>
                     <img class="mdc-list-item__meta" :src="`/img/icon-flag-${locale.code}.png`" :srcset="`/img/icon-flag-${locale.code}@2x.png 2x`" alt="" width="24" height="24" role="presentation">

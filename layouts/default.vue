@@ -123,6 +123,14 @@
                                     {{ tt('Masternode', 'common.page-masternode') }}
                                 </nuxt-link>
                             </li>
+                            <!--
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="getLocalePath('multisignature')" @click.native="linkClick">
+                                    <img class="menu__icon" src="/img/icon-feature-multisignature.svg" alt="" role="presentation">
+                                    {{ tt('Multisignature', 'common.page-multisignature') }}
+                                </nuxt-link>
+                            </li>
+                            -->
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('coiner')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">

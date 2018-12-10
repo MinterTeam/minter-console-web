@@ -4,7 +4,7 @@
     export default {
         props: {
             linkText: {
-                type: String|Number,
+                type: [String, Number],
                 required: true,
             },
             linkPath: {

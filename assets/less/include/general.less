@@ -160,6 +160,11 @@ dd {overflow-wrap: break-word; margin: 0;}
     color: @c-main; background: #fff;
     &:active {background: shade(#fff, 10%);}
 }
+.button--ghost {
+    color: @c-black; background: transparent; border-color: @c-black;
+    &:hover, &:focus {color: #fff; background: @c-black;}
+    &:active {color: #fff; background: shade(@c-black, 10%);}
+}
 .button--ghost-main {
     color: @c-main; background: transparent; border-color: @c-main;
     &:hover, &:focus {color: #fff; background: @c-main;}

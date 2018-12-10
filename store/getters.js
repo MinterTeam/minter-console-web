@@ -1,5 +1,6 @@
 import {walletFromMnemonic, isValidMnemonic} from 'minterjs-wallet';
-import {getNameLetter, decryptMnemonic, getExplorerAddressUrl} from "~/assets/utils";
+import {decryptMnemonic} from 'minter-js-org';
+import {getNameLetter, getExplorerAddressUrl} from "~/assets/utils";
 import {COIN_NAME} from '~/assets/variables';
 
 export default {

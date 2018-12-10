@@ -11,7 +11,7 @@ export default {
             .then((profile) => commit('SET_PROFILE_USER', profile));
     },
     FETCH_ADDRESS_ENCRYPTED: ({ state, commit, getters }) => {
-        if (getters.isUserAdvanced) {
+        if (getters.isUserAdvanced || state.user.mainAddress.encrypted) {
             return Promise.resolve();
         }
         // profile address fetched in the middleware

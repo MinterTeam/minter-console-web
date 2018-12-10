@@ -1,7 +1,7 @@
 import {generateMnemonic} from 'minterjs-wallet';
+import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} from 'minter-js-org';
 import myminter from '~/api/myminter';
 import explorer from '~/api/explorer';
-import {getPasswordToSend, getPasswordToStore, addressEncryptedFromMnemonic} from "~/assets/utils";
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
