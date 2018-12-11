@@ -266,7 +266,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="form.sellAmount + ' ' + form.coinFrom"
+                                       :value="$options.filters.pretty(form.sellAmount) + ' ' + form.coinFrom"
                                 >
                                 <span class="form-field__label">{{ tt('You will send', 'form.convert-sell-confirm-send') }}</span>
                             </label>

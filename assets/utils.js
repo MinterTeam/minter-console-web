@@ -79,9 +79,13 @@ export function pretty(value) {
     }
 }
 
-//@TODO ensure prettyExact to have minimum 4 decimal digits
+/**
+ * Ensure value to have minimum 4 decimal digits
+ * @param {string|number} value
+ * @return {string}
+ */
 export function prettyExact(value) {
-    return decode(prettyNum(value, {thousandsSeparator: '&thinsp;'}));
+    return decode(prettyNum(value, {precision: 4, rounding: 'increase', thousandsSeparator: '&thinsp;'}));
 }
 
 /**

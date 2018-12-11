@@ -39,7 +39,7 @@
     "minterjs-wallet": "^2.2.1",
     "nuxt": "^2.3.4",
     "nuxt-i18n": "^5.4.4",
-    "pretty-num": "0.1.1",
+    "pretty-num": "^0.2.1",
     "qrcode.vue": "^1.6.1",
     "v-autosize": "^1.0.0",
     "vue-autonumeric": "^1.2.6",

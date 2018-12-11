@@ -268,7 +268,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="form.buyAmount + ' ' + form.coinTo"
+                                       :value="$options.filters.pretty(form.buyAmount) + ' ' + form.coinTo"
                                 >
                                 <span class="form-field__label">{{ tt('You buy', 'form.convert-buy-confirm-get') }}</span>
                             </label>
