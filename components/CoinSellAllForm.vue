@@ -8,7 +8,7 @@
     import {postTx, estimateCoinSell} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import InputUppercase from '~/components/InputUppercase';
     import Modal from '~/components/Modal';
 
@@ -23,6 +23,7 @@
         mixins: [validationMixin],
         filters: {
             pretty,
+            prettyExact,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
@@ -232,7 +233,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="sellAmount + ' ' + form.coinFrom"
+                                       :value="$options.filters.prettyExact(sellAmount) + ' ' + form.coinFrom"
                                 >
                                 <span class="form-field__label">{{ tt('You will send', 'form.convert-sell-confirm-send') }}</span>
                             </label>
