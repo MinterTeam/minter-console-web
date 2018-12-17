@@ -1,4 +1,6 @@
 <script>
+    // Uni8Array.fill needed for wallet
+    import 'core-js/modules/es6.typed.uint8-array';
     import {generateMnemonic} from "minterjs-wallet";
     import ButtonCopy from '~/components/ButtonCopy';
 

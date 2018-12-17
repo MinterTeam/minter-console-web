@@ -1,3 +1,5 @@
+// Uni8Array.fill needed for wallet
+import 'core-js/modules/es6.typed.uint8-array';
 import {generateMnemonic} from 'minterjs-wallet';
 import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} from 'minter-js-org';
 import myminter from '~/api/myminter';

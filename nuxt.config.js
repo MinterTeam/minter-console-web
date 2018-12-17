@@ -1,5 +1,6 @@
-const nodeExternals = require('webpack-node-externals');
-const dotenv = require('dotenv');
+// const nodeExternals = require('webpack-node-externals');
+// const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 const envConfig = dotenv.config();
 
@@ -49,6 +50,7 @@ module.exports = {
         { src: '~/plugins/seo-fb.js', ssr: false },
         { src: '~/plugins/seo-vk.js', ssr: false },
         { src: '~/plugins/seo-tw.js', ssr: false },
+        { src: '~/plugins/classlist-svg-polyfill.js', ssr: false },
         '~/plugins/translate.js',
         '~/plugins/get-locale-path.js',
     ],
@@ -93,30 +95,46 @@ module.exports = {
         // },
         watch: [
             './api/',
-            `./lang/`,
+            // `./lang/`, // this watcher dont-work yet
         ],
         /*
         ** Run ESLint on save
         */
-        extend(config, { isDev, isClient, isServer }) {
-            // if (isDev && isClient) {
-            //     config.module.rules.push({
-            //         enforce: 'pre',
-            //         test: /\.(js|vue)$/,
-            //         loader: 'eslint-loader',
-            //         exclude: /(node_modules)/,
-            //     });
-            // }
-            /*
-            ** process some node_modules through webpack in server build
-            */
-            if (isServer) {
-                config.externals = [
-                    nodeExternals({
-                        whitelist: [/^date-fns\/esm/],
-                    }),
-                ];
-            }
-        },
+        // extend(config, { isDev, isClient, isServer }) {
+        //     // if (isDev && isClient) {
+        //     //     config.module.rules.push({
+        //     //         enforce: 'pre',
+        //     //         test: /\.(js|vue)$/,
+        //     //         loader: 'eslint-loader',
+        //     //         exclude: /(node_modules)/,
+        //     //     });
+        //     // }
+        //     /*
+        //     ** process some node_modules through webpack in server build
+        //     */
+        //     if (isServer) {
+        //         config.externals = [
+        //             nodeExternals({
+        //                 whitelist: [/^date-fns\/esm/, /^minterjs-util\/src/],
+        //             }),
+        //         ];
+        //     }
+        // },
+        transpile: [
+            /es6-promise|\.(?!(?:js|json)$).{1,5}$/i,
+            '@material/',
+            'date-fns/esm',
+            'lodash-es',
+            // 'nuxt-i18n/src',
+            'v-autosize/src',
+            'clipbrd/src',
+            'pretty-num/src',
+            'from-exponential/src',
+            'minterjs-util/src',
+            'minterjs-tx/src',
+            'minterjs-wallet/src',
+            'minter-js-sdk/src',
+            'minter-js-org/src',
+        ],
     },
 };

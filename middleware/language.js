@@ -1,7 +1,27 @@
 import cookie from 'cookie';
 import Cookies from 'js-cookie';
-import {getLocaleCodes} from 'nuxt-i18n/src/helpers/utils';
+// import {getLocaleCodes} from 'nuxt-i18n/src/helpers/utils';
+// let {getLocaleCodes} = require('nuxt-i18n/src/helpers/utils')
 import {LANGUAGE_COOKIE_KEY} from '~/assets/variables';
+
+// reimplement getLocaleCodes from nuxt-i18n/src/helpers/utils, because nuxt's `transpile` breaks moduels
+const LOCALE_CODE_KEY = 'code';
+const getLocaleCodes = (locales = []) => {
+    if (locales.length) {
+        // If first item is a sting, assume locales is a list of codes already
+        if (typeof locales[0] === 'string') {
+            return locales;
+        }
+        // Attempt to get codes from a list of objects
+        if (typeof locales[0][LOCALE_CODE_KEY] === 'string') {
+            return locales.map((locale) => locale[LOCALE_CODE_KEY]);
+        }
+    }
+    return [];
+};
+
+
+
 
 const DETECT_BROWSER = false;
 

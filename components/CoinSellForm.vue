@@ -50,6 +50,8 @@
         validations: {
             form: {
                 sellAmount: {
+                    //@TODO maxValue
+                    //@TODO validAmount
                     required,
                 },
                 coinFrom: {
