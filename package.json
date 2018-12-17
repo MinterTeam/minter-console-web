@@ -7,9 +7,9 @@
   "scripts": {
     "prod": "npm run production",
     "production": "npm run build",
-    "dev": "gulp & nuxt --spa --port=3002 --hostname=192.168.61.1",
+    "dev": "gulp & nuxt --spa --port=3002 --hostname=192.168.1.152",
     "build": "gulp once && nuxt build --spa",
-    "start": "nuxt start --spa --port=3002 --hostname=192.168.61.1",
+    "start": "nuxt start --spa --port=3002 --hostname=192.168.1.152",
     "generate": "nuxt generate",
     "analyze": "gulp once && nuxt build --spa --analyze",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
