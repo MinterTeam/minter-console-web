@@ -73,7 +73,7 @@
                 <div class="header__controls">
                     <div class="header__user u-hidden-medium-down">
                         <nuxt-link class="button button--ghost-white" :to="getLocalePath('account')" v-if="username">{{ username }}</nuxt-link>
-                        <button class="header__user-logout u-semantic-button" @click="logout">
+                        <button class="header__user-logout u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
                             <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
                         </button>
                     </div>
@@ -162,7 +162,7 @@
                                     <img class="menu__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
                                     <span class="menu__user-name">{{ $store.state.user.username || tt('Account', 'common.page-account') }}</span>
                                 </nuxt-link>
-                                <button class="menu__user-logout u-semantic-button u-hidden-medium-up" @click="logout">
+                                <button class="menu__user-logout u-semantic-button u-hidden-medium-up" data-test-id="headerLogoutButton" @click="logout">
                                     <img class="" src="/img/icon-auth-logout-menu.svg" alt="Logout">
                                 </button>
                             </li>

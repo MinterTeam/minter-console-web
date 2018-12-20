@@ -14,7 +14,7 @@
         data() {
             return {
                 imaskNameOptions: {
-                    mask: /^@\w*$/,
+                    mask: /^@[a-zA-Z0-9]*$/,
                     prepare: (char, masked) => {
                         if (char && char !== '@' && !masked._value.length) {
                             return '@' + char;

@@ -93,11 +93,6 @@ module.exports = {
         //         name: true
         //     }
         // },
-        babel: {
-            presets: ['@nuxt/babel-preset-app'],
-            // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
-            sourceType: 'unambiguous',
-        },
         watch: [
             './api/',
             // `./lang/`, // this watcher dont-work yet
@@ -125,6 +120,11 @@ module.exports = {
         //         ];
         //     }
         // },
+        babel: {
+            presets: ['@nuxt/babel-preset-app'],
+            // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
+            sourceType: 'unambiguous',
+        },
         transpile: [
             /es6-promise|\.(?!(?:js|json)$).{1,5}$/i,
             '/base-x/',

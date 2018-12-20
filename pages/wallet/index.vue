@@ -85,7 +85,7 @@
                 <div class="wallet__address-content">
                     <div>{{ tt('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
-                        <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
+                        <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
                         <ButtonCopyIcon :copy-text="address"/>
                     </div>
                 </div>

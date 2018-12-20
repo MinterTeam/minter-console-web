@@ -7,6 +7,7 @@
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import checkEmpty from '~/assets/v-check-empty';
     import {makeAccepter} from "~/assets/utils";
+    import {USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH} from '~/assets/variables';
     import InputMaskedName from '~/components/InputMaskedName';
 
     export default {
@@ -37,14 +38,14 @@
             form: {
                 username: {
                     required,
-                    minLength: minLength(5),
-                    maxLength: maxLength(32),
+                    minLength: minLength(USERNAME_MIN_LENGTH),
+                    maxLength: maxLength(USERNAME_MAX_LENGTH),
                     server: getServerValidator('username'),
                 },
                 password: {
                     required,
-                    minLength: minLength(6),
-                    maxLength: maxLength(100),
+                    minLength: minLength(PASSWORD_MIN_LENGTH),
+                    maxLength: maxLength(PASSWORD_MAX_LENGTH),
                     server: getServerValidator('password'),
                 },
             },
@@ -85,7 +86,7 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.username.$error}">
-                    <InputMaskedName class="form-field__input" v-check-empty
+                    <InputMaskedName class="form-field__input" v-check-empty data-test-id="authLoginInputName"
                                      @accept="onAcceptUsername"
                                      @blur.native="$v.form.username.$touch()"
                                      @input.native="sve.username.isActual = false"
@@ -99,7 +100,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
-                    <input class="form-field__input" type="password" v-check-empty
+                    <input class="form-field__input" type="password" v-check-empty data-test-id="authLoginInputPassword"
                            v-model="form.password"
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
@@ -112,7 +113,7 @@
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button class="button button--main button--full" data-test-id="authLoginSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ tt('Sign In', 'index.auth-sign-in-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>

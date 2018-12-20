@@ -22,3 +22,8 @@ export const TX_TYPES = {
     SET_CANDIDATE_ONLINE: 'setCandidateOnData',
     SET_CANDIDATE_OFFLINE: 'setCandidateOffData',
 };
+export const USERNAME_MIN_LENGTH = 5;
+export const USERNAME_MAX_LENGTH = 16;
+export const PASSWORD_MIN_LENGTH = 6;
+export const PASSWORD_MAX_LENGTH = 100;
+

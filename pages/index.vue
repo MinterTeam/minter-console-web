@@ -69,7 +69,7 @@
 
 <template>
     <main>
-        <div class="auth u-section">
+        <div class="auth u-section" data-test-id="authSection">
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
                     <div class="u-cell u-cell--medium--1-2">
