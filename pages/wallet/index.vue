@@ -92,7 +92,7 @@
             </div>
             <div class="wallet__balance">
                 <div>{{ tt('Your balance:', 'wallet.balance') }}</div>
-                <div class="wallet__value">
+                <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.state.COIN_NAME }}
                 </div>
             </div>

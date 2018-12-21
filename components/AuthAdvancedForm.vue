@@ -52,7 +52,7 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.mnemonic.$error, 'is-success': !$v.mnemonic.$invalid}">
-                    <textarea class="form-field__input" rows="1" v-check-empty v-autosize
+                    <textarea class="form-field__input" rows="1" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
                               v-model="mnemonic"
                               @blur="$v.mnemonic.$touch()"
                     ></textarea>
@@ -62,7 +62,7 @@
                 <span class="form-field__error" v-if="$v.mnemonic.$dirty && $v.mnemonic.required && !$v.mnemonic.validMnemonic">{{ tt('Invalid phrase', 'index.auth-error-seed-invalid') }}</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">{{ tt('Sign In', 'index.auth-sign-in-seed-button') }}</button>
+                <button class="button button--main button--full" data-test-id="authAdvancedLoginSubmitButton" :class="{'is-disabled': $v.$invalid}">{{ tt('Sign In', 'index.auth-sign-in-seed-button') }}</button>
             </div>
         </div>
     </form>

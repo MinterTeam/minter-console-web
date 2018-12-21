@@ -6,7 +6,7 @@ import {Nuxt} from '@nuxt/core';
 import {Builder} from '@nuxt/builder';
 import {USERNAME_MAX_LENGTH} from '~/assets/variables';
 
-// process.env.DEBUG = true;
+process.env.DEBUG = true;
 // process.env.NUXT_SKIP_SELF_BUILD = true;
 
 
@@ -31,6 +31,8 @@ const user = {
     username: faker.internet.userName().substr(0, USERNAME_MAX_LENGTH),
     password: '123123',
 };
+
+const advancedUser = 'exercise fantasy smooth enough arrive steak demise donkey true employ jealous decide blossom bind someone';
 
 /** @type Nuxt */
 let nuxt;
@@ -80,16 +82,19 @@ afterAll(() => {
 
 
 
-describe('private routes', () => {
+describe('private routes redirect', () => {
     test('redirects to auth form when logged out', async() => {
         await page.goto(routes.private.wallet);
         await page.waitForSelector('[data-test-id="authSection"]');
     });
 });
 
-describe('index page', () => {
-    test('has auth section', async() => {
+describe('index page', async() => {
+    beforeAll(async() => {
         await page.goto(routes.public.index);
+    });
+
+    test('has auth section', async() => {
         await page.waitForSelector('[data-test-id="authSection"]');
     });
 
@@ -98,7 +103,9 @@ describe('index page', () => {
         await page.type('[data-test-id="authRegisterInputName"]', user.username);
         await page.type('[data-test-id="authRegisterInputPassword"]', user.password);
         await page.type('[data-test-id="authRegisterInputPasswordRepeat"]', user.password);
+        // submit
         await page.click('[data-test-id="authRegisterSubmitButton"]');
+        // wait for redirect to wallet
         await page.waitForSelector('[data-test-id="walletAddressLink"]');
     }, 30000);
 
@@ -111,7 +118,9 @@ describe('index page', () => {
     test('login and redirect to wallet', async() => {
         await page.type('[data-test-id="authLoginInputName"]', user.username);
         await page.type('[data-test-id="authLoginInputPassword"]', user.password);
+        // submit
         await page.click('[data-test-id="authLoginSubmitButton"]');
+        // wait for redirect to wallet
         await page.waitForSelector('[data-test-id="walletAddressLink"]');
     }, 30000);
 
@@ -120,55 +129,70 @@ describe('index page', () => {
         await page.waitForSelector('[data-test-id="authSection"]');
     });
 
-    // test('logs in and redirects to wallet route when registration is complete', async() => {
-    //     await page.waitForSelector('[data-testid="events"]');
-    // });
+    test('generate mnemonic and login', async() => {
+        // generate
+        await page.click('[data-test-id="authAdvancedRegisterGenerateButton"]');
+        // copy
+        await page.click('[data-test-id="authAdvancedRegisterCopyButton"]');
+        // allow paste
+        const context = browser.defaultBrowserContext();
+        await context.overridePermissions(appUrlBase, ['clipboard-read']);
+        // paste
+        const mnemonicText = await page.evaluate(() => {
+            return window.navigator.clipboard.readText();
+        });
+        await page.type('[data-test-id="authAdvancedLoginInputMnemonic"]', mnemonicText);
+        // submit
+        await page.click('[data-test-id="authAdvancedLoginSubmitButton"]');
+        // wait for redirect to wallet
+        await page.waitForSelector('[data-test-id="walletAddressLink"]');
+    }, 30000);
+
+    test('logout and redirect to auth form', async() => {
+        await page.click('[data-test-id="headerLogoutButton"]');
+        await page.waitForSelector('[data-test-id="authSection"]');
+    });
 });
-//
-// describe('logout', () => {
-//     test('can logout', async() => {
-//         await page.waitForSelector('[data-testid="userMenuButton"]');
-//         await page.click('[data-testid="userMenuButton"]');
-//         await page.waitForSelector('[data-testid="userMenuOpen"]');
-//         await page.click('[data-testid="logoutLink"]');
-//         await page.waitForSelector('[data-testid="userLoginForm"]');
-//     });
-// });
-//
-// describe('login', () => {
-//     test('can login', async() => {
-//         await page.waitForSelector('[data-testid="userLoginInputWithEmail"]');
-//         await page.click('[data-testid="userLoginInputWithEmail"]');
-//         await page.type(user.email);
-//         await page.click('[data-testid="userLoginInputWithPassword"]');
-//         await page.type(user.password);
-//         await page.click('[data-testid="userLoginSubmitButton"]');
-//         await page.waitForSelector('[data-testid="events"]');
-//     });
-// });
-//
-// describe('on call', () => {
-//     test('starts off call', async() => {
-//         await page.waitForSelector('[data-testid="offCallStatus"]');
-//     });
-//
-//     test('can toggle on call status', async() => {
-//         await page.click('[data-testid="onCallButton"]');
-//         await page.waitForSelector('[data-testid="onCallStatus"]');
-//     });
-//
-//     test('shows on call list with alerts', async() => {
-//         await page.goto(routes.private.alerts);
-//         await page.waitForSelector('[data-testid="someOnCallButton"]');
-//         await page.click('[data-testid="someOnCallButton"]');
-//         await page.waitForSelector('[data-testid="onCallBadge"]');
-//     });
-//
-//     test('shows on call badge in team list', async() => {
-//         await page.goto(routes.private.team);
-//         await page.waitForSelector('[data-testid="onCallBadge"]');
-//     });
-// });
+
+describe('private routes', () => {
+    // login
+    beforeAll(async() => {
+        await page.goto(routes.public.index);
+        await page.waitForSelector('[data-test-id="authSection"]');
+        await page.type('[data-test-id="authAdvancedLoginInputMnemonic"]', advancedUser);
+        await page.click('[data-test-id="authAdvancedLoginSubmitButton"]');
+        await page.waitForSelector('[data-test-id="walletAddressLink"]');
+    }, 30000);
+
+    describe('wallet page', () => {
+        let address;
+        beforeAll(async() => {
+            await page.goto(routes.private.wallet);
+            await page.waitForSelector('[data-test-id="walletAddressLink"]');
+            address = await page.$eval('[data-test-id="walletAddressLink"]', (el) => el.textContent);
+        });
+
+        test('has address, has balance', async() => {
+            const balance = await page.$eval('[data-test-id="walletBalanceValue"]', (el) => el.textContent);
+            expect(address.substring(0, 2)).toBe('Mx');
+            expect(address).toHaveLength(42);
+            expect(parseFloat(balance)).toBeGreaterThan(0);
+        });
+
+        test('send coins', async() => {
+            await page.type('[data-test-id="walletSendInputAddress"]', address);
+            await page.type('[data-test-id="walletSendInputAmount"]', '10');
+            // submit (opens modal)
+            await page.click('[data-test-id="walletSendSubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="walletSendModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="walletSendModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="walletSendSuccessMessage"]');
+        }, 30000);
+    });
+});
 //
 // describe('errors', () => {
 //     test(`shows 404 message when route doesn't exist`, async() => {
@@ -177,11 +201,4 @@ describe('index page', () => {
 //     });
 // });
 //
-// describe('admin', () => {
-//     test('redirects to root route when not an admin', async() => {
-//         await page.goto(routes.admin.templates);
-//         await page.waitForSelector('[data-testid="events"]');
-//     });
-// });
-
 
