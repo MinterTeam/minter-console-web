@@ -1,6 +1,6 @@
 import decode from 'entity-decode';
 import prettyNum from 'pretty-num';
-import toDate from "date-fns/esm/toDate";
+import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
 import {EXPLORER_URL} from "~/assets/variables";
 
@@ -40,13 +40,16 @@ export function makeAccepter(propName, isAcceptUnmasked) {
 
 
 export function getTimeStamp(timestamp) {
-    const time = format(toDate(timestamp), 'dd MMM yyyy HH:mm:ss');
+    const time = format(parseISO(timestamp), 'dd MMM yyyy HH:mm:ss');
 
     return time && time !== 'Invalid Date' ? time : false;
 }
 
 export function getTimeZone(timestamp) {
-    const time = format(toDate(timestamp), 'O');
+    if (!(timestamp instanceof Date)) {
+        timestamp = parseISO(timestamp);
+    }
+    const time = format(timestamp, 'O');
 
     return time && time !== 'Invalid Date' ? time : false;
 }

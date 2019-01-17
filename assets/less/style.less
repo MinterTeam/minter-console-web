@@ -13,7 +13,18 @@
 
 // vendor
 // mdc
-.mdc-snackbar__action-button {color: #fff;}
+.mdc-snackbar__surface {min-width: 300px;}
+.mdc-snackbar__label {font: inherit; font-size: 1rem; color: #fff;}
+.mdc-snackbar__dismiss {
+    /*width: 24px; height: 24px; */color: #fff; position: relative;  transition: 0.1s;
+    && {font-size: 0;}
+    &:hover, &:focus {opacity: 0.7;}
+}
+.mdc-snackbar__dismiss-icon {
+    &::before, &::after {content: ''; position: absolute; height: 2px; width: 16px; left: 50%; top: 50%; margin-left: -8px; margin-top: -1px; background: currentColor;}
+    &::before {transform: rotate(45deg);}
+    &::after {transform: rotate(-45deg);}
+}
 // nuxt page transition
 .page-leave-active {transition: opacity .1s;}
 .page-enter-active {transition: opacity .25s;}

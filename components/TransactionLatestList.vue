@@ -118,7 +118,7 @@
                     <tr class="u-text-nowrap" :class="{'is-expanded': isTxExpanded[tx.txn]}" :key="tx.txn">
                         <!-- hash -->
                         <td>
-                            <TableLink :link-text="tx.hash" :link-path="getExplorerTxUrl(tx.hash)"/>
+                            <TableLink data-test-id="walletTxHash" :link-text="tx.hash" :link-path="getExplorerTxUrl(tx.hash)"/>
                         </td>
                         <!-- block -->
                         <td class="u-hidden-small-down">
@@ -231,6 +231,20 @@
                                 <div class="table__inner-item" v-if="isDefined(tx.data.commission)">
                                     <strong>{{ tt('Commission', 'wallet.tx-table-commission') }}</strong> <br>
                                     {{ tx.data.commission }}&thinsp;%
+                                </div>
+                                <div class="table__inner-item" v-if="tx.data.reward_address">
+                                    <strong>{{ tt('Reward Address', 'wallet.tx-table-reward-address') }}</strong> <br>
+                                    <TableLink :link-text="tx.data.reward_address"
+                                               :link-path="getExplorerAddressUrl(tx.data.reward_address)"
+                                               :should-not-shorten="true"
+                                    />
+                                </div>
+                                <div class="table__inner-item" v-if="tx.data.owner_address">
+                                    <strong>{{ tt('Owner Address', 'wallet.tx-table-owner-address') }}</strong> <br>
+                                    <TableLink :link-text="tx.data.owner_address"
+                                               :link-path="getExplorerAddressUrl(tx.data.owner_address)"
+                                               :should-not-shorten="true"
+                                    />
                                 </div>
 
                                 <!-- type REDEEM_CHECK -->

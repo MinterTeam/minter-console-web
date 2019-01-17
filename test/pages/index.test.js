@@ -5,8 +5,9 @@ import puppeteer from 'puppeteer';
 import {Nuxt} from '@nuxt/core';
 import {Builder} from '@nuxt/builder';
 import {USERNAME_MAX_LENGTH} from '~/assets/variables';
+import {USER_MNEMONIC} from '~/test/variables';
 
-process.env.DEBUG = true;
+// process.env.DEBUG = true;
 // process.env.NUXT_SKIP_SELF_BUILD = true;
 
 
@@ -32,7 +33,9 @@ const user = {
     password: '123123',
 };
 
-const advancedUser = 'exercise fantasy smooth enough arrive steak demise donkey true employ jealous decide blossom bind someone';
+const advancedUser = USER_MNEMONIC;
+
+//@TODO split into different files
 
 /** @type Nuxt */
 let nuxt;
@@ -63,7 +66,7 @@ beforeAll(async() => {
         process.env.DEBUG
             ? {
                 headless: false,
-                slowMo: 100,
+                slowMo: 50,
             }
             : {}
     );
@@ -179,6 +182,13 @@ describe('private routes', () => {
             expect(parseFloat(balance)).toBeGreaterThan(0);
         });
 
+        test('has transactions', async() => {
+            const txHref = await page.$eval('[data-test-id="walletTxHash"]', (el) => el.getAttribute('href'));
+            const txHashIndex = txHref.indexOf('/Mt') + 1;
+            const txHash = txHref.substr(txHashIndex);
+            expect(txHash).toHaveLength(66);
+        });
+
         test('send coins', async() => {
             await page.type('[data-test-id="walletSendInputAddress"]', address);
             await page.type('[data-test-id="walletSendInputAmount"]', '10');
@@ -190,6 +200,108 @@ describe('private routes', () => {
             await page.click('[data-test-id="walletSendModalSubmitButton"]');
             // wait for success
             await page.waitForSelector('[data-test-id="walletSendSuccessMessage"]');
+        }, 30000);
+
+        test('fail send not enough coins', async() => {
+            await page.type('[data-test-id="walletSendInputAddress"]', address);
+            await page.type('[data-test-id="walletSendInputAmount"]', '9999999999999999999999999');
+            // submit (opens modal)
+            await page.click('[data-test-id="walletSendSubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="walletSendModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="walletSendModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="walletSendErrorMessage"]');
+        }, 30000);
+    });
+
+    describe('convert page', () => {
+        beforeAll(async() => {
+            await page.goto(routes.private.convert);
+        });
+
+        test('sell coins', async() => {
+            await page.select('[data-test-id="convertSellInputSellCoin"]', 'MNT');
+            await page.type('[data-test-id="convertSellInputSellAmount"]', '1');
+            await page.type('[data-test-id="convertSellInputBuyCoin"]', 'TESTCOIN01');
+            // submit (opens modal)
+            await page.click('[data-test-id="convertSellSubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="convertSellModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="convertSellModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="convertSellSuccessMessage"]');
+        }, 30000);
+
+        test('fail sell not enough coins', async() => {
+            await page.select('[data-test-id="convertSellInputSellCoin"]', 'MNT');
+            await page.type('[data-test-id="convertSellInputSellAmount"]', '9999999999999999999999999');
+            await page.type('[data-test-id="convertSellInputBuyCoin"]', 'TESTCOIN01');
+            // submit (opens modal)
+            await page.click('[data-test-id="convertSellSubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="convertSellModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="convertSellModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="convertSellErrorMessage"]');
+        }, 30000);
+
+        test('sell all coins', async() => {
+            await page.select('[data-test-id="convertSellAllInputSellCoin"]', 'TESTCOIN01');
+            await page.type('[data-test-id="convertSellAllInputBuyCoin"]', 'MNT');
+            // submit (opens modal)
+            await page.click('[data-test-id="convertSellAllSubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="convertSellAllModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="convertSellAllModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="convertSellAllSuccessMessage"]');
+        }, 30000);
+
+        test('fail sell all to not existent coin', async() => {
+            await page.select('[data-test-id="convertSellAllInputSellCoin"]', 'MNT');
+            await page.type('[data-test-id="convertSellAllInputBuyCoin"]', 'NOTEXIST01');
+            // submit (opens modal)
+            await page.click('[data-test-id="convertSellAllSubmitButton"]');
+            // no modal because of failed estimation
+            // wait for modal
+            // await page.waitForSelector('[data-test-id="convertSellAllModalSubmitButton"]');
+            // submit
+            // await page.click('[data-test-id="convertSellAllModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="convertSellAllErrorMessage"]');
+        }, 30000);
+
+        test('buy coins', async() => {
+            await page.type('[data-test-id="convertBuyInputBuyAmount"]', '1');
+            await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'TESTCOIN01');
+            await page.select('[data-test-id="convertBuyInputSellCoin"]', 'MNT');
+            // submit (opens modal)
+            await page.click('[data-test-id="convertBuySubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="convertBuyModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="convertBuyModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="convertBuySuccessMessage"]');
+        }, 30000);
+
+        test('fail buy too much coins', async() => {
+            await page.type('[data-test-id="convertBuyInputBuyAmount"]', '9999999999999999999999999');
+            await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'TESTCOIN01');
+            await page.select('[data-test-id="convertBuyInputSellCoin"]', 'MNT');
+            // submit (opens modal)
+            await page.click('[data-test-id="convertBuySubmitButton"]');
+            // wait for modal
+            await page.waitForSelector('[data-test-id="convertBuyModalSubmitButton"]');
+            // submit
+            await page.click('[data-test-id="convertBuyModalSubmitButton"]');
+            // wait for success
+            await page.waitForSelector('[data-test-id="convertBuyErrorMessage"]');
         }, 30000);
     });
 });

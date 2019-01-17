@@ -172,7 +172,7 @@
             <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                     <label class="form-field" :class="{'is-error': $v.form.sellAmount.$error}">
-                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="convertSellInputSellAmount"
                                v-model="form.sellAmount"
                                @blur="$v.form.sellAmount.$touch()"
                         >
@@ -182,7 +182,7 @@
                 </div>
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                     <label class="form-field">
-                        <select class="form-field__input form-field__input--select" v-check-empty
+                        <select class="form-field__input form-field__input--select" v-check-empty data-test-id="convertSellInputSellCoin"
                                 v-model="form.coinFrom"
                                 @blur="$v.form.coinFrom.$touch()"
                         >
@@ -195,7 +195,7 @@
                 </div>
                 <div class="u-cell u-cell--xlarge--1-3">
                     <label class="form-field">
-                        <InputUppercase class="form-field__input" type="text" v-check-empty
+                        <InputUppercase class="form-field__input" type="text" v-check-empty data-test-id="convertSellInputBuyCoin"
                                         v-model.trim="form.coinTo"
                                         @blur="$v.form.coinTo.$touch()"
                         />
@@ -238,16 +238,16 @@
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
-                    <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <button class="button button--main button--full" data-test-id="convertSellSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                         <span class="button__content">{{ tt('Sell', 'form.convert-sell-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                             <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                         </svg>
                     </button>
-                    <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+                    <div class="form-field__error" data-test-id="convertSellErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
-                <div class="u-cell u-cell--order-2" v-if="serverSuccess">
-                    <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <div class="u-cell u-cell--order-2" data-test-id="convertSellSuccessMessage" v-if="serverSuccess">
+                    <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
             </div>
             <div v-else>
@@ -282,7 +282,7 @@
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" :class="{'is-loading': isFormSending}" @click="submit">
+                            <button class="button button--main button--full" data-test-id="convertSellModalSubmitButton" :class="{'is-loading': isFormSending}" @click="submit">
                                 <span class="button__content">{{ tt('Confirm', 'form.submit-confirm-button') }}</span>
                                 <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                                     <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>

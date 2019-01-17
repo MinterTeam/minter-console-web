@@ -2,20 +2,15 @@
     import {mapState} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {UnbondTxParams} from "minter-js-sdk/src";
-    import {isValidPublic} from "minterjs-util";
+    import {EditCandidateTxParams} from "minter-js-sdk/src";
+    import {isValidPublic, isValidAddress} from "minterjs-util";
     import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
-    import InputUppercase from '~/components/InputUppercase';
 
     export default {
-        components: {
-            InputUppercase,
-        },
         directives: {
             checkEmpty,
         },
@@ -32,8 +27,8 @@
                 serverSuccess: '',
                 form: {
                     publicKey: '',
-                    stake: null,
-                    coinSymbol: '',
+                    ownerAddress: this.$store.getters.address,
+                    rewardAddress: this.$store.getters.address,
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
@@ -50,13 +45,13 @@
                     required,
                     validPublicKey: isValidPublic,
                 },
-                stake: {
+                rewardAddress: {
                     required,
+                    validAddress: isValidAddress,
                 },
-                coinSymbol: {
+                ownerAddress: {
                     required,
-                    minLength: minLength(3),
-                    maxLength: maxLength(10),
+                    validAddress: isValidAddress,
                 },
                 feeCoinSymbol: {
                     required,
@@ -64,6 +59,7 @@
                 message: {
                     maxLength: maxLength(1024),
                 },
+
             },
         },
         computed: {
@@ -71,7 +67,7 @@
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(100, this.form.message.length));
+                return pretty(getFeeValue(10000, this.form.message.length));
             },
         },
         methods: {
@@ -88,7 +84,7 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        postTx(new UnbondTxParams({
+                        postTx(new EditCandidateTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                         })).then((txHash) => {
@@ -123,8 +119,8 @@
             },
             clearForm() {
                 this.form.publicKey = '';
-                this.form.stake = null;
-                this.form.coinSymbol = '';
+                this.form.rewardAddress = this.$store.getters.address;
+                this.form.ownerAddress = this.$store.getters.address;
                 this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.message = '';
                 this.formAdvanced.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
@@ -139,7 +135,7 @@
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
-            <div class="u-cell u-cell--xlarge--1-2">
+            <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.publicKey.$error}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.publicKey"
@@ -150,35 +146,39 @@
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ tt('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ tt('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.stake"
-                           @blur="$v.form.stake.$touch()"
+            <div class="u-cell u-cell--xlarge--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.rewardAddress.$error}">
+                    <input class="form-field__input" type="text" v-check-empty
+                           v-model.trim="form.rewardAddress"
+                           @blur="$v.form.rewardAddress.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Stake', 'form.masternode-stake') }}</span>
+                    <span class="form-field__label">{{ tt('Reward Address', 'form.masternode-reward-address') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ tt('Enter stake', 'form.masternode-stake-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.rewardAddress.$dirty && !$v.form.rewardAddress.required">{{ tt('Enter address', 'form.masternode-address-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.rewardAddress.$dirty && !$v.form.rewardAddress.validAddress">{{ tt('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
+                <div class="form-field__help">{{ tt('Address where the reward will be accrued', 'form.masternode-reward-address-help') }}</div>
             </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
-                                    v-model.trim="form.coinSymbol"
-                                    @blur="$v.form.coinSymbol.$touch()"
-                    />
-                    <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>
+            <div class="u-cell u-cell--xlarge--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.ownerAddress.$error}">
+                    <input class="form-field__input" type="text" v-check-empty
+                           v-model.trim="form.ownerAddress"
+                           @blur="$v.form.ownerAddress.$touch()"
+                    >
+                    <span class="form-field__label">{{ tt('Owner Address', 'form.masternode-owner-address') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ tt('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ tt('Max 10 letters', 'form.coin-error-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.ownerAddress.$dirty && !$v.form.ownerAddress.required">{{ tt('Enter address', 'form.masternode-address-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.ownerAddress.$dirty && !$v.form.ownerAddress.validAddress">{{ tt('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
+                <div class="form-field__help">{{ tt('Masternode owner\'s address', 'form.masternode-owner-address-help') }}</div>
             </div>
+
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
                             @blur="$v.form.feeCoinSymbol.$touch()"
                     >
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty }})</option>
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
+                            uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                 </label>
@@ -206,7 +206,7 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ tt('Unbond', `form.delegation-unbond-button`) }}</span>
+                    <span class="button__content">{{ tt('Edit candidate', 'form.masternode-edit-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
@@ -218,7 +218,7 @@
             </div>
         </div>
         <div v-else>
-            {{ tt(`You don't have coins to unbond`, 'form.masternode-error') }}
+            {{ tt('You don\'t have coins to edit candidate', 'form.masternode-error') }}
         </div>
     </form>
 </template>

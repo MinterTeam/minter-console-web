@@ -1,6 +1,7 @@
 <script>
     import getTitle from '~/assets/get-title';
     import ValidatorDeclareCandidacyForm from '~/components/ValidatorDeclareCandidacyForm';
+    import ValidatorEditCandidateForm from '~/components/ValidatorEditCandidateForm';
     import ValidatorSetCandidateOnOffForm from '~/components/ValidatorSetCandidateOnOffForm';
 
     let balanceInterval;
@@ -8,6 +9,7 @@
     export default {
         components: {
             ValidatorDeclareCandidacyForm,
+            ValidatorEditCandidateForm,
             ValidatorSetCandidateOnOffForm,
         },
         fetch({ app, store }) {
@@ -76,6 +78,17 @@
                 </p>
             </div>
             <ValidatorSetCandidateOnOffForm form-type="off"/>
+        </div>
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    {{ tt('Edit candidate', 'masternode.edit-title') }}
+                </h1>
+                <p class="panel__header-description">
+                    {{ tt('If you want to change reward address or owner address of your masternode, you can edit it here.', 'masternode.edit-description') }}
+                </p>
+            </div>
+            <ValidatorEditCandidateForm/>
         </div>
     </section>
 </template>
