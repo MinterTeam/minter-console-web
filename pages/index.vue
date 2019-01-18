@@ -207,10 +207,10 @@
                     <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">{{ tt('Explorer', 'index.links-explorer') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
-                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank" rel="noopener">API</a>
+                    <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank" rel="noopener">API</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/sdk.html" target="_blank" rel="noopener">SDK</a>
+                    <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#section/Minter-SDKs" target="_blank" rel="noopener">SDK</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
                     <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">{{ tt('Calculator', 'index.links-calculator') }}</a>

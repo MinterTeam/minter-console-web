@@ -178,16 +178,16 @@
                                 <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/api.html" target="_blank">API</a>
+                                <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank">API</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://minter-go-node.readthedocs.io/en/latest/sdk.html" target="_blank">SDK</a>
+                                <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#section/Minter-SDKs" target="_blank">SDK</a>
                             </li>
                             <li class="u-cell">
                                 <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">Calculator</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://help.beta.minter.network" target="_blank">Help/FAQ</a>
+                                <a class="services__link link--hover" href="https://help.minter.network" target="_blank">Help/FAQ</a>
                             </li>
                         </ul>
                     </div>

@@ -34,7 +34,7 @@
     "ethereumjs-util": "^6.0.0",
     "js-cookie": "^2.2.0",
     "lodash-es": "^4.17.11",
-    "minter-footer-links": "github:MinterTeam/minter-footer-links#v2.0.0",
+    "minter-footer-links": "github:MinterTeam/minter-footer-links#v2.1.0",
     "minter-js-org": "^0.1.0",
     "minter-js-sdk": "^0.7.0",
     "minterjs-util": "0.2.3",
