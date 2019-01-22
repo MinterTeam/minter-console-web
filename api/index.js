@@ -261,6 +261,10 @@ function markSecured(address) {
  * @property {number} [data.commission]
  * @property {string} [data.coin]
  * @property {number} [data.stake]
+ * -- type: TX_TYPES.EDIT_CANDIDATE
+ * @property {string} [data.pub_key]
+ * @property {string} [data.reward_address]
+ * @property {string} [data.owner_address]
  * -- type: TX_TYPES.DELEGATE
  * @property {string} [data.pub_key]
  * @property {string} [data.coin]

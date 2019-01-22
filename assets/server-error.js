@@ -65,9 +65,9 @@ export function getValidationError(error, startErrorText = 'Error: ') {
  */
 export function getErrorText(error, startErrorText = 'Error: ') {
     console.log(error);
-    if (error.response && error.response.data && (error.response.data.message || error.response.data.error || error.response.data.log)) {
+    if (error.response && error.response.data && (error.response.data.error || error.response.data.message || error.response.data.log)) {
         // server error
-        const errorText = (error.response.data.error && error.response.data.error.message) || error.response.data.message || error.response.data.log;
+        const errorText = (error.response.data.error && (error.response.data.error.message || error.response.data.error.log)) || error.response.data.message || error.response.data.log;
         return startErrorText + errorText.replace('Check tx error: ', '');
     } else if (error.message) {
         // network error

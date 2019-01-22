@@ -16,6 +16,7 @@ export const TX_TYPES = {
     BUY_COIN: 'buyCoin',
     CREATE_COIN: 'createCoin',
     DECLARE_CANDIDACY: 'declareCandidacy',
+    EDIT_CANDIDATE: 'editCandidate',
     DELEGATE: 'delegate',
     UNBOND: 'unbond',
     REDEEM_CHECK: 'redeemCheckData',

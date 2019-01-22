@@ -175,7 +175,7 @@
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.amount.$error}">
                         <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="walletSendInputAmount"
-                               v-model.number="form.amount"
+                               v-model="form.amount"
                                @blur="$v.form.amount.$touch()"
                                @input="sve.amount.isActual = false"
                         >
@@ -240,7 +240,7 @@
                             <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                         </svg>
                     </button>
-                    <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+                    <div class="form-field__error" data-test-id="walletSendErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
                 <div class="u-cell u-cell--order-2" data-test-id="walletSendSuccessMessage" v-if="serverSuccess">
                     <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong>

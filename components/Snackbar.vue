@@ -13,19 +13,14 @@
             // during active phase SET_SNACKBAR_ACTIVE will do nothing
             '$store.state.isSnackbarActive': function(newVal) {
                 if (newVal) {
-                    this.snackbar.show({
-                        message: 'Copied to clipboard',
-                        actionText: 'OK',
-                        // actionHandler required to show button
-                        actionHandler: () => {},
-                    });
+                    this.snackbar.open();
                 }
             },
         },
         mounted() {
             // init snackbar
             this.snackbar = new MDCSnackbar(document.querySelector('.mdc-snackbar'));
-            this.snackbar.listen(snackbarStrings.HIDE_EVENT, () => {
+            this.snackbar.listen(snackbarStrings.CLOSING_EVENT, () => {
                 // reset snackbar status to inactive so it can react to change again
                 this.$store.commit('SET_SNACKBAR_INACTIVE');
             });
@@ -41,13 +36,20 @@
 </script>
 
 <template>
-    <div class="mdc-snackbar"
-         aria-live="assertive"
-         aria-atomic="true"
-         aria-hidden="true">
-        <div class="mdc-snackbar__text"></div>
-        <div class="mdc-snackbar__action-wrapper">
-            <button type="button" class="mdc-snackbar__action-button"></button>
+    <div class="mdc-snackbar">
+        <div class="mdc-snackbar__surface">
+            <div class="mdc-snackbar__label"
+                 role="status"
+                 aria-live="polite">
+                Copied to clipboard
+            </div>
+            <div class="mdc-snackbar__actions">
+                <button class="mdc-snackbar__dismiss u-semantic-button" title="Dismiss">
+                    <span class="mdc-snackbar__dismiss-icon">
+                        Close
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 </template>
