@@ -273,6 +273,12 @@ function markSecured(address) {
  * @property {string} [data.pub_key]
  * @property {string} [data.coin]
  * @property {number} [data.value]
+ * @property {Object} [data.check]
+ * @property {string} [data.check.sender]
+ * @property {number} [data.check.nonce]
+ * @property {number|string} [data.check.value]
+ * @property {string} [data.check.coin]
+ * @property {number} [data.check.due_block]
  * -- type: TX_TYPES.REDEEM_CHECK
  * @property {string} [data.raw_check]
  * @property {string} [data.proof]

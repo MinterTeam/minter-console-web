@@ -24,9 +24,9 @@
             shortText() {
                 return this.shouldNotShorten ? this.linkText : shortHashFilter(this.linkText);
             },
-            isShorten() {
-                return this.linkText !== this.shortText;
-            },
+            // isShorten() {
+            //     return this.linkText !== this.shortText;
+            // },
             isExternal() {
                 return this.linkPath.indexOf('http') === 0 || this.linkPath.indexOf('//') === 0;
             },
@@ -42,7 +42,7 @@
             elementData() {
                 let elData = {
                     class: {
-                        'table__cell-overflow--middle': this.isShorten,
+                        // 'table__cell-overflow--middle': this.isShorten,
                         'link--default': !this.isNotLink,
                     },
                 };

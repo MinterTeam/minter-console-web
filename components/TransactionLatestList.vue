@@ -65,7 +65,8 @@
                     || typeof tx.data.value_to_sell !== 'undefined'
                     || typeof tx.data.value_to_buy !== 'undefined'
                     || typeof tx.data.stake !== 'undefined'
-                    || typeof tx.data.initial_amount !== 'undefined';
+                    || typeof tx.data.initial_amount !== 'undefined'
+                    | (tx.data.check && typeof tx.data.check.value !== 'undefined');
             },
             getConvertCoinSymbol(tx) {
                 if (tx.type === TX_TYPES.SELL_COIN || tx.type === TX_TYPES.SELL_ALL_COIN) {
@@ -137,16 +138,16 @@
                         <!-- amount -->
                         <td class="u-hidden-large-down">
                             <div v-if="hasAmount(tx)">
-                                {{ tx.data.amount || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || 0 | pretty }}
-                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) }}
+                                {{ tx.data.amount || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
+                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
                             </div>
                         </td>
                         <!-- value -->
                         <td class="u-hidden-large-up">
                             {{ tx.type | txType }}
                             <span v-if="hasAmount(tx)">
-                                {{ tx.data.amount || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || 0 | pretty }}
-                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) }}
+                                {{ tx.data.amount || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
+                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
                             </span>
                         </td>
                         <!--expand button -->
@@ -256,6 +257,21 @@
                                 <div class="table__inner-item" v-if="tx.data.proof">
                                     <strong>{{ tt('Proof', 'wallet.tx-table-proof') }}</strong> <br>
                                     {{ tx.data.proof | short}}
+                                </div>
+                                <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
+                                    <strong>Check Issuer</strong> <br>
+                                    <TableLink :link-text="tx.data.check.sender"
+                                               :link-path="'/address/' + tx.data.check.sender"
+                                               :should-not-shorten="true"
+                                    />
+                                </div>
+                                <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
+                                    <strong>Check Nonce</strong> <br>
+                                    {{ tx.data.check.nonce }}
+                                </div>
+                                <div class="table__inner-item" v-if="tx.data.check && tx.data.check.due_block">
+                                    <strong>Due Block</strong> <br>
+                                    {{ tx.data.check.due_block }}
                                 </div>
 
                                 <!-- block -->

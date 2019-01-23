@@ -42,14 +42,6 @@ export default function createStore() {
 
 
 
-/**
- * @typedef {Object} Transaction
- * @property {string} name
- * @property {number} amount
- * @property {string} coin
- * @property {string} image
- * @property {string} timestamp
- */
 
 /**
  * @typedef {Object} TokenData
