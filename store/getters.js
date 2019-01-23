@@ -64,6 +64,9 @@ export default {
     avatar(state) {
         return state.user && state.user.avatar && state.user.avatar.src;
     },
+    COIN_NAME() {
+        return COIN_NAME;
+    },
     baseCoin(state) {
         return state.balance.find((coinItem) => {
             return coinItem.coin === COIN_NAME;

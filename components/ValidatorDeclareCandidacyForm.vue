@@ -238,7 +238,7 @@
                     </select>
                     <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
                 </label>
-                <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.state.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.state.COIN_NAME}) }}</div>
+                <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

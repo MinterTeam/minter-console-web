@@ -93,15 +93,16 @@
             <div class="wallet__balance">
                 <div>{{ tt('Your balance:', 'wallet.balance') }}</div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
-                    {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.state.COIN_NAME }}
+                    {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
                 </div>
             </div>
         </div>
 
+        <CoinSendForm/>
+
         <CoinList/>
 
-        <TransactionLatestList :tx-list="txList"/>
+        <TransactionLatestList :tx-list="txList" v-if="txList.length"/>
 
-        <CoinSendForm/>
     </section>
 </template>

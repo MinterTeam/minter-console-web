@@ -273,7 +273,7 @@
                                 <!-- fee -->
                                 <div class="table__inner-item">
                                     <strong>{{ tt('Fee', 'wallet.tx-table-fee') }}</strong> <br>
-                                    {{ tx.fee | pretty }} {{ $store.state.COIN_NAME }}
+                                    {{ tx.fee | pretty }} {{ $store.getters.COIN_NAME }}
                                 </div>
                             </div>
                         </td>

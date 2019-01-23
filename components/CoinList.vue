@@ -21,6 +21,9 @@
             };
         },
         computed: {
+            hasCustomCoins() {
+                return this.$store.state.balance.filter((coinItem) => coinItem.coin !== this.$store.getters.COIN_NAME).length;
+            },
             coinList() {
                 return this.isFullListActive ? this.$store.state.balance : this.$store.state.balance.slice(0, 5);
             },
@@ -32,7 +35,7 @@
 </script>
 
 <template>
-    <section class="panel">
+    <section class="panel" v-if="hasCustomCoins">
         <div class="table-wrap">
             <table v-if="coinList.length">
                 <thead>
