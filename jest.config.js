@@ -1,11 +1,5 @@
-// const { readFileSync } = require('fs')
-// const babelConfig = JSON.parse(readFileSync('./.babelrc', 'utf8'))
-
-//@TODO remove in Jest 24
-// fix https://github.com/facebook/jest/issues/5164#issuecomment-366139663
-require('babel-register')({presets: ["babel-preset-vue-app"]});
-require('babel-polyfill');
-
+//@TODO jest can't see jest-babel.config.js without this console.log. WTF?
+console.log(require('./jest-babel.config.js'));
 module.exports = {
     moduleNameMapper: {
         '~(.*)$': '<rootDir>/$1',

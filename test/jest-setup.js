@@ -68,7 +68,6 @@ module.exports = async function() {
             : {}
     );
     // page = await browser.newPage();
-    console.log('setup', typeof browser);
 
     global.__NUXT__ = nuxt;
     global.__BROWSER__ = browser;
