@@ -84,32 +84,37 @@ gulp.task('imagemin', function() {
             }))
         .pipe(gulp.dest(paths.dest.img));
 });
-gulp.task('imagemin:clean', ['imagemin:clean-dest', 'imagemin:clean-cache']);
-gulp.task('imagemin:clean-dest', function() {
-    return del.sync(paths.dest.img);
+gulp.task('imagemin:clean-dest', function(cb) {
+    del.sync(paths.dest.img);
+    cb();
 });
-gulp.task('imagemin:clean-cache', function() {
-    return del.sync([
+gulp.task('imagemin:clean-cache', function(cb) {
+    del.sync([
         paths.cache.tmpDir + '/' + paths.cache.cacheDirName + '/default',
     ]);
+    cb();
 });
+gulp.task('imagemin:clean', gulp.parallel('imagemin:clean-dest', 'imagemin:clean-cache'));
 
 
 
-// Полная сборка с вотчем
-gulp.task('default', ['less', 'imagemin'], function() {
-    gulp.watch(paths.watch.less, ['less']);
-    gulp.watch(paths.src.img, ['imagemin']).on('change', function(event) {
-        if (event.type === 'deleted') {
-            del(paths.dest.img + path.basename(event.path));
-        }
-    });
-    setTimeout(function() {
-        log('Watching ...');
-    });
-});
 // Полная сборка без вотча
-gulp.task('once', ['less', 'imagemin']);
+gulp.task('once', gulp.parallel('less', 'imagemin'));
+// Полная сборка с вотчем
+gulp.task('default', gulp.series(
+    'once',
+    function watch() {
+        gulp.watch(paths.watch.less, gulp.task('less'));
+        gulp.watch(paths.src.img, gulp.task('imagemin')).on('change', function(event) {
+            if (event.type === 'deleted') {
+                del(paths.dest.img + path.basename(event.path));
+            }
+        });
+        setTimeout(function() {
+            log('Watching...');
+        });
+    }
+));
 
 
 

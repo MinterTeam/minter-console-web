@@ -170,17 +170,6 @@
         <form class="panel__section" novalidate @submit.prevent="submitConfirm">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
-                    <label class="form-field" :class="{'is-error': $v.form.buyAmount.$error}">
-                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="convertBuyInputBuyAmount"
-                               v-model="form.buyAmount"
-                               @blur="$v.form.buyAmount.$touch()"
-                        >
-                        <span class="form-field__label">{{ tt('Buy amount', 'form.convert-buy-amount') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">{{ tt('Enter amount', 'form.amount-error-required') }}</span>
-                </div>
-
-                <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                     <label class="form-field">
                         <InputUppercase class="form-field__input" type="text" v-check-empty data-test-id="convertBuyInputBuyCoin"
                                         v-model.trim="form.coinTo"
@@ -191,6 +180,16 @@
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ tt('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ tt('Min 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ tt('Max 10 letters', 'form.coin-error-max') }}{{ tt('Check', 'form.convert-buy-check') }}</span>
+                </div>
+                <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
+                    <label class="form-field" :class="{'is-error': $v.form.buyAmount.$error}">
+                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="convertBuyInputBuyAmount"
+                               v-model="form.buyAmount"
+                               @blur="$v.form.buyAmount.$touch()"
+                        >
+                        <span class="form-field__label">{{ tt('Buy amount', 'form.convert-buy-amount') }}</span>
+                    </label>
+                    <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">{{ tt('Enter amount', 'form.amount-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-3">
                     <label class="form-field">
