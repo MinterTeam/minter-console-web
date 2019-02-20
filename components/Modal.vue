@@ -24,7 +24,7 @@
                 this.$emit('modalClose');
             },
             handleModalClick(e) {
-                if (e.target !== this.$refs.modalContainer && !this.$refs.modalContainer.contains(e.target)) {
+                if (this.$refs.modalContainer && e.target !== this.$refs.modalContainer && !this.$refs.modalContainer.contains(e.target)) {
                     this.closeModal();
                 }
             },
