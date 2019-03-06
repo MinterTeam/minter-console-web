@@ -52,7 +52,7 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.mnemonic.$error, 'is-success': !$v.mnemonic.$invalid}">
-                    <textarea class="form-field__input" rows="1" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
+                    <textarea class="form-field__input" rows="1" autocapitalize="off" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
                               v-model="mnemonic"
                               @blur="$v.mnemonic.$touch()"
                     ></textarea>

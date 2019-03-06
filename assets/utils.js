@@ -75,10 +75,10 @@ export function getExplorerValidatorUrl(pubKey) {
  * @return {string}
  */
 export function pretty(value) {
-    if (value > 0.001 || value < -0.001) {
-        return decode(prettyNum(value, {precision: 4, rounding: 'fixed', thousandsSeparator: '&thinsp;'}));
+    if (value > 0.001 || value < -0.001 || Number(value) === 0) {
+        return decode(prettyNum(value, {precision: 4, rounding: 'fixed', thousandsSeparator: '&#x202F;'}));
     } else {
-        return decode(prettyNum(value, {precision: 2, rounding: 'significant', thousandsSeparator: '&thinsp;'}));
+        return decode(prettyNum(value, {precision: 2, rounding: 'significant', thousandsSeparator: '&#x202F;'}));
     }
 }
 
@@ -88,7 +88,7 @@ export function pretty(value) {
  * @return {string}
  */
 export function prettyExact(value) {
-    return decode(prettyNum(value, {precision: 4, rounding: 'increase', thousandsSeparator: '&thinsp;'}));
+    return decode(prettyNum(value, {precision: 4, rounding: 'increase', thousandsSeparator: '&#x202F;'}));
 }
 
 /**
