@@ -1,8 +1,8 @@
 import axios from 'axios';
-import {MYMINTER_API_URL} from "~/assets/variables";
+import {MINTERORG_API_URL} from "~/assets/variables";
 
 const instance = axios.create({
-    baseURL: MYMINTER_API_URL,
+    baseURL: MINTERORG_API_URL,
 });
 
 const TOKEN_KEY = 'auth-token';

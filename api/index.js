@@ -105,18 +105,15 @@ export function postLinkConfirmation({id, code}) {
  */
 
 /**
+ *
+ * @param {string} address
  * @param {Object} [params]
- * @param {number} [params.block]
- * @param {number} [params.address]
- * @param {number} [params.addresses]
  * @param {number} [params.page]
+ * @param {number} [params.limit]
  * @return {Promise<TransactionListInfo>}
  */
-export function getTransactionList(params) {
-    return explorer
-        .get('transactions', {
-            params,
-        })
+export function getAddressTransactionList(address, params = {}) {
+    return explorer.get(`addresses/${address}/transactions`, {params})
         .then((response) => {
             const addressList = params.addresses || [params.address];
             response.data.data.forEach((tx) => {
@@ -141,10 +138,8 @@ export function getTransactionList(params) {
  * @return {Promise<Array<CoinItem>>}
  */
 export function getBalance(addressHash) {
-    return explorer.get('address/' + addressHash)
-        .then((response) => response.data.data.coins.sort((a, b) => {
-            return b.baseCoinAmount - a.baseCoinAmount;
-        }));
+    return explorer.get('addresses/' + addressHash)
+        .then((response) => response.data.data.balances);
 }
 
 

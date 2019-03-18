@@ -105,11 +105,13 @@ gulp.task('default', gulp.series(
     'once',
     function watch() {
         gulp.watch(paths.watch.less, gulp.task('less'));
-        gulp.watch(paths.src.img, gulp.task('imagemin')).on('change', function(event) {
-            if (event.type === 'deleted') {
-                del(paths.dest.img + path.basename(event.path));
-            }
-        });
+        gulp.watch(paths.src.img, gulp.task('imagemin'))
+            .on('unlink', function(filePath) {
+                del(paths.dest.img + path.basename(filePath));
+            })
+            .on('unlinkDir', function(dirPath) {
+                del(paths.dest.img + path.basename(dirPath));
+            });
         setTimeout(function() {
             log('Watching...');
         });

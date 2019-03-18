@@ -1,12 +1,16 @@
 <script>
     import {mapGetters} from 'vuex';
-    import {getTransactionList} from "~/api";
+    import {getAddressTransactionList} from "~/api";
     import getTitle from '~/assets/get-title';
     import {pretty} from '~/assets/utils';
     import ButtonCopyIcon from '~/components/ButtonCopyIcon';
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';
+
+    function getAddressLatestTransactionList(addres) {
+        return getAddressTransactionList(addres, {limit: 5});
+    }
 
     let balanceInterval;
 
@@ -27,7 +31,7 @@
                 });
         },
         asyncData({ store }) {
-            return getTransactionList({address: store.getters.address})
+            return getAddressLatestTransactionList(store.getters.address)
                 .then((txListInfo) => {
                     return {
                         txList: txListInfo.data,
@@ -65,7 +69,7 @@
         mounted() {
             balanceInterval = setInterval(() => {
                 this.$store.dispatch('FETCH_BALANCE');
-                getTransactionList({address: this.address})
+                getAddressLatestTransactionList(this.address)
                     .then((txListInfo) => {
                         this.txList = txListInfo.data;
                     });

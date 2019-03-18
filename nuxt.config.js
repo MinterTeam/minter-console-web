@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 const envConfig = dotenv.config();
 
 import langRu from './lang/ru';
-import {BASE_TITLE, BASE_DESCRIPTION} from "./assets/variables";
+import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR} from "./assets/variables";
 
 module.exports = {
     /*
@@ -70,6 +70,7 @@ module.exports = {
                 },
             ],
             defaultLocale: 'en',
+            routesNameSeparator: I18N_ROUTE_NAME_SEPARATOR,
             strategy: 'prefix_except_default',
             rootRedirect: null,
             vueI18n: {

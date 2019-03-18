@@ -1,4 +1,4 @@
-import {getBalance, getProfile, getProfileAddressEncrypted, getProfileAddressList, getTransactionList} from "~/api";
+import {getBalance, getProfile, getProfileAddressEncrypted} from "~/api";
 // import explorer from "~/api/explorer";
 
 export default {

@@ -1,9 +1,10 @@
 import Vue from 'vue';
+import {I18N_ROUTE_NAME_SEPARATOR} from '~/assets/variables';
 
 Vue.mixin({
     methods: {
         getLocalePath: getLocalePathFactory('$store', '$i18n'),
-        hasLocalizedRoute: hasLocalizedRouteFactory('$router', '$i18n'),
+        hasLocalizedRoute: hasLocalizedRouteFactory('$router'),
     },
 });
 
@@ -11,7 +12,7 @@ export default ({ app }, inject) => {
     // Set `i18n` instance on `app`
     // This way we can use it in middleware and pages `asyncData`/`fetch`
     app.getLocalePath = getLocalePathFactory('store', 'i18n');
-    app.hasLocalizedRoute = hasLocalizedRouteFactory('router', 'i18n');
+    app.hasLocalizedRoute = hasLocalizedRouteFactory('router');
 };
 
 
@@ -57,7 +58,7 @@ function getLocalePathFactory(storePath, i18nPath) {
     };
 }
 
-function hasLocalizedRouteFactory(routerPath, i18nPath) {
+function hasLocalizedRouteFactory(routerPath) {
     /**
      * Check existence of localized route
      * @param route
@@ -66,9 +67,8 @@ function hasLocalizedRouteFactory(routerPath, i18nPath) {
      */
     return function checkLocaleInRoutes(route, locale) {
         const router = this[routerPath];
-        const i18n = this[i18nPath];
 
-        const name = route.name + i18n.routesNameSeparator + locale;
+        const name = route.name + I18N_ROUTE_NAME_SEPARATOR + locale;
         return router.options.routes.some((item) => item.name === name);
     };
 }

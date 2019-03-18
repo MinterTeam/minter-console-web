@@ -39,7 +39,7 @@ describe('private routes redirect', () => {
     });
 });
 
-describe('index page', async () => {
+describe('index page', () => {
     beforeAll(async () => {
         await page.goto(ROUTES.public.index);
     });

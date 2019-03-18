@@ -1,7 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
+    import * as TX_TYPES from 'minterjs-tx/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl} from '~/assets/utils';
-    import {TX_TYPES} from '~/assets/variables';
     import TableLink from '~/components/TableLink';
 
     export default {
@@ -10,8 +10,7 @@
         },
         filters: {
             pretty,
-            // transform "camelCaseText" to "Sentence Case Text"
-            txType: (value) => txTypeFilter(value).replace(/ coin$/, ''),
+            txType: txTypeFilter,
             short: shortHashFilter,
             time: getTimeStamp,
         },
@@ -38,9 +37,6 @@
             ...mapGetters([
                 'address',
             ]),
-            txListFormatted() {
-                return this.txList.slice(0, 5);
-            },
             timeZone() {
                 return getTimeZone(new Date());
             },
@@ -54,33 +50,32 @@
                 // this.$set(this.isTxExpanded, txn, !this.isTxExpanded[txn]);
             },
             isSell(tx) {
-                return tx.type === TX_TYPES.SELL_COIN || tx.type === TX_TYPES.SELL_ALL_COIN;
+                return tx.type === Number(TX_TYPES.TX_TYPE_SELL_COIN) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL_COIN);
             },
             isBuy(tx) {
-                return tx.type === TX_TYPES.BUY_COIN;
+                return tx.type === Number(TX_TYPES.TX_TYPE_BUY_COIN);
             },
             hasAmount(tx) {
-                return typeof tx.data.amount !== 'undefined'
-                    || typeof tx.data.value !== 'undefined'
+                return typeof tx.data.value !== 'undefined'
                     || typeof tx.data.value_to_sell !== 'undefined'
                     || typeof tx.data.value_to_buy !== 'undefined'
                     || typeof tx.data.stake !== 'undefined'
                     || typeof tx.data.initial_amount !== 'undefined'
-                    | (tx.data.check && typeof tx.data.check.value !== 'undefined');
+                    || (tx.data.check && typeof tx.data.check.value !== 'undefined');
             },
             getConvertCoinSymbol(tx) {
-                if (tx.type === TX_TYPES.SELL_COIN || tx.type === TX_TYPES.SELL_ALL_COIN) {
+                if (tx.type === Number(TX_TYPES.TX_TYPE_SELL_COIN) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL_COIN)) {
                     return tx.data.coin_to_sell;
                 }
-                if (tx.type === TX_TYPES.BUY_COIN) {
+                if (tx.type === Number(TX_TYPES.TX_TYPE_BUY_COIN)) {
                     return tx.data.coin_to_buy;
                 }
             },
             getConvertValue(tx) {
-                if (tx.type === TX_TYPES.SELL_COIN || tx.type === TX_TYPES.SELL_ALL_COIN) {
+                if (tx.type === Number(TX_TYPES.TX_TYPE_SELL_COIN) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL_COIN)) {
                     return tx.data.value_to_sell;
                 }
-                if (tx.type === TX_TYPES.BUY_COIN) {
+                if (tx.type === Number(TX_TYPES.TX_TYPE_BUY_COIN)) {
                     return tx.data.value_to_buy;
                 }
             },
@@ -100,7 +95,7 @@
             </h1>
         </div>-->
         <div class="table-wrap">
-            <table v-if="txListFormatted.length">
+            <table v-if="txList.length">
                 <thead>
                 <tr class="u-text-nowrap">
                     <th class="u-hidden-small-down">{{ tt('Latest Transactions', 'wallet.tx-title') }}</th>
@@ -115,7 +110,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <template v-for="tx in txListFormatted">
+                <template v-for="tx in txList">
                     <tr class="u-text-nowrap" :class="{'is-expanded': isTxExpanded[tx.txn]}" :key="tx.txn">
                         <!-- hash -->
                         <td>
@@ -138,7 +133,7 @@
                         <!-- amount -->
                         <td class="u-hidden-large-down">
                             <div v-if="hasAmount(tx)">
-                                {{ tx.data.amount || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
+                                {{ tx.data.value || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
                                 {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
                             </div>
                         </td>
@@ -146,7 +141,7 @@
                         <td class="u-hidden-large-up">
                             {{ tx.type | txType }}
                             <span v-if="hasAmount(tx)">
-                                {{ tx.data.amount || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
+                                {{ tx.data.value || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
                                 {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
                             </span>
                         </td>
