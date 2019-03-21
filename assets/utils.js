@@ -1,9 +1,9 @@
-import decode from 'entity-decode';
-import prettyNum from 'pretty-num';
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
-import {EXPLORER_URL} from "~/assets/variables";
+import decode from 'entity-decode';
+import prettyNum from 'pretty-num';
 import {txTypeList} from 'minterjs-tx/src/tx-types';
+import {EXPLORER_URL} from "~/assets/variables";
 
 
 
@@ -107,10 +107,14 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
 
+/**
+ * @param {number} value
+ * @return {string}
+ */
 export function txTypeFilter(value) {
-    value = txTypeList[value].name; // get type name
-    value = value.charAt(0).toUpperCase() + value.slice(1); // capitalize the first letter
-    return value;
+    let name = txTypeList[value].name; // get type name
+    name = name.charAt(0).toUpperCase() + name.slice(1); // capitalize the first letter
+    return name;
 }
 
 export function getFeeValue(baseUnits, payloadLength, tickerLength) {

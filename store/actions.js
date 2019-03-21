@@ -52,7 +52,6 @@ export default {
     // },
     FETCH_BALANCE: ({ commit, getters }) => {
         // profile address fetched in the middleware
-        // use only 1 address
         return getBalance(getters.address)
             .then((balance) => {
                 commit('SET_BALANCE', balance);

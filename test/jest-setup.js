@@ -31,6 +31,7 @@ const initNuxt = async () => {
     config.dev = false;
     config.mode = 'spa';
     nuxt = new Nuxt(config);
+    await nuxt.ready();
     if (!process.env.NUXT_SKIP_SELF_BUILD) {
         await new Builder(nuxt).build();
     }
