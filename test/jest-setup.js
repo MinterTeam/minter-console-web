@@ -64,7 +64,7 @@ module.exports = async function() {
         process.env.DEBUG
             ? {
                 headless: false,
-                slowMo: 50,
+                slowMo: 100,
             }
             : {}
     );

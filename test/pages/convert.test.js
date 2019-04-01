@@ -25,6 +25,7 @@ afterAll(async () => {
 describe('convert page', () => {
     beforeAll(async () => {
         await page.goto(ROUTES.private.convert);
+        await page.waitForSelector('[data-test-id="convertSellInputSellCoin"]');
     });
 
     test('sell coins', async () => {
