@@ -27,7 +27,7 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', app.tt('Wallet', 'common.page-wallet'));
+                    store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
                 });
         },
         asyncData({ store }) {
@@ -40,7 +40,7 @@
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.tt('Transact MNT and other coins issued in the Minter test network. Almost instantly and fee-free.', 'wallet.seo-description');
+            const description = this.$td('Transact MNT and other coins issued in the Minter test network. Almost instantly and fee-free.', 'wallet.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -87,7 +87,7 @@
             <div class="wallet__address">
                 <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" alt="" role="presentation">
                 <div class="wallet__address-content">
-                    <div>{{ tt('Your address:', 'wallet.address') }}</div>
+                    <div>{{ $td('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
                         <ButtonCopyIcon :copy-text="address"/>
@@ -95,7 +95,7 @@
                 </div>
             </div>
             <div class="wallet__balance">
-                <div>{{ tt('Your balance:', 'wallet.balance') }}</div>
+                <div>{{ $td('Your balance:', 'wallet.balance') }}</div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
                 </div>

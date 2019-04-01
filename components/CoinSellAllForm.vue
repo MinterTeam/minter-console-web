@@ -150,10 +150,10 @@
     <div class="panel">
         <div class="panel__header">
             <h1 class="panel__header-title">
-                {{ tt('Sell All Coins', 'convert.sell-all-title') }}
+                {{ $td('Sell All Coins', 'convert.sell-all-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ tt('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
+                {{ $td('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
             </p>
         </div>
         <form class="panel__section" novalidate @submit.prevent="submitConfirm">
@@ -167,9 +167,9 @@
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                                 uppercase }} ({{ coin.amount | pretty }})</option>
                         </select>
-                        <span class="form-field__label">{{ tt('Coin to sell', 'form.convert-sell-coin-sell') }}</span>
+                        <span class="form-field__label">{{ $td('Coin to sell', 'form.convert-sell-coin-sell') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--small--1-2">
                     <label class="form-field">
@@ -177,11 +177,11 @@
                                         v-model.trim="form.coinTo"
                                         @blur="$v.form.coinTo.$touch()"
                         />
-                        <span class="form-field__label">{{ tt('Coin to get', 'form.convert-sell-coin-get') }}</span>
+                        <span class="form-field__label">{{ $td('Coin to get', 'form.convert-sell-coin-get') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ tt('Enter coin symbol', 'form.coin-error-required') }}</span>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ tt('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ tt('Max 10 letters', 'form.coin-error-max') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
                 <div class="u-cell" v-show="isModeAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -189,22 +189,22 @@
                                v-model.trim="form.message"
                                @blur="$v.form.message.$touch()"
                         >
-                        <span class="form-field__label">{{ tt('Message', 'form.message') }}</span>
+                        <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
-                    <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
+                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
                     <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
-                        {{ tt('Simple mode', 'form.toggle-simple-mode') }}
+                        {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
                     <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
-                        {{ tt('Advanced mode', 'form.toggle-advanced-mode') }}
+                        {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
                     <button class="button button--main button--full" data-test-id="convertSellAllSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                        <span class="button__content">{{ tt('Sell', 'form.convert-sell-button') }}</span>
+                        <span class="button__content">{{ $td('Sell', 'form.convert-sell-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                             <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                         </svg>
@@ -212,11 +212,11 @@
                     <div class="form-field__error" data-test-id="convertSellAllErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
                 <div class="u-cell u-cell--order-2" data-test-id="convertSellAllSuccessMessage" v-if="serverSuccess">
-                    <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                    <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
             </div>
             <div v-else>
-                {{ tt('You don\'t have coins to sell', 'form.convert-sell-error') }}
+                {{ $td('You don\'t have coins to sell', 'form.convert-sell-error') }}
             </div>
         </form>
 
@@ -225,7 +225,7 @@
                 <div class="panel__header">
                     <h1 class="panel__header-title">
                         <img class="panel__header-title-icon" src="/img/icon-feature-convert.svg" alt="" role="presentation" width="40" height="40">
-                        {{ tt('Convert Coins', 'convert.convert-title') }}
+                        {{ $td('Convert Coins', 'convert.convert-title') }}
                     </h1>
                 </div>
                 <div class="panel__section">
@@ -235,7 +235,7 @@
                                 <input class="form-field__input is-not-empty" type="text" readonly
                                        :value="$options.filters.prettyExact(sellAmount) + ' ' + form.coinFrom"
                                 >
-                                <span class="form-field__label">{{ tt('You will send', 'form.convert-sell-confirm-send') }}</span>
+                                <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
@@ -243,22 +243,22 @@
                                 <input class="form-field__input is-not-empty" type="text" readonly
                                        :value="$options.filters.pretty(estimation) + ' ' + form.coinTo"
                                 >
-                                <span class="form-field__label">{{ tt('You will get approximately *', 'form.convert-sell-confirm-receive') }}</span>
+                                <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
                             <button class="button button--main button--full" data-test-id="convertSellAllModalSubmitButton" :class="{'is-loading': isFormSending}" @click="submit">
-                                <span class="button__content">{{ tt('Confirm', 'form.submit-confirm-button') }}</span>
+                                <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                                     <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                                 </svg>
                             </button>
                             <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
-                                {{ tt('Cancel', 'form.submit-cancel-button') }}
+                                {{ $td('Cancel', 'form.submit-cancel-button') }}
                             </button>
                         </div>
                         <div class="u-cell form-field__help u-text-left">
-                            {{ tt('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
+                            {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
                         </div>
                     </div>
                 </div>

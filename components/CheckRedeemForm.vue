@@ -92,11 +92,11 @@
                            v-model.trim="form.check"
                            @blur="$v.form.check.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Check', 'form.checks-redeem-check') }}</span>
+                    <span class="form-field__label">{{ $td('Check', 'form.checks-redeem-check') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.check.$dirty && !$v.form.check.required">{{ tt('Check', 'form.checks-redeem-check-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.check.$dirty && !$v.form.check.validCheck">{{ tt('Check is invalid', 'form.checks-redeem-check-error-invalid') }}</span>
-                <div class="form-field__help">{{ tt('The identifier the issuer gave you. Starts&nbsp;with', 'form.checks-redeem-check-help') }}&nbsp;<strong>Mc</strong></div>
+                <span class="form-field__error" v-if="$v.form.check.$dirty && !$v.form.check.required">{{ $td('Check', 'form.checks-redeem-check-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.check.$dirty && !$v.form.check.validCheck">{{ $td('Check is invalid', 'form.checks-redeem-check-error-invalid') }}</span>
+                <div class="form-field__help">{{ $td('The identifier the issuer gave you. Starts&nbsp;with', 'form.checks-redeem-check-help') }}&nbsp;<strong>Mc</strong></div>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
@@ -104,13 +104,13 @@
                            v-model.trim="form.password"
                            @blur="$v.form.password.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Password', 'form.checks-redeem-password') }}</span>
+                    <span class="form-field__label">{{ $td('Password', 'form.checks-redeem-password') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ tt('Enter password', 'form.checks-redeem-password-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'form.checks-redeem-password-error-required') }}</span>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ tt('Redeem', 'form.checks-redeem-button') }}</span>
+                    <span class="button__content">{{ $td('Redeem', 'form.checks-redeem-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
@@ -118,7 +118,7 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">
-                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
     </form>

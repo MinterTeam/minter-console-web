@@ -14,12 +14,12 @@
             //@TODO fetch balance in middleware
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', app.tt('Delegation', 'common.page-delegation'));
+                    store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
                 });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.tt('Delegate your coins to start receiving payouts. Here you can also submit the request for unbonding.', 'delegation.seo-description');
+            const description = this.$td('Delegate your coins to start receiving payouts. Here you can also submit the request for unbonding.', 'delegation.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -48,10 +48,10 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    {{ tt('Delegate', 'delegation.delegate-title') }}
+                    {{ $td('Delegate', 'delegation.delegate-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ tt('You can delegate your tokens to validators and receive related payments in accordance with the terms of participation.', 'delegation.delegate-description') }}
+                    {{ $td('You can delegate your tokens to validators and receive related payments in accordance with the terms of participation.', 'delegation.delegate-description') }}
                 </p>
             </div>
             <ValidatorDelegateForm/>
@@ -59,10 +59,10 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    {{ tt('Unbond', 'delegation.unbond-title') }}
+                    {{ $td('Unbond', 'delegation.unbond-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ tt('In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 30 days after the request has been sent.', 'delegation.unbond-description') }}
+                    {{ $td('In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 30 days after the request has been sent.', 'delegation.unbond-description') }}
                 </p>
             </div>
             <ValidatorUnbondForm/>

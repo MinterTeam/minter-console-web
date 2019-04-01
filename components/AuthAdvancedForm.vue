@@ -56,13 +56,13 @@
                               v-model="mnemonic"
                               @blur="$v.mnemonic.$touch()"
                     ></textarea>
-                    <span class="form-field__label">{{ tt('Your seed phrase', 'index.auth-sign-in-seed-text') }}</span>
+                    <span class="form-field__label">{{ $td('Your seed phrase', 'index.auth-sign-in-seed-text') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.mnemonic.$dirty && !$v.mnemonic.required">{{ tt('Enter phrase', 'index.auth-error-seed-required') }}</span>
-                <span class="form-field__error" v-if="$v.mnemonic.$dirty && $v.mnemonic.required && !$v.mnemonic.validMnemonic">{{ tt('Invalid phrase', 'index.auth-error-seed-invalid') }}</span>
+                <span class="form-field__error" v-if="$v.mnemonic.$dirty && !$v.mnemonic.required">{{ $td('Enter phrase', 'index.auth-error-seed-required') }}</span>
+                <span class="form-field__error" v-if="$v.mnemonic.$dirty && $v.mnemonic.required && !$v.mnemonic.validMnemonic">{{ $td('Invalid phrase', 'index.auth-error-seed-invalid') }}</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" data-test-id="authAdvancedLoginSubmitButton" :class="{'is-disabled': $v.$invalid}">{{ tt('Sign In', 'index.auth-sign-in-seed-button') }}</button>
+                <button class="button button--main button--full" data-test-id="authAdvancedLoginSubmitButton" :class="{'is-disabled': $v.$invalid}">{{ $td('Sign In', 'index.auth-sign-in-seed-button') }}</button>
             </div>
         </div>
     </form>

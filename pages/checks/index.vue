@@ -13,12 +13,12 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', app.tt('Checks', 'common.page-checks'));
+                    store.commit('SET_SECTION_NAME', app.$td('Checks', 'common.page-checks'));
                 });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.tt('Issue a check that will later be redeemed by the person of your choice or claim a check someone has written out to you.', 'checks.seo-description');
+            const description = this.$td('Issue a check that will later be redeemed by the person of your choice or claim a check someone has written out to you.', 'checks.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -47,10 +47,10 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    {{ tt('Redeem check', 'checks.redeem-title') }}
+                    {{ $td('Redeem check', 'checks.redeem-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ tt('Claim a check someone has written out to you.', 'checks.redeem-description') }}
+                    {{ $td('Claim a check someone has written out to you.', 'checks.redeem-description') }}
                 </p>
             </div>
             <CheckRedeemForm/>
@@ -58,10 +58,10 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    {{ tt('Issue check', 'checks.issue-title') }}
+                    {{ $td('Issue check', 'checks.issue-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ tt('Issue a check that will later be redeemed by the person of your choice.', 'checks.issue-description') }}
+                    {{ $td('Issue a check that will later be redeemed by the person of your choice.', 'checks.issue-description') }}
                 </p>
             </div>
             <CheckIssueForm/>

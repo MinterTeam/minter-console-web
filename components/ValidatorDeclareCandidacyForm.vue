@@ -163,11 +163,11 @@
                            v-model.trim="form.address"
                            @blur="$v.form.address.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Address', 'form.masternode-address') }}</span>
+                    <span class="form-field__label">{{ $td('Address', 'form.masternode-address') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ tt('Enter address', 'form.masternode-address-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ tt('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
-                <div class="form-field__help">{{ tt('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
+                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
+                <div class="form-field__help">{{ $td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
@@ -175,9 +175,9 @@
                            v-model.number="form.stake"
                            @blur="$v.form.stake.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Stake', 'form.masternode-stake') }}</span>
+                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ tt('Enter stake', 'form.masternode-stake-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field">
@@ -188,9 +188,9 @@
                         <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">{{ tt('Coin', 'form.coin') }}</span>
+                    <span class="form-field__label">{{ $td('Coin', 'form.coin') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ tt('Enter coin', 'form.coin-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
                 <label class="form-field" :class="{'is-error': $v.form.publicKey.$error}">
@@ -198,10 +198,10 @@
                            v-model.trim="form.publicKey"
                            @blur="$v.form.publicKey.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Public key', 'form.masternode-public') }}</span>
+                    <span class="form-field__label">{{ $td('Public key', 'form.masternode-public') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ tt('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ tt('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
@@ -222,23 +222,23 @@
                                         wheelStep: 1,
                                     }"
                     />
-                    <span class="form-field__label">{{ tt('Commission', 'form.masternode-commission') }}</span>
+                    <span class="form-field__label">{{ $td('Commission', 'form.masternode-commission') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">{{ tt('Enter commission', 'form.masternode-commission-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">{{ tt('Must be between 0 and 100', 'form.masternode-commission-error-between') }}</span>
+                <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">{{ $td('Enter commission', 'form.masternode-commission-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">{{ $td('Must be between 0 and 100', 'form.masternode-commission-error-between') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
                 <label class="form-field">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
                     >
-                        <option :value="false">{{ tt('Same as stake coin', 'form.masternode-fee-same') }}</option>
+                        <option :value="false">{{ $td('Same as stake coin', 'form.masternode-fee-same') }}</option>
                         <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
                             uppercase }} ({{ coin.amount | pretty }})</option>
                     </select>
-                    <span class="form-field__label">{{ tt('Coin to pay fee', 'form.fee') }}</span>
+                    <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
                 </label>
-                <div class="form-field__help">{{ tt(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help">{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -246,22 +246,22 @@
                            v-model.trim="form.message"
                            @blur="$v.form.message.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Message', 'form.message') }}</span>
+                    <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ tt('Max 1024 symbols', 'form.message-error-max') }}</span>
-                <div class="form-field__help">{{ tt('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
+                <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
                 <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
-                    {{ tt('Simple mode', 'form.toggle-simple-mode') }}
+                    {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                 </button>
                 <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
-                    {{ tt('Advanced mode', 'form.toggle-advanced-mode') }}
+                    {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                 </button>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ tt('Declare candidacy', 'form.masternode-declare-button') }}</span>
+                    <span class="button__content">{{ $td('Declare candidacy', 'form.masternode-declare-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>
@@ -269,11 +269,11 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell u-cell--order-2" v-if="serverSuccess">
-                <strong>{{ tt('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
         </div>
         <div v-else>
-            {{ tt('You don\'t have coins to declare candidacy', 'form.masternode-error') }}
+            {{ $td('You don\'t have coins to declare candidacy', 'form.masternode-error') }}
         </div>
     </form>
 </template>

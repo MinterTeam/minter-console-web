@@ -96,71 +96,71 @@
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('wallet')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
-                                    {{ tt('Wallet', 'common.page-wallet') }}
+                                    {{ $td('Wallet', 'common.page-wallet') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('convert')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-convert.svg" alt="" role="presentation">
-                                    {{ tt('Convert', 'common.page-convert') }}
+                                    {{ $td('Convert', 'common.page-convert') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('checks')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
-                                    {{ tt('Checks', 'common.page-checks') }}
+                                    {{ $td('Checks', 'common.page-checks') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('delegation')"  @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
-                                    {{ tt('Delegation', 'common.page-delegation') }}
+                                    {{ $td('Delegation', 'common.page-delegation') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('masternode')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-node-management.svg" alt="" role="presentation">
-                                    {{ tt('Masternode', 'common.page-masternode') }}
+                                    {{ $td('Masternode', 'common.page-masternode') }}
                                 </nuxt-link>
                             </li>
                             <!--
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="getLocalePath('multisignature')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-multisignature.svg" alt="" role="presentation">
-                                    {{ tt('Multisignature', 'common.page-multisignature') }}
+                                    {{ $td('Multisignature', 'common.page-multisignature') }}
                                 </nuxt-link>
                             </li>
                             -->
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="getLocalePath('coiner')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">
-                                    {{ tt('Coiner', 'common.page-coiner') }}
+                                    {{ $td('Coiner', 'common.page-coiner') }}
                                 </nuxt-link>
                             </li>
                             <!--
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="getLocalePath('pco')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
-                                    {{ tt('PCO', 'common.page-pco') }}
+                                    {{ $td('PCO', 'common.page-pco') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="getLocalePath('dao')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
-                                    {{ tt('DAO', 'common.page-dao') }}
+                                    {{ $td('DAO', 'common.page-dao') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="getLocalePath('wallet')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-support.svg" alt="" role="presentation">
-                                    {{ tt('Support', 'common.page-support') }}
+                                    {{ $td('Support', 'common.page-support') }}
                                 </nuxt-link>
                             </li>
                             -->
                             <li class="menu__item menu__user u-cell">
                                 <nuxt-link class="menu__link menu__user-link link--hover" :to="getLocalePath('account')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
-                                    <span class="menu__user-name">{{ $store.state.user.username || tt('Account', 'common.page-account') }}</span>
+                                    <span class="menu__user-name">{{ $store.state.user.username || $td('Account', 'common.page-account') }}</span>
                                 </nuxt-link>
                                 <button class="menu__user-logout u-semantic-button u-hidden-medium-up" data-test-id="headerLogoutButton" @click="logout">
                                     <img class="" src="/img/icon-auth-logout-menu.svg" alt="Logout">

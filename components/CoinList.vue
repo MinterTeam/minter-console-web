@@ -40,8 +40,8 @@
             <table v-if="coinList.length">
                 <thead>
                 <tr class="u-text-nowrap">
-                    <th>{{ tt('My Coins', 'wallet.coin-table-name') }}</th>
-                    <th width="30%">{{ tt('Balance', 'wallet.coin-table-balance') }}</th>
+                    <th>{{ $td('My Coins', 'wallet.coin-table-name') }}</th>
+                    <th width="30%">{{ $td('Balance', 'wallet.coin-table-balance') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -67,7 +67,7 @@
             <div class="panel__content panel__section u-text-center" v-else>No Coins</div>
         </div>
         <div class="panel__section u-text-center" v-if="coinList.length < $store.state.balance.length">
-            <button class="button button--ghost-main" @click="isFullListActive = true">{{ tt('Show All Coins', 'wallet.coin-show-all')}}</button>
+            <button class="button button--ghost-main" @click="isFullListActive = true">{{ $td('Show All Coins', 'wallet.coin-show-all')}}</button>
         </div>
     </section>
 </template>

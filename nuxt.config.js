@@ -50,7 +50,6 @@ module.exports = {
         { src: '~/plugins/seo-vk.js', ssr: false },
         { src: '~/plugins/seo-tw.js', ssr: false },
         { src: '~/plugins/classlist-svg-polyfill.js', ssr: false },
-        '~/plugins/translate.js',
         '~/plugins/get-locale-path.js',
     ],
     env: envConfig.error ? {} : envConfig.parsed,
@@ -82,6 +81,7 @@ module.exports = {
             seo: false,
             detectBrowserLanguage: false,
         }],
+        'vue-i18n-default/src/nuxt-i18n-default-module',
     ],
     /*
     ** Build configuration

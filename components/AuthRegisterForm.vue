@@ -110,11 +110,11 @@
                                      @blur.native="$v.form.username.$touch()"
                                      @input.native="sve.username.isActual = false"
                     />
-                    <span class="form-field__label">{{ tt('Choose username', 'index.auth-sign-up-username') }}</span>
+                    <span class="form-field__label">{{ $td('Choose username', 'index.auth-sign-up-username') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">{{ tt('Enter username', 'index.auth-error-username-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">{{ tt('Username is too short', 'index.auth-error-username-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ tt('Username is too long', 'index.auth-error-username-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">{{ $td('Enter username', 'index.auth-error-username-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">{{ $td('Username is too short', 'index.auth-error-username-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ $td('Username is too long', 'index.auth-error-username-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
             <!--<div class="u-cell u-cell&#45;&#45;small&#45;&#45;1-2">
@@ -124,9 +124,9 @@
                            @blur="$v.form.email.$touch()"
                            @input="sve.email.isActual = false"
                     >
-                    <span class="form-field__label">{{ tt('E-mail (Optional)', 'index.auth-sign-up-email') }}</span>
+                    <span class="form-field__label">{{ $td('E-mail (Optional)', 'index.auth-sign-up-email') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.email">{{ tt('Not valid email', 'index.auth-error-email-invalid') }}</span>
+                <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.email">{{ $td('Not valid email', 'index.auth-error-email-invalid') }}</span>
                 <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.server">{{ sve.email.message }}</span>
             </div>-->
             <div class="u-cell u-cell--small--1-2">
@@ -136,11 +136,11 @@
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
                     >
-                    <span class="form-field__label">{{ tt('Set your password', 'index.auth-sign-up-password') }}</span>
+                    <span class="form-field__label">{{ $td('Set your password', 'index.auth-sign-up-password') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ tt('Enter password', 'index.auth-error-password-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">{{ tt('Password is too short', 'index.auth-error-password-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ tt('Password is too long', 'index.auth-error-password-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'index.auth-error-password-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">{{ $td('Password is too short', 'index.auth-error-password-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ $td('Password is too long', 'index.auth-error-password-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
@@ -149,14 +149,14 @@
                            v-model="form.passwordConfirm"
                            @blur="$v.form.passwordConfirm.$touch()"
                     >
-                    <span class="form-field__label">{{ tt('Confirm password', 'index.auth-sign-up-password-confirm') }}</span>
+                    <span class="form-field__label">{{ $td('Confirm password', 'index.auth-sign-up-password-confirm') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && !$v.form.passwordConfirm.required">{{ tt('Confirm password', 'index.auth-error-confirm-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && $v.form.passwordConfirm.required && !$v.form.passwordConfirm.sameAsPassword">{{ tt('Passwords don\'t match', 'index.auth-error-confirm-match') }}</span>
+                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && !$v.form.passwordConfirm.required">{{ $td('Confirm password', 'index.auth-error-confirm-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && $v.form.passwordConfirm.required && !$v.form.passwordConfirm.sameAsPassword">{{ $td('Passwords don\'t match', 'index.auth-error-confirm-match') }}</span>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" data-test-id="authRegisterSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ tt('Register', 'index.auth-sign-up-button') }}</span>
+                    <span class="button__content">{{ $td('Register', 'index.auth-sign-up-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>

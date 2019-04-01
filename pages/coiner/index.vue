@@ -11,12 +11,12 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', app.tt('Coiner', 'common.page-coiner'));
+                    store.commit('SET_SECTION_NAME', app.$td('Coiner', 'common.page-coiner'));
                 });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.tt('Determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves to create your own coin.', 'coiner.seo-description');
+            const description = this.$td('Determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves to create your own coin.', 'coiner.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -49,10 +49,10 @@
                 </h1>
                 <p class="panel__header-description"></p>
                 <h1 class="panel__header-title">
-                    {{ tt('Create Coin', 'coiner.create-title') }}
+                    {{ $td('Create Coin', 'coiner.create-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ tt('Create your own coin from scratch. It is completely up to you to decide what role it will play&nbsp;— that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
+                    {{ $td('Create your own coin from scratch. It is completely up to you to decide what role it will play&nbsp;— that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
                 </p>
             </div>
             <CoinCreateForm/>

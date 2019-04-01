@@ -15,12 +15,12 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_BALANCE')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', app.tt('Convert', 'common.page-convert'));
+                    store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
                 });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.tt('Sell—either partially or fully—a coin that you own or buy a new one.', 'convert.seo-description');
+            const description = this.$td('Sell—either partially or fully—a coin that you own or buy a new one.', 'convert.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {

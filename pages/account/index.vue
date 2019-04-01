@@ -10,12 +10,12 @@
         fetch({ app, store }) {
             return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                 .then(() => {
-                    store.commit('SET_SECTION_NAME', app.tt('Account', 'common.page-account'));
+                    store.commit('SET_SECTION_NAME', app.$td('Account', 'common.page-account'));
                 });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.tt('Get your account information, such as username, address, private key, and seed phrase.', 'account.seo-description');
+            const description = this.$td('Get your account information, such as username, address, private key, and seed phrase.', 'account.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -56,41 +56,41 @@
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
-                    {{ tt('Account', 'account.title') }}
+                    {{ $td('Account', 'account.title') }}
                 </h1>
             </div>
             <dl class="dl--table">
-                <dt v-if="username">{{ tt('Username:', 'account.username') }}</dt>
+                <dt v-if="username">{{ $td('Username:', 'account.username') }}</dt>
                 <dd v-if="username">@{{ username }}</dd>
 
-                <dt v-if="email">{{ tt('Email:', 'account.email') }}</dt>
+                <dt v-if="email">{{ $td('Email:', 'account.email') }}</dt>
                 <dd v-if="email">{{ email }}</dd>
 
-                <dt>{{ tt('Address:', 'account.address') }}</dt>
+                <dt>{{ $td('Address:', 'account.address') }}</dt>
                 <dd class="u-icon-wrap">
                     <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
                     <ButtonCopyIcon :copy-text="address"/>
                 </dd>
 
-                <dt>{{ tt('Private key:', 'account.private-key') }}</dt>
+                <dt>{{ $td('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
                         <span class="u-select-all u-icon-text">{{ privateKey }}</span>
                         <ButtonCopyIcon :copy-text="privateKey"/>
                     </div>
                     <div v-else>
-                        <button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ tt('Click to view', 'account.click-view') }}</button>
+                        <button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ $td('Click to view', 'account.click-view') }}</button>
                     </div>
                 </dd>
 
-                <dt>{{ tt('Mnemonic:', 'account.mnemonic') }}</dt>
+                <dt>{{ $td('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
                         <span class="u-select-all u-icon-text">{{ mnemonic }}</span>
                         <ButtonCopyIcon :copy-text="mnemonic"/>
                     </div>
                     <div v-else>
-                        <button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ tt('Click to view', 'account.click-view') }}</button>
+                        <button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ $td('Click to view', 'account.click-view') }}</button>
                     </div>
                 </dd>
             </dl>

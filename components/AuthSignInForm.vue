@@ -91,11 +91,11 @@
                                      @blur.native="$v.form.username.$touch()"
                                      @input.native="sve.username.isActual = false"
                     />
-                    <span class="form-field__label">{{ tt('Username', 'index.auth-sign-in-username') }}</span>
+                    <span class="form-field__label">{{ $td('Username', 'index.auth-sign-in-username') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">{{ tt('Enter username', 'index.auth-error-username-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">{{ tt('Username is too short', 'index.auth-error-username-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ tt('Username is too long', 'index.auth-error-username-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.required">{{ $td('Enter username', 'index.auth-error-username-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.minLength">{{ $td('Username is too short', 'index.auth-error-username-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ $td('Username is too long', 'index.auth-error-username-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
@@ -105,16 +105,16 @@
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
                     >
-                    <span class="form-field__label">{{ tt('Password', 'index.auth-sign-in-password') }}</span>
+                    <span class="form-field__label">{{ $td('Password', 'index.auth-sign-in-password') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ tt('Enter password', 'index.auth-error-password-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">{{ tt('Password is too short', 'index.auth-error-password-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ tt('Password is too long', 'index.auth-error-password-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'index.auth-error-password-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.minLength">{{ $td('Password is too short', 'index.auth-error-password-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ $td('Password is too long', 'index.auth-error-password-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" data-test-id="authLoginSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ tt('Sign In', 'index.auth-sign-in-button') }}</span>
+                    <span class="button__content">{{ $td('Sign In', 'index.auth-sign-in-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
                     </svg>

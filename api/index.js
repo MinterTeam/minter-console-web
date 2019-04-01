@@ -258,21 +258,17 @@ function markSecured(address) {
  * @property {string} [data.pub_key]
  * @property {string} [data.reward_address]
  * @property {string} [data.owner_address]
- * -- type: TX_TYPE_DELEGATE
- * @property {string} [data.pub_key]
- * @property {string} [data.coin]
- * @property {number} [data.stake]
- * -- type: TX_TYPE_UNBOND
+ * -- type: TX_TYPE_DELEGATE, TX_TYPE_UNBOND
  * @property {string} [data.pub_key]
  * @property {string} [data.coin]
  * @property {number} [data.value]
+ * -- type: TX_TYPE_REDEEM_CHECK
  * @property {Object} [data.check]
  * @property {string} [data.check.sender]
  * @property {number} [data.check.nonce]
  * @property {number|string} [data.check.value]
  * @property {string} [data.check.coin]
  * @property {number} [data.check.due_block]
- * -- type: TX_TYPE_REDEEM_CHECK
  * @property {string} [data.raw_check]
  * @property {string} [data.proof]
  * - type: TX_TYPE_SET_CANDIDATE_ON, TX_TYPE_SET_CANDIDATE_OFF
