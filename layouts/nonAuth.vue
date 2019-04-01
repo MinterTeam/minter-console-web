@@ -16,7 +16,7 @@
     <div class="main-wrap">
         <header class="header">
             <div class="header__container u-container u-container--medium">
-                <nuxt-link class="header__logo no-link" :to="getLocalePath('index')">
+                <nuxt-link class="header__logo no-link" :to="preferredPath('index')">
                     <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
                     <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
                 </nuxt-link>

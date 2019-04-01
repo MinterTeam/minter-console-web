@@ -21,7 +21,6 @@ export default function() {
         // },
         // history: [],
         isSnackbarActive: false,
-        preferredLocale: null,
     };
 }
 /**

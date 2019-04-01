@@ -29,7 +29,7 @@
         },
         methods: {
             switchLocaleCookie(localeCode) {
-                this.$store.commit('SET_PREFERRED_LOCALE', localeCode);
+                this.$store.commit('i18n/preferred/SET_LOCALE', localeCode);
                 const date = new Date();
                 Cookies.set(LANGUAGE_COOKIE_KEY, localeCode, {
                     expires: new Date(date.setDate(date.getDate() + 365)),

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 const envConfig = dotenv.config();
 
 import langRu from './lang/ru';
-import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR} from "./assets/variables";
+import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
 module.exports = {
     /*
@@ -39,17 +39,21 @@ module.exports = {
         middleware: [
             'profile',
             'auth',
-            'language',
         ],
     },
     plugins: [
         { src: '~/plugins/click-blur.js', ssr: false },
         { src: '~/plugins/persistedState.js', ssr: false },
         { src: '~/plugins/classlist-svg-polyfill.js', ssr: false },
-        '~/plugins/get-locale-path.js',
     ],
     env: envConfig.error ? {} : envConfig.parsed,
     modules: [
+        ['nuxt-i18n-preferred', {
+            routesNameSeparator: I18N_ROUTE_NAME_SEPARATOR,
+            languageCookieKey: LANGUAGE_COOKIE_KEY,
+            detectBrowserLanguage: false,
+        }],
+        'nuxt-i18n-default',
         ['nuxt-i18n', {
             locales: [
                 {
@@ -77,7 +81,6 @@ module.exports = {
             seo: false,
             detectBrowserLanguage: false,
         }],
-        'vue-i18n-default/src/nuxt-i18n-default-module',
     ],
     /*
     ** Build configuration

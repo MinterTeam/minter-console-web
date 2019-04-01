@@ -16,7 +16,7 @@ export default function({app, store, redirect}) {
                 console.log(resError, resError.response);
                 if (resError.response && resError.response.status === 401) {
                     store.commit('LOGOUT');
-                    redirect(app.getLocalePath('index'));
+                    redirect(app.preferredPath('index'));
                 } else {
                     throw resError;
                 }
