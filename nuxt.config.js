@@ -1,5 +1,3 @@
-// const nodeExternals = require('webpack-node-externals');
-// const dotenv = require('dotenv');
 import dotenv from 'dotenv';
 
 const envConfig = dotenv.config();
@@ -7,7 +5,7 @@ const envConfig = dotenv.config();
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
-module.exports = {
+export default {
     /*
     ** Headers of the page
     */
@@ -108,16 +106,6 @@ module.exports = {
         //     //         exclude: /(node_modules)/,
         //     //     });
         //     // }
-        //     /*
-        //     ** process some node_modules through webpack in server build
-        //     */
-        //     if (isServer) {
-        //         config.externals = [
-        //             nodeExternals({
-        //                 whitelist: [/^date-fns\/esm/, /^minterjs-util\/src/],
-        //             }),
-        //         ];
-        //     }
         // },
         babel: {
             presets: ['@nuxt/babel-preset-app'],

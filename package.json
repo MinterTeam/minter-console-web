@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -17,6 +17,9 @@
     "test": "gulp once && NODE_ENV=test jest --runInBand",
     "test:debug": "DEBUG=true npm run test",
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
+    "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
+    "pkg:pkg": "pkg . --out-path=tmp/pkg",
+    "pkg:zip":  "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
   },
   "pre-commit": [
@@ -79,10 +82,21 @@
     "jest": "^24.5.0",
     "jest-environment-node": "^24.5.0",
     "mkdirp": "^0.5.1",
+    "pkg": "^4.3.7",
     "postcss-normalize": "^7.0.1",
     "pre-commit": "^1.2.2",
     "puppeteer": "^1.14.0",
     "rimraf": "^2.6.3"
+  },
+  "bin": "pkg.js",
+  "pkg": {
+    "assets": [
+      "static",
+      "dist/**/*",
+      ".nuxt/**/*",
+      "node_modules/@nuxtjs/youch/src/resources/**/*"
+    ],
+    "scripts": []
   },
   "browserslist": [
     "> 0.5%",
