@@ -4,7 +4,7 @@
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
-    import {isValidAddress} from "minterjs-util";
+    import {isValidAddress} from "minterjs-util/src/prefix";
     import {postTx} from '~/api/minter-node';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
