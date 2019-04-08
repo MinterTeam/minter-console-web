@@ -19,7 +19,7 @@
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
     "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
     "pkg:pkg": "pkg . --out-path=tmp/pkg",
-    "pkg:zip":  "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
+    "pkg:zip": "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
   },
   "pre-commit": [
@@ -64,6 +64,7 @@
     "cross-env": "^5.2.0",
     "del": "^4.1.0",
     "dotenv": "^7.0.0",
+    "electron-builder": "^20.39.0",
     "eslint": "^5.16.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^2.1.2",
@@ -87,6 +88,40 @@
     "pre-commit": "^1.2.2",
     "puppeteer": "^1.14.0",
     "rimraf": "^2.6.3"
+  },
+  "build": {
+    "productName": "Minter Console",
+    "appId": "minter.console",
+    "directories": {
+      "output": "tmp"
+    },
+    "files": [
+      "dist/electron/**/*"
+    ],
+    "dmg": {
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
+    },
+    "mac": {
+      "icon": "build/icons/icon.icns"
+    },
+    "win": {
+      "icon": "build/icons/icon.ico"
+    },
+    "linux": {
+      "icon": "build/icons"
+    }
   },
   "bin": "pkg.js",
   "pkg": {
