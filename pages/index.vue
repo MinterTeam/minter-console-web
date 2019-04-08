@@ -1,18 +1,18 @@
 <script>
     import {mapGetters} from 'vuex';
     import getTitle from '~/assets/get-title';
-    import AuthSignInForm from "~/components/AuthSignInForm";
-    import AuthRegisterForm from "~/components/AuthRegisterForm";
+    // import AuthSignInForm from "~/components/AuthSignInForm";
+    // import AuthRegisterForm from "~/components/AuthRegisterForm";
     import AuthAdvancedForm from "~/components/AuthAdvancedForm";
     import AuthAdvancedGenerate from "~/components/AuthAdvancedGenerate";
 
     export default {
         layout: 'nonAuth',
         components: {
-            AuthAdvancedGenerate,
-            AuthRegisterForm,
-            AuthSignInForm,
+            // AuthRegisterForm,
+            // AuthSignInForm,
             AuthAdvancedForm,
+            AuthAdvancedGenerate,
         },
         directives: {
         },
@@ -73,7 +73,15 @@
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
                     <div class="u-cell u-cell--medium--1-2">
-                        <div class="panel">
+                        <div class="panel auth__blur">
+                            <div class="panel__header">
+                                <h1 class="panel__header-title">
+                                    <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
+                                    {{ $td('Sign in with seed phrase', 'index.auth-sign-in-seed-title') }}
+                                </h1>
+                            </div>
+                            <AuthAdvancedForm :isAuthAddress="true"/>
+                            <!--
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
@@ -88,6 +96,7 @@
                                 </h1>
                             </div>
                             <AuthRegisterForm/>
+                            -->
                         </div>
                     </div>
 
@@ -95,15 +104,8 @@
                         <div class="panel">
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
-                                    <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
-                                    {{ $td('Sign in with seed phrase', 'index.auth-sign-in-seed-title') }}
-                                </h1>
-                            </div>
-                            <AuthAdvancedForm :isAuthAddress="true"/>
-                            <div class="panel__header">
-                                <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-register.svg" alt="" role="presentation" width="40" height="40">
-                                    {{ $td('Register with seed phrase', 'index.auth-sign-up-seed-title') }}
+                                    {{ $td('Create wallet', 'index.auth-sign-up-seed-title') }}
                                 </h1>
                             </div>
                             <AuthAdvancedGenerate/>
@@ -197,7 +199,8 @@
                     </div>
                 </li>
             </ul>
-            <hr class="hr--margin-large">
+<!--
+            <hr class="hr&#45;&#45;margin-large">
             <p>{{ $td('Keep in mind that even without a Minter account, you still can use the following services and software:', 'index.links-description') }}</p>
             <ul class="services__list--horizontal no-list u-grid u-grid--vertical-margin--small">
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
@@ -219,6 +222,7 @@
                     <a class="services__link link--hover" href="https://help.minter.network" target="_blank">{{ $td('Help/FAQ', 'index.links-help') }}</a>
                 </li>
             </ul>
+-->
         </div>
     </main>
 </template>
