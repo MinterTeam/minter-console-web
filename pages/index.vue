@@ -26,7 +26,7 @@
         },
         head() {
             const title = getTitle(null, this.$i18n.locale);
-            const description = this.$td('Minter Console is by far the most advanced part of our project that lets you manage all your activities on our test network.', 'index.seo-description');
+            const description = this.$td('Minter Console is by far the most advanced part of our project that lets you manage all your activities on our network.', 'index.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {

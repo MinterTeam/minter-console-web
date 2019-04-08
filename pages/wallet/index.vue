@@ -40,7 +40,7 @@
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.$td('Transact MNT and other coins issued in the Minter test network. Almost instantly and fee-free.', 'wallet.seo-description');
+            const description = this.$td('Transact MNT and other coins issued in the Minter network. Almost instantly and fee-free.', 'wallet.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
