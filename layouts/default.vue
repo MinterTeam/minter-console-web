@@ -172,10 +172,10 @@
                     <div class="u-container main-content__aside-section">
                         <ul class="services__list no-list u-grid u-grid--vertical-margin--small">
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">Status</a>
+                                <a class="services__link link--hover" href="https://status.minter.network" target="_blank">Status</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">Explorer</a>
+                                <a class="services__link link--hover" href="https://explorer.minter.network" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
                                 <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank">API</a>
