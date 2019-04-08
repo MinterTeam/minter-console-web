@@ -1,17 +1,30 @@
 <script>
     // Uni8Array.fill needed for wallet
     import 'core-js/modules/es6.typed.uint8-array';
-    import {generateMnemonic} from "minterjs-wallet";
+    import autosize from 'v-autosize';
+    import {generateMnemonic, walletFromMnemonic} from "minterjs-wallet";
     import ButtonCopy from '~/components/ButtonCopy';
 
     export default {
         components: {
             ButtonCopy,
         },
+        directives: {
+            autosize,
+        },
         data() {
             return {
                 mnemonic: '',
             };
+        },
+        computed: {
+            address() {
+                try {
+                    return walletFromMnemonic(this.mnemonic).getAddressString();
+                } catch (e) {
+                    return '';
+                }
+            },
         },
         methods: {
             generate() {
@@ -27,10 +40,25 @@
             <div class="u-cell" v-if="!mnemonic">
                 <button class="button button--main button--full" data-test-id="authAdvancedRegisterGenerateButton" @click="generate">{{ $td('Click To Generate Seed Phrase', 'index.auth-sign-up-seed-generate') }}</button>
             </div>
-            <div class="u-cell" v-if="mnemonic">{{ mnemonic }}</div>
+            <div class="u-cell" v-if="address">
+                <label class="form-field">
+                    <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" readonly v-autosize
+                              :value="address"
+                    ></textarea>
+                    <span class="form-field__label">{{ $td('Your generated address', 'index.auth-sign-up-seed-address') }}</span>
+                </label>
+            </div>
+            <div class="u-cell" v-if="mnemonic">
+                <label class="form-field">
+                    <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" readonly v-autosize
+                              :value="mnemonic"
+                    ></textarea>
+                    <span class="form-field__label">{{ $td('Your generated seed phrase', 'index.auth-sign-up-seed-result') }}</span>
+                </label>
+            </div>
             <div class="u-cell" v-if="mnemonic">
                 <ButtonCopy class="button button--main button--full" data-test-id="authAdvancedRegisterCopyButton" :copy-text="mnemonic">
-                    {{ $td('Copy', 'index.auth-sign-up-seed-copy') }}
+                    {{ $td('Copy Seed Phrase', 'index.auth-sign-up-seed-copy') }}
                 </ButtonCopy>
             </div>
         </div>

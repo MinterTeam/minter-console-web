@@ -19,7 +19,7 @@
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
     "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
     "pkg:pkg": "pkg . --out-path=tmp/pkg",
-    "pkg:zip":  "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
+    "pkg:zip": "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
   },
   "pre-commit": [
@@ -43,7 +43,7 @@
     "minterjs-tx": "^4.4.0",
     "minterjs-util": "0.6.1",
     "minterjs-wallet": "^3.0.1",
-    "nuxt": "^2.5.1",
+    "nuxt": "^2.6.1",
     "nuxt-i18n": "^5.8.5",
     "nuxt-i18n-default": "github:shrpne/nuxt-i18n-default",
     "nuxt-i18n-preferred": "github:shrpne/nuxt-i18n-preferred#v0.0.2",
@@ -57,9 +57,9 @@
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
-    "autoprefixer": "^9.5.0",
+    "autoprefixer": "^9.5.1",
     "babel-eslint": "^10.0.1",
-    "babel-jest": "^24.5.0",
+    "babel-jest": "^24.7.1",
     "beeper": "^1.1.1",
     "cross-env": "^5.2.0",
     "del": "^4.1.0",
@@ -79,8 +79,8 @@
     "gulp-postcss": "^8.0.0",
     "gulp-rename": "^1.4.0",
     "imagemin-mozjpeg": "^8.0.0",
-    "jest": "^24.5.0",
-    "jest-environment-node": "^24.5.0",
+    "jest": "^24.7.1",
+    "jest-environment-node": "^24.7.1",
     "mkdirp": "^0.5.1",
     "pkg": "^4.3.7",
     "postcss-normalize": "^7.0.1",
