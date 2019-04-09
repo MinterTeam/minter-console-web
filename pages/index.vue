@@ -107,6 +107,9 @@
                                 </h1>
                             </div>
                             <AuthAdvancedGenerate/>
+                            <div class="panel__section">
+                                <a class="link--default" href="https://github.com/MinterTeam/minter-console-web/releases" target="_blank">{{ $td('Generate offline (Github)', 'index.auth-sign-up-seed-offline') }}</a>
+                            </div>
                         </div>
 
                         <!--
