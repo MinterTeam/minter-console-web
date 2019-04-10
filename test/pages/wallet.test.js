@@ -7,14 +7,14 @@ let browser;
 let page;
 
 
-beforeAll(async () => {
+beforeAll(async function beforeAllFn() {
     browser = global.browser;
     page = await browser.newPage();
     await login(page);
 }, 30000);
 
 
-afterAll(async () => {
+afterAll(async function afterAllFn() {
     await logout(page);
     if (!process.env.DEBUG) {
         await page.close();

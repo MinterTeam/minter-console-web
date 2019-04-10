@@ -124,7 +124,9 @@ export function getFeeValue(baseUnits, payloadLength, tickerLength) {
         5: 10000,
         6: 1000,
         7: 100,
-        8: 10,
+        8: 100,
+        9: 100,
+        10: 100,
     };
     const COIN_UNIT = 0.001;
     const COIN_UNIT_PART = 1 / COIN_UNIT; // negate js math quirks, ex.: 18 * 0.001 = 0.018000000000000002

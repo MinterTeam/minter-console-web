@@ -7,7 +7,7 @@
     import withParams from 'vuelidate/lib/withParams';
     import {CreateCoinTxParams} from "minter-js-sdk/src";
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
-    import {postTx} from '~/api/minter-node';
+    import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";

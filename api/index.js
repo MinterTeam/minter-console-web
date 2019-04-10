@@ -3,7 +3,7 @@ import 'core-js/modules/es6.typed.uint8-array';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import {generateMnemonic} from 'minterjs-wallet';
 import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} from 'minter-js-org';
-import myminter from '~/api/myminter';
+import accounts from '~/api/accounts';
 import explorer from '~/api/explorer';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
@@ -20,7 +20,7 @@ export function register(data) {
     const mnemonic = generateMnemonic();
 
     return new Promise((resolve, reject) => {
-        myminter.post('register', {
+        accounts.post('register', {
             ...userData,
             mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true),
         })
@@ -47,7 +47,7 @@ export function login({username, password}) {
     const passwordToStore = getPasswordToStore(password);
     const passwordToSend = getPasswordToSend(passwordToStore);
 
-    return myminter.post('login', {
+    return accounts.post('login', {
         username,
         password: passwordToSend,
     })
@@ -63,7 +63,7 @@ export function login({username, password}) {
  * @return {Promise<User>}
  */
 export function getProfile() {
-    return myminter.get('profile')
+    return accounts.get('profile')
         .then((response) => response.data.data);
 }
 
@@ -75,7 +75,7 @@ export function putProfile(profile) {
     if (dataToSend.passwordConfirm) {
         delete dataToSend.passwordConfirm;
     }
-    return myminter.put('profile', dataToSend);
+    return accounts.put('profile', dataToSend);
 }
 
 /**
@@ -83,7 +83,7 @@ export function putProfile(profile) {
  * @return {Promise<UserAvatar>}
  */
 export function putProfileAvatar(avatar) {
-    return myminter
+    return accounts
         .post('profile/avatar', makeFormData({avatar}), {
             headers: formDataHeaders,
         })
@@ -93,7 +93,7 @@ export function putProfileAvatar(avatar) {
 
 export function postLinkConfirmation({id, code}) {
     const methodUrl = 'profile/link/' + id + '/confirm';
-    return myminter.post(methodUrl, {
+    return accounts.post(methodUrl, {
         'code': code,
     }).then((response) => response.data.data);
 }
@@ -146,25 +146,25 @@ export function getBalance(addressHash) {
  * @return {Promise<[Address]>}
  */
 export function getProfileAddressList() {
-    return myminter.get('addresses')
+    return accounts.get('addresses')
         .then((response) => response.data.data.map(markSecured));
 }
 
 export function getProfileAddressEncrypted(id) {
-    return myminter.get('addresses/' + id + '/encrypted')
+    return accounts.get('addresses/' + id + '/encrypted')
         .then((response) => markSecured(response.data.data));
 }
 
 export function addProfileAddress(address) {
-    return myminter.post('addresses', address);
+    return accounts.post('addresses', address);
 }
 
 export function setMainProfileAddress(id) {
-    return myminter.put('addresses/' + id, {isMain: true});
+    return accounts.put('addresses/' + id, {isMain: true});
 }
 
 export function deleteProfileAddress(id) {
-    return myminter.delete('addresses/' + id);
+    return accounts.delete('addresses/' + id);
 }
 
 /**
@@ -175,7 +175,7 @@ export function deleteProfileAddress(id) {
  * @return {Promise<Object>}
  */
 export function getAddressInfo(params, cancelToken) {
-    return myminter
+    return accounts
         .get('info/address/by/contact', {
             params,
             cancelToken,

@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import {setAuthToken, resetAuthToken} from "~/api/myminter";
+import {setAuthToken, resetAuthToken} from "~/api/accounts";
 
 export default {
     SET_SECTION_NAME: (state, sectionName) => {

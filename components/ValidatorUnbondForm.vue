@@ -6,7 +6,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {UnbondTxParams} from "minter-js-sdk/src";
     import {isValidPublic} from "minterjs-util";
-    import {postTx} from '~/api/minter-node';
+    import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
