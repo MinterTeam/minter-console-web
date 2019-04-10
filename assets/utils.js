@@ -117,23 +117,6 @@ export function txTypeFilter(value) {
     return name;
 }
 
-export function getFeeValue(baseUnits, payloadLength, tickerLength) {
-    const TICKER_FEES = {
-        3: 1000000,
-        4: 100000,
-        5: 10000,
-        6: 1000,
-        7: 100,
-        8: 100,
-        9: 100,
-        10: 100,
-    };
-    const COIN_UNIT = 0.001;
-    const COIN_UNIT_PART = 1 / COIN_UNIT; // negate js math quirks, ex.: 18 * 0.001 = 0.018000000000000002
-    const tickerFee = TICKER_FEES[tickerLength] || 0; // value in base coin (not in units)
-    return (baseUnits + payloadLength * 2) / COIN_UNIT_PART + tickerFee;
-}
-
 
 
 // support

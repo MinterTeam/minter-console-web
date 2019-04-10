@@ -5,10 +5,12 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import SellTxParams from "minter-js-sdk/src/tx-params/convert-sell";
+    import {TX_TYPE_SELL} from 'minterjs-tx/src/tx-types';
+    import {getFeeValue} from 'minterjs-util/src/fee';
     import {postTx, estimateCoinSell} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import InputUppercase from '~/components/InputUppercase';
     import Modal from '~/components/Modal';
 
@@ -73,7 +75,7 @@
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(100, this.form.message.length));
+                return pretty(getFeeValue(TX_TYPE_SELL, this.form.message.length));
             },
         },
         methods: {

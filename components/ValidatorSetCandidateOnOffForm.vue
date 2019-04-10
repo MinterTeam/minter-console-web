@@ -4,11 +4,13 @@
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src";
-    import {isValidPublic} from "minterjs-util";
+    import {TX_TYPE_SET_CANDIDATE_ON, TX_TYPE_SET_CANDIDATE_OFF} from 'minterjs-tx/src/tx-types';
+    import {isValidPublic} from "minterjs-util/src/public";
+    import {getFeeValue} from 'minterjs-util/src/fee';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
 
     export default {
         directives: {
@@ -63,7 +65,7 @@
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(100, this.form.message.length));
+                return pretty(getFeeValue(this.formType === 'on' ? TX_TYPE_SET_CANDIDATE_ON : TX_TYPE_SET_CANDIDATE_OFF, this.form.message.length));
             },
         },
         methods: {

@@ -4,13 +4,15 @@
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
-    import {DeclareCandidacyTxParams} from "minter-js-sdk/src";
-    import {isValidPublic, isValidAddress} from "minterjs-util";
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
+    import DeclareCandidacyTxParams from "minter-js-sdk/src/tx-params/candidacy-declare";
+    import {TX_TYPE_DECLARE_CANDIDACY} from 'minterjs-tx/src/tx-types';
+    import {isValidPublic, isValidAddress} from "minterjs-util";
+    import {getFeeValue} from 'minterjs-util/src/fee';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
 
     export default {
         components: {
@@ -78,7 +80,7 @@
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(10000, this.form.message.length));
+                return pretty(getFeeValue(TX_TYPE_DECLARE_CANDIDACY, this.form.message.length));
             },
         },
         watch: {

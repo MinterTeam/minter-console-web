@@ -4,13 +4,16 @@
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import withParams from 'vuelidate/lib/withParams';
-    import {CreateCoinTxParams} from "minter-js-sdk/src";
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
+    import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
+    import {TX_TYPE_CREATE_COIN} from 'minterjs-tx/src/tx-types';
+    import {getFeeValue} from 'minterjs-util/src/fee';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import InputUppercase from '~/components/InputUppercase';
 
     const MIN_CRR = 10;
@@ -22,6 +25,21 @@
     });
 
     export default {
+        // first key not handled by webstorm intelliSense
+        ideFix: true,
+        maskCrr: {
+            allowDecimalPadding: false,
+            decimalPlaces: 0,
+            digitGroupSeparator: '',
+            emptyInputBehavior: 'null',
+            currencySymbol: '\u2009%',
+            currencySymbolPlacement: 's',
+            minimumValue: MIN_CRR,
+            maximumValue: MAX_CRR,
+            overrideMinMaxLimits: 'ignore',
+            unformatOnHover: false,
+            wheelStep: 1,
+        },
         components: {
             VueAutonumeric,
             InputUppercase,
@@ -49,7 +67,6 @@
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
-                crrFormatted: '',
                 formAdvanced: {
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
@@ -70,6 +87,7 @@
                 },
                 initialAmount: {
                     required,
+                    minValue: minValue(1),
                 },
                 crr: {
                     required,
@@ -77,6 +95,7 @@
                 },
                 initialReserve: {
                     required,
+                    minValue: minValue(1000),
                 },
                 feeCoinSymbol: {
                     required,
@@ -92,17 +111,7 @@
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(1000, this.form.message.length, this.form.coinSymbol.length));
-            },
-        },
-        watch: {
-            //@TODO maybe autonumeric can produce empty raw value
-            crrFormatted: {
-                handler(newVal) {
-                    newVal = parseFloat(newVal);
-                    this.form.crr = newVal === 0 ? null : newVal;
-                },
-                immediate: true,
+                return pretty(getFeeValue(TX_TYPE_CREATE_COIN, this.form.message.length, {coinSymbolLength: this.form.coinSymbol.length}) || 0);
             },
         },
         methods: {
@@ -206,6 +215,7 @@
                     <span class="form-field__label">{{ $td('Initial amount', 'form.coiner-create-amount') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.minValue">{{ $td(`Min amount is 1`, 'form.coiner-create-amount-error-min') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
@@ -216,25 +226,14 @@
                     <span class="form-field__label">{{ $td('Initial reserve', 'form.coiner-create-reserve') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.required">{{ $td('Enter reserve', 'form.coiner-create-reserve-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.minValue">{{ $td(`Min reserve is 1000 ${$store.getters.COIN_NAME}`, 'form.coiner-create-reserve-error-min', {coin: $store.getters.COIN_NAME}) }}</span>
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.crr.$error}">
                     <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
-                                    v-model="crrFormatted"
+                                    v-model="form.crr"
                                     @blur.native="$v.form.crr.$touch()"
-                                    :options="{
-                                        allowDecimalPadding: false,
-                                        decimalPlaces: 0,
-                                        digitGroupSeparator: '',
-                                        emptyInputBehavior: 'press',
-                                        currencySymbol: '\u2009%',
-                                        currencySymbolPlacement: 's',
-                                        minimumValue: '10',
-                                        maximumValue: '100',
-                                        overrideMinMaxLimits: 'ignore',
-                                        unformatOnHover: false,
-                                        wheelStep: 1,
-                                    }"
+                                    :options="$options.maskCrr"
                     />
                     <span class="form-field__label">{{ $td('Constant reserve ratio', 'form.coiner-create-crr') }}</span>
                 </label>
@@ -287,7 +286,9 @@
             <div class="u-cell u-cell--order-2" v-if="serverSuccess">
                 <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
+            <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'en'">
+                <p>Note: coin will be deleted if reserve is less than 100 {{$store.getters.COIN_NAME}}, OR price is less than 0.0001 {{$store.getters.COIN_NAME}}, OR volume is less than 1 coin</p>
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
@@ -295,22 +296,19 @@
                     4 letters — 100 000 BIPs + standard transaction fee <br>
                     5 letters — 10 000 BIPs + standard transaction fee <br>
                     6 letters — 1 000 BIPs + standard transaction fee <br>
-                    7 letters — 100 BIPs + standard transaction fee <br>
-                    8 letters — 10 BIPs + standard transaction fee <br>
-                    9-10 letters — only standard transaction fee <br>
+                    7-10 letters — 100 BIPs + standard transaction fee <br>
                 </p>
             </div>
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'ru'">
+                <p>Внимание: монета будет удалена, если ее резерв меньше 100 {{$store.getters.COIN_NAME}} ИЛИ её цена ниже 0.0001 {{$store.getters.COIN_NAME}} ИЛИ её объем меньше 1й монеты</p>
                 <p>Вы можете проверить как работает связь между выпуском, резером и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
-                <p>Комиссии на длину тикера:</p>
-                <p>
+                <p class="u-text-muted">Комиссии на длину тикера:</p>
+                <p class="u-text-muted">
                     3 буквы — 1 000 000 BIP + стандартная комиссия за транзакцию <br>
                     4 буквы — 100 000 BIP + стандартная комиссия за транзакцию <br>
                     5 букв — 10 000 BIP + стандартная комиссия за транзакцию <br>
                     6 букв — 1 000 BIP + стандартная комиссия за транзакцию <br>
-                    7 букв — 100 BIP + стандартная комиссия за транзакцию <br>
-                    8 букв — 10 BIP + стандартная комиссия за транзакцию <br>
-                    9-10 букв — только стандартная комиссия за транзакцию <br>
+                    7-10 букв — 100 BIP + стандартная комиссия за транзакцию <br>
                 </p>
             </div>
         </div>

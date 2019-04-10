@@ -4,11 +4,13 @@
     import required from 'vuelidate/lib/validators/required';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
+    import {TX_TYPE_SEND} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
+    import {getFeeValue} from 'minterjs-util/src/fee';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty, getFeeValue} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import Modal from '~/components/Modal';
 
     export default {
@@ -76,7 +78,7 @@
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(10, this.form.message.length));
+                return pretty(getFeeValue(TX_TYPE_SEND, this.form.message.length));
             },
         },
         methods: {

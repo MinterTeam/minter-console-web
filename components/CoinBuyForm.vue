@@ -4,11 +4,12 @@
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {BuyTxParams} from "minter-js-sdk/src";
+    import BuyTxParams from "minter-js-sdk/src/tx-params/convert-buy";
+    import {getFeeValue} from 'minterjs-util/src/fee';
     import {postTx, estimateCoinBuy} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, getFeeValue, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import InputUppercase from '~/components/InputUppercase';
     import Modal from '~/components/Modal';
 
