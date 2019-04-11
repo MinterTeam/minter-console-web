@@ -85,6 +85,7 @@ export default {
     /*
     ** Build configuration
     */
+    //@TODO core-js@3
     build: {
         extractCSS: true,
         // optimization: {

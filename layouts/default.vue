@@ -74,7 +74,7 @@
                     <div class="header__user u-hidden-medium-down">
                         <nuxt-link class="button button--ghost-white" :to="preferredPath('account')" v-if="username">{{ username }}</nuxt-link>
                         <button class="header__user-logout u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
-                            <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
+                            <img class="" src="/img/icon-auth-logout.svg" width="40" height="40" alt="Logout">
                         </button>
                     </div>
                     <Language class="header__control-language"/>
