@@ -5,7 +5,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {SellAllTxParams} from "minter-js-sdk/src";
-    import {postTx, estimateCoinSell} from '~/api/minter-node';
+    import {postTx, estimateCoinSell} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";

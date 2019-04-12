@@ -2,9 +2,9 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import {RedeemCheckTxParams} from "minter-js-sdk/src";
-    import checkEmpty from '~/assets/v-check-empty';
     import {isValidCheck} from "minterjs-util";
-    import {postTx} from '~/api/minter-node';
+    import {postTx} from '~/api/gate';
+    import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl} from "~/assets/utils";
     import {COIN_NAME} from "~/assets/variables";

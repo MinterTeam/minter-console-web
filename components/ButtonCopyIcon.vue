@@ -1,10 +1,10 @@
 <script>
-    import {SimpleSVG} from 'vue-simple-svg';
+    import InlineSvg from 'vue-inline-svg';
     import ButtonCopy from '~/components/ButtonCopy';
 
     export default {
         components: {
-            'SimpleSvg': SimpleSVG,
+            InlineSvg,
             ButtonCopy,
         },
         props: {
@@ -18,6 +18,6 @@
 
 <template>
     <ButtonCopy class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy" :copy-text="copyText">
-        <SimpleSvg filepath="/img/icon-copy.svg" width="24px" height="24px"/>
+        <InlineSvg src="/img/icon-copy.svg"/>
     </ButtonCopy>
 </template>

@@ -85,7 +85,7 @@
     <section class="u-section u-container">
         <div class="panel panel__header wallet__info">
             <div class="wallet__address">
-                <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" alt="" role="presentation">
+                <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" width="40" height="40" alt="" role="presentation">
                 <div class="wallet__address-content">
                     <div>{{ $td('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">

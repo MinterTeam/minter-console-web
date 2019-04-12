@@ -5,6 +5,10 @@ import {ROUTES, USER_MNEMONIC} from '~/test/variables';
  * @return {Promise<void>}
  */
 export async function logout(page) {
+    await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+    });
+    await page.waitForSelector('[data-test-id="headerLogoutButton"]');
     await page.click('[data-test-id="headerLogoutButton"]');
     await page.waitForSelector('[data-test-id="authSection"]');
 }
