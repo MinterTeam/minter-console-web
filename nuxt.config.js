@@ -7,6 +7,8 @@ const envConfig = dotenv.config();
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
+const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env === 'production' ? 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=' : 'boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=';
+
 export default {
     /*
     ** Headers of the page
@@ -16,7 +18,7 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy', content: "default-src 'self' https://*.minter.network https://minter.org; script-src 'self' 'sha256-boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"},
+            { 'http-equiv': 'Content-Security-Policy', content: `default-src 'self' https://*.minter.network https://minter.org; script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; base-uri 'none'; form-action 'none';`},
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
             { hid: 'og-title', name: 'og:title', content: BASE_TITLE },
             { hid: 'og-description', name: 'og:description', content: BASE_DESCRIPTION },
