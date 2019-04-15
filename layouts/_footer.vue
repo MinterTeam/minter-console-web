@@ -1,7 +1,10 @@
 <script>
-    import footerLinksData from 'minter-footer-links';
+    import footerLinksData from '@minterteam/footer-links';
+    import {NETWORK, MAINNET, TESTNET} from '~/assets/variables';
 
     export default {
+        // first key not handled by webstorm intelliSense
+        ideFix: 1,
         footerLinkList: footerLinksData,
         props: {
             containerClass: {
@@ -14,6 +17,15 @@
                 return this.$i18n.locale || 'en';
             },
         },
+        methods: {
+            getUrl(link) {
+                if (NETWORK === MAINNET) {
+                    return link.url;
+                } else {
+                    return link.urlTestnet || link.url;
+                }
+            },
+        },
     };
 </script>
 
@@ -23,7 +35,7 @@
             <img class="footer__logo" src="/img/minter-logo-white.svg" alt="Minter">
             <div class="footer__menu">
                 <div class="footer__menu-item" v-for="link in $options.footerLinkList" :key="link.slug">
-                    <a class="footer__link link--hover" :href="link.url" target="_blank" rel="nofollow noopener">{{ link.title[locale] }}</a>
+                    <a class="footer__link link--hover" :href="getUrl(link)" target="_blank" rel="nofollow noopener">{{ link.title[locale] }}</a>
                 </div>
             </div>
         </div>
