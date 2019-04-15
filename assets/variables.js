@@ -1,9 +1,11 @@
-export const BASE_TITLE_NETWORK = process.env.APP_ENV === 'production' ? '' : 'Testnet ';
+export const MAINNET = 'mainnet';
+export const TESTNET = 'testnet';
+export const NETWORK = process.env.APP_ENV === 'production' ? MAINNET : TESTNET;
+export const BASE_TITLE_NETWORK = NETWORK === MAINNET ? '' : 'Testnet ';
 export const BASE_TITLE_END = ' — Minter';
 export const BASE_TITLE = BASE_TITLE_NETWORK + 'Console' + BASE_TITLE_END;
-export const BASE_DESCRIPTION = 'Minter Console is by far the most advanced part of our project that lets you manage all your activities on our test network.';
+export const BASE_DESCRIPTION = `Minter Console is by far the most advanced part of our project that lets you manage all your activities on our ${NETWORK === TESTNET ? 'test ': ''}network.`;
 export const MINTER_ACCOUNTS_API_URL = process.env.APP_MINTER_ACCOUNTS_URL + '/api/v1/';
-export const NETWORK = process.env.APP_ENV === 'production' ? 'mainnet' : 'testnet';
 export const COIN_NAME = process.env.APP_ENV === 'production' ? 'BIP' : 'MNT';
 export const EXPLORER_URL = process.env.APP_EXPLORER_URL;
 export const EXPLORER_API_URL = process.env.APP_EXPLORER_API_URL + '/api/v1/';

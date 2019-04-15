@@ -1,5 +1,6 @@
 <script>
     import {shortHashFilter, support} from "~/assets/utils";
+    import {NETWORK, TESTNET} from '~/assets/variables';
     import Snackbar from '~/components/Snackbar';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
@@ -20,6 +21,9 @@
             username() {
                 const username = this.$store.getters.username;
                 return username.substr(0, 2) === 'Mx' ? shortHashFilter(username, 4) : username;
+            },
+            isTestnet() {
+                return NETWORK === TESTNET;
             },
         },
         watch: {
@@ -67,7 +71,7 @@
             <div class="header__container u-container u-container--large">
                 <nuxt-link class="header__logo no-link" :to="preferredPath('index')">
                     <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
-                    <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
+                    <div class="header__logo-text">{{ $store.state.sectionName || `${this.isTestnet ? 'Testnet ' : '' }Console` }}</div>
                 </nuxt-link>
 
                 <div class="header__controls">
@@ -172,10 +176,10 @@
                     <div class="u-container main-content__aside-section">
                         <ul class="services__list no-list u-grid u-grid--vertical-margin--small">
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">Status</a>
+                                <a class="services__link link--hover" :href="`https://status.minter.network${isTestnet ? '/testnet' : ''}`" target="_blank">Status</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">Explorer</a>
+                                <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
                                 <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank">API</a>

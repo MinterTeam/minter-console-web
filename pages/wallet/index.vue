@@ -3,6 +3,7 @@
     import {getAddressTransactionList} from "~/api";
     import getTitle from '~/assets/get-title';
     import {pretty} from '~/assets/utils';
+    import {NETWORK, TESTNET} from '~/assets/variables';
     import ButtonCopyIcon from '~/components/ButtonCopyIcon';
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
@@ -40,7 +41,7 @@
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.$td('Transact MNT and other coins issued in the Minter test network. Almost instantly and fee-free.', 'wallet.seo-description');
+            const description = this.$td(`Transact MNT and other coins issued in the Minter ${this.isTestnet ? 'test ': ''}network. Almost instantly and fee-free.`, this.isTestnet ? 'wallet.seo-description-testnet' : 'wallet.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -65,6 +66,9 @@
                 'addressUrl',
                 'baseCoin',
             ]),
+            isTestnet() {
+                return NETWORK === TESTNET;
+            },
         },
         mounted() {
             balanceInterval = setInterval(() => {
