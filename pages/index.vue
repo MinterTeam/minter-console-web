@@ -175,7 +175,7 @@
                     <img class="features__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">{{ $td('Perpetual Coin Offering Management', 'index.features-pco-title') }}</strong>
-                        <p>{{ $td('ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of', 'index.features-pco-description') }} <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">{{ $td('this', 'index.features-pco-description-link') }}</a>{{ $td(' paper).', 'index.features-pco-description2') }}</p>
+                        <p>{{ $td('ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of', 'index.features-pco-description') }} <a class="link--default" :href="`https://about.minter.network/Minter_PCO${$i18n.locale === 'ru' ? '_Russian' : ''}.pdf`" target="_blank">{{ $td('this', 'index.features-pco-description-link') }}</a>{{ $td(' paper).', 'index.features-pco-description2') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
