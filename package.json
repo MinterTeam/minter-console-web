@@ -96,7 +96,8 @@
       ".nuxt/**/*",
       "node_modules/@nuxtjs/youch/src/resources/**/*"
     ],
-    "scripts": []
+    "scripts": [],
+    "targets": ["macos-x64", "linux-x64", "win-x64", "win-x86"]
   },
   "browserslist": [
     "> 0.5%",
