@@ -67,6 +67,13 @@ export default {
     COIN_NAME() {
         return COIN_NAME;
     },
+    balance(state) {
+        if (state.onLine) {
+            return state.balance;
+        } else {
+            return [];
+        }
+    },
     baseCoin(state) {
         return state.balance.find((coinItem) => {
             return coinItem.coin === COIN_NAME;

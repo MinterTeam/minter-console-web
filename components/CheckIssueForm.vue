@@ -1,5 +1,5 @@
 <script>
-    import {mapState} from 'vuex';
+    import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
@@ -7,11 +7,13 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
+    import InputUppercase from '~/components/InputUppercase';
     import ButtonCopyIcon from '~/components/ButtonCopyIcon';
 
     export default {
         components: {
             QrcodeVue,
+            InputUppercase,
             ButtonCopyIcon,
         },
         directives: {
@@ -23,7 +25,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance;
+            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -59,7 +61,7 @@
             },
         },
         computed: {
-            ...mapState({
+            ...mapGetters({
                 balance: 'balance',
             }),
         },
@@ -133,17 +135,26 @@
                 <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
-                <label class="form-field">
+                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
+                            v-if="balance && balance.length"
                     >
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                            uppercase }} ({{ coin.amount | pretty }})</option>
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                            {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                        </option>
                     </select>
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
+                                    v-model.trim="form.coinSymbol"
+                                    @blur="$v.form.coinSymbol.$touch()"
+                                    v-else
+                    />
                     <span class="form-field__label">{{ $td('Coin', 'form.coin') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--3-4">
                 <label class="form-field" :class="{'is-error': $v.form.passPhrase.$error}">

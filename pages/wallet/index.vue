@@ -32,6 +32,11 @@
                 });
         },
         asyncData({ store }) {
+            if (!store.state.onLine) {
+                return {
+                    txList: [],
+                };
+            }
             return getAddressLatestTransactionList(store.getters.address)
                 .then((txListInfo) => {
                     return {
@@ -98,7 +103,7 @@
                     </div>
                 </div>
             </div>
-            <div class="wallet__balance">
+            <div class="wallet__balance" v-if="$store.state.onLine">
                 <div>{{ $td('Your balance:', 'wallet.balance') }}</div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}

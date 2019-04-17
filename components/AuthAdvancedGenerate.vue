@@ -45,7 +45,7 @@
                     <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" readonly v-autosize
                               :value="address"
                     ></textarea>
-                    <ButtonCopy class="form-field__copy u-semantic-button link--opacity" data-test-id="authAdvancedRegisterCopyButton" :copy-text="address">
+                    <ButtonCopy class="form-field__copy u-semantic-button link--opacity" :copy-text="address">
                         <img src="/img/icon-copy-black.svg" alt="Copy">
                     </ButtonCopy>
                     <span class="form-field__label">{{ $td('Your generated address', 'index.auth-sign-up-seed-address') }}</span>
