@@ -1,5 +1,5 @@
 const HOST_NAME = 'localhost';
-const PORT = 4000;
+const PORT = 4001;
 //@TODO win32
 
 const initCli = function() {
