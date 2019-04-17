@@ -177,6 +177,10 @@ export default {
         'toggle-simple-mode': 'Простой режим',
         'toggle-advanced-mode': 'Расширенный режим',
 
+        'generate-button': 'Сгенерировать',
+        'generate-nonce-help': 'Уникальный номер транзакция: текущее кол-во транзакций пользователя + 1',
+        'generate-result-tx': 'Подписанная транзакция',
+
         'submit-confirm-button': 'Подтвердить',
         'submit-cancel-button': 'Отменить',
 
