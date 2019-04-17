@@ -1,5 +1,5 @@
 <script>
-    import {mapState} from 'vuex';
+    import {mapGetters} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -27,7 +27,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance;
+            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -36,11 +36,11 @@
                     buyAmount: null,
                     coinFrom: coinList && coinList.length ? coinList[0].coin : '',
                     coinTo: '',
-                    feeCoinSymbol: false,
+                    feeCoinSymbol: '',
                     message: '',
                 },
                 formAdvanced: {
-                    feeCoinSymbol: false,
+                    feeCoinSymbol: '',
                     message: '',
                 },
                 isModeAdvanced: false,
@@ -55,9 +55,15 @@
                 },
                 coinFrom: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 coinTo: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
+                },
+                feeCoinSymbol: {
                     minLength: minLength(3),
                     maxLength: maxLength(10),
                 },
@@ -68,7 +74,7 @@
             },
         },
         computed: {
-            ...mapState({
+            ...mapGetters({
                 balance: 'balance',
             }),
             feeValue() {
@@ -138,7 +144,7 @@
                 this.formAdvanced.feeCoinSymbol = this.form.feeCoinSymbol;
                 this.formAdvanced.message = this.form.message;
                 // clear advanced form
-                this.form.feeCoinSymbol = false;
+                this.form.feeCoinSymbol = '';
                 this.form.message = '';
             },
             clearForm() {
@@ -146,9 +152,9 @@
                 this.form.buyAmount = null;
                 this.form.coinFrom = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.coinTo = '';
-                this.form.feeCoinSymbol = false;
+                this.form.feeCoinSymbol = '';
                 this.form.message = '';
-                this.formAdvanced.feeCoinSymbol = false;
+                this.formAdvanced.feeCoinSymbol = '';
                 this.formAdvanced.message = '';
                 this.$v.$reset();
             },
@@ -169,9 +175,9 @@
         </div>
 
         <form class="panel__section" novalidate @submit.prevent="submitConfirm">
-            <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
+            <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
-                    <label class="form-field">
+                    <label class="form-field" :class="{'is-error': $v.form.coinTo.$error}">
                         <InputUppercase class="form-field__input" type="text" v-check-empty data-test-id="convertBuyInputBuyCoin"
                                         v-model.trim="form.coinTo"
                                         @blur="$v.form.coinTo.$touch()"
@@ -179,8 +185,8 @@
                         <span class="form-field__label">{{ $td('Coin to buy', 'form.convert-buy-coin-buy') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}{{ $td('Check', 'form.convert-buy-check') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                     <label class="form-field" :class="{'is-error': $v.form.buyAmount.$error}">
@@ -193,30 +199,48 @@
                     <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-3">
-                    <label class="form-field">
+                    <label class="form-field" :class="{'is-error': $v.form.coinFrom.$error}">
                         <select class="form-field__input form-field__input--select" v-check-empty data-test-id="convertBuyInputSellCoin"
                                 v-model="form.coinFrom"
                                 @blur="$v.form.coinFrom.$touch()"
+                                v-if="balance && balance.length"
                         >
-                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                                uppercase }} ({{ coin.amount | pretty }})</option>
+                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                                {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                            </option>
                         </select>
+                        <InputUppercase class="form-field__input" type="text" v-check-empty
+                                        v-model.trim="form.coinFrom"
+                                        @blur="$v.form.coinFrom.$touch()"
+                                        v-else
+                        />
                         <span class="form-field__label">{{ $td('Coin to spend', 'form.convert-buy-coin-spend') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin', 'form.coin-error-required') }}{{ $td('Check', 'form.convert-buy-check') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
-                    <label class="form-field">
-                        <select class="form-field__input form-field__input--select" v-check-empty
+                    <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
+                        <select class="form-field__input form-field__input--select is-not-empty"
                                 v-model="form.feeCoinSymbol"
+                                v-if="balance && balance.length"
                         >
-                            <option :value="false">{{ $td('Same as coin to spend', 'form.convert-buy-fee-same') }}</option>
-                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                                uppercase }} ({{ coin.amount | pretty }})</option>
+                            <option :value="''">{{ $td('Same as coin to spend', 'form.convert-buy-fee-same') }}</option>
+                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                                {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                            </option>
                         </select>
+                        <InputUppercase class="form-field__input" type="text" v-check-empty
+                                        v-model.trim="form.feeCoinSymbol"
+                                        @blur="$v.form.feeCoinSymbol.$touch()"
+                                        v-else
+                        />
                         <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
                     </label>
-                    <div class="form-field__help">{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                    <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                    <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -249,9 +273,6 @@
                 <div class="u-cell u-cell--order-2" data-test-id="convertBuySuccessMessage" v-if="serverSuccess">
                     <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
-            </div>
-            <div v-else>
-                {{ $td('You don\'t have coins to spend', 'form.convert-buy-error') }}
             </div>
         </form>
 

@@ -1,7 +1,9 @@
 <script>
 
     export default {
-        layout: 'nonAuth',
+        layout({store}) {
+            return store.getters.isAuthorized ? 'default' : 'nonAuth';
+        },
         props: ['error'],
     };
 </script>

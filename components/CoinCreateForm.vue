@@ -1,5 +1,5 @@
 <script>
-    import {mapState} from 'vuex';
+    import {mapGetters} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -53,7 +53,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance;
+            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -99,6 +99,8 @@
                 },
                 feeCoinSymbol: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 message: {
                     maxLength: maxLength(1024),
@@ -107,7 +109,7 @@
             },
         },
         computed: {
-            ...mapState({
+            ...mapGetters({
                 balance: 'balance',
             }),
             feeValue() {
@@ -242,18 +244,27 @@
                 <div class="form-field__help">{{ $td('CRR (Constant Reserve Ratio) reflects the volume of BIP reserves backing a newly issued coin. The higher the coefficient, the higher the reserves and thus the lower the volatility. And vice versa. The value should be integer and fall in the range from 10 to 100.', 'form.coiner-create-crr-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
-                <label class="form-field">
+                <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
                             @blur="$v.form.feeCoinSymbol.$touch()"
+                            v-if="balance && balance.length"
                     >
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                            uppercase }} ({{ coin.amount | pretty }})</option>
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                            {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                        </option>
                     </select>
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
+                                    v-model.trim="form.feeCoinSymbol"
+                                    @blur="$v.form.feeCoinSymbol.$touch()"
+                                    v-else
+                    />
                     <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
-                <div class="form-field__help">{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">

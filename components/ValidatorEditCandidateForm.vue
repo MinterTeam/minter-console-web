@@ -1,7 +1,8 @@
 <script>
-    import {mapState} from 'vuex';
+    import {mapGetters} from 'vuex';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import EditCandidateTxParams from "minter-js-sdk/src/tx-params/candidate-edit";
     import {TX_TYPE_EDIT_CANDIDATE} from 'minterjs-tx/src/tx-types';
@@ -11,8 +12,12 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import InputUppercase from '~/components/InputUppercase';
 
     export default {
+        components: {
+            InputUppercase,
+        },
         directives: {
             checkEmpty,
         },
@@ -22,7 +27,7 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance;
+            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -57,6 +62,8 @@
                 },
                 feeCoinSymbol: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 message: {
                     maxLength: maxLength(1024),
@@ -65,7 +72,7 @@
             },
         },
         computed: {
-            ...mapState({
+            ...mapGetters({
                 balance: 'balance',
             }),
             feeValue() {
@@ -136,7 +143,7 @@
 
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
-        <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
+        <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.publicKey.$error}">
                     <input class="form-field__input" type="text" v-check-empty
@@ -174,18 +181,27 @@
             </div>
 
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
-                <label class="form-field">
+                <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.feeCoinSymbol"
                             @blur="$v.form.feeCoinSymbol.$touch()"
+                            v-if="balance && balance.length"
                     >
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                            uppercase }} ({{ coin.amount | pretty }})</option>
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                            {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                        </option>
                     </select>
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
+                                    v-model.trim="form.feeCoinSymbol"
+                                    @blur="$v.form.feeCoinSymbol.$touch()"
+                                    v-else
+                    />
                     <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
-                <div class="form-field__help">{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -218,9 +234,6 @@
             <div class="u-cell u-cell--order-2" v-if="serverSuccess">
                 <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
-        </div>
-        <div v-else>
-            {{ $td('You don\'t have coins to edit candidate', 'form.masternode-error') }}
         </div>
     </form>
 </template>
