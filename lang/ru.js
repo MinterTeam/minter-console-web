@@ -290,7 +290,7 @@ export default {
         'coiner-create-name-help': 'Название монеты (например, Bitcoin). До&nbsp;64&nbsp;символов.',
         'coiner-create-symbol': 'Тикер монеты',
         'coiner-create-symbol-error-required': 'Укажите тикер',
-        'coiner-create-symbol-help': 'Должен быть уникален и состоять лишь из букв латинского алфавита. Верхний&nbsp;регистр, от 3 до&nbsp;10&nbsp;символов.',
+        'coiner-create-symbol-help': 'Должен быть уникален и состоять лишь из букв латинского алфавита и цифр. Верхний&nbsp;регистр, от 3 до&nbsp;10&nbsp;символов.',
         'coiner-create-amount': 'Количество выпуска',
         'coiner-create-amount-error-min': 'Минимальное количество — 1',
         'coiner-create-crr': '',
