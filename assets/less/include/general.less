@@ -233,7 +233,7 @@ dd {overflow-wrap: break-word; margin: 0;}
     &:focus {border-color: @c-main;}
     .is-error > & {border-color: @c-red;}
     .form-field--dashed > & {border-bottom-style: dashed;}
-    .form-field--with-copy > & {padding-right: 26px;}
+    .form-field--with-icon > & {padding-right: 26px;}
 }
 .form-field__input--select {appearance: none; background: url(../img/icon-dropdown.svg) no-repeat 100% 50%; padding-right: 24px;}
 .form-field__label {
@@ -242,7 +242,8 @@ dd {overflow-wrap: break-word; margin: 0;}
     .form-field__input:focus ~ & {color: @c-main;}
     .form-field.is-error > & {color: @c-red;}
 }
-.form-field__copy {position: absolute; right: 0; top: (2px + @field-padding); top: calc((100% - 12px) / 2 - 2px); z-index: 1; cursor: pointer; pointer-events: auto; font-size: 0;}
+.form-field__icon {position: absolute; right: 0; top: (2px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; font-size: 0;}
+.form-field__icon--copy {top: calc((100% - 12px) / 2 - 2px);}
 .form-field__help {
     font-size: 12px; line-height: 16px; margin-top: 6px; display: block; color: @c-black-light;
     .form-field__error + & {margin-top: 0;}
@@ -251,7 +252,11 @@ dd {overflow-wrap: break-word; margin: 0;}
 .error-text() {font-size: 12px; color: @c-red; line-height: 16px;}
 .form-field__error {.error-text(); margin-top: 6px; overflow-wrap: break-word; display: block;}
 @media (min-width: @breakpoint-large-up) {
-    .form-field--with-copy > .form-field__input {padding-right: 32px;}
+    .form-field--with-icon > .form-field__input {padding-right: 32px;}
+    .form-field__icon--qr {
+        top: @field-padding;
+        & > img {width: 30px; height: 30px;}
+    }
 }
 
 
