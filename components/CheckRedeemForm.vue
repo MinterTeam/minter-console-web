@@ -1,15 +1,22 @@
 <script>
+    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import {RedeemCheckTxParams} from "minter-js-sdk/src";
     import {isValidCheck} from "minterjs-util";
+    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl} from "~/assets/utils";
     import {COIN_NAME} from "~/assets/variables";
+    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
 
     export default {
+        components: {
+            QrcodeVue,
+            ButtonCopyIcon,
+        },
         directives: {
             checkEmpty,
         },
@@ -23,13 +30,15 @@
                 serverError: '',
                 serverSuccess: '',
                 form: {
+                    nonce: '',
                     check: '',
                     password: '',
                 },
+                signedTx: null,
             };
         },
-        validations: {
-            form: {
+        validations() {
+            const form = {
                 check: {
                     required,
                     validCheck: isValidCheck,
@@ -37,11 +46,43 @@
                 password: {
                     required,
                 },
+            };
 
-            },
+            if (this.$store.getters.isOfflineMode) {
+                form.nonce = {
+                    required,
+                };
+            }
+
+            return {form};
         },
         methods: {
             submit() {
+                if (this.$store.getters.isOfflineMode) {
+                    this.generateTx();
+                } else {
+                    this.postTx();
+                }
+            },
+            generateTx() {
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+
+                this.signedTx = null;
+                this.serverError = '';
+                this.serverSuccess = '';
+
+                this.signedTx = prepareSignedTx(new RedeemCheckTxParams({
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...this.form,
+                    feeCoinSymbol: COIN_NAME,
+                })).serialize().toString('hex');
+                this.clearForm();
+            },
+            postTx() {
                 if (this.isFormSending) {
                     return;
                 }
@@ -50,6 +91,7 @@
                     return;
                 }
                 this.isFormSending = true;
+                this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
@@ -76,6 +118,11 @@
             clearForm() {
                 this.form.check = '';
                 this.form.password = '';
+                if (this.form.nonce && this.$store.getters.isOfflineMode) {
+                    this.form.nonce += 1;
+                } else {
+                    this.form.nonce = '';
+                }
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -108,7 +155,27 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'form.checks-redeem-password-error-required') }}</span>
             </div>
-            <div class="u-cell">
+
+            <!-- Generation -->
+            <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">
+                <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
+                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model.number="form.nonce"
+                           @blur="$v.form.nonce.$touch()"
+                    >
+                    <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">
+                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                    {{ $td('Generate', 'form.generate-button') }}
+                </button>
+            </div>
+
+            <!-- Controls -->
+            <div class="u-cell" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Redeem', 'form.checks-redeem-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -119,6 +186,20 @@
             </div>
             <div class="u-cell" v-if="serverSuccess">
                 <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+            </div>
+
+            <div class="u-cell u-cell--order-2" v-if="signedTx">
+                <dl>
+                    <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
+                    <dd class="u-icon-wrap">
+                            <span class="u-select-all u-icon-text">
+                                {{ signedTx }}
+                            </span>
+                        <ButtonCopyIcon :copy-text="signedTx"/>
+                    </dd>
+                </dl>
+                <br>
+                <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
             </div>
         </div>
     </form>

@@ -32,7 +32,7 @@
                 });
         },
         asyncData({ store }) {
-            if (!store.state.onLine) {
+            if (store.getters.isOfflineMode) {
                 return {
                     txList: [],
                 };
@@ -103,7 +103,7 @@
                     </div>
                 </div>
             </div>
-            <div class="wallet__balance" v-if="$store.state.onLine">
+            <div class="wallet__balance" v-if="!$store.getters.isOfflineMode">
                 <div>{{ $td('Your balance:', 'wallet.balance') }}</div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}

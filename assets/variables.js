@@ -7,6 +7,7 @@ export const BASE_TITLE = BASE_TITLE_NETWORK + 'Console' + BASE_TITLE_END;
 export const BASE_DESCRIPTION = `Minter Console is by far the most advanced part of our project that lets you manage all your activities on our ${NETWORK === TESTNET ? 'test ': ''}network.`;
 export const MINTER_ACCOUNTS_API_URL = process.env.APP_MINTER_ACCOUNTS_URL + '/api/v1/';
 export const COIN_NAME = NETWORK === MAINNET ? 'BIP' : 'MNT';
+export const CHAIN_ID = NETWORK === MAINNET ? 1 : 2;
 export const EXPLORER_URL = process.env.APP_EXPLORER_URL;
 export const EXPLORER_API_URL = process.env.APP_EXPLORER_API_URL + '/api/v1/';
 export const MINTER_GATE_URL = process.env.APP_MINTER_GATE_URL;

@@ -1,5 +1,6 @@
 <script>
     import {mapGetters} from 'vuex';
+    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -10,16 +11,20 @@
     import {TX_TYPE_DECLARE_CANDIDACY} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import {getFeeValue} from 'minterjs-util/src/fee';
+    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import InputUppercase from '~/components/InputUppercase';
+    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
 
     export default {
         components: {
             VueAutonumeric,
+            QrcodeVue,
             InputUppercase,
+            ButtonCopyIcon,
         },
         directives: {
             checkEmpty,
@@ -36,6 +41,7 @@
                 serverError: '',
                 serverSuccess: '',
                 form: {
+                    nonce: '',
                     address: this.$store.getters.address,
                     publicKey: '',
                     commission: null,
@@ -50,10 +56,11 @@
                     message: '',
                 },
                 isModeAdvanced: false,
+                signedTx: null,
             };
         },
-        validations: {
-            form: {
+        validations() {
+            const form = {
                 address: {
                     required,
                     validAddress: isValidAddress,
@@ -81,8 +88,15 @@
                 message: {
                     maxLength: maxLength(1024),
                 },
+            };
 
-            },
+            if (this.$store.getters.isOfflineMode) {
+                form.nonce = {
+                    required,
+                };
+            }
+
+            return {form};
         },
         computed: {
             ...mapGetters({
@@ -90,6 +104,9 @@
             }),
             feeValue() {
                 return pretty(getFeeValue(TX_TYPE_DECLARE_CANDIDACY, this.form.message.length));
+            },
+            showAdvanced() {
+                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
         },
         watch: {
@@ -103,6 +120,30 @@
         },
         methods: {
             submit() {
+                if (this.$store.getters.isOfflineMode) {
+                    this.generateTx();
+                } else {
+                    this.submitConfirm();
+                }
+            },
+            generateTx() {
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+
+                this.signedTx = null;
+                this.serverError = '';
+                this.serverSuccess = '';
+
+                this.signedTx = prepareSignedTx(new DeclareCandidacyTxParams({
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...this.form,
+                })).serialize().toString('hex');
+                this.clearForm();
+            },
+            postTx() {
                 if (this.isFormSending) {
                     return;
                 }
@@ -111,6 +152,7 @@
                     return;
                 }
                 this.isFormSending = true;
+                this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
@@ -158,6 +200,11 @@
                 this.form.message = '';
                 this.formAdvanced.feeCoinSymbol = '';
                 this.formAdvanced.message = '';
+                if (this.form.nonce && this.$store.getters.isOfflineMode) {
+                    this.form.nonce += 1;
+                } else {
+                    this.form.nonce = '';
+                }
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -246,7 +293,7 @@
                 <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">{{ $td('Enter commission', 'form.masternode-commission-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">{{ $td('Must be between 0 and 100', 'form.masternode-commission-error-between') }}</span>
             </div>
-            <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
                     <select class="form-field__input form-field__input--select is-not-empty"
                             v-model="form.feeCoinSymbol"
@@ -268,7 +315,7 @@
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
             </div>
-            <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
+            <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.message"
@@ -279,15 +326,35 @@
                 <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
                 <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
             </div>
-            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
-                <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
+
+            <!-- Generation -->
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
+                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model.number="form.nonce"
+                           @blur="$v.form.nonce.$touch()"
+                    >
+                    <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                    {{ $td('Generate', 'form.generate-button') }}
+                </button>
+            </div>
+
+            <!-- Controls -->
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
+                <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
                     {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                 </button>
-                <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
+                <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced">
                     {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                 </button>
             </div>
-            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Declare candidacy', 'form.masternode-declare-button') }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -298,6 +365,20 @@
             </div>
             <div class="u-cell u-cell--order-2" v-if="serverSuccess">
                 <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+            </div>
+
+            <div class="u-cell u-cell--order-2" v-if="signedTx">
+                <dl>
+                    <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
+                    <dd class="u-icon-wrap">
+                            <span class="u-select-all u-icon-text">
+                                {{ signedTx }}
+                            </span>
+                        <ButtonCopyIcon :copy-text="signedTx"/>
+                    </dd>
+                </dl>
+                <br>
+                <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
             </div>
         </div>
     </form>

@@ -3,7 +3,7 @@ import 'core-js/modules/es6.typed.uint8-array';
 import {walletFromMnemonic, isValidMnemonic} from 'minterjs-wallet';
 import {decryptMnemonic} from 'minter-js-org';
 import {getNameLetter, getExplorerAddressUrl} from "~/assets/utils";
-import {COIN_NAME} from '~/assets/variables';
+import {COIN_NAME, CHAIN_ID} from '~/assets/variables';
 
 export default {
     /**
@@ -67,16 +67,22 @@ export default {
     COIN_NAME() {
         return COIN_NAME;
     },
-    balance(state) {
-        if (state.onLine) {
-            return state.balance;
-        } else {
+    CHAIN_ID() {
+        return CHAIN_ID;
+    },
+    balance(state, getters) {
+        if (getters.isOfflineMode) {
             return [];
+        } else {
+            return state.balance;
         }
     },
     baseCoin(state) {
         return state.balance.find((coinItem) => {
             return coinItem.coin === COIN_NAME;
         });
+    },
+    isOfflineMode(state, getters) {
+        return !state.onLine && getters.isUserAdvanced;
     },
 };

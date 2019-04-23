@@ -80,7 +80,7 @@
                 nonce: {},
             };
 
-            if (!this.$store.state.onLine) {
+            if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
                 };
@@ -96,15 +96,15 @@
                 return pretty(getFeeValue(TX_TYPE_SEND, this.form.message.length));
             },
             showAdvanced() {
-                return this.isModeAdvanced || !this.$store.state.onLine;
+                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
         },
         methods: {
             submit() {
-                if (this.$store.state.onLine) {
-                    this.submitConfirm();
-                } else {
+                if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
+                } else {
+                    this.submitConfirm();
                 }
             },
             submitConfirm() {
@@ -127,10 +127,11 @@
                 this.serverError = '';
                 this.serverSuccess = '';
 
-                this.signedTx = prepareSignedTx({
+                this.signedTx = prepareSignedTx(new SendTxParams({
                     privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
-                }).serialize().toString('hex');
+                })).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
@@ -182,8 +183,10 @@
                 this.form.message = '';
                 this.formAdvanced.feeCoinSymbol = '';
                 this.formAdvanced.message = '';
-                if (this.form.nonce) {
+                if (this.form.nonce && this.$store.getters.isOfflineMode) {
                     this.form.nonce += 1;
+                } else {
+                    this.form.nonce = '';
                 }
                 this.$v.$reset();
             },
@@ -284,7 +287,7 @@
                 </div>
 
                 <!-- Generation -->
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.state.onLine">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                     <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
                         <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
                                v-model.number="form.nonce"
@@ -295,14 +298,14 @@
                     <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                     <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.state.onLine">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                     <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
                         {{ $td('Generate', 'form.generate-button') }}
                     </button>
                 </div>
 
                 <!-- Controls -->
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="$store.state.onLine">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
                     <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
@@ -310,7 +313,7 @@
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.state.onLine">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button class="button button--main button--full" data-test-id="walletSendSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                         <span class="button__content">{{ $td('Send', 'form.wallet-send-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -319,7 +322,6 @@
                     </button>
                     <div class="form-field__error" data-test-id="walletSendErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
-
 
 
                 <div class="u-cell u-cell--order-2" data-test-id="walletSendSuccessMessage" v-if="serverSuccess">
@@ -336,8 +338,6 @@
                             </span>
                             <ButtonCopyIcon :copy-text="signedTx"/>
                         </dd>
-
-
                     </dl>
                     <br>
                     <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
