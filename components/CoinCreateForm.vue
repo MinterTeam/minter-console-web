@@ -138,7 +138,7 @@
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
                 } else {
-                    this.submitConfirm();
+                    this.postTx();
                 }
             },
             generateTx() {
