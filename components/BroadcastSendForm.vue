@@ -5,9 +5,11 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import QrScan from '~/components/QrScan';
 
     export default {
         components: {
+            QrScan,
         },
         directives: {
             checkEmpty,
@@ -25,6 +27,7 @@
                 form: {
                     signedTx: '',
                 },
+                hasCamera: false,
             };
         },
         validations() {
@@ -66,6 +69,9 @@
                 this.$v.$reset();
             },
             getExplorerTxUrl,
+            handleQrScanned(result) {
+                this.form.signedTx = result;
+            },
         },
     };
 </script>
@@ -74,16 +80,12 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <label class="form-field form-field--with-icon" :class="{'is-error': $v.form.signedTx.$error}">
+                <label class="form-field" :class="{'is-error': $v.form.signedTx.$error, 'form-field--with-icon': hasCamera}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.signedTx"
                            @blur="$v.form.signedTx.$touch()"
                     >
-<!--
-                    <button class="form-field__icon form-field__icon--qr u-semantic-button" type="button">
-                        <img src="/img/icon-qr.svg" alt="Scan QR Code" width="24" height="24">
-                    </button>
--->
+                    <QrScan @qrScanned="handleQrScanned" :qrVisible.sync="hasCamera"/>
                     <span class="form-field__label">{{ $td('Signed tx', 'form.broadcast-tx') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.signedTx.$dirty && !$v.form.signedTx.required">{{ $td('Enter signed tx', 'form.broadcast-tx-error-required') }}</span>

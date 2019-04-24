@@ -196,16 +196,18 @@ dd {overflow-wrap: break-word; margin: 0;}
 
 // button-loader
 @loader-length: 12 * 3.14 * 2; // длина окружности
+.loader {width: 28px; height: 28px; margin: auto; animation: loader-rotate 2s linear infinite;}
+.loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: loader-dash 1.5s ease-in-out infinite; }
 .button-loader {
-    position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 42px; height: 42px; margin: auto; opacity: 0; pointer-events: none; animation: button-loader-rotate 2s linear infinite; /*transition: 0.05s;*/ /*intensive js calculations interrupts css transition*/
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 42px; height: 42px; margin: auto; opacity: 0; pointer-events: none; animation: loader-rotate 2s linear infinite; /*transition: 0.05s;*/ /*intensive js calculations interrupts css transition*/
     .is-loading > & { opacity: 1; /*transition: 0.1s 0.1s;*/}
 }
-.button-loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: button-loader-dash 1.5s ease-in-out infinite; }
-@keyframes button-loader-rotate {
+.button-loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: loader-dash 1.5s ease-in-out infinite; }
+@keyframes loader-rotate {
     0% {transform: rotate(-90deg);}
     100% { transform: rotate(270deg); }
 }
-@keyframes button-loader-dash {
+@keyframes loader-dash {
     0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
     50% { stroke-dasharray: @loader-length * 0.8, 200; stroke-dashoffset: 0; }
     100% { stroke-dasharray: @loader-length * 0.8, 200; stroke-dashoffset: -@loader-length + 1px; }

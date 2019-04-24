@@ -17,6 +17,10 @@
                 type: String,
                 default: '',
             },
+            keepMarkup: {
+                type: Boolean,
+                default: false,
+            },
         },
         methods: {
             closeModal() {
@@ -41,7 +45,8 @@
 <template>
     <transition name="v-transition-modal">
         <div class="modal u-container" tabindex="-1" role="dialog"
-             v-if="isOpen"
+             v-if="isOpen || keepMarkup"
+             v-show="isOpen"
              :class="modalClass"
              @click="handleModalClick"
              @keydown="handleModalKeydown"

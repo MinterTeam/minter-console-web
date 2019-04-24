@@ -126,6 +126,7 @@ export default {
             'date-fns/esm',
             'lodash-es',
             'nuxt-i18n/src',
+            'qr-scanner/src',
             'v-autosize/src',
             'clipbrd/src',
             'pretty-num/src',
