@@ -44,7 +44,7 @@
     "minterjs-tx": "^5.0.2",
     "minterjs-util": "0.7.1",
     "minterjs-wallet": "^3.0.1",
-    "nuxt": "^2.6.2",
+    "nuxt": "^2.6.3",
     "nuxt-i18n": "^5.8.5",
     "nuxt-i18n-default": "^0.0.1",
     "nuxt-i18n-preferred": "^0.0.2",

@@ -83,7 +83,7 @@
                 </svg>
                 <div v-if="cameraError">Allow camera access</div>
             </div>
-            <video class="qr-scan__video" ref="qrVideo"></video>
+            <video class="qr-scan__video" ref="qrVideo" autoplay playsinline muted></video>
         </Modal>
     </div>
 </template>
