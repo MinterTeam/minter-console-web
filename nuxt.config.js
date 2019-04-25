@@ -89,7 +89,6 @@ export default {
     /*
     ** Build configuration
     */
-    //@TODO core-js@3
     build: {
         extractCSS: true,
         // optimization: {
@@ -115,7 +114,15 @@ export default {
         //     // }
         // },
         babel: {
-            presets: ['@nuxt/babel-preset-app'],
+            presets: [
+                [
+                    '@nuxt/babel-preset-app',
+                    {
+                        // targets: isServer ? { node: '10' } : { ie: '11' },
+                        corejs: { version: 3 },
+                    },
+                ],
+            ],
             // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
             sourceType: 'unambiguous',
         },
@@ -126,8 +133,9 @@ export default {
             'date-fns/esm',
             'lodash-es',
             'nuxt-i18n/src',
-            'qr-scanner/src',
+            'qr-scanner',
             'v-autosize/src',
+            'vue-inline-svg/src/',
             'clipbrd/src',
             'pretty-num/src',
             'from-exponential/src',

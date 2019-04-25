@@ -7,7 +7,7 @@
   "scripts": {
     "prod": "npm run production",
     "production": "npm run build",
-    "dev": "gulp & nuxt --spa --port=3002 --hostname=localhost",
+    "dev": "gulp & nuxt --spa --port=3002 --hostname=192.168.61.1",
     "build": "gulp once && nuxt build --spa",
     "start": "nuxt start --spa --port=3002 --hostname=localhost",
     "generate": "nuxt generate",
@@ -34,6 +34,7 @@
     "axios": "^0.18.0",
     "clipbrd": "^1.0.2",
     "cookie": "^0.3.1",
+    "core-js": "^3.0.1",
     "custom-event-polyfill": "^1.0.7",
     "date-fns": "^2.0.0-alpha.27",
     "entity-decode": "^2.0.2",
@@ -59,6 +60,7 @@
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
+    "@babel/runtime-corejs3": "^7.4.3",
     "autoprefixer": "^9.5.1",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.7.1",
