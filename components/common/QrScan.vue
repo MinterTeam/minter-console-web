@@ -1,5 +1,5 @@
 <script>
-    import QrScanner from 'qr-scanner';
+    import QrScanner from 'qr-scanner/src/qr-scanner';
     import QrScannerWorkerPath from '!!file-loader!~/node_modules/qr-scanner/qr-scanner-worker.min.js';
     import Modal from '~/components/common/Modal';
 
