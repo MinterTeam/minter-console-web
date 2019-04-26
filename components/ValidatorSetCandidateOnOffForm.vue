@@ -190,7 +190,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <FieldQr v-model="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
+                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>
@@ -231,13 +231,11 @@
 
             <!-- Generation -->
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.nonce"
-                           @blur="$v.form.nonce.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
-                </label>
+                <FieldQr inputmode="numeric"
+                         v-model.number="form.nonce"
+                         :$value="$v.form.nonce"
+                         :label="$td('Nonce', 'form.checks-issue-nonce')"
+                />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
             </div>

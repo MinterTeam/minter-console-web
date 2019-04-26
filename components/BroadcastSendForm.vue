@@ -76,7 +76,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <FieldQr v-model="form.signedTx" :$value="$v.form.signedTx" :label="$td('Signed tx', 'form.broadcast-tx')"/>
+                <FieldQr v-model.trim="form.signedTx" :$value="$v.form.signedTx" :label="$td('Signed tx', 'form.broadcast-tx')"/>
                 <span class="form-field__error" v-if="$v.form.signedTx.$dirty && !$v.form.signedTx.required">{{ $td('Enter signed tx', 'form.broadcast-tx-error-required') }}</span>
             </div>
 

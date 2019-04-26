@@ -50,7 +50,7 @@
     "nuxt-i18n-default": "^0.0.1",
     "nuxt-i18n-preferred": "^0.0.2",
     "pretty-num": "^0.2.2",
-    "qr-scanner": "github:shrpne/qr-scanner#fix-has-camera",
+    "qr-scanner": "github:shrpne/qr-scanner#build",
     "qrcode.vue": "^1.6.1",
     "v-autosize": "^1.0.3",
     "vue-autonumeric": "^1.2.6",

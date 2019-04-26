@@ -136,7 +136,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <FieldQr v-model="form.check" :$value="$v.form.check" :label="$td('Check', 'form.checks-redeem-check')"/>
+                <FieldQr v-model.trim="form.check" :$value="$v.form.check" :label="$td('Check', 'form.checks-redeem-check')"/>
                 <span class="form-field__error" v-if="$v.form.check.$dirty && !$v.form.check.required">{{ $td('Check', 'form.checks-redeem-check-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.check.$dirty && !$v.form.check.validCheck">{{ $td('Check is invalid', 'form.checks-redeem-check-error-invalid') }}</span>
                 <div class="form-field__help">{{ $td('The identifier the issuer gave you. Starts&nbsp;with', 'form.checks-redeem-check-help') }}&nbsp;<strong>Mc</strong></div>
@@ -154,13 +154,11 @@
 
             <!-- Generation -->
             <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">
-                <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.nonce"
-                           @blur="$v.form.nonce.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
-                </label>
+                <FieldQr inputmode="numeric"
+                         v-model.number="form.nonce"
+                         :$value="$v.form.nonce"
+                         :label="$td('Nonce', 'form.checks-issue-nonce')"
+                />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
             </div>

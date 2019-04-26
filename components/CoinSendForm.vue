@@ -288,13 +288,11 @@
 
                 <!-- Generation -->
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
-                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                               v-model.number="form.nonce"
-                               @blur="$v.form.nonce.$touch()"
-                        >
-                        <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
-                    </label>
+                    <FieldQr inputmode="numeric"
+                             v-model.number="form.nonce"
+                             :$value="$v.form.nonce"
+                             :label="$td('Nonce', 'form.checks-issue-nonce')"
+                    />
                     <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                     <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
                 </div>
