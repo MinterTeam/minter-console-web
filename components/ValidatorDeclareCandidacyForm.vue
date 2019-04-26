@@ -16,13 +16,15 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
-    import InputUppercase from '~/components/InputUppercase';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import FieldQr from '~/components/common/FieldQr';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
             VueAutonumeric,
             QrcodeVue,
+            FieldQr,
             InputUppercase,
             ButtonCopyIcon,
         },
@@ -216,13 +218,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <label class="form-field" :class="{'is-error': $v.form.address.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.address"
-                           @blur="$v.form.address.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Address', 'form.masternode-address') }}</span>
-                </label>
+                <FieldQr v-model="form.address" :$value="$v.form.address" :label="$td('Address', 'form.masternode-address')"/>
                 <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
                 <div class="form-field__help">{{ $td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
@@ -259,13 +255,7 @@
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
-                <label class="form-field" :class="{'is-error': $v.form.publicKey.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.publicKey"
-                           @blur="$v.form.publicKey.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Public key', 'form.masternode-public') }}</span>
-                </label>
+                <FieldQr v-model="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>

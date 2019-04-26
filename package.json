@@ -7,7 +7,7 @@
   "scripts": {
     "prod": "npm run production",
     "production": "npm run build",
-    "dev": "gulp & nuxt --spa --port=3002 --hostname=192.168.61.1",
+    "dev": "gulp & nuxt --spa --port=3002 --hostname=localhost",
     "build": "gulp once && nuxt build --spa",
     "start": "nuxt start --spa --port=3002 --hostname=localhost",
     "generate": "nuxt generate",
@@ -50,7 +50,7 @@
     "nuxt-i18n-default": "^0.0.1",
     "nuxt-i18n-preferred": "^0.0.2",
     "pretty-num": "^0.2.2",
-    "qr-scanner": "^1.1.1",
+    "qr-scanner": "github:shrpne/qr-scanner#fix-has-camera",
     "qrcode.vue": "^1.6.1",
     "v-autosize": "^1.0.3",
     "vue-autonumeric": "^1.2.6",

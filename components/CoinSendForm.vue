@@ -14,13 +14,15 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
-    import InputUppercase from '~/components/InputUppercase';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
-    import Modal from '~/components/Modal';
+    import FieldQr from '~/components/common/FieldQr';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Modal from '~/components/common/Modal';
 
     export default {
         components: {
             QrcodeVue,
+            FieldQr,
             InputUppercase,
             ButtonCopyIcon,
             Modal,
@@ -210,13 +212,11 @@
         <form class="panel__section" novalidate @submit.prevent="submit">
             <div class="u-grid u-grid--small u-grid--vertical-margin">
                 <div class="u-cell u-cell--xlarge--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.address.$error}">
-                        <input class="form-field__input" type="text" v-check-empty data-test-id="walletSendInputAddress"
-                               v-model.trim="form.address"
-                               @blur="$v.form.address.$touch()"
-                        >
-                        <span class="form-field__label">{{ $td('Address', 'form.wallet-send-address') }}</span>
-                    </label>
+                    <FieldQr data-test-id="walletSendInputAddress"
+                             v-model="form.address"
+                             :$value="$v.form.address"
+                             :label="$td('Address', 'form.wallet-send-address')"
+                    />
                     <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
                 </div>

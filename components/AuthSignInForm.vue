@@ -8,7 +8,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {makeAccepter} from "~/assets/utils";
     import {USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH} from '~/assets/variables';
-    import InputMaskedName from '~/components/InputMaskedName';
+    import InputMaskedName from '~/components/common/InputMaskedName';
 
     export default {
         components: {

@@ -10,11 +10,13 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl} from "~/assets/utils";
     import {COIN_NAME} from "~/assets/variables";
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import FieldQr from '~/components/common/FieldQr';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
             QrcodeVue,
+            FieldQr,
             ButtonCopyIcon,
         },
         directives: {
@@ -134,13 +136,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <label class="form-field" :class="{'is-error': $v.form.check.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.check"
-                           @blur="$v.form.check.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Check', 'form.checks-redeem-check') }}</span>
-                </label>
+                <FieldQr v-model="form.check" :$value="$v.form.check" :label="$td('Check', 'form.checks-redeem-check')"/>
                 <span class="form-field__error" v-if="$v.form.check.$dirty && !$v.form.check.required">{{ $td('Check', 'form.checks-redeem-check-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.check.$dirty && !$v.form.check.validCheck">{{ $td('Check is invalid', 'form.checks-redeem-check-error-invalid') }}</span>
                 <div class="form-field__help">{{ $td('The identifier the issuer gave you. Starts&nbsp;with', 'form.checks-redeem-check-help') }}&nbsp;<strong>Mc</strong></div>

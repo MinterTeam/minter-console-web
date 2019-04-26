@@ -3,7 +3,7 @@
     // import 'core-js/modules/es6.typed.uint8-array';
     import autosize from 'v-autosize';
     import {generateMnemonic, walletFromMnemonic} from "minterjs-wallet";
-    import ButtonCopy from '~/components/ButtonCopy';
+    import ButtonCopy from '~/components/common/ButtonCopy';
 
     export default {
         components: {

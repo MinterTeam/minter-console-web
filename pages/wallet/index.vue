@@ -4,7 +4,7 @@
     import getTitle from '~/assets/get-title';
     import {pretty} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';

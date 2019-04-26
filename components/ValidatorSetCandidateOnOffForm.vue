@@ -14,12 +14,14 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
-    import InputUppercase from '~/components/InputUppercase';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import FieldQr from '~/components/common/FieldQr';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
             QrcodeVue,
+            FieldQr,
             InputUppercase,
             ButtonCopyIcon,
         },
@@ -188,13 +190,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <label class="form-field" :class="{'is-error': $v.form.publicKey.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.publicKey"
-                           @blur="$v.form.publicKey.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Public key', 'form.masternode-public') }}</span>
-                </label>
+                <FieldQr v-model="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>

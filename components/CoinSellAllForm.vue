@@ -11,9 +11,9 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
-    import InputUppercase from '~/components/InputUppercase';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
-    import Modal from '~/components/Modal';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Modal from '~/components/common/Modal';
 
     export default {
         components: {
