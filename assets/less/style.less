@@ -32,8 +32,17 @@
 // qr-scanner
 .qr-scan__modal {pointer-events: auto; cursor: default;}
 .qr-scan__modal-container {max-width: 640px;}
+.qr-scan__wrap {position: relative;}
 .qr-scan__notice {color: @c-main; font-weight: 700; font-size: 24px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);}
 .qr-scan__video {max-width: 100%;}
+.qr-scan__overlay {
+    position: absolute; animation: qr-overlay-animation 400ms infinite alternate ease-in-out;
+    svg {width: 100%; height: 100%; stroke: @c-main;}
+}
+@keyframes qr-overlay-animation {
+    from {transform: scale(.98);}
+    to {transform: scale(1.01);}
+}
 
 
 // common
