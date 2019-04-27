@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import getTitle from '~/assets/get-title';
+    import {NETWORK, TESTNET} from '~/assets/variables';
     import AuthSignInForm from "~/components/AuthSignInForm";
     import AuthRegisterForm from "~/components/AuthRegisterForm";
     import AuthAdvancedForm from "~/components/AuthAdvancedForm";
@@ -26,7 +27,7 @@
         },
         head() {
             const title = getTitle(null, this.$i18n.locale);
-            const description = this.$td('Minter Console is by far the most advanced part of our project that lets you manage all your activities on our test network.', 'index.seo-description');
+            const description = this.$td(`Minter Console is by far the most advanced part of our project that lets you manage all your activities on our ${this.isTestnet ? 'test ' : ''}network.`, this.isTestnet ? 'index.seo-description-testnet' : 'index.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -59,6 +60,9 @@
         },
         computed: {
             ...mapGetters(['isAuthorized']),
+            isTestnet() {
+                return NETWORK === TESTNET;
+            },
         },
         methods: {
 
@@ -107,6 +111,9 @@
                                 </h1>
                             </div>
                             <AuthAdvancedGenerate/>
+                            <div class="panel__section">
+                                <a class="link--default" href="https://github.com/MinterTeam/minter-console-web/releases" target="_blank">{{ $td('Generate offline (Github)', 'index.auth-sign-up-seed-offline') }}</a>
+                            </div>
                         </div>
 
                         <!--
@@ -172,7 +179,7 @@
                     <img class="features__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
                     <div>
                         <strong class="features__title">{{ $td('Perpetual Coin Offering Management', 'index.features-pco-title') }}</strong>
-                        <p>{{ $td('ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of', 'index.features-pco-description') }} <a class="link--default" href="https://www.minter.network/Minter_PCO.pdf" target="_blank">{{ $td('this', 'index.features-pco-description-link') }}</a>{{ $td(' paper).', 'index.features-pco-description2') }}</p>
+                        <p>{{ $td('ICOs have disrupted the way startups raise funds. We went even further by disrupting the ICOs themselves. In Minter Console, you can do all things PCO, i.e., determine the value of Constant Reserve Ratio, specify the volume of the Genesis emission, and place the first reserves—in other words, buy back initial supply (for more detail, refer to the Blockchain section of', 'index.features-pco-description') }} <a class="link--default" :href="`https://about.minter.network/Minter_PCO${$i18n.locale === 'ru' ? '_Russian' : ''}.pdf`" target="_blank">{{ $td('this', 'index.features-pco-description-link') }}</a>{{ $td(' paper).', 'index.features-pco-description2') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
@@ -201,10 +208,10 @@
             <p>{{ $td('Keep in mind that even without a Minter account, you still can use the following services and software:', 'index.links-description') }}</p>
             <ul class="services__list--horizontal no-list u-grid u-grid--vertical-margin--small">
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
-                    <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">{{ $td('Status', 'index.links-status') }}</a>
+                    <a class="services__link link--hover" :href="`https://status.minter.network${isTestnet ? '/testnet' : ''}`" target="_blank">{{ $td('Status', 'index.links-status') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3 services__item--next-row">
-                    <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">{{ $td('Explorer', 'index.links-explorer') }}</a>
+                    <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">{{ $td('Explorer', 'index.links-explorer') }}</a>
                 </li>
                 <li class="services__item u-cell u-cell--1-2 u-cell--small--1-3">
                     <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank" rel="noopener">API</a>

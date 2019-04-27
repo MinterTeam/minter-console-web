@@ -1,4 +1,5 @@
 import path from 'path';
+import _interopRequireDefault from "@babel/runtime/helpers/interopRequireDefault";
 import puppeteer from 'puppeteer';
 // import { Nuxt, Builder } from 'nuxt';
 import {Nuxt} from '@nuxt/core';
@@ -21,7 +22,7 @@ let browser;
 const initNuxt = async () => {
     const rootDir = path.resolve(__dirname, '..');
     let config = {};
-    try { config = require(path.resolve(rootDir, 'nuxt.config.js')); } catch (e) {
+    try { config = _interopRequireDefault(require(path.resolve(rootDir, 'nuxt.config.js'))).default; } catch (e) {
         throw Error('Couldn\'t find nuxt.config.js');
     }
     config.rootDir = rootDir;
@@ -64,7 +65,7 @@ module.exports = async function() {
         process.env.DEBUG
             ? {
                 headless: false,
-                slowMo: 100,
+                slowMo: 150,
             }
             : {}
     );

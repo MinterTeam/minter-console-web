@@ -1,20 +1,27 @@
 <script>
-    import {mapState} from 'vuex';
+    import {mapGetters} from 'vuex';
+    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {SellAllTxParams} from "minter-js-sdk/src";
-    import {postTx, estimateCoinSell} from '~/api/minter-node';
+    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import {postTx, estimateCoinSell} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
-    import InputUppercase from '~/components/InputUppercase';
-    import Modal from '~/components/Modal';
+    import FieldQr from '~/components/common/FieldQr';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Modal from '~/components/common/Modal';
 
     export default {
         components: {
+            QrcodeVue,
+            FieldQr,
             InputUppercase,
+            ButtonCopyIcon,
             Modal,
         },
         directives: {
@@ -27,12 +34,13 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance;
+            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
                 serverSuccess: '',
                 form: {
+                    nonce: '',
                     coinFrom: coinList && coinList.length ? coinList[0].coin : '',
                     coinTo: '',
                     message: '',
@@ -43,12 +51,15 @@
                 isModeAdvanced: false,
                 isConfirmModalVisible: false,
                 estimation: null,
+                signedTx: null,
             };
         },
-        validations: {
-            form: {
+        validations() {
+            const form = {
                 coinFrom: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 coinTo: {
                     required,
@@ -58,19 +69,36 @@
                 message: {
                     maxLength: maxLength(1024),
                 },
+            };
 
-            },
+            if (this.$store.getters.isOfflineMode) {
+                form.nonce = {
+                    required,
+                };
+            }
+
+            return {form};
         },
         computed: {
-            ...mapState({
+            ...mapGetters({
                 balance: 'balance',
             }),
             sellAmount() {
                 const coinSellItem = this.balance.find((item) => item.coin === this.form.coinFrom);
                 return coinSellItem && coinSellItem.amount;
             },
+            showAdvanced() {
+                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
+            },
         },
         methods: {
+            submit() {
+                if (this.$store.getters.isOfflineMode) {
+                    this.generateTx();
+                } else {
+                    this.submitConfirm();
+                }
+            },
             submitConfirm() {
                 if (this.isFormSending) {
                     return;
@@ -98,9 +126,27 @@
                         this.serverError = getErrorText(error);
                     });
             },
-            submit() {
+            generateTx() {
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+
+                this.signedTx = null;
+                this.serverError = '';
+                this.serverSuccess = '';
+
+                this.signedTx = prepareSignedTx(new SellAllTxParams({
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...this.form,
+                })).serialize().toString('hex');
+                this.clearForm();
+            },
+            postTx() {
                 this.isConfirmModalVisible = false;
                 this.isFormSending = true;
+                this.signedTx = null;
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
                         postTx(new SellAllTxParams({
@@ -139,6 +185,11 @@
                 this.form.coinTo = '';
                 this.form.message = '';
                 this.formAdvanced.message = '';
+                if (this.form.nonce && this.$store.getters.isOfflineMode) {
+                    this.form.nonce += 1;
+                } else {
+                    this.form.nonce = '';
+                }
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -156,23 +207,32 @@
                 {{ $td('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
             </p>
         </div>
-        <form class="panel__section" novalidate @submit.prevent="submitConfirm">
-            <div class="u-grid u-grid--small u-grid--vertical-margin--small" v-if="balance && balance.length">
+        <form class="panel__section" novalidate @submit.prevent="submit">
+            <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--small--1-2">
-                    <label class="form-field">
+                    <label class="form-field" :class="{'is-error': $v.form.coinFrom.$error}">
                         <select class="form-field__input form-field__input--select" v-check-empty data-test-id="convertSellAllInputSellCoin"
                                 v-model="form.coinFrom"
                                 @blur="$v.form.coinFrom.$touch()"
+                                v-if="balance && balance.length"
                         >
-                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin |
-                                uppercase }} ({{ coin.amount | pretty }})</option>
+                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                                {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                            </option>
                         </select>
+                        <InputUppercase class="form-field__input" type="text" v-check-empty
+                                        v-model.trim="form.coinFrom"
+                                        @blur="$v.form.coinFrom.$touch()"
+                                        v-else
+                        />
                         <span class="form-field__label">{{ $td('Coin to sell', 'form.convert-sell-coin-sell') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
                 <div class="u-cell u-cell--small--1-2">
-                    <label class="form-field">
+                    <label class="form-field" :class="{'is-error': $v.form.coinTo.$error}">
                         <InputUppercase class="form-field__input" type="text" v-check-empty data-test-id="convertSellAllInputBuyCoin"
                                         v-model.trim="form.coinTo"
                                         @blur="$v.form.coinTo.$touch()"
@@ -180,10 +240,10 @@
                         <span class="form-field__label">{{ $td('Coin to get', 'form.convert-sell-coin-get') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
-                <div class="u-cell" v-show="isModeAdvanced">
+                <div class="u-cell" v-show="showAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.message.$error}">
                         <input class="form-field__input" type="text" v-check-empty
                                v-model.trim="form.message"
@@ -194,15 +254,33 @@
                     <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
                     <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
-                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
+
+                <!-- Generation -->
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <FieldQr inputmode="numeric"
+                             v-model.number="form.nonce"
+                             :$value="$v.form.nonce"
+                             :label="$td('Nonce', 'form.checks-issue-nonce')"
+                    />
+                    <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                    <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+                </div>
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                        {{ $td('Generate', 'form.generate-button') }}
+                    </button>
+                </div>
+
+                <!-- Controls -->
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
-                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced">
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button class="button button--main button--full" data-test-id="convertSellAllSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                         <span class="button__content">{{ $td('Sell', 'form.convert-sell-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -214,9 +292,20 @@
                 <div class="u-cell u-cell--order-2" data-test-id="convertSellAllSuccessMessage" v-if="serverSuccess">
                     <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
-            </div>
-            <div v-else>
-                {{ $td('You don\'t have coins to sell', 'form.convert-sell-error') }}
+
+                <div class="u-cell u-cell--order-2" v-if="signedTx">
+                    <dl>
+                        <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
+                        <dd class="u-icon-wrap">
+                            <span class="u-select-all u-icon-text">
+                                {{ signedTx }}
+                            </span>
+                            <ButtonCopyIcon :copy-text="signedTx"/>
+                        </dd>
+                    </dl>
+                    <br>
+                    <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
+                </div>
             </div>
         </form>
 
@@ -247,7 +336,7 @@
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="convertSellAllModalSubmitButton" :class="{'is-loading': isFormSending}" @click="submit">
+                            <button class="button button--main button--full" data-test-id="convertSellAllModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                                     <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>

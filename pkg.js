@@ -1,5 +1,6 @@
 const HOST_NAME = 'localhost';
 const PORT = 4000;
+//@TODO win32
 
 const initCli = function() {
     const cli = require('@nuxt/cli');

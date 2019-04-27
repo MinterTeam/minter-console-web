@@ -20,6 +20,7 @@ export default function() {
         //     meta: {},
         // },
         // history: [],
+        onLine: false,
         isSnackbarActive: false,
     };
 }

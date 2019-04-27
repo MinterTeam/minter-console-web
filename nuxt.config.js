@@ -1,9 +1,13 @@
+// register env before other imports @see https://www.npmjs.com/package/dotenv#how-do-i-use-dotenv-with-import-
+import 'dotenv/config';
 import dotenv from 'dotenv';
 
 const envConfig = dotenv.config();
 
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
+
+const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env === 'production' ? 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=' : 'boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=';
 
 export default {
     /*
@@ -14,6 +18,7 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+            { 'http-equiv': 'Content-Security-Policy', content: `default-src 'self' https://*.minter.network https://minter.org; script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.minter.network data:; font-src 'self' data:; base-uri 'none'; form-action 'none';`},
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
             { hid: 'og-title', name: 'og:title', content: BASE_TITLE },
             { hid: 'og-description', name: 'og:description', content: BASE_DESCRIPTION },
@@ -40,6 +45,7 @@ export default {
         ],
     },
     plugins: [
+        { src: '~/plugins/online.js', ssr: false },
         { src: '~/plugins/click-blur.js', ssr: false },
         { src: '~/plugins/persistedState.js', ssr: false },
         { src: '~/plugins/classlist-svg-polyfill.js', ssr: false },
@@ -108,7 +114,15 @@ export default {
         //     // }
         // },
         babel: {
-            presets: ['@nuxt/babel-preset-app'],
+            presets: [
+                [
+                    '@nuxt/babel-preset-app',
+                    {
+                        // targets: isServer ? { node: '10' } : { ie: '11' },
+                        corejs: { version: 3 },
+                    },
+                ],
+            ],
             // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
             sourceType: 'unambiguous',
         },
@@ -119,7 +133,9 @@ export default {
             'date-fns/esm',
             'lodash-es',
             'nuxt-i18n/src',
+            'qr-scanner',
             'v-autosize/src',
+            'vue-inline-svg/src/',
             'clipbrd/src',
             'pretty-num/src',
             'from-exponential/src',

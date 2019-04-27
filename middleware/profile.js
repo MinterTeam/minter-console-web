@@ -1,4 +1,4 @@
-import {hasAuthToken} from "~/api/myminter";
+import {hasAuthToken} from "~/api/accounts";
 
 export default function({app, store, redirect}) {
     if (process.server) {

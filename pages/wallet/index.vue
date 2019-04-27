@@ -3,7 +3,8 @@
     import {getAddressTransactionList} from "~/api";
     import getTitle from '~/assets/get-title';
     import {pretty} from '~/assets/utils';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import {NETWORK, TESTNET} from '~/assets/variables';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';
@@ -31,6 +32,11 @@
                 });
         },
         asyncData({ store }) {
+            if (store.getters.isOfflineMode) {
+                return {
+                    txList: [],
+                };
+            }
             return getAddressLatestTransactionList(store.getters.address)
                 .then((txListInfo) => {
                     return {
@@ -40,7 +46,7 @@
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
-            const description = this.$td('Transact MNT and other coins issued in the Minter test network. Almost instantly and fee-free.', 'wallet.seo-description');
+            const description = this.$td(`Transact MNT and other coins issued in the Minter ${this.isTestnet ? 'test ': ''}network. Almost instantly and fee-free.`, this.isTestnet ? 'wallet.seo-description-testnet' : 'wallet.seo-description');
             const localeSuffix = this.$i18n.locale === 'en' ? '' : '-' + this.$i18n.locale;
 
             return {
@@ -65,6 +71,9 @@
                 'addressUrl',
                 'baseCoin',
             ]),
+            isTestnet() {
+                return NETWORK === TESTNET;
+            },
         },
         mounted() {
             balanceInterval = setInterval(() => {
@@ -85,7 +94,7 @@
     <section class="u-section u-container">
         <div class="panel panel__header wallet__info">
             <div class="wallet__address">
-                <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" alt="" role="presentation">
+                <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" width="40" height="40" alt="" role="presentation">
                 <div class="wallet__address-content">
                     <div>{{ $td('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
@@ -94,7 +103,7 @@
                     </div>
                 </div>
             </div>
-            <div class="wallet__balance">
+            <div class="wallet__balance" v-if="!$store.getters.isOfflineMode">
                 <div>{{ $td('Your balance:', 'wallet.balance') }}</div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}

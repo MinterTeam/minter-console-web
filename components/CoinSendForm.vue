@@ -1,18 +1,30 @@
 <script>
-    import {mapState} from 'vuex';
+    import {mapGetters} from 'vuex';
+    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
+    import {TX_TYPE_SEND} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
-    import {postTx} from '~/api/minter-node';
+    import {getFeeValue} from 'minterjs-util/src/fee';
+    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty, getFeeValue} from "~/assets/utils";
-    import Modal from '~/components/Modal';
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldQr from '~/components/common/FieldQr';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Modal from '~/components/common/Modal';
 
     export default {
         components: {
+            QrcodeVue,
+            FieldQr,
+            InputUppercase,
+            ButtonCopyIcon,
             Modal,
         },
         directives: {
@@ -24,62 +36,79 @@
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
         data() {
-            const coinList = this.$store.state.balance;
+            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
                 serverSuccess: '',
                 form: {
+                    nonce: '',
                     address: '',
                     amount: null,
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
-                    feeCoinSymbol: false,
+                    feeCoinSymbol: '',
                     message: '',
                 },
                 formAdvanced: {
-                    feeCoinSymbol: false,
+                    feeCoinSymbol: '',
                     message: '',
-                },
-                sve: {
-                    address: {invalid: false, isActual: false, message: ''},
-                    amount: {invalid: false, isActual: false, message: ''},
-                    coinSymbol: {invalid: false, isActual: false, message: ''},
-                    message: {invalid: false, isActual: false, message: ''},
                 },
                 isModeAdvanced: false,
                 isConfirmModalVisible: false,
+                signedTx: null,
             };
         },
-        validations: {
-            form: {
+        validations() {
+            const form = {
                 address: {
                     required,
                     validAddress: isValidAddress,
-                    server: getServerValidator('address'),
                 },
                 amount: {
                     required,
-                    server: getServerValidator('amount'),
                 },
                 coinSymbol: {
                     required,
-                    server: getServerValidator('coinSymbol'),
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
+                },
+                feeCoinSymbol: {
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 message: {
                     maxLength: maxLength(1024),
-                    server: getServerValidator('message'),
                 },
-            },
+                nonce: {},
+            };
+
+            if (this.$store.getters.isOfflineMode) {
+                form.nonce = {
+                    required,
+                };
+            }
+
+            return {form};
         },
         computed: {
-            ...mapState({
+            ...mapGetters({
                 balance: 'balance',
             }),
             feeValue() {
-                return pretty(getFeeValue(10, this.form.message.length));
+                return pretty(getFeeValue(TX_TYPE_SEND, this.form.message.length));
+            },
+            showAdvanced() {
+                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
         },
         methods: {
+            submit() {
+                if (this.$store.getters.isOfflineMode) {
+                    this.generateTx();
+                } else {
+                    this.submitConfirm();
+                }
+            },
             submitConfirm() {
                 if (this.isFormSending) {
                     return;
@@ -90,9 +119,27 @@
                 }
                 this.isConfirmModalVisible = true;
             },
-            submit() {
+            generateTx() {
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+
+                this.signedTx = null;
+                this.serverError = '';
+                this.serverSuccess = '';
+
+                this.signedTx = prepareSignedTx(new SendTxParams({
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...this.form,
+                })).serialize().toString('hex');
+                this.clearForm();
+            },
+            postTx() {
                 this.isConfirmModalVisible = false;
                 this.isFormSending = true;
+                this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
@@ -127,17 +174,22 @@
                 this.formAdvanced.feeCoinSymbol = this.form.feeCoinSymbol;
                 this.formAdvanced.message = this.form.message;
                 // clear advanced form
-                this.form.feeCoinSymbol = false;
+                this.form.feeCoinSymbol = '';
                 this.form.message = '';
             },
             clearForm() {
                 this.form.address = '';
                 this.form.amount = null;
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
-                this.form.feeCoinSymbol = false;
+                this.form.feeCoinSymbol = '';
                 this.form.message = '';
-                this.formAdvanced.feeCoinSymbol = false;
+                this.formAdvanced.feeCoinSymbol = '';
                 this.formAdvanced.message = '';
+                if (this.form.nonce && this.$store.getters.isOfflineMode) {
+                    this.form.nonce += 1;
+                } else {
+                    this.form.nonce = '';
+                }
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -157,83 +209,109 @@
         </div>
 
         <!-- Form -->
-        <form class="panel__section" novalidate @submit.prevent="submitConfirm">
-            <div class="u-grid u-grid--small u-grid--vertical-margin" v-if="balance && balance.length">
+        <form class="panel__section" novalidate @submit.prevent="submit">
+            <div class="u-grid u-grid--small u-grid--vertical-margin">
                 <div class="u-cell u-cell--xlarge--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.address.$error}">
-                        <input class="form-field__input" type="text" v-check-empty data-test-id="walletSendInputAddress"
-                               v-model.trim="form.address"
-                               @blur="$v.form.address.$touch()"
-                               @input="sve.address.isActual = false"
-                        >
-                        <span class="form-field__label">{{ $td('Address', 'form.wallet-send-address') }}</span>
-                    </label>
+                    <FieldQr data-test-id="walletSendInputAddress"
+                             v-model="form.address"
+                             :$value="$v.form.address"
+                             :label="$td('Address', 'form.wallet-send-address')"
+                    />
                     <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
-                    <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.server">{{ sve.address.message }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.amount.$error}">
                         <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="walletSendInputAmount"
                                v-model="form.amount"
                                @blur="$v.form.amount.$touch()"
-                               @input="sve.amount.isActual = false"
                         >
                         <span class="form-field__label">{{ $td('Amount', 'form.wallet-send-amount') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-                    <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.server">{{ sve.amount.message }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
-                    <label class="form-field">
+                    <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
                         <select class="form-field__input form-field__input--select" v-check-empty
                                 v-model="form.coinSymbol"
                                 @blur="$v.form.coinSymbol.$touch()"
+                                v-if="balance && balance.length"
                         >
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                                 {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
                             </option>
                         </select>
+                        <InputUppercase class="form-field__input" type="text" v-check-empty
+                                        v-model.trim="form.coinSymbol"
+                                        @blur="$v.form.coinSymbol.$touch()"
+                                        v-else
+                        />
                         <span class="form-field__label">{{ $td('Coin', 'form.coin') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="isModeAdvanced">
-                    <label class="form-field">
-                        <select class="form-field__input form-field__input--select" v-check-empty
+                <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
+                    <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
+                        <select class="form-field__input form-field__input--select is-not-empty"
                                 v-model="form.feeCoinSymbol"
+                                v-if="balance && balance.length"
                         >
-                            <option :value="false">{{ $td('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
+                            <option :value="''">{{ $td('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                                 {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
                             </option>
                         </select>
+                        <InputUppercase class="form-field__input" type="text" v-check-empty
+                                        v-model.trim="form.feeCoinSymbol"
+                                        @blur="$v.form.feeCoinSymbol.$touch()"
+                                        v-else
+                        />
                         <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
                     </label>
-                    <div class="form-field__help">{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                    <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                    <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
                 </div>
-                <div class="u-cell u-cell--xlarge--3-4" v-show="isModeAdvanced">
+                <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.message.$error}">
                         <input class="form-field__input" type="text" v-check-empty
                                v-model.trim="form.message"
                                @blur="$v.form.message.$touch()"
-                               @input="sve.message.isActual = false"
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
-                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.server">{{ sve.message.message }}</span>
                     <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center">
-                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="isModeAdvanced">
+
+                <!-- Generation -->
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <FieldQr inputmode="numeric"
+                             v-model.number="form.nonce"
+                             :$value="$v.form.nonce"
+                             :label="$td('Nonce', 'form.checks-issue-nonce')"
+                    />
+                    <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                    <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+                </div>
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                        {{ $td('Generate', 'form.generate-button') }}
+                    </button>
+                </div>
+
+                <!-- Controls -->
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
-                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!isModeAdvanced">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced">
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button class="button button--main button--full" data-test-id="walletSendSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                         <span class="button__content">{{ $td('Send', 'form.wallet-send-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -242,13 +320,26 @@
                     </button>
                     <div class="form-field__error" data-test-id="walletSendErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
+
+
                 <div class="u-cell u-cell--order-2" data-test-id="walletSendSuccessMessage" v-if="serverSuccess">
                     <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
                     <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
-            </div>
-            <div v-else>
-                {{ $td('You don\'t have coins to send', 'form.wallet-send-error') }}
+
+                <div class="u-cell u-cell--order-2" v-if="signedTx">
+                    <dl>
+                        <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
+                        <dd class="u-icon-wrap">
+                            <span class="u-select-all u-icon-text">
+                                {{ signedTx }}
+                            </span>
+                            <ButtonCopyIcon :copy-text="signedTx"/>
+                        </dd>
+                    </dl>
+                    <br>
+                    <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
+                </div>
             </div>
         </form>
 
@@ -280,7 +371,7 @@
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="submit">
+                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                                     <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>

@@ -1,6 +1,7 @@
 <script>
     import {shortHashFilter, support} from "~/assets/utils";
-    import Snackbar from '~/components/Snackbar';
+    import {NETWORK, TESTNET} from '~/assets/variables';
+    import Snackbar from '~/components/common/Snackbar';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
@@ -20,6 +21,9 @@
             username() {
                 const username = this.$store.getters.username;
                 return username.substr(0, 2) === 'Mx' ? shortHashFilter(username, 4) : username;
+            },
+            isTestnet() {
+                return NETWORK === TESTNET;
             },
         },
         watch: {
@@ -67,14 +71,14 @@
             <div class="header__container u-container u-container--large">
                 <nuxt-link class="header__logo no-link" :to="preferredPath('index')">
                     <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
-                    <div class="header__logo-text">{{ $store.state.sectionName || 'Console' }}</div>
+                    <div class="header__logo-text">{{ $store.state.sectionName || `${this.isTestnet ? 'Testnet ' : '' }Console` }}</div>
                 </nuxt-link>
 
                 <div class="header__controls">
                     <div class="header__user u-hidden-medium-down">
                         <nuxt-link class="button button--ghost-white" :to="preferredPath('account')" v-if="username">{{ username }}</nuxt-link>
                         <button class="header__user-logout u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
-                            <img class="" src="/img/icon-auth-logout.svg" alt="Logout">
+                            <img class="" src="/img/icon-auth-logout.svg" width="40" height="40" alt="Logout">
                         </button>
                     </div>
                     <Language class="header__control-language"/>
@@ -137,6 +141,12 @@
                                     {{ $td('Coiner', 'common.page-coiner') }}
                                 </nuxt-link>
                             </li>
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="preferredPath('broadcast')" @click.native="linkClick">
+                                    <img class="menu__icon" src="/img/icon-feature-broadcast.svg" alt="" role="presentation">
+                                    {{ $td('Broadcast', 'common.page-broadcast') }}
+                                </nuxt-link>
+                            </li>
                             <!--
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('pco')" @click.native="linkClick">
@@ -172,10 +182,10 @@
                     <div class="u-container main-content__aside-section">
                         <ul class="services__list no-list u-grid u-grid--vertical-margin--small">
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://status.minter.network/testnet" target="_blank">Status</a>
+                                <a class="services__link link--hover" :href="`https://status.minter.network${isTestnet ? '/testnet' : ''}`" target="_blank">Status</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://testnet.explorer.minter.network" target="_blank">Explorer</a>
+                                <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
                                 <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank">API</a>

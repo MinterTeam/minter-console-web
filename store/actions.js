@@ -50,7 +50,10 @@ export default {
     //             return txListInfo;
     //         });
     // },
-    FETCH_BALANCE: ({ commit, getters }) => {
+    FETCH_BALANCE: ({ commit, state, getters }) => {
+        if (getters.isOfflineMode) {
+            return Promise.resolve();
+        }
         // profile address fetched in the middleware
         return getBalance(getters.address)
             .then((balance) => {

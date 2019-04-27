@@ -7,14 +7,14 @@ let browser;
 let page;
 
 
-beforeAll(async () => {
+beforeAll(async function beforeAllFn() {
     browser = global.browser;
     page = await browser.newPage();
     await login(page);
 }, 30000);
 
 
-afterAll(async () => {
+afterAll(async function afterAllFn() {
     await logout(page);
     if (!process.env.DEBUG) {
         await page.close();
@@ -57,9 +57,14 @@ describe('convert page', () => {
     }, 30000);
 
     test('sell all coins', async () => {
+        await page.waitForSelector('[data-test-id="convertSellAllInputSellCoin"] > option[value="TESTCOIN01"]');
         await page.select('[data-test-id="convertSellAllInputSellCoin"]', 'TESTCOIN01');
         await page.type('[data-test-id="convertSellAllInputBuyCoin"]', 'MNT');
         // submit (opens modal)
+        await page.waitForSelector('[data-test-id="convertSellAllSubmitButton"]:not(.is-disabled)');
+        await new Promise((resolve) => {
+            setTimeout(resolve, 100);
+        });
         await page.click('[data-test-id="convertSellAllSubmitButton"]');
         // wait for modal
         await page.waitForSelector('[data-test-id="convertSellAllModalSubmitButton"]');

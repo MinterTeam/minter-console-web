@@ -196,16 +196,18 @@ dd {overflow-wrap: break-word; margin: 0;}
 
 // button-loader
 @loader-length: 12 * 3.14 * 2; // длина окружности
+.loader {width: 28px; height: 28px; margin: auto; animation: loader-rotate 2s linear infinite;}
+.loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: loader-dash 1.5s ease-in-out infinite; }
 .button-loader {
-    position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 42px; height: 42px; margin: auto; opacity: 0; pointer-events: none; animation: button-loader-rotate 2s linear infinite; /*transition: 0.05s;*/ /*intensive js calculations interrupts css transition*/
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 42px; height: 42px; margin: auto; opacity: 0; pointer-events: none; animation: loader-rotate 2s linear infinite; /*transition: 0.05s;*/ /*intensive js calculations interrupts css transition*/
     .is-loading > & { opacity: 1; /*transition: 0.1s 0.1s;*/}
 }
-.button-loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: button-loader-dash 1.5s ease-in-out infinite; }
-@keyframes button-loader-rotate {
+.button-loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: loader-dash 1.5s ease-in-out infinite; }
+@keyframes loader-rotate {
     0% {transform: rotate(-90deg);}
     100% { transform: rotate(270deg); }
 }
-@keyframes button-loader-dash {
+@keyframes loader-dash {
     0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
     50% { stroke-dasharray: @loader-length * 0.8, 200; stroke-dashoffset: 0; }
     100% { stroke-dasharray: @loader-length * 0.8, 200; stroke-dashoffset: -@loader-length + 1px; }
@@ -233,6 +235,7 @@ dd {overflow-wrap: break-word; margin: 0;}
     &:focus {border-color: @c-main;}
     .is-error > & {border-color: @c-red;}
     .form-field--dashed > & {border-bottom-style: dashed;}
+    .form-field--with-icon > & {padding-right: 26px;}
 }
 .form-field__input--select {appearance: none; background: url(../img/icon-dropdown.svg) no-repeat 100% 50%; padding-right: 24px;}
 .form-field__label {
@@ -241,6 +244,8 @@ dd {overflow-wrap: break-word; margin: 0;}
     .form-field__input:focus ~ & {color: @c-main;}
     .form-field.is-error > & {color: @c-red;}
 }
+.form-field__icon {position: absolute; right: 0; top: (2px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; font-size: 0;}
+.form-field__icon--copy {top: calc((100% - 12px) / 2 - 2px);}
 .form-field__help {
     font-size: 12px; line-height: 16px; margin-top: 6px; display: block; color: @c-black-light;
     .form-field__error + & {margin-top: 0;}
@@ -248,6 +253,13 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 .error-text() {font-size: 12px; color: @c-red; line-height: 16px;}
 .form-field__error {.error-text(); margin-top: 6px; overflow-wrap: break-word; display: block;}
+@media (min-width: @breakpoint-large-up) {
+    .form-field--with-icon > .form-field__input {padding-right: 32px;}
+    .form-field__icon--qr {
+        top: @field-padding;
+        & > img {width: 30px; height: 30px;}
+    }
+}
 
 
 
