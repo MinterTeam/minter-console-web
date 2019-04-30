@@ -12,6 +12,7 @@ module.exports = {
         // "nuxt.config.js",
         ".nuxt/**/*",
     ],
+    "publish": ["github"],
     "dmg": {
         "contents": [
             {
