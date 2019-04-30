@@ -17,6 +17,11 @@
     "test": "gulp once && NODE_ENV=test jest --bail --runInBand --verbose",
     "test:debug": "DEBUG=true npm run test",
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
+    "electron:build": "electron-builder -mwl --config=./desktop/electron-builder.config.js",
+    "electron:build-x86": "electron-builder -w --ia32  --config=./desktop/electron-builder-x86.config.js",
+    "electron:build-dir": "electron-builder --config=./desktop/electron-builder.config.js --dir",
+    "electron:dev": "electron ./desktop/electron.dev.js",
+    "electron:install-deps": "electron-builder install-app-deps",
     "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
     "pkg:pkg": "pkg . --out-path=tmp/pkg",
     "pkg:zip": "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
@@ -68,7 +73,9 @@
     "cross-env": "^5.2.0",
     "del": "^4.1.0",
     "dotenv": "^7.0.0",
+    "electron": "^4.1.5",
     "electron-builder": "^20.39.0",
+    "electron-debug": "^2.2.0",
     "eslint": "^5.16.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^2.1.2",
@@ -93,40 +100,7 @@
     "puppeteer": "^1.14.0",
     "rimraf": "^2.6.3"
   },
-  "build": {
-    "productName": "Minter Console",
-    "appId": "minter.console",
-    "directories": {
-      "output": "tmp"
-    },
-    "files": [
-      "dist/electron/**/*"
-    ],
-    "dmg": {
-      "contents": [
-        {
-          "x": 410,
-          "y": 150,
-          "type": "link",
-          "path": "/Applications"
-        },
-        {
-          "x": 130,
-          "y": 150,
-          "type": "file"
-        }
-      ]
-    },
-    "mac": {
-      "icon": "build/icons/icon.icns"
-    },
-    "win": {
-      "icon": "build/icons/icon.ico"
-    },
-    "linux": {
-      "icon": "build/icons"
-    }
-  },
+  "main": "desktop/electron.js",
   "bin": "pkg.js",
   "pkg": {
     "assets": [
