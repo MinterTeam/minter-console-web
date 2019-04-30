@@ -23,9 +23,9 @@
     "precommit"
   ],
   "dependencies": {
-    "@material/list": "^1.1.1",
-    "@material/menu": "^1.1.1",
-    "@material/snackbar": "^1.1.1",
+    "@material/list": "^2.0.0",
+    "@material/menu": "^2.0.0",
+    "@material/snackbar": "^2.0.0",
     "@minterteam/footer-links": "^3.0.0",
     "aes-js": "^3.1.2",
     "axios": "^0.18.0",
@@ -43,7 +43,7 @@
     "minterjs-util": "0.7.1",
     "minterjs-wallet": "^3.0.1",
     "nuxt": "^2.6.3",
-    "nuxt-i18n": "^5.8.5",
+    "nuxt-i18n": "^5.10.0",
     "nuxt-i18n-default": "^0.0.1",
     "nuxt-i18n-preferred": "^0.0.2",
     "pretty-num": "^0.2.2",
@@ -51,19 +51,19 @@
     "qrcode.vue": "^1.6.1",
     "v-autosize": "^1.0.3",
     "vue-autonumeric": "^1.2.6",
-    "vue-imask": "^5.0.0",
+    "vue-imask": "^5.1.1",
     "vue-inline-svg": "^1.1.1",
     "vuelidate": "^0.7.4",
     "vuex-persistedstate": "^2.5.4"
   },
   "devDependencies": {
-    "@babel/runtime-corejs3": "^7.4.3",
+    "@babel/runtime-corejs3": "^7.4.4",
     "autoprefixer": "^9.5.1",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.7.1",
     "beeper": "^2.0.0",
     "cross-env": "^5.2.0",
-    "del": "^4.1.0",
+    "del": "^4.1.1",
     "dotenv": "^7.0.0",
     "eslint": "^5.16.0",
     "eslint-friendly-formatter": "^4.0.1",
@@ -85,7 +85,7 @@
     "mkdirp": "^0.5.1",
     "postcss-normalize": "^7.0.1",
     "pre-commit": "^1.2.2",
-    "puppeteer": "^1.14.0",
+    "puppeteer": "^1.15.0",
     "rimraf": "^2.6.3"
   }
 }
