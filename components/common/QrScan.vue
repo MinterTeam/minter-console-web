@@ -5,8 +5,6 @@
 
     QrScanner.WORKER_PATH = QrScannerWorkerPath;
 
-    /** @type QrScanner */
-    let qrScanner;
 
     export default {
         components: {
@@ -20,7 +18,8 @@
         },
         data() {
             return {
-                hasCamera: false,
+                /** @type QrScanner */
+                qrScanner: null,
                 cameraError: false,
                 isModalVisible: false,
                 isPlaying: false,
@@ -29,30 +28,27 @@
         mounted() {
             QrScanner.hasCamera()
                 .then(() => {
-                    this.hasCamera = true;
                     this.$emit('update:qrVisible', true);
-
-                    qrScanner = new QrScanner(this.$refs.qrVideo, (result) => {
+                    this.qrScanner = new QrScanner(this.$refs.qrVideo, (result) => {
                         this.stopScanQr();
                         this.isModalVisible = false;
                         this.$emit('qrScanned', result);
                     });
                 })
                 .catch(() => {
-                    this.hasCamera = false;
                     this.$emit('update:qrVisible', false);
                 });
         },
         destroyed() {
-            if (qrScanner) {
-                qrScanner.destroy();
+            if (this.qrScanner) {
+                this.qrScanner.destroy();
             }
         },
         methods: {
             scanQr() {
                 this.isModalVisible = true;
                 this.$refs.qrVideo.addEventListener('canplay', this.handlePlayStart);
-                qrScanner.start()
+                this.qrScanner.start()
                     .then(() => {
                         this.cameraError = false;
                     })
@@ -61,7 +57,7 @@
                     });
             },
             stopScanQr() {
-                qrScanner.stop();
+                this.qrScanner.stop();
                 this.isPlaying = false;
                 window.removeEventListener('resize', this.repositionOverlay);
             },
@@ -95,7 +91,7 @@
 </script>
 
 <template>
-    <div v-show="hasCamera" @click.prevent>
+    <div v-show="qrScanner" @click.prevent>
         <button class="form-field__icon form-field__icon--qr u-semantic-button" type="button" @click.prevent="scanQr">
             <img src="/img/icon-qr.svg" alt="Scan QR Code" width="24" height="24">
         </button>
