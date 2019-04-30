@@ -1,6 +1,6 @@
 <script>
     import InlineSvg from 'vue-inline-svg';
-    import ButtonCopy from '~/components/ButtonCopy';
+    import ButtonCopy from '~/components/common/ButtonCopy';
 
     export default {
         components: {

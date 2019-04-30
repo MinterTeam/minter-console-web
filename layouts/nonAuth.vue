@@ -1,6 +1,6 @@
 <script>
     import {NETWORK, TESTNET} from '~/assets/variables';
-    import Snackbar from '~/components/Snackbar';
+    import Snackbar from '~/components/common/Snackbar';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 

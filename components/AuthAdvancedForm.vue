@@ -1,6 +1,6 @@
 <script>
     // Uni8Array.fill needed for wallet
-    import 'core-js/modules/es6.typed.uint8-array';
+    // import 'core-js/modules/es6.typed.uint8-array';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import withParams from 'vuelidate/lib/withParams';
