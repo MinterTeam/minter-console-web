@@ -1,3 +1,5 @@
+const appName = 'minter-console';
+
 module.exports = {
     "productName": "Minter Console",
     "appId": "com.minter.console",
@@ -13,7 +15,14 @@ module.exports = {
         ".nuxt/**/*",
     ],
     "publish": ["github"],
+    // mac (zip)
+    "mac": {
+        "artifactName": `${appName}-\${version}-\${arch}-mac.\${ext}`,
+        "icon": "desktop/icons/icon.icns",
+    },
+    // mac dmg
     "dmg": {
+        "artifactName": `${appName}-\${version}-\${arch}.\${ext}`,
         "contents": [
             {
                 "x": 410,
@@ -28,40 +37,20 @@ module.exports = {
             },
         ],
     },
-    "mac": {
-        "icon": "desktop/icons/icon.icns",
-    },
-    "nsis": {
-        "artifactName": "${productName} ${version} Setup ${arch}.${ext}",
-    },
+    // win (portable)
     "win": {
-        "artifactName": "${productName} ${version} ${arch}.${ext}",
+        "artifactName": `${appName}-\${version}-portable-x64.\${ext}`,
         "icon": "desktop/icons/icon.ico",
         "target": ["portable", "nsis"],
-        // "target": [
-        //     {
-        //         "artifactName": "${productName} ${version} ${arch}.${ext}",
-        //         "target": "portable",
-        //         "arch": "x64",
-        //     },
-        //     {
-        //         "artifactName": "${productName} ${version} ${arch} x86.${ext}",
-        //         "target": "portable",
-        //         "arch": "ia32"
-        //     },
-        //     {
-        //         "artifactName": "${productName} Setup ${version} ${arch}.${ext}",
-        //         "target": "nsis",
-        //         "arch": "x64",
-        //     },
-        //     {
-        //         "artifactName": "${productName} Setup ${version} ${arch} x86.${ext}",
-        //         "target": "nsis",
-        //         "arch": "ia32"
-        //     },
-        // ]
     },
+    // win setup
+    "nsis": {
+        "artifactName": `${appName}-\${version}-setup-x64.\${ext}`,
+    },
+    // linux
     "linux": {
+        "artifactName": `${appName}-\${version}-\${arch}.\${ext}`,
         "icon": "desktop/icons",
+        "category": "Office",
     },
 };
