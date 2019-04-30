@@ -2,7 +2,7 @@
     import {mapGetters} from 'vuex';
     import * as TX_TYPES from 'minterjs-tx/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl} from '~/assets/utils';
-    import TableLink from '~/components/TableLink';
+    import TableLink from '~/components/common/TableLink';
 
     export default {
         components: {

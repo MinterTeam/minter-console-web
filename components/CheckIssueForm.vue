@@ -7,8 +7,8 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
-    import InputUppercase from '~/components/InputUppercase';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import InputUppercase from '~/components/common/InputUppercase';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {

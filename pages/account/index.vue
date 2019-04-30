@@ -1,7 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import getTitle from '~/assets/get-title';
-    import ButtonCopyIcon from '~/components/ButtonCopyIcon';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {

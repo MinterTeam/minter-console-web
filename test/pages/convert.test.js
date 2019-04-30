@@ -57,6 +57,7 @@ describe('convert page', () => {
     }, 30000);
 
     test('sell all coins', async () => {
+        await page.waitForSelector('[data-test-id="convertSellAllInputSellCoin"] > option[value="TESTCOIN01"]');
         await page.select('[data-test-id="convertSellAllInputSellCoin"]', 'TESTCOIN01');
         await page.type('[data-test-id="convertSellAllInputBuyCoin"]', 'MNT');
         // submit (opens modal)

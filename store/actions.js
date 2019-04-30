@@ -51,7 +51,7 @@ export default {
     //         });
     // },
     FETCH_BALANCE: ({ commit, state, getters }) => {
-        if (!state.onLine) {
+        if (getters.isOfflineMode) {
             return Promise.resolve();
         }
         // profile address fetched in the middleware

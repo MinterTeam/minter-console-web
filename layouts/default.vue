@@ -1,7 +1,7 @@
 <script>
     import {shortHashFilter, support} from "~/assets/utils";
     import {NETWORK, TESTNET} from '~/assets/variables';
-    import Snackbar from '~/components/Snackbar';
+    import Snackbar from '~/components/common/Snackbar';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
@@ -139,6 +139,12 @@
                                 <nuxt-link class="menu__link link--hover" :to="preferredPath('coiner')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">
                                     {{ $td('Coiner', 'common.page-coiner') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="preferredPath('broadcast')" @click.native="linkClick">
+                                    <img class="menu__icon" src="/img/icon-feature-broadcast.svg" alt="" role="presentation">
+                                    {{ $td('Broadcast', 'common.page-broadcast') }}
                                 </nuxt-link>
                             </li>
                             <!--

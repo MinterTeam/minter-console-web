@@ -1,15 +1,15 @@
 const HOST_NAME = 'localhost';
 const PORT = 4001;
-//@TODO win32
 
 const initCli = function() {
     const cli = require('@nuxt/cli');
+    const path = require('path');
     const _argv = [];
     _argv[0] = 'start';
     _argv.push('--spa');
     _argv.push(`--port=${PORT}`);
     _argv.push(`--hostname=${HOST_NAME}`);
-    _argv.push(__dirname);
+    _argv.push(path.resolve(__dirname, '..'));
     cli.run(_argv);
 };
 
