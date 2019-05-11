@@ -5,6 +5,7 @@ import {generateMnemonic} from 'minterjs-wallet';
 import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} from 'minter-js-org';
 import accounts from '~/api/accounts';
 import explorer from '~/api/explorer';
+import autoDelegation from '~/api/auto-delegation';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
@@ -181,6 +182,15 @@ export function getAddressInfo(params, cancelToken) {
             cancelToken,
         })
         .then((response) => response.data.data);
+}
+
+/**
+ * @param txList
+ * @return {Promise<AxiosResponse<any> | never>}
+ */
+export function postAutoDelegationTxList(txList) {
+    return autoDelegation
+        .post('transactions', {transactions: txList});
 }
 
 function makeFormData(data) {

@@ -43,6 +43,15 @@
     from {transform: scale(.98);}
     to {transform: scale(1.01);}
 }
+// file-input
+.file-input {opacity: 0; position: absolute; width: 100%; height: 100%; left: 0; top: 0; font-size: 0; cursor: pointer;}
+.file-input__drag-layer {
+    &::before {content: ''; position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: 22px 18px; border: 3px dashed; border-radius: 20px; z-index: -1;}
+}
+.file-input__drag-layer-container {padding-left: 15px; padding-right: 15px;}
+@media (min-width: @breakpoint-small-up) {
+    .file-input__drag-layer::before {margin: 28px 25px;}
+}
 
 
 // common
@@ -215,5 +224,6 @@
 .multisig__address {flex-grow: 2;}
 
 
-
+.reinvest__textarea {width: 100%; padding: 4px 8px; border: 1px solid @c-border; border-radius: 10px;}
+.reinvest__upload-textarea {max-height: 200px;}
 
