@@ -40,7 +40,7 @@
     "minter-js-org": "^0.3.0",
     "minter-js-sdk": "^0.16.0",
     "minterjs-tx": "^5.0.2",
-    "minterjs-util": "0.7.1",
+    "minterjs-util": "0.7.3",
     "minterjs-wallet": "^3.0.1",
     "nuxt": "^2.6.3",
     "nuxt-i18n": "^5.12.2",
