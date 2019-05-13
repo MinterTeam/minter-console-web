@@ -3,7 +3,7 @@ import format from "date-fns/esm/format";
 import decode from 'entity-decode';
 import prettyNum from 'pretty-num';
 import {txTypeList} from 'minterjs-tx/src/tx-types';
-import {EXPLORER_URL} from "~/assets/variables";
+import {EXPLORER_HOST} from "~/assets/variables";
 
 
 
@@ -56,19 +56,19 @@ export function getTimeZone(timestamp) {
 }
 
 export function getExplorerBlockUrl(block) {
-    return EXPLORER_URL + '/blocks/' + block;
+    return EXPLORER_HOST + '/blocks/' + block;
 }
 
 export function getExplorerTxUrl(hash) {
-    return EXPLORER_URL + '/transactions/' + hash;
+    return EXPLORER_HOST + '/transactions/' + hash;
 }
 
 export function getExplorerAddressUrl(address) {
-    return EXPLORER_URL + '/address/' + address;
+    return EXPLORER_HOST + '/address/' + address;
 }
 
 export function getExplorerValidatorUrl(pubKey) {
-    return EXPLORER_URL + '/validator/' + pubKey;
+    return EXPLORER_HOST + '/validator/' + pubKey;
 }
 
 /**

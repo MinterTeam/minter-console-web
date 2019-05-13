@@ -1,0 +1,279 @@
+<script>
+    import {validationMixin} from 'vuelidate';
+    import required from 'vuelidate/lib/validators/required';
+    import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
+    import {isValidPublic} from "minterjs-util/src/public";
+    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import {privateToAddressString} from 'minterjs-util';
+    import {postAutoDelegationTxList} from '~/api';
+    import {getNonce} from '~/api/gate';
+    import checkEmpty from '~/assets/v-check-empty';
+    import {getErrorText} from "~/assets/server-error";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldQr from '~/components/common/FieldQr';
+    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+
+    export default {
+        components: {
+            FieldQr,
+            ButtonCopyIcon,
+        },
+        directives: {
+            checkEmpty,
+        },
+        mixins: [validationMixin],
+        filters: {
+            pretty,
+            uppercase: (value) => value ? value.toUpperCase() : value,
+        },
+        data() {
+            return {
+                isFormSending: false,
+                serverError: '',
+                serverSuccess: false,
+                formTxCount: '',
+                form: {
+                    nonce: '',
+                    publicKey: '',
+                    stake: null,
+                    gasPrice: '',
+                },
+                signedTxList: null,
+                signedTxListFile: null,
+            };
+        },
+        validations() {
+            const formTxCount = {
+                required,
+            };
+            const form = {
+                publicKey: {
+                    required,
+                    validPublicKey: isValidPublic,
+                },
+                stake: {
+                    required,
+                },
+                gasPrice: {
+                },
+            };
+
+            if (this.$store.getters.isOfflineMode) {
+                form.nonce = {
+                    required,
+                };
+            }
+
+            return {formTxCount, form};
+        },
+        computed: {
+        },
+        destroyed() {
+            this.clearDownload();
+        },
+        methods: {
+            submit() {
+                if (this.$store.getters.isOfflineMode) {
+                    this.generateTxList();
+                } else {
+                    this.postTxList();
+                }
+            },
+            generateTxList() {
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+
+                this.signedTxList = null;
+                this.serverError = '';
+                this.serverSuccess = false;
+                generateBatchTx({
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...this.form,
+                    gasPrice: this.form.gasPrice || undefined,
+                    coinSymbol: this.$store.getters.COIN_NAME,
+                    feeCoinSymbol: this.$store.getters.COIN_NAME,
+                }, this.formTxCount)
+                    .then(([signedTxList, nonce]) => {
+                        this.signedTxList = signedTxList.join('\n');
+                        this.setDownload(this.signedTxList, `${this.form.publicKey}-${nonce}-${nonce + this.formTxCount}`);
+                        this.clearForm();
+                    });
+            },
+            postTxList() {
+                if (this.isFormSending) {
+                    return;
+                }
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+                this.isFormSending = true;
+                this.signedTxList = null;
+                this.serverError = '';
+                this.serverSuccess = false;
+                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
+                    .then(() => generateBatchTx({
+                        privateKey: this.$store.getters.privateKey,
+                        chainId: this.$store.getters.CHAIN_ID,
+                        ...this.form,
+                        gasPrice: this.form.gasPrice || undefined,
+                        coinSymbol: this.$store.getters.COIN_NAME,
+                        feeCoinSymbol: this.$store.getters.COIN_NAME,
+                    }, this.formTxCount))
+                    .then(([signedTxList]) => postAutoDelegationTxList(signedTxList))
+                    .then(() => {
+                        this.isFormSending = false;
+                        this.serverSuccess = true;
+                        this.clearForm();
+                    })
+                    .catch((error) => {
+                        this.isFormSending = false;
+                        this.serverError = getErrorText(error);
+                    });
+            },
+            clearForm() {
+                this.form.publicKey = '';
+                this.form.stake = null;
+                this.form.gasPrice = '';
+                if (this.form.nonce && this.$store.getters.isOfflineMode) {
+                    this.form.nonce += this.formTxCount;
+                } else {
+                    this.form.nonce = '';
+                }
+                this.$v.$reset();
+            },
+            setDownload(text, name) {
+                this.clearDownload();
+                const file = new Blob([text], {type: 'text/plain;charset=utf-8'});
+                this.$set(this, 'signedTxListFile', {
+                    url: URL.createObjectURL(file),
+                    name: name + '.txt',
+                });
+            },
+            clearDownload() {
+                if (this.signedTxListFile && this.signedTxListFile.url) {
+                    URL.revokeObjectURL(this.signedTxListFile.url);
+                }
+            },
+            getExplorerTxUrl,
+        },
+    };
+
+    function generateBatchTx(txParams, txCount) {
+        const privateKey = txParams.privateKey;
+        const nonce = txParams.nonce;
+
+        // ensure nonce
+        const privateKeyBuffer = typeof privateKey === 'string' ? Buffer.from(privateKey, 'hex') : privateKey;
+        const address = privateToAddressString(privateKeyBuffer);
+
+        const noncePromise = nonce ? Promise.resolve(nonce) : getNonce(address);
+        return noncePromise.then((nonce) => {
+            let result = [];
+            for(let i = 1; i <= txCount; i++) {
+                const signedTx = prepareSignedTx(new DelegateTxParams({
+                    ...txParams,
+                    nonce,
+                })).serialize().toString('hex');
+                result.push(signedTx);
+                nonce++;
+            }
+
+            return [result, nonce];
+        });
+
+    }
+</script>
+
+<template>
+    <form class="panel__section" novalidate @submit.prevent="submit">
+        <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+            <div class="u-cell u-cell--xlarge--1-2">
+                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
+                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+            </div>
+            <div class="u-cell u-cell--small--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
+                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model.number="form.stake"
+                           @blur="$v.form.stake.$touch()"
+                    >
+                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
+            </div>
+            <div class="u-cell u-cell--small--1-2">
+                <label class="form-field" :class="{'is-error': $v.formTxCount.$error}">
+                    <input class="form-field__input" type="text" v-check-empty
+                           v-model.trim="formTxCount"
+                           @blur="$v.formTxCount.$touch()"
+                    >
+                    <span class="form-field__label">{{ $td('Tx count', 'form.delegation-reinvest-tx-count') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.formTxCount.$dirty && !$v.formTxCount.required">{{ $td('Enter tx count', 'form.delegation-reinvest-tx-count-error-required') }}</span>
+<!--                <div class="form-field__help">{{ $td('', 'form.delegation-reinvest-tx-count-help') }}</div>-->
+            </div>
+            <div class="u-cell u-cell--small--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
+                    <input class="form-field__input" type="text" v-check-empty
+                           v-model.trim="form.gasPrice"
+                           @blur="$v.form.gasPrice.$touch()"
+                    >
+                    <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                </label>
+                <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
+            </div>
+
+            <!-- Generation -->
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <FieldQr inputmode="numeric"
+                         v-model.number="form.nonce"
+                         :$value="$v.form.nonce"
+                         :label="$td('Nonce', 'form.checks-issue-nonce')"
+                />
+                <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                    {{ $td('Generate', 'form.generate-button') }}
+                </button>
+            </div>
+
+            <!-- Controls -->
+            <div class="u-cell u-cell--order-2" v-if="!$store.getters.isOfflineMode">
+                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
+                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
+                    </svg>
+                </button>
+                <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+            </div>
+            <div class="u-cell u-cell--order-2" v-if="serverSuccess">
+                <strong>{{ $td('Auto-delegation have started', 'form.delegation-reinvest-start-success') }}</strong>
+            </div>
+
+            <div class="u-cell u-cell--order-2" v-if="signedTxList">
+                <dl>
+                    <dt>{{ $td('Signed tx list:', 'form.delegation-reinvest-result') }}</dt>
+                    <dd class="u-icon-wrap">
+                        <textarea class="u-icon-text reinvest__textarea" rows="6" v-model="signedTxList"></textarea>
+<!--                            <span class="u-select-all u-icon-text">-->
+<!--                                {{ signedTxList }}-->
+<!--                            </span>-->
+                        <ButtonCopyIcon :copy-text="signedTxList"/>
+                    </dd>
+                    <dd>
+                        <a class="link--default" :href="signedTxListFile.url" :download="signedTxListFile.name" v-if="signedTxListFile" target="_blank" rel="noopener">Download File</a>
+                    </dd>
+                </dl>
+                <br>
+            </div>
+        </div>
+    </form>
+</template>

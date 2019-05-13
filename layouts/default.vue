@@ -121,6 +121,14 @@
                                     {{ $td('Delegation', 'common.page-delegation') }}
                                 </nuxt-link>
                             </li>
+<!--
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('reinvest')" @click.native="linkClick">
+                                    <img class="menu__icon" src="/img/icon-feature-mining-automation.svg" alt="" role="presentation">
+                                    {{ $td('Reinvest', 'common.page-reinvest') }}
+                                </nuxt-link>
+                            </li>
+-->
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="preferredPath('masternode')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-node-management.svg" alt="" role="presentation">

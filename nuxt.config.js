@@ -135,6 +135,7 @@ export default {
             'nuxt-i18n/src',
             'qr-scanner',
             'v-autosize/src',
+            'v-file-input/src',
             'vue-inline-svg/src/',
             'clipbrd/src',
             'pretty-num/src',
