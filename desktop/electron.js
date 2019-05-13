@@ -41,6 +41,7 @@ const _NUXT_URL_ = `http://${HOST_NAME}:${PORT}/`;
 ** Electron
 */
 
+const fs = require('fs');
 const { app, BrowserWindow, Menu } = require('electron'); // eslint-disable-line
 
 /**
@@ -95,6 +96,19 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     }
 
+    // clear leveldb log if localStorage is empty
+    mainWindow.on('close', async () => {
+        let vuex = await mainWindow.webContents.executeJavaScript(`window.localStorage.getItem('vuex')`);
+        vuex = vuex && JSON.parse(vuex);
+        if (!vuex.auth.advanced && !vuex.auth.password) {
+            const dbPath = path.join(app.getPath('userData'), 'Local Storage/leveldb');
+            const logs = findInDir(dbPath, '.log');
+            logs.forEach((filePath) => {
+                fs.unlinkSync(filePath);
+            });
+        }
+    });
+
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
@@ -121,6 +135,27 @@ function createMenu() {
     ];
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+function findInDir(startPath, filter) {
+    let result = [];
+
+    if (!fs.existsSync(startPath)) {
+        return result;
+    }
+
+    const files = fs.readdirSync(startPath);
+    for (let i = 0; i < files.length; i++) {
+        const filename = path.join(startPath, files[i]);
+        const stat = fs.lstatSync(filename);
+        if (stat.isDirectory()) {
+            result = result.concat(findInDir(filename, filter)); //recurse
+        } else if (filename.indexOf(filter) >= 0) {
+            result.push(filename);
+        }
+    }
+
+    return result;
 }
 
 /**
