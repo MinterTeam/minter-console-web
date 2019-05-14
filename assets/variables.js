@@ -1,6 +1,6 @@
 export const MAINNET = 'mainnet';
 export const TESTNET = 'testnet';
-export const NETWORK = process.env.APP_ENV === 'production' ? MAINNET : TESTNET;
+export const NETWORK = process.env.APP_ENV === MAINNET ? MAINNET : TESTNET;
 export const BASE_TITLE_NETWORK = NETWORK === MAINNET ? '' : 'Testnet ';
 export const BASE_TITLE_END = ' — Minter';
 export const BASE_TITLE = BASE_TITLE_NETWORK + 'Console' + BASE_TITLE_END;
