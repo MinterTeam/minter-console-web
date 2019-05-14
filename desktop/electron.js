@@ -41,7 +41,8 @@ const _NUXT_URL_ = `http://${HOST_NAME}:${PORT}/`;
 ** Electron
 */
 
-const { app, BrowserWindow } = require('electron'); // eslint-disable-line
+const fs = require('fs');
+const { app, BrowserWindow, Menu } = require('electron'); // eslint-disable-line
 
 /**
  * Set `__static` path to static files in production
@@ -52,6 +53,29 @@ const { app, BrowserWindow } = require('electron'); // eslint-disable-line
 // }
 
 let mainWindow;
+
+app.on('ready', async () => {
+    try {
+        await initNuxt();
+    } catch (e) {
+        console.log(e);
+    }
+    // setTimeout(createWindow, 3000)
+    createWindow();
+    createMenu();
+});
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+app.on('activate', () => {
+    if (mainWindow === null) {
+        createWindow();
+    }
+});
 
 function createWindow() {
     /**
@@ -72,32 +96,67 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     }
 
+    // clear leveldb log if localStorage is empty
+    mainWindow.on('close', async () => {
+        let vuex = await mainWindow.webContents.executeJavaScript(`window.localStorage.getItem('vuex')`);
+        vuex = vuex && JSON.parse(vuex);
+        if (!vuex.auth.advanced && !vuex.auth.password) {
+            const dbPath = path.join(app.getPath('userData'), 'Local Storage/leveldb');
+            const logs = findInDir(dbPath, '.log');
+            logs.forEach((filePath) => {
+                fs.unlinkSync(filePath);
+            });
+        }
+    });
+
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
 }
 
-app.on('ready', async () => {
-    try {
-        await initNuxt();
-    } catch (e) {
-        console.log(e);
-    }
-    // setTimeout(createWindow, 3000)
-    createWindow();
-});
+function createMenu() {
+    const template = [{
+        label: "Minter Console",
+        submenu: [
+            { label: "About", selector: "orderFrontStandardAboutPanel:" },
+            { type: "separator" },
+            { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); }},
+        ]}, {
+        label: "Edit",
+        submenu: [
+            { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
+            { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
+            { type: "separator" },
+            { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
+            { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
+            { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
+            { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" },
+        ]},
+    ];
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
 
-app.on('activate', () => {
-    if (mainWindow === null) {
-        createWindow();
+function findInDir(startPath, filter) {
+    let result = [];
+
+    if (!fs.existsSync(startPath)) {
+        return result;
     }
-});
+
+    const files = fs.readdirSync(startPath);
+    for (let i = 0; i < files.length; i++) {
+        const filename = path.join(startPath, files[i]);
+        const stat = fs.lstatSync(filename);
+        if (stat.isDirectory()) {
+            result = result.concat(findInDir(filename, filter)); //recurse
+        } else if (filename.indexOf(filter) >= 0) {
+            result.push(filename);
+        }
+    }
+
+    return result;
+}
 
 /**
  * Auto Updater
