@@ -77,7 +77,7 @@
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
                     <div class="u-cell u-cell--medium--1-2">
-                        <div class="panel auth__blur">
+                        <div class="panel">
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
