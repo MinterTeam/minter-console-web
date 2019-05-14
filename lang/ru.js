@@ -42,7 +42,7 @@ export default {
         'auth-sign-up-seed-result': 'Сгенерированная seed&#x2011;фраза',
         'auth-sign-up-seed-address': 'Сгенерированный адрес',
         'auth-sign-up-seed-copy': 'Копировать seed&#x2011;фразу',
-        'auth-sign-up-seed-offline': 'Сгенерировать оффлайн (Github)',
+        'auth-sign-up-seed-offline': 'Сгенерировать локально (Github)',
         'auth-error-username-required': 'Введите имя пользователя',
         'auth-error-username-min': 'Имя пользователя слишком короткое',
         'auth-error-username-max': 'Имя пользователя слишком длинное',
