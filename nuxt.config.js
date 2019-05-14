@@ -7,7 +7,7 @@ const envConfig = dotenv.config();
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
-const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env === 'production' ? 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=' : 'boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=';
+const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production' ? 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=' : 'boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=';
 
 export default {
     /*
@@ -135,6 +135,7 @@ export default {
             'nuxt-i18n/src',
             'qr-scanner',
             'v-autosize/src',
+            'v-file-input/src',
             'vue-inline-svg/src/',
             'clipbrd/src',
             'pretty-num/src',

@@ -77,7 +77,7 @@
             <div class="u-container u-container--medium">
                 <div class="u-grid u-grid--vertical-margin">
                     <div class="u-cell u-cell--medium--1-2">
-                        <div class="panel auth__blur">
+                        <div class="panel">
                             <div class="panel__header">
                                 <h1 class="panel__header-title">
                                     <img class="panel__header-title-icon" src="/img/icon-auth-sign-in.svg" alt="" role="presentation" width="40" height="40">
@@ -114,7 +114,7 @@
                             </div>
                             <AuthAdvancedGenerate/>
                             <div class="panel__section">
-                                <a class="link--default" href="https://github.com/MinterTeam/minter-console-web/releases" target="_blank">{{ $td('Generate offline (Github)', 'index.auth-sign-up-seed-offline') }}</a>
+                                <a class="link--default" href="https://github.com/MinterTeam/minter-console-web/releases" target="_blank">{{ $td('Generate locally (Github)', 'index.auth-sign-up-seed-offline') }}</a>
                             </div>
                         </div>
 

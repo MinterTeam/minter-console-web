@@ -135,21 +135,16 @@
                 this.serverError = '';
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                    .then(() => {
-                        postTx(new DelegateTxParams({
-                            privateKey: this.$store.getters.privateKey,
-                            ...this.form,
-                        })).then((txHash) => {
-                            this.isFormSending = false;
-                            this.serverSuccess = txHash;
-                            this.clearForm();
-                        }).catch((error) => {
-                            console.log(error);
-                            this.isFormSending = false;
-                            this.serverError = getErrorText(error);
-                        });
-                    })
-                    .catch((error) => {
+                    .then(() => postTx(new DelegateTxParams({
+                        privateKey: this.$store.getters.privateKey,
+                        ...this.form,
+                    })))
+                    .then((txHash) => {
+                        this.isFormSending = false;
+                        this.serverSuccess = txHash;
+                        this.clearForm();
+                    }).catch((error) => {
+                        console.log(error);
                         this.isFormSending = false;
                         this.serverError = getErrorText(error);
                     });

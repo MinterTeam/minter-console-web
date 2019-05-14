@@ -2,6 +2,8 @@
     import getTitle from '~/assets/get-title';
     import ValidatorDelegateForm from '~/components/ValidatorDelegateForm';
     import ValidatorUnbondForm from '~/components/ValidatorUnbondForm';
+    import ValidatorReinvestForm from '~/components/ValidatorReinvestForm';
+    import ValidatorReinvestPostForm from '~/components/ValidatorReinvestStartForm';
 
     let balanceInterval;
 
@@ -9,6 +11,8 @@
         components: {
             ValidatorDelegateForm,
             ValidatorUnbondForm,
+            ValidatorReinvestForm,
+            ValidatorReinvestPostForm,
         },
         fetch({ app, store }) {
             //@TODO fetch balance in middleware
@@ -66,6 +70,28 @@
                 </p>
             </div>
             <ValidatorUnbondForm/>
+        </div>
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    {{ $td('Generate Delegation Transactions', 'delegation.reinvest-generate-title') }}
+                </h1>
+                <p class="panel__header-description">
+                    {{ $td('In order to enable automatic delegation, you will first need to generate a batch of transactions. You may do it either on-line or locally (we recommend that you use the second option as it is more secure). Once done, download the resulting file and proceed to the next step.', 'delegation.reinvest-generate-description') }}
+                </p>
+            </div>
+            <ValidatorReinvestForm/>
+        </div>
+        <div class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    {{ $td('Start auto-delegation', 'delegation.reinvest-start-title') }}
+                </h1>
+                <p class="panel__header-description">
+                    {{ $td('Here you need to upload and submit the file that contains the list of generated transactions.', 'delegation.reinvest-start-description') }}
+                </p>
+            </div>
+            <ValidatorReinvestPostForm/>
         </div>
     </section>
 </template>
