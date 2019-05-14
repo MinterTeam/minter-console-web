@@ -78,6 +78,9 @@
         mounted() {
             balanceInterval = setInterval(() => {
                 this.$store.dispatch('FETCH_BALANCE');
+                if (this.$store.getters.isOfflineMode) {
+                    return;
+                }
                 getAddressLatestTransactionList(this.address)
                     .then((txListInfo) => {
                         this.txList = txListInfo.data;

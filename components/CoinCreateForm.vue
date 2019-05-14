@@ -385,11 +385,11 @@
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
-                    3 letters — 1 000 000 BIPs + standard transaction fee <br>
-                    4 letters — 100 000 BIPs + standard transaction fee <br>
-                    5 letters — 10 000 BIPs + standard transaction fee <br>
-                    6 letters — 1 000 BIPs + standard transaction fee <br>
-                    7-10 letters — 100 BIPs + standard transaction fee <br>
+                    3 letters — 1 000 000 BIPs<br>
+                    4 letters — 100 000 BIPs<br>
+                    5 letters — 10 000 BIPs<br>
+                    6 letters — 1 000 BIPs<br>
+                    7-10 letters — 100 BIPs<br>
                 </p>
             </div>
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'ru'">
@@ -397,11 +397,11 @@
                 <p>Вы можете проверить как работает связь между выпуском, резером и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
-                    3 буквы — 1 000 000 BIP + стандартная комиссия за транзакцию <br>
-                    4 буквы — 100 000 BIP + стандартная комиссия за транзакцию <br>
-                    5 букв — 10 000 BIP + стандартная комиссия за транзакцию <br>
-                    6 букв — 1 000 BIP + стандартная комиссия за транзакцию <br>
-                    7-10 букв — 100 BIP + стандартная комиссия за транзакцию <br>
+                    3 буквы — 1 000 000 BIP<br>
+                    4 буквы — 100 000 BIP<br>
+                    5 букв — 10 000 BIP<br>
+                    6 букв — 1 000 BIP<br>
+                    7-10 букв — 100 BIP<br>
                 </p>
             </div>
         </div>
