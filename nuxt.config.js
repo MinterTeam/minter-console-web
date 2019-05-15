@@ -45,9 +45,9 @@ export default {
         ],
     },
     plugins: [
+        { src: '~/plugins/persistedState.js', ssr: false },
         { src: '~/plugins/online.js', ssr: false },
         { src: '~/plugins/click-blur.js', ssr: false },
-        { src: '~/plugins/persistedState.js', ssr: false },
         { src: '~/plugins/classlist-svg-polyfill.js', ssr: false },
     ],
     env: envConfig.error ? {} : envConfig.parsed,
