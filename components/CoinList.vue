@@ -1,6 +1,6 @@
 <script>
-
     import {pretty} from '~/assets/utils';
+    import {getCoinIconUrl} from '~/api/accounts';
 
     export default {
         components: {
@@ -29,7 +29,7 @@
             },
         },
         methods: {
-
+            getCoinIconUrl,
         },
     };
 </script>
@@ -49,7 +49,7 @@
                     <!-- name -->
                     <!-- @TODO coin.name -->
                     <td>
-                        <img class="wallet__coin-icon" src="/img/minter-logo-circle.svg" width="28" height="28" alt="" role="presentation">
+                        <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin)" width="28" height="28" alt="" role="presentation">
                         <span class="wallet__coin-name">{{ coinItem.coin }}</span>
                     </td>
                     <!-- balance -->
