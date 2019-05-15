@@ -33,3 +33,8 @@ export function resetAuthToken() {
 export function hasAuthToken() {
     return 'Authorization' in instance.defaults.headers.common;
 }
+
+
+export function getCoinIconUrl(coinSymbol) {
+    return `${ACCOUNTS_API_URL}avatar/by/coin/${coinSymbol}`;
+}

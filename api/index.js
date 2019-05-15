@@ -6,6 +6,7 @@ import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} fro
 import accounts from '~/api/accounts';
 import explorer from '~/api/explorer';
 import autoDelegation from '~/api/auto-delegation';
+import {COIN_NAME} from '~/assets/variables';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
@@ -127,7 +128,7 @@ export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
         .then((response) => response.data.data.balances.sort((coinItem) => {
                 // set MNT first
-                if (coinItem.coin === 'MNT') {
+                if (coinItem.coin === COIN_NAME) {
                     return -1;
                 } else {
                     return 0;
