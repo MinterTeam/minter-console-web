@@ -38,7 +38,7 @@
     <div class="panel__section">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell" v-if="!mnemonic">
-                <button class="button button--main button--full" data-test-id="authAdvancedRegisterGenerateButton" @click="generate">{{ $td('Click To Generate Seed Phrase', 'index.auth-sign-up-seed-generate') }}</button>
+                <button class="button button--main button--full" data-test-id="authAdvancedRegisterGenerateButton" @click="generate">{{ $td('Click To Generate Seed&nbsp;Phrase', 'index.auth-sign-up-seed-generate') }}</button>
             </div>
             <div class="u-cell" v-if="address">
                 <label class="form-field form-field--with-icon">
