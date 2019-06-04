@@ -83,6 +83,7 @@
                         try {
                             this.check = issueCheck({
                                 privateKey: this.$store.getters.privateKey,
+                                chainId: this.$store.getters.CHAIN_ID,
                                 ...this.form,
                             });
                             this.password = this.form.passPhrase;
