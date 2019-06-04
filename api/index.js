@@ -93,13 +93,6 @@ export function putProfileAvatar(avatar) {
 }
 
 
-export function postLinkConfirmation({id, code}) {
-    const methodUrl = 'profile/link/' + id + '/confirm';
-    return accounts.post(methodUrl, {
-        'code': code,
-    }).then((response) => response.data.data);
-}
-
 
 /**
  * @typedef {Object} TransactionListInfo
