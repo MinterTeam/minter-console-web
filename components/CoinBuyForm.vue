@@ -46,6 +46,7 @@
                     coinTo: '',
                     feeCoinSymbol: '',
                     message: '',
+                    gasPrice: '',
                 },
                 formAdvanced: {
                     feeCoinSymbol: '',
@@ -85,6 +86,7 @@
                 form.nonce = {
                     required,
                 };
+                form.gasPrice = {};
             }
 
             return {form};
@@ -149,6 +151,7 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
             },
@@ -161,6 +164,7 @@
                         postTx(new BuyTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;
@@ -205,6 +209,7 @@
                 } else {
                     this.form.nonce = '';
                 }
+                this.form.gasPrice = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -304,7 +309,7 @@
                 </div>
 
                 <!-- Generation -->
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                     <FieldQr inputmode="numeric"
                              v-model.number="form.nonce"
                              :$value="$v.form.nonce"
@@ -312,6 +317,16 @@
                     />
                     <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                     <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+                </div>
+                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
+                        <input class="form-field__input" type="text" v-check-empty
+                               v-model.trim="form.gasPrice"
+                               @blur="$v.form.gasPrice.$touch()"
+                        >
+                        <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                    </label>
+                    <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                     <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">

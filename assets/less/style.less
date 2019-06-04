@@ -216,7 +216,10 @@
 
 .wallet__info {background: #2C2C2C; color: #fff; }
 .wallet__value {font-size: 20px; line-height: 1.25; font-weight: 700; margin-top: 1px;}
-.wallet__address {display: flex; align-items: center; margin-bottom: 20px;}
+.wallet__address {
+    display: flex; align-items: center; margin-bottom: 20px;
+    &:only-child {margin-bottom: 0;}
+}
 .wallet__address-icon {margin-right: 24px; flex-shrink: 0; margin-top: 4px;}
 .wallet__address-content {overflow: hidden;}
 .wallet__balance {flex-grow: 2;}
@@ -225,7 +228,10 @@
 
 @media (min-width: @breakpoint-xlarge-up) {
     .wallet__info {display: flex; justify-content: space-between;}
-    .wallet__address {flex-grow: 1; margin-right: 24px; margin-bottom: 0;}
+    .wallet__address {
+        flex-grow: 1; margin-right: 24px; margin-bottom: 0;
+        &:only-child {margin-right: 0;}
+    }
 }
 
 

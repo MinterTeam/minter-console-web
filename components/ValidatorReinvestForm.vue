@@ -191,7 +191,7 @@
 <template>
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-            <div class="u-cell u-cell--xlarge--1-2">
+            <div class="u-cell">
                 <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
@@ -217,7 +217,7 @@
                 <span class="form-field__error" v-if="$v.formTxCount.$dirty && !$v.formTxCount.required">{{ $td('Enter tx count', 'form.delegation-reinvest-tx-count-error-required') }}</span>
 <!--                <div class="form-field__help">{{ $td('', 'form.delegation-reinvest-tx-count-help') }}</div>-->
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell--order-2" :class="$store.getters.isOfflineMode ? 'u-cell--small--1-2 u-cell--xlarge--1-4' : 'u-cell--large--1-2'">
                 <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
                     <input class="form-field__input" type="text" v-check-empty
                            v-model.trim="form.gasPrice"
@@ -229,7 +229,7 @@
             </div>
 
             <!-- Generation -->
-            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="$store.getters.isOfflineMode">
                 <FieldQr inputmode="numeric"
                          v-model.number="form.nonce"
                          :$value="$v.form.nonce"
@@ -245,7 +245,7 @@
             </div>
 
             <!-- Controls -->
-            <div class="u-cell u-cell--order-2" v-if="!$store.getters.isOfflineMode">
+            <div class="u-cell u-cell--large--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">

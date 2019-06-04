@@ -111,7 +111,7 @@
             </div>
 
             <!-- Controls -->
-            <div class="u-cell" v-if="!$store.getters.isOfflineMode">
+            <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
