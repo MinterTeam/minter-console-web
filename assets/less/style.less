@@ -43,6 +43,12 @@
     from {transform: scale(.98);}
     to {transform: scale(1.01);}
 }
+// qr-modal
+.qr-modal {padding-left: 0; padding-right: 0; width: auto;}
+.qr-modal__layer {
+    padding: 20px; background: #fff;
+    canvas {vertical-align: top;}
+}
 // file-input
 .file-input {opacity: 0; position: absolute; width: 100%; height: 100%; left: 0; top: 0; font-size: 0; cursor: pointer;}
 .file-input__drag-layer {
@@ -73,6 +79,11 @@
     svg {fill: currentColor; vertical-align: top;}
 }
 .u-icon--copy--right {margin-left: 16px;}
+.u-icon--qr {
+    display: inline-block; vertical-align: middle; flex: 0 0 30px; width: 30px;
+    svg {fill: currentColor; vertical-align: top;}
+}
+.u-icon--qr--right {margin-left: 8px;}
 
 
 // nuxt page transition
