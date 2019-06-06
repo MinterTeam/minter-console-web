@@ -143,6 +143,7 @@
                 } else {
                     this.form.nonce = '';
                 }
+                this.formTxCount = '';
                 this.$v.$reset();
             },
             setDownload(text, name) {
