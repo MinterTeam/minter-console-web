@@ -4,6 +4,9 @@
     import getTitle from '~/assets/get-title';
     import {pretty} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';
+    import QrcodeVue from 'qrcode.vue';
+    import InlineSvg from 'vue-inline-svg';
+    import Modal from '~/components/common/Modal';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
@@ -17,6 +20,9 @@
 
     export default {
         components: {
+            QrcodeVue,
+            InlineSvg,
+            Modal,
             ButtonCopyIcon,
             CoinSendForm,
             CoinList,
@@ -63,6 +69,7 @@
             return {
                 /** @type Array<Transaction> */
                 txList: [],
+                isAddressQrModalVisible: false,
             };
         },
         computed: {
@@ -103,6 +110,9 @@
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
                         <ButtonCopyIcon :copy-text="address"/>
+                        <button class="u-icon--qr u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
+                            <InlineSvg src="/img/icon-qr.svg" width="30" height="30"/>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -119,6 +129,12 @@
         <CoinList/>
 
         <TransactionLatestList :tx-list="txList" v-if="txList.length"/>
+
+        <Modal class="qr-modal"
+               v-bind:isOpen.sync="isAddressQrModalVisible"
+        >
+            <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
+        </Modal>
 
     </section>
 </template>

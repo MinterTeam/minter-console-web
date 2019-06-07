@@ -187,7 +187,7 @@ export default {
         'toggle-advanced-mode': 'Расширенный режим',
 
         'generate-button': 'Сгенерировать',
-        'generate-nonce-help': 'Уникальный номер транзакция: текущее кол-во транзакций пользователя + 1',
+        'generate-nonce-help': 'Уникальный номер транзакции: текущее кол-во транзакций пользователя + 1',
         'generate-result-tx': 'Подписанная транзакция',
 
         'submit-confirm-button': 'Подтвердить',
