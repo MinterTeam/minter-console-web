@@ -3,6 +3,8 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
+    import maxLength from 'vuelidate/lib/validators/maxLength';
     import issueCheck from 'minter-js-sdk/src/issue-check';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
@@ -53,6 +55,8 @@
                 },
                 coinSymbol: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 passPhrase: {
                     required,
