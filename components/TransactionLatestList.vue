@@ -55,13 +55,17 @@
             isBuy(tx) {
                 return tx.type === Number(TX_TYPES.TX_TYPE_BUY);
             },
+            getAmount(tx) {
+                return tx.data.value
+                    || tx.data.value_to_sell
+                    || tx.data.value_to_buy
+                    || tx.data.stake
+                    || tx.data.initial_amount
+                    || (tx.data.check && tx.data.check.value)
+                    || this.getMultisendValue(tx);
+            },
             hasAmount(tx) {
-                return typeof tx.data.value !== 'undefined'
-                    || typeof tx.data.value_to_sell !== 'undefined'
-                    || typeof tx.data.value_to_buy !== 'undefined'
-                    || typeof tx.data.stake !== 'undefined'
-                    || typeof tx.data.initial_amount !== 'undefined'
-                    || (tx.data.check && typeof tx.data.check.value !== 'undefined');
+                return typeof this.getAmount(tx) !== 'undefined';
             },
             getConvertCoinSymbol(tx) {
                 if (tx.type === Number(TX_TYPES.TX_TYPE_SELL) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL)) {
