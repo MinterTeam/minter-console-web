@@ -18,6 +18,10 @@
     import InputUppercase from '~/components/common/InputUppercase';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Modal from '~/components/common/Modal';
+    import url from 'url';
+    import qs from 'qs';
+
+    const queryParams = qs.parse(url.parse(document.location.href).query);
 
     export default {
         components: {
@@ -43,8 +47,8 @@
                 serverSuccess: '',
                 form: {
                     nonce: '',
-                    address: '',
-                    amount: null,
+                    address: queryParams.address ? queryParams.address : '',
+                    amount: queryParams.amount ? queryParams.amount : null,
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: '',
                     message: '',
@@ -52,7 +56,7 @@
                 },
                 formAdvanced: {
                     feeCoinSymbol: '',
-                    message: '',
+                    message: queryParams.message ? queryParams.message : '',
                 },
                 isModeAdvanced: false,
                 isConfirmModalVisible: false,
