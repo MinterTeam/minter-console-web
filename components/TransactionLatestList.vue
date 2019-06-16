@@ -1,5 +1,6 @@
 <script>
     import {mapGetters} from 'vuex';
+    import Big from 'big.js';
     import * as TX_TYPES from 'minterjs-tx/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl} from '~/assets/utils';
     import TableLink from '~/components/common/TableLink';
@@ -55,10 +56,19 @@
             isBuy(tx) {
                 return tx.type === Number(TX_TYPES.TX_TYPE_BUY);
             },
+            isMultisend(tx) {
+                return tx.type === Number(TX_TYPES.TX_TYPE_MULTISEND);
+            },
+            isIncomeMultisend(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                const isOutcomeMultisend = this.address === tx.from;
+                return !isOutcomeMultisend;
+            },
             getAmount(tx) {
                 return tx.data.value
-                    || tx.data.value_to_sell
-                    || tx.data.value_to_buy
+                    || this.getConvertValue(tx)
                     || tx.data.stake
                     || tx.data.initial_amount
                     || (tx.data.check && tx.data.check.value)
@@ -66,6 +76,13 @@
             },
             hasAmount(tx) {
                 return typeof this.getAmount(tx) !== 'undefined';
+            },
+            getAmountWithCoin(tx) {
+                if (this.isMultisend(tx) && this.isMultisendMultipleCoin(tx)) {
+                    return 'Multiple coins';
+                } else {
+                    return pretty(this.getAmount(tx) || 0) + ' ' + (tx.data.coin || tx.data.symbol || this.getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) || this.getMultisendCoin(tx));
+                }
             },
             getConvertCoinSymbol(tx) {
                 if (tx.type === Number(TX_TYPES.TX_TYPE_SELL) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL)) {
@@ -81,6 +98,40 @@
                 }
                 if (tx.type === Number(TX_TYPES.TX_TYPE_BUY)) {
                     return tx.data.value_to_buy;
+                }
+            },
+            getMultisendDeliveryList(tx) {
+                const isOutcomeMultisend = !this.isIncomeMultisend(tx);
+                return isOutcomeMultisend ? tx.data.list : tx.data.list.filter((delivery) => {
+                    return this.address === delivery.to;
+                });
+            },
+            isMultisendMultipleCoin(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                const currentUserDeliveryList = this.getMultisendDeliveryList(tx);
+                return currentUserDeliveryList.some((delivery) => {
+                    return delivery.coin !== currentUserDeliveryList[0].coin;
+                });
+            },
+            getMultisendCoin(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                if (!this.isMultisendMultipleCoin(tx)) {
+                    return this.getMultisendDeliveryList(tx)[0].coin;
+                }
+            },
+            getMultisendValue(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                const currentUserDeliveryList = this.getMultisendDeliveryList(tx);
+                if (this.isMultisendMultipleCoin(tx)) {
+                    return '...';
+                } else {
+                    return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(new Big(delivery.value)), new Big(0)).toFixed();
                 }
             },
             getExplorerBlockUrl,
@@ -137,16 +188,14 @@
                         <!-- amount -->
                         <td class="u-hidden-large-down">
                             <div v-if="hasAmount(tx)">
-                                {{ tx.data.value || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
-                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
+                                {{ getAmountWithCoin(tx) }}
                             </div>
                         </td>
                         <!-- value -->
                         <td class="u-hidden-large-up">
                             {{ tx.type | txType }}
                             <span v-if="hasAmount(tx)">
-                                {{ tx.data.value || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
-                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
+                                {{ getAmountWithCoin(tx) }}
                             </span>
                         </td>
                         <!--expand button -->
