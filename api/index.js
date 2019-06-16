@@ -119,10 +119,10 @@ export function getAddressTransactionList(address, params = {}) {
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
-        .then((response) => response.data.data.balances.sort((coinItem) => {
-                // set MNT first
-                if (coinItem.coin === COIN_NAME) {
-                    return -1;
+        .then((response) => response.data.data.balances.sort((a, b) => {
+                // set base coin first
+                if (b.coin === COIN_NAME) {
+                    return 1;
                 } else {
                     return 0;
                 }
