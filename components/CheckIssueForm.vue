@@ -103,7 +103,12 @@
                     });
             },
             clearForm() {
-                this.form.nonce = this.form.nonce + 1;
+                if (parseInt(this.form.nonce, 10).toString() === this.form.nonce) {
+                    // increment nonce if it is integer number
+                    this.form.nonce = (parseInt(this.form.nonce, 10) + 1).toString();
+                } else {
+                    this.form.nonce = '';
+                }
                 this.form.dueBlock = 999999999;
                 this.form.value = null;
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
@@ -120,7 +125,7 @@
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
                     <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.nonce"
+                           v-model="form.nonce"
                            @blur="$v.form.nonce.$touch()"
                     >
                     <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
