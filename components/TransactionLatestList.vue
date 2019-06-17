@@ -2,7 +2,7 @@
     import {mapGetters} from 'vuex';
     import Big from 'big.js';
     import * as TX_TYPES from 'minterjs-tx/src/tx-types';
-    import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl} from '~/assets/utils';
+    import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
     import TableLink from '~/components/common/TableLink';
 
     export default {
@@ -134,6 +134,7 @@
                     return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(new Big(delivery.value)), new Big(0)).toFixed();
                 }
             },
+            fromBase64,
             getExplorerBlockUrl,
             getExplorerTxUrl,
             getExplorerAddressUrl,
@@ -297,15 +298,17 @@
                                 </div>
 
                                 <!-- type REDEEM_CHECK -->
+<!--
                                 <div class="table__inner-item" v-if="tx.data.raw_check">
                                     <strong>{{ $td('Check', 'wallet.tx-table-check') }}</strong> <br>
-                                    <!--<TableLink :link-text="tx.data.raw_check" :is-not-link="true"/>-->
+                                    &lt;!&ndash;<TableLink :link-text="tx.data.raw_check" :is-not-link="true"/>&ndash;&gt;
                                     {{ tx.data.raw_check | short}}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.proof">
                                     <strong>{{ $td('Proof', 'wallet.tx-table-proof') }}</strong> <br>
                                     {{ tx.data.proof | short}}
                                 </div>
+-->
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
                                     <strong>Check Issuer</strong> <br>
                                     <TableLink :link-text="tx.data.check.sender"
@@ -315,7 +318,7 @@
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
                                     <strong>Check Nonce</strong> <br>
-                                    {{ tx.data.check.nonce }}
+                                    {{ fromBase64(tx.data.check.nonce) }}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.due_block">
                                     <strong>Due Block</strong> <br>

@@ -1,7 +1,9 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
 import decode from 'entity-decode';
-import prettyNum from 'pretty-num';
+import prettyNum, {PRECISION_SETTING} from 'pretty-num';
+import stripZeros from 'pretty-num/src/strip-zeros';
+import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-tx/src/tx-types';
 import {EXPLORER_HOST} from "~/assets/variables";
 
@@ -76,11 +78,11 @@ export function getExplorerValidatorUrl(pubKey) {
  * @return {string}
  */
 export function pretty(value) {
-    if (value > 0.001 || value < -0.001 || Number(value) === 0) {
-        return decode(prettyNum(value, {precision: 4, rounding: 'fixed', thousandsSeparator: '&#x202F;'}));
-    } else {
-        return decode(prettyNum(value, {precision: 2, rounding: 'significant', thousandsSeparator: '&#x202F;'}));
-    }
+    const PRECISION = 2;
+    const parts = stripZeros(fromExponential(value)).split('.');
+    const isReduced = parts[1] && parts[1].length > PRECISION;
+    const formattedValue = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
+    return (isReduced ? '~' : '') + formattedValue;
 }
 
 /**
@@ -115,6 +117,17 @@ export function txTypeFilter(value) {
     let name = txTypeList[value].name; // get type name
     name = name.charAt(0).toUpperCase() + name.slice(1); // capitalize the first letter
     return name;
+}
+
+
+export function fromBase64(str) {
+    //@TODO utf8 https://github.com/dankogai/js-base64
+    const asci = window.atob(str);
+    try {
+        return decodeURIComponent(escape(asci));
+    } catch (e) {
+        return asci;
+    }
 }
 
 
