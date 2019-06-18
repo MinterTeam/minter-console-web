@@ -181,6 +181,9 @@ export default {
         'tx-table-commission': 'Комиссия',
         'tx-table-check': 'Чек',
         'tx-table-proof': 'Доказательство',
+        'tx-table-check-issuer': 'Эмитент чека',
+        'tx-table-check-nonce': 'Уникальный номер чека',
+        'tx-table-due-block': 'Действителен до блока',
     },
     form: {
         'toggle-simple-mode': 'Простой режим',

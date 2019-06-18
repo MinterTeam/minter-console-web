@@ -81,8 +81,9 @@ export function pretty(value) {
     const PRECISION = 2;
     const parts = stripZeros(fromExponential(value)).split('.');
     const isReduced = parts[1] && parts[1].length > PRECISION;
+    const isSmall = parts[0] === '0';
     const formattedValue = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
-    return (isReduced ? '~' : '') + formattedValue;
+    return (isReduced && isSmall ? '~' : '') + formattedValue;
 }
 
 /**
@@ -91,7 +92,7 @@ export function pretty(value) {
  * @return {string}
  */
 export function prettyExact(value) {
-    return decode(prettyNum(value, {precision: 4, rounding: 'increase', thousandsSeparator: '&#x202F;'}));
+    return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
 }
 
 /**
