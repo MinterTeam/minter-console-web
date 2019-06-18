@@ -310,18 +310,18 @@
                                 </div>
 -->
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
-                                    <strong>Check Issuer</strong> <br>
+                                    <strong>{{ $td('Check Issuer', 'wallet.tx-table-check-issuer') }}</strong> <br>
                                     <TableLink :link-text="tx.data.check.sender"
                                                :link-path="'/address/' + tx.data.check.sender"
                                                :should-not-shorten="true"
                                     />
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
-                                    <strong>Check Nonce</strong> <br>
+                                    <strong>{{ $td('Check Nonce', 'wallet.tx-table-check-nonce') }}</strong> <br>
                                     {{ fromBase64(tx.data.check.nonce) }}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.due_block">
-                                    <strong>Due Block</strong> <br>
+                                    <strong>{{ $td('Due Block', 'wallet.tx-table-check-issuer') }}</strong> <br>
                                     {{ tx.data.check.due_block }}
                                 </div>
 
