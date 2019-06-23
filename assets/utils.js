@@ -79,20 +79,41 @@ export function getExplorerValidatorUrl(pubKey) {
  */
 export function pretty(value) {
     const PRECISION = 2;
-    const parts = stripZeros(fromExponential(value)).split('.');
-    const isReduced = parts[1] && parts[1].length > PRECISION;
-    const isSmall = parts[0] === '0';
-    const formattedValue = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
-    return (isReduced && isSmall ? '~' : '') + formattedValue;
+    if (value >= 1 || value <= -1 || Number(value) === 0) {
+        return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
+    } else {
+        value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, thousandsSeparator: '&#x202F;'}));
+        value = value.substr(0, 10);
+        if (value === '0.00000000') {
+            return '0.00';
+        }
+        return value;
+    }
 }
 
 /**
- * Ensure value to have minimum 4 decimal digits
+ * Ensure value to have from 2 to 8 decimal digits
+ * @param {string|number} value
+ * @return {string}
+ */
+export function prettyPrecise(value) {
+    const parts = stripZeros(fromExponential(value)).split('.');
+    const isReduced = parts[1] && parts[1].length > 2;
+    if (isReduced) {
+        return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.REDUCE, thousandsSeparator: '&#x202F;'}));
+    } else {
+        // ensure at least 2 decimal digits
+        return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
+    }
+}
+
+/**
+ * Ensure value to have minimum 2 decimal digits
  * @param {string|number} value
  * @return {string}
  */
 export function prettyExact(value) {
-    return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
+    return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&#x202F;'}));
 }
 
 /**

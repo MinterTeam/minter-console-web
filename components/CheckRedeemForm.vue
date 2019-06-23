@@ -35,6 +35,7 @@
                     check: '',
                     password: '',
                     nonce: '',
+                    //@TODO gaprice redeem?
                     gasPrice: '',
                 },
                 signedTx: null,
