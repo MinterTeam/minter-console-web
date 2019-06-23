@@ -44,7 +44,7 @@
     "minterjs-util": "0.9.0",
     "minterjs-wallet": "^3.0.3",
     "nuxt": "^2.8.1",
-    "nuxt-i18n": "^5.12.4",
+    "nuxt-i18n": "^5.12.5",
     "nuxt-i18n-default": "^0.0.1",
     "nuxt-i18n-preferred": "^0.0.2",
     "pretty-num": "^0.3.0",
@@ -53,7 +53,7 @@
     "v-autosize": "^1.0.3",
     "v-file-input": "^0.1.1",
     "vue-autonumeric": "^1.2.6",
-    "vue-imask": "^5.1.5",
+    "vue-imask": "^5.1.6",
     "vue-inline-svg": "^1.1.1",
     "vuelidate": "^0.7.4",
     "vuex-persistedstate": "^2.5.4"
@@ -87,7 +87,7 @@
     "mkdirp": "^0.5.1",
     "postcss-normalize": "^8.0.1",
     "pre-commit": "^1.2.2",
-    "puppeteer": "^1.17.0",
+    "puppeteer": "^1.18.0",
     "rimraf": "^2.6.3"
   }
 }
