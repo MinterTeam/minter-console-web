@@ -8,15 +8,17 @@
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
     import {TX_TYPE_DELEGATE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
-    import {getFeeValue} from 'minterjs-util/src/fee';
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
+    import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+
+    let feeBus;
 
     export default {
         components: {
@@ -53,6 +55,8 @@
                     message: '',
                 },
                 isModeAdvanced: false,
+                /** @type FeeData */
+                fee: {},
                 signedTx: null,
             };
         },
@@ -92,14 +96,37 @@
             ...mapGetters({
                 balance: 'balance',
             }),
-            feeValue() {
-                return pretty(getFeeValue(TX_TYPE_DELEGATE, this.form.message.length));
-            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
+            feeBusParams() {
+                return {
+                    txType: TX_TYPE_DELEGATE,
+                    messageLength: this.form.message.length,
+                    selectedCoinSymbol: this.form.coinSymbol,
+                    selectedFeeCoinSymbol: this.form.feeCoinSymbol,
+                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    isOffline: this.$store.getters.isOfflineMode,
+                };
+            },
+        },
+        watch: {
+            feeBusParams: {
+                handler(newVal) {
+                    feeBus.$emit('updateParams', newVal);
+                },
+                deep: true,
+            },
+        },
+        created() {
+            feeBus = new FeeBus(this.feeBusParams);
+            this.fee = feeBus.fee;
+            feeBus.$on('updateFee', (newVal) => {
+                this.fee = newVal;
+            });
         },
         methods: {
+            pretty,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -235,7 +262,7 @@
                             v-model="form.feeCoinSymbol"
                             v-if="balance && balance.length"
                     >
-                        <option :value="''">{{ $td('Same as stake coin', 'form.masternode-fee-same') }}</option>
+                        <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as stake coin', 'form.masternode-fee-same') }}</option>
                         <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                             {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
                         </option>
@@ -249,7 +276,11 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else>
+                    {{ fee.coinSymbol }} {{ fee.value | pretty }}
+                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                </div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
