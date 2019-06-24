@@ -63,7 +63,7 @@
                     {{ $td('Set candidate on', 'masternode.on-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('This will include the node of yours in the list of active validators. This transaction can only be initiated by the account that declared the node.', 'masternode.on-description') }}
+                    {{ $td('This will include the node of yours in the list of active validators. This transaction can only be initiated by the owner account.', 'masternode.on-description') }}
                 </p>
             </div>
             <ValidatorSetCandidateOnOffForm form-type="on"/>
@@ -74,7 +74,7 @@
                     {{ $td('Set candidate off', 'masternode.off-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('If you no longer want your node to be in the list mentioned above, fill out this form. This transaction can only be initiated by the account that declared the node.', 'masternode.off-description') }}
+                    {{ $td('If you no longer want your node to be in the list mentioned above, fill out this form. This transaction can only be initiated by the owner account.', 'masternode.off-description') }}
                 </p>
             </div>
             <ValidatorSetCandidateOnOffForm form-type="off"/>
