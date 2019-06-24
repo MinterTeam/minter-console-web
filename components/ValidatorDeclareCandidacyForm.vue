@@ -3,6 +3,7 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
@@ -18,6 +19,8 @@
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     let feeBus;
@@ -28,6 +31,8 @@
             QrcodeVue,
             FieldQr,
             InputUppercase,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
         },
         directives: {
@@ -100,8 +105,11 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
                 };
-                form.gasPrice = {};
+                form.gasPrice = {
+                    minValue: minValue(1),
+                };
             }
 
             return {form};
@@ -169,6 +177,7 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
@@ -190,6 +199,7 @@
                         postTx(new DeclareCandidacyTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            feeCoinSymbol: this.fee.coinSymbol,
                             gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
@@ -255,10 +265,10 @@
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.stake"
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model="form.stake"
                            @blur="$v.form.stake.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
@@ -352,21 +362,23 @@
             </div>
 
             <!-- Generation -->
-            <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2  u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr inputmode="numeric"
-                         v-model.number="form.nonce"
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <FieldQr v-model="form.nonce"
                          :$value="$v.form.nonce"
                          :label="$td('Nonce', 'form.checks-issue-nonce')"
+                         :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                 <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.gasPrice"
-                           @blur="$v.form.gasPrice.$touch()"
-                    >
+                    <InputMaskedInteger class="form-field__input" v-check-empty
+                                        v-model="form.gasPrice"
+                                        @blur="$v.form.gasPrice.$touch()"
+                    />
+                    <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                     <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                 </label>
                 <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
