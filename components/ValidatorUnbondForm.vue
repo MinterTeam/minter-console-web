@@ -149,6 +149,7 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
@@ -170,6 +171,7 @@
                         postTx(new UnbondTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            feeCoinSymbol: this.fee.coinSymbol,
                             gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
