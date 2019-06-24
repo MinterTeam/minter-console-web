@@ -10,12 +10,16 @@
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
             QrcodeVue,
             InputUppercase,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
         },
         directives: {
@@ -61,7 +65,6 @@
                 passPhrase: {
                     required,
                 },
-
             },
         },
         computed: {
@@ -124,7 +127,7 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                    <input class="form-field__input" type="text" v-check-empty
                            v-model="form.nonce"
                            @blur="$v.form.nonce.$touch()"
                     >
@@ -136,10 +139,10 @@
 
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.value.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.value"
+                    <InputMaskedAmount class="form-field__input" v-check-empty
+                           v-model="form.value"
                            @blur="$v.form.value.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Amount', 'form.checks-issue-amount') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
@@ -178,10 +181,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.dueBlock"
+                    <InputMaskedInteger class="form-field__input" v-check-empty
+                           v-model="form.dueBlock"
                            @blur="$v.form.dueBlock.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Due block', 'form.checks-issue-due') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.dueBlock.$dirty && !$v.form.dueBlock.required">{{ $td('Enter block number', 'form.checks-issue-due-error-required') }}</span>

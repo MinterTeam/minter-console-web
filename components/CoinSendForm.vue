@@ -3,6 +3,7 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
@@ -16,6 +17,8 @@
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Modal from '~/components/common/Modal';
 
@@ -26,6 +29,8 @@
             QrcodeVue,
             FieldQr,
             InputUppercase,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
             Modal,
         },
@@ -90,8 +95,11 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
                 };
-                form.gasPrice = {};
+                form.gasPrice = {
+                    minValue: minValue(1),
+                };
             }
 
             return {form};
@@ -247,7 +255,7 @@
             <div class="u-grid u-grid--small u-grid--vertical-margin">
                 <div class="u-cell u-cell--xlarge--1-2">
                     <FieldQr data-test-id="walletSendInputAddress"
-                             v-model="form.address"
+                             v-model.trim="form.address"
                              :$value="$v.form.address"
                              :label="$td('Address', 'form.wallet-send-address')"
                     />
@@ -256,10 +264,10 @@
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.amount.$error}">
-                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="walletSendInputAmount"
+                        <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="walletSendInputAmount"
                                v-model="form.amount"
                                @blur="$v.form.amount.$touch()"
-                        >
+                        />
                         <span class="form-field__label">{{ $td('Amount', 'form.wallet-send-amount') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
@@ -326,20 +334,23 @@
 
                 <!-- Generation -->
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <FieldQr inputmode="numeric"
-                             v-model.number="form.nonce"
+                    <FieldQr v-model="form.nonce"
                              :$value="$v.form.nonce"
                              :label="$td('Nonce', 'form.checks-issue-nonce')"
+                             :isInteger="true"
                     />
                     <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                     <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                     <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                        <input class="form-field__input" type="text" v-check-empty
-                               v-model.trim="form.gasPrice"
-                               @blur="$v.form.gasPrice.$touch()"
-                        >
+                        <InputMaskedInteger class="form-field__input" v-check-empty
+                                            v-model="form.gasPrice"
+                                            @blur="$v.form.gasPrice.$touch()"
+                        />
+                        <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
+                        <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                         <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                     </label>
                     <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>

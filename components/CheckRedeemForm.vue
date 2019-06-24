@@ -2,6 +2,7 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import {RedeemCheckTxParams} from "minter-js-sdk/src";
     import {isValidCheck} from "minterjs-util";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
@@ -35,8 +36,6 @@
                     check: '',
                     password: '',
                     nonce: '',
-                    //@TODO gaprice redeem?
-                    gasPrice: '',
                 },
                 signedTx: null,
             };
@@ -55,8 +54,8 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
                 };
-                form.gasPrice = {};
             }
 
             return {form};
@@ -84,7 +83,6 @@
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: COIN_NAME,
-                    gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
             },
@@ -106,7 +104,6 @@
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
                             feeCoinSymbol: COIN_NAME,
-                            gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;
@@ -130,7 +127,6 @@
                 } else {
                     this.form.nonce = '';
                 }
-                this.form.gasPrice = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -160,23 +156,14 @@
 
             <!-- Generation -->
             <div class="u-cell u-cell--small--1-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr inputmode="numeric"
-                         v-model.number="form.nonce"
+                <FieldQr v-model="form.nonce"
                          :$value="$v.form.nonce"
                          :label="$td('Nonce', 'form.checks-issue-nonce')"
+                         :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
-            </div>
-            <div class="u-cell u-cell--small--1-2" v-if="$store.getters.isOfflineMode">
-                <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.gasPrice"
-                           @blur="$v.form.gasPrice.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
-                </label>
-                <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
