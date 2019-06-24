@@ -190,6 +190,7 @@ export default {
         'toggle-advanced-mode': 'Расширенный режим',
 
         'generate-button': 'Сгенерировать',
+        'generate-nonce-error-min': 'Минимум 1',
         'generate-nonce-help': 'Уникальный номер транзакции: текущее кол-во транзакций пользователя + 1',
         'generate-result-tx': 'Подписанная транзакция',
 
@@ -205,6 +206,7 @@ export default {
         'fee': 'Монета для оплаты комиссии',
         'fee-help': 'В эквиваленте {coin} {value}',
         'gas-price': 'Цена газа',
+        'gas-price-error-min': 'Минимум 1',
         'gas-price-help': 'По-умолчанию: 1',
         'message': 'Сообщение',
         'message-error-max': 'Максимум 1024 символа',
