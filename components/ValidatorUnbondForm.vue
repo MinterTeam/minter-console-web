@@ -122,7 +122,9 @@
         watch: {
             feeBusParams: {
                 handler(newVal) {
-                    feeBus.$emit('updateParams', newVal);
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
                 },
                 deep: true,
             },
@@ -241,16 +243,6 @@
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model="form.stake"
-                           @blur="$v.form.stake.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
-            </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
                     <InputUppercase class="form-field__input" type="text" v-check-empty
                                     v-model.trim="form.coinSymbol"
@@ -261,6 +253,16 @@
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+            </div>
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                                       v-model="form.stake"
+                                       @blur="$v.form.stake.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
