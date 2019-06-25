@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -15,8 +16,8 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
-    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Modal from '~/components/common/Modal';
@@ -27,8 +28,8 @@
         components: {
             QrcodeVue,
             FieldQr,
+            FieldUseMax,
             InputUppercase,
-            InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
             Modal,
@@ -49,7 +50,7 @@
                 serverSuccess: '',
                 form: {
                     nonce: '',
-                    sellAmount: null,
+                    sellAmount: '',
                     coinFrom: coinList && coinList.length ? coinList[0].coin : '',
                     coinTo: '',
                     feeCoinSymbol: '',
@@ -110,6 +111,22 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            maxAmount() {
+                const selectedCoin = this.$store.getters.balance.find((coin) => {
+                    return coin.coin === this.form.coinFrom;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                // fee not in selected coins
+                if (selectedCoin.coin !== this.fee.coinSymbol) {
+                    return selectedCoin.amount;
+                }
+                // fee in selected coin, subtract fee
+                const amount = new Big(selectedCoin.amount).minus(this.fee.value).toFixed();
+                return amount > 0 ? amount : '0';
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -127,7 +144,9 @@
         watch: {
             feeBusParams: {
                 handler(newVal) {
-                    feeBus.$emit('updateParams', newVal);
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
                 },
                 deep: true,
             },
@@ -237,7 +256,7 @@
             },
             clearForm() {
                 this.form.address = '';
-                this.form.sellAmount = null;
+                this.form.sellAmount = '';
                 this.form.coinFrom = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.coinTo = '';
                 this.form.feeCoinSymbol = '';
@@ -292,13 +311,13 @@
                     <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 </div>
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
-                    <label class="form-field" :class="{'is-error': $v.form.sellAmount.$error}">
-                        <InputMaskedAmount class="form-field__input" v-check-empty data-test-id="convertSellInputSellAmount"
-                               v-model="form.sellAmount"
-                               @blur="$v.form.sellAmount.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Sell amount', 'form.convert-sell-amount') }}</span>
-                    </label>
+                    <FieldUseMax
+                        data-test-id="convertSellInputSellAmount"
+                        v-model="form.sellAmount"
+                        :$value="$v.form.sellAmount"
+                        :label="$td('Sell amount', 'form.convert-sell-amount')"
+                        :max-value="maxAmount"
+                    />
                     <span class="form-field__error" v-if="$v.form.sellAmount.$dirty && !$v.form.sellAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-3">

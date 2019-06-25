@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import Big from 'big.js';
 import {getFeeValue} from 'minterjs-util/src/fee';
 import {COIN_NAME} from '~/assets/variables';
 import {estimateCoinBuy} from '~/api/gate';
@@ -47,7 +48,6 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
                 return baseCoinAmount >= this.baseCoinFeeValue;
             },
             isBaseCoinFee() {
-                console.log(this.selectedCoinSymbol, this.selectedFeeCoinSymbol, COIN_NAME);
                 // use selectedFeeCoinSymbol if it is defined
                 if (this.selectedFeeCoinSymbol && this.selectedFeeCoinSymbol !== COIN_NAME) {
                     return false;
@@ -65,7 +65,7 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
                 } else {
                     const coinEstimation = this.coinPriceList[this.feeCoinSymbol];
                     if (coinEstimation) {
-                        return coinEstimation.coinAmount / coinEstimation.baseCoinAmount * this.baseCoinFeeValue;
+                        return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue);
                     } else {
                         return 0;
                     }

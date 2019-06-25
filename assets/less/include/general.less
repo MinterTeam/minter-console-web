@@ -241,6 +241,7 @@ dd {overflow-wrap: break-word; margin: 0;}
     .is-error > & {border-color: @c-red;}
     .form-field--dashed > & {border-bottom-style: dashed;}
     .form-field--with-icon > & {padding-right: 26px;}
+    .form-field--with-use-max > & {padding-right: 65px;}
 }
 .form-field__input--select {appearance: none; background: url(../img/icon-dropdown.svg) no-repeat 100% 50%; padding-right: 24px;}
 .form-field__label {
@@ -249,6 +250,7 @@ dd {overflow-wrap: break-word; margin: 0;}
     .form-field__input:focus ~ & {color: @c-main;}
     .form-field.is-error > & {color: @c-red;}
 }
+.form-field__use-max {position: absolute; right: 0; top: (4px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; text-transform: uppercase; font-weight: 700;}
 .form-field__icon {position: absolute; right: 0; top: (2px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; font-size: 0;}
 .form-field__icon--copy {top: calc((100% - 12px) / 2 - 2px);}
 .form-field__help {
