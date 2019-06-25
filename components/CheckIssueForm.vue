@@ -136,17 +136,6 @@
                 <span class="form-field__error" v-if="$v.form.nonce.$dirty && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                 <div class="form-field__help">{{ $td('Check\'s unique ID. Used for issuing several identical checks.', 'form.checks-issue-nonce-help') }}</div>
             </div>
-
-            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.value.$error}">
-                    <InputMaskedAmount class="form-field__input" v-check-empty
-                           v-model="form.value"
-                           @blur="$v.form.value.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Amount', 'form.checks-issue-amount') }}</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-            </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
                     <select class="form-field__input form-field__input--select" v-check-empty
@@ -168,6 +157,16 @@
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+            </div>
+            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
+                <label class="form-field" :class="{'is-error': $v.form.value.$error}">
+                    <InputMaskedAmount class="form-field__input" v-check-empty
+                                       v-model="form.value"
+                                       @blur="$v.form.value.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Amount', 'form.checks-issue-amount') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--3-4">
                 <label class="form-field" :class="{'is-error': $v.form.passPhrase.$error}">

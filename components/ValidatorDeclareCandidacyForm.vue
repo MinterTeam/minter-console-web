@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -18,8 +19,8 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
-    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
@@ -30,8 +31,8 @@
             VueAutonumeric,
             QrcodeVue,
             FieldQr,
+            FieldUseMax,
             InputUppercase,
-            InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
         },
@@ -54,7 +55,7 @@
                     address: this.$store.getters.address,
                     publicKey: '',
                     commission: null,
-                    stake: null,
+                    stake: '',
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: '',
                     message: '',
@@ -118,6 +119,22 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            maxAmount() {
+                const selectedCoin = this.$store.getters.balance.find((coin) => {
+                    return coin.coin === this.form.coinSymbol;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                // fee not in selected coins
+                if (selectedCoin.coin !== this.fee.coinSymbol) {
+                    return selectedCoin.amount;
+                }
+                // fee in selected coin, subtract fee
+                const amount = new Big(selectedCoin.amount).minus(this.fee.value).toFixed();
+                return amount > 0 ? amount : '0';
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -142,7 +159,9 @@
             },
             feeBusParams: {
                 handler(newVal) {
-                    feeBus.$emit('updateParams', newVal);
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
                 },
                 deep: true,
             },
@@ -235,7 +254,7 @@
                 this.form.address = this.$store.getters.address;
                 this.form.publicKey = '';
                 this.form.commission = null;
-                this.form.stake = null;
+                this.form.stake = '';
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = '';
                 this.form.message = '';
@@ -264,16 +283,6 @@
                 <div class="form-field__help">{{ $td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model="form.stake"
-                           @blur="$v.form.stake.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
-            </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinSymbol"
@@ -293,6 +302,15 @@
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+            </div>
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+                <FieldUseMax
+                    v-model="form.stake"
+                    :$value="$v.form.stake"
+                    :label="$td('Stake', 'form.masternode-stake')"
+                    :max-value="maxAmount"
+                />
+                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
                 <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>

@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -16,8 +17,8 @@
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
-    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Modal from '~/components/common/Modal';
@@ -28,8 +29,8 @@
         components: {
             QrcodeVue,
             FieldQr,
+            FieldUseMax,
             InputUppercase,
-            InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
             Modal,
@@ -51,7 +52,7 @@
                 form: {
                     nonce: '',
                     address: '',
-                    amount: null,
+                    amount: '',
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: '',
                     message: '',
@@ -108,6 +109,22 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            maxAmount() {
+                const selectedCoin = this.$store.getters.balance.find((coin) => {
+                    return coin.coin === this.form.coinSymbol;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                // fee not in selected coins
+                if (selectedCoin.coin !== this.fee.coinSymbol) {
+                    return selectedCoin.amount;
+                }
+                // fee in selected coin, subtract fee
+                const amount = new Big(selectedCoin.amount).minus(this.fee.value).toFixed();
+                return amount > 0 ? amount : '0';
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -125,7 +142,9 @@
         watch: {
             feeBusParams: {
                 handler(newVal) {
-                    feeBus.$emit('updateParams', newVal);
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
                 },
                 deep: true,
             },
@@ -220,7 +239,7 @@
             },
             clearForm() {
                 this.form.address = '';
-                this.form.amount = null;
+                this.form.amount = '';
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = '';
                 this.form.message = '';
@@ -263,16 +282,6 @@
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.amount.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="walletSendInputAmount"
-                               v-model="form.amount"
-                               @blur="$v.form.amount.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Amount', 'form.wallet-send-amount') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
                         <select class="form-field__input form-field__input--select" v-check-empty
                                 v-model="form.coinSymbol"
@@ -293,6 +302,16 @@
                     <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                </div>
+                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                    <FieldUseMax
+                        data-test-id="walletSendInputAmount"
+                        v-model="form.amount"
+                        :$value="$v.form.amount"
+                        :label="$td('Amount', 'form.wallet-send-amount')"
+                        :max-value="maxAmount"
+                    />
+                    <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">

@@ -119,7 +119,9 @@
         watch: {
             feeBusParams: {
                 handler(newVal) {
-                    feeBus.$emit('updateParams', newVal);
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
                 },
                 deep: true,
             },
