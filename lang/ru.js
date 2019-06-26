@@ -185,6 +185,12 @@ export default {
         'tx-table-check-nonce': 'Уникальный номер чека',
         'tx-table-due-block': 'Действителен до блока',
     },
+    broadcast: {
+        'nonce-title': 'Получить nonce',
+        'nonce-description': 'Получить nonce, необходимый для генерирования новой транзакции на оффлайн-устройстве.',
+        'tx-title': 'Отправить подписанную транзакцию',
+        'tx-description': 'Отправить транзакцию, сгенерированную на оффлайн-устройстве',
+    },
     form: {
         'toggle-simple-mode': 'Простой режим',
         'toggle-advanced-mode': 'Расширенный режим',
@@ -329,5 +335,10 @@ export default {
         'coiner-create-reserve-error-min': 'Минимальный резерв — 1000 {coin}',
         'coiner-create-button': 'Создать',
 
+        'broadcast-nonce-button': 'Получить nonce',
+        'broadcast-nonce-got': 'Nonce для новой транзакции:',
+        'broadcast-tx': 'Подписанная транзакция',
+        'broadcast-tx-error-required': 'Укажите подписанную транзакцию',
+        'broadcast-tx-button': 'Отправить',
     },
 };
