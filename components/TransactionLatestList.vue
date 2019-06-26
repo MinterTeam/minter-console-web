@@ -1,7 +1,8 @@
 <script>
     import {mapGetters} from 'vuex';
+    import Big from 'big.js';
     import * as TX_TYPES from 'minterjs-tx/src/tx-types';
-    import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl} from '~/assets/utils';
+    import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
     import TableLink from '~/components/common/TableLink';
 
     export default {
@@ -55,13 +56,33 @@
             isBuy(tx) {
                 return tx.type === Number(TX_TYPES.TX_TYPE_BUY);
             },
+            isMultisend(tx) {
+                return tx.type === Number(TX_TYPES.TX_TYPE_MULTISEND);
+            },
+            isIncomeMultisend(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                const isOutcomeMultisend = this.address === tx.from;
+                return !isOutcomeMultisend;
+            },
+            getAmount(tx) {
+                return tx.data.value
+                    || this.getConvertValue(tx)
+                    || tx.data.stake
+                    || tx.data.initial_amount
+                    || (tx.data.check && tx.data.check.value)
+                    || this.getMultisendValue(tx);
+            },
             hasAmount(tx) {
-                return typeof tx.data.value !== 'undefined'
-                    || typeof tx.data.value_to_sell !== 'undefined'
-                    || typeof tx.data.value_to_buy !== 'undefined'
-                    || typeof tx.data.stake !== 'undefined'
-                    || typeof tx.data.initial_amount !== 'undefined'
-                    || (tx.data.check && typeof tx.data.check.value !== 'undefined');
+                return typeof this.getAmount(tx) !== 'undefined';
+            },
+            getAmountWithCoin(tx) {
+                if (this.isMultisend(tx) && this.isMultisendMultipleCoin(tx)) {
+                    return 'Multiple coins';
+                } else {
+                    return (tx.data.coin || tx.data.symbol || this.getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) || this.getMultisendCoin(tx)) + ' ' + pretty(this.getAmount(tx) || 0);
+                }
             },
             getConvertCoinSymbol(tx) {
                 if (tx.type === Number(TX_TYPES.TX_TYPE_SELL) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL)) {
@@ -79,6 +100,41 @@
                     return tx.data.value_to_buy;
                 }
             },
+            getMultisendDeliveryList(tx) {
+                const isOutcomeMultisend = !this.isIncomeMultisend(tx);
+                return isOutcomeMultisend ? tx.data.list : tx.data.list.filter((delivery) => {
+                    return this.address === delivery.to;
+                });
+            },
+            isMultisendMultipleCoin(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                const currentUserDeliveryList = this.getMultisendDeliveryList(tx);
+                return currentUserDeliveryList.some((delivery) => {
+                    return delivery.coin !== currentUserDeliveryList[0].coin;
+                });
+            },
+            getMultisendCoin(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                if (!this.isMultisendMultipleCoin(tx)) {
+                    return this.getMultisendDeliveryList(tx)[0].coin;
+                }
+            },
+            getMultisendValue(tx) {
+                if (!this.isMultisend(tx)) {
+                    return;
+                }
+                const currentUserDeliveryList = this.getMultisendDeliveryList(tx);
+                if (this.isMultisendMultipleCoin(tx)) {
+                    return '...';
+                } else {
+                    return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(new Big(delivery.value)), new Big(0)).toFixed();
+                }
+            },
+            fromBase64,
             getExplorerBlockUrl,
             getExplorerTxUrl,
             getExplorerAddressUrl,
@@ -133,16 +189,14 @@
                         <!-- amount -->
                         <td class="u-hidden-large-down">
                             <div v-if="hasAmount(tx)">
-                                {{ tx.data.value || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
-                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
+                                {{ getAmountWithCoin(tx) }}
                             </div>
                         </td>
                         <!-- value -->
                         <td class="u-hidden-large-up">
                             {{ tx.type | txType }}
                             <span v-if="hasAmount(tx)">
-                                {{ tx.data.value || getConvertValue(tx) || tx.data.stake || tx.data.initial_amount || (tx.data.check && tx.data.check.value) || 0 | pretty }}
-                                {{ tx.data.coin || tx.data.symbol || getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) }}
+                                {{ getAmountWithCoin(tx) }}
                             </span>
                         </td>
                         <!--expand button -->
@@ -174,20 +228,20 @@
                                 <!-- SELL -->
                                 <div class="table__inner-item" v-if="isSell(tx)">
                                     <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
-                                    {{ tx.data.value_to_sell | pretty }} {{ tx.data.coin_to_sell }}
+                                    {{ tx.data.coin_to_sell }} {{ tx.data.value_to_sell | pretty }}
                                 </div>
                                 <div class="table__inner-item" v-if="isSell(tx)">
                                     <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
-                                    {{ tx.data.value_to_buy | pretty  }} {{ tx.data.coin_to_buy }}
+                                    {{ tx.data.coin_to_buy }} {{ tx.data.value_to_buy | pretty }}
                                 </div>
                                 <!-- BUY -->
                                 <div class="table__inner-item" v-if="isBuy(tx)">
                                     <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
-                                    {{ tx.data.value_to_buy | pretty }} {{ tx.data.coin_to_buy }}
+                                    {{ tx.data.coin_to_buy }} {{ tx.data.value_to_buy | pretty }}
                                 </div>
                                 <div class="table__inner-item" v-if="isBuy(tx)">
                                     <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
-                                    {{ tx.data.value_to_sell | pretty }} {{ tx.data.coin_to_sell }}
+                                    {{ tx.data.coin_to_sell }} {{ tx.data.value_to_sell | pretty }}
                                 </div>
 
                                 <!-- type CREATE_COIN -->
@@ -222,7 +276,7 @@
                                 </div>
                                 <div class="table__inner-item" v-if="isDefined(tx.data.stake)">
                                     <strong>{{ $td('Stake', 'wallet.tx-table-stake') }}</strong> <br>
-                                    {{ tx.data.stake | pretty }} {{ tx.data.coin }}
+                                    {{ tx.data.coin }} {{ tx.data.stake | pretty }}
                                 </div>
                                 <div class="table__inner-item" v-if="isDefined(tx.data.commission)">
                                     <strong>{{ $td('Commission', 'wallet.tx-table-commission') }}</strong> <br>
@@ -244,28 +298,30 @@
                                 </div>
 
                                 <!-- type REDEEM_CHECK -->
+<!--
                                 <div class="table__inner-item" v-if="tx.data.raw_check">
                                     <strong>{{ $td('Check', 'wallet.tx-table-check') }}</strong> <br>
-                                    <!--<TableLink :link-text="tx.data.raw_check" :is-not-link="true"/>-->
+                                    &lt;!&ndash;<TableLink :link-text="tx.data.raw_check" :is-not-link="true"/>&ndash;&gt;
                                     {{ tx.data.raw_check | short}}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.proof">
                                     <strong>{{ $td('Proof', 'wallet.tx-table-proof') }}</strong> <br>
                                     {{ tx.data.proof | short}}
                                 </div>
+-->
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
-                                    <strong>Check Issuer</strong> <br>
+                                    <strong>{{ $td('Check Issuer', 'wallet.tx-table-check-issuer') }}</strong> <br>
                                     <TableLink :link-text="tx.data.check.sender"
                                                :link-path="'/address/' + tx.data.check.sender"
                                                :should-not-shorten="true"
                                     />
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
-                                    <strong>Check Nonce</strong> <br>
-                                    {{ tx.data.check.nonce }}
+                                    <strong>{{ $td('Check Nonce', 'wallet.tx-table-check-nonce') }}</strong> <br>
+                                    {{ fromBase64(tx.data.check.nonce) }}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.due_block">
-                                    <strong>Due Block</strong> <br>
+                                    <strong>{{ $td('Due Block', 'wallet.tx-table-check-issuer') }}</strong> <br>
                                     {{ tx.data.check.due_block }}
                                 </div>
 
@@ -284,7 +340,7 @@
                                 <!-- fee -->
                                 <div class="table__inner-item">
                                     <strong>{{ $td('Fee', 'wallet.tx-table-fee') }}</strong> <br>
-                                    {{ tx.fee | pretty }} {{ $store.getters.COIN_NAME }}
+                                    {{ $store.getters.COIN_NAME }} {{ tx.fee | pretty }}
                                 </div>
                             </div>
                         </td>

@@ -3,17 +3,23 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
+    import maxLength from 'vuelidate/lib/validators/maxLength';
     import issueCheck from 'minter-js-sdk/src/issue-check';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
             QrcodeVue,
             InputUppercase,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
         },
         directives: {
@@ -53,11 +59,12 @@
                 },
                 coinSymbol: {
                     required,
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
                 passPhrase: {
                     required,
                 },
-
             },
         },
         computed: {
@@ -83,6 +90,7 @@
                         try {
                             this.check = issueCheck({
                                 privateKey: this.$store.getters.privateKey,
+                                chainId: this.$store.getters.CHAIN_ID,
                                 ...this.form,
                             });
                             this.password = this.form.passPhrase;
@@ -98,7 +106,12 @@
                     });
             },
             clearForm() {
-                this.form.nonce = this.form.nonce + 1;
+                if (parseInt(this.form.nonce, 10).toString() === this.form.nonce) {
+                    // increment nonce if it is integer number
+                    this.form.nonce = (parseInt(this.form.nonce, 10) + 1).toString();
+                } else {
+                    this.form.nonce = '';
+                }
                 this.form.dueBlock = 999999999;
                 this.form.value = null;
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
@@ -114,25 +127,14 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.nonce.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.nonce"
+                    <input class="form-field__input" type="text" v-check-empty
+                           v-model="form.nonce"
                            @blur="$v.form.nonce.$touch()"
                     >
                     <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.nonce.$dirty && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                 <div class="form-field__help">{{ $td('Check\'s unique ID. Used for issuing several identical checks.', 'form.checks-issue-nonce-help') }}</div>
-            </div>
-
-            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.value.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.value"
-                           @blur="$v.form.value.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Amount', 'form.checks-issue-amount') }}</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -156,6 +158,16 @@
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
+            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
+                <label class="form-field" :class="{'is-error': $v.form.value.$error}">
+                    <InputMaskedAmount class="form-field__input" v-check-empty
+                                       v-model="form.value"
+                                       @blur="$v.form.value.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Amount', 'form.checks-issue-amount') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
+            </div>
             <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--3-4">
                 <label class="form-field" :class="{'is-error': $v.form.passPhrase.$error}">
                     <input class="form-field__input" type="text" v-check-empty
@@ -168,10 +180,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.dueBlock"
+                    <InputMaskedInteger class="form-field__input" v-check-empty
+                           v-model="form.dueBlock"
                            @blur="$v.form.dueBlock.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Due block', 'form.checks-issue-due') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.dueBlock.$dirty && !$v.form.dueBlock.required">{{ $td('Enter block number', 'form.checks-issue-due-error-required') }}</span>

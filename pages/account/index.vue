@@ -1,10 +1,16 @@
 <script>
     import {mapGetters} from 'vuex';
     import getTitle from '~/assets/get-title';
+    import QrcodeVue from 'qrcode.vue';
+    import InlineSvg from 'vue-inline-svg';
+    import Modal from '~/components/common/Modal';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
+            QrcodeVue,
+            InlineSvg,
+            Modal,
             ButtonCopyIcon,
         },
         fetch({ app, store }) {
@@ -32,6 +38,7 @@
             return {
                 visiblePrivate: false,
                 visibleMnemonic: false,
+                isAddressQrModalVisible: false,
             };
         },
         computed: {
@@ -70,8 +77,12 @@
                 <dd class="u-icon-wrap">
                     <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
                     <ButtonCopyIcon :copy-text="address"/>
+                    <button class="u-icon--qr u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
+                        <InlineSvg src="/img/icon-qr.svg" width="30" height="30"/>
+                    </button>
                 </dd>
 
+<!--
                 <dt>{{ $td('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
@@ -82,6 +93,7 @@
                         <button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ $td('Click to view', 'account.click-view') }}</button>
                     </div>
                 </dd>
+-->
 
                 <dt>{{ $td('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
@@ -96,6 +108,11 @@
             </dl>
         </div>
 
+        <Modal class="qr-modal"
+               v-bind:isOpen.sync="isAddressQrModalVisible"
+        >
+            <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
+        </Modal>
 
     </section>
 </template>

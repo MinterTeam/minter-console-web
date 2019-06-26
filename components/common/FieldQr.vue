@@ -1,11 +1,13 @@
 <script>
     import checkEmpty from '~/assets/v-check-empty';
     import QrScan from '~/components/common/QrScan';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
 
     export default {
         inheritAttrs: false,
         components: {
             QrScan,
+            InputMaskedInteger,
         },
         directives: {
             checkEmpty,
@@ -22,6 +24,10 @@
             label: {
                 type: String,
                 required: true,
+            },
+            isInteger: {
+                type: Boolean,
+                default: false,
             },
         },
         data() {
@@ -40,11 +46,20 @@
 
 <template>
     <label class="form-field" :class="{'is-error': $value.$error, 'form-field--with-icon': hasCamera}">
+        <InputMaskedInteger
+            class="form-field__input" v-check-empty
+            v-bind="$attrs"
+            :value="value"
+            @input="$emit('input', $event)"
+            @blur="$value.$touch()"
+            v-if="isInteger"
+        />
         <input class="form-field__input" type="text" v-check-empty
                v-bind="$attrs"
                :value="value"
                @input="$emit('input', $event.target.value)"
                @blur="$value.$touch()"
+               v-else
         >
         <QrScan @qrScanned="handleQrScanned" :qrVisible.sync="hasCamera"/>
         <span class="form-field__label">{{ label }}</span>

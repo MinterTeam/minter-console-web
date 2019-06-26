@@ -3,25 +3,33 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import BuyTxParams from "minter-js-sdk/src/tx-params/convert-buy";
-    import {getFeeValue} from 'minterjs-util/src/fee';
+    import {TX_TYPE_BUY} from 'minterjs-tx/src/tx-types';
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx, estimateCoinBuy} from '~/api/gate';
+    import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Modal from '~/components/common/Modal';
+
+    let feeBus;
 
     export default {
         components: {
             QrcodeVue,
             FieldQr,
             InputUppercase,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
             Modal,
         },
@@ -46,12 +54,15 @@
                     coinTo: '',
                     feeCoinSymbol: '',
                     message: '',
+                    gasPrice: '',
                 },
                 formAdvanced: {
                     feeCoinSymbol: '',
                     message: '',
                 },
                 isModeAdvanced: false,
+                /** @type FeeData */
+                fee: {},
                 isConfirmModalVisible: false,
                 estimation: null,
                 signedTx: null,
@@ -84,6 +95,10 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
+                };
+                form.gasPrice = {
+                    minValue: minValue(1),
                 };
             }
 
@@ -93,14 +108,39 @@
             ...mapGetters({
                 balance: 'balance',
             }),
-            feeValue() {
-                return pretty(getFeeValue(100, this.form.message.length));
-            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
+            feeBusParams() {
+                return {
+                    txType: TX_TYPE_BUY,
+                    messageLength: this.form.message.length,
+                    selectedCoinSymbol: this.form.coinFrom,
+                    selectedFeeCoinSymbol: this.form.feeCoinSymbol,
+                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    isOffline: this.$store.getters.isOfflineMode,
+                };
+            },
+        },
+        watch: {
+            feeBusParams: {
+                handler(newVal) {
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
+                },
+                deep: true,
+            },
+        },
+        created() {
+            feeBus = new FeeBus(this.feeBusParams);
+            this.fee = feeBus.fee;
+            feeBus.$on('updateFee', (newVal) => {
+                this.fee = newVal;
+            });
         },
         methods: {
+            pretty,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -149,6 +189,8 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    feeCoinSymbol: this.fee.coinSymbol,
+                    gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
             },
@@ -161,6 +203,8 @@
                         postTx(new BuyTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            feeCoinSymbol: this.fee.coinSymbol,
+                            gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;
@@ -205,6 +249,7 @@
                 } else {
                     this.form.nonce = '';
                 }
+                this.form.gasPrice = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -239,10 +284,10 @@
                 </div>
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                     <label class="form-field" :class="{'is-error': $v.form.buyAmount.$error}">
-                        <input class="form-field__input" type="text" inputmode="numeric" v-check-empty data-test-id="convertBuyInputBuyAmount"
+                        <InputMaskedAmount class="form-field__input" v-check-empty data-test-id="convertBuyInputBuyAmount"
                                v-model="form.buyAmount"
                                @blur="$v.form.buyAmount.$touch()"
-                        >
+                        />
                         <span class="form-field__label">{{ $td('Buy amount', 'form.convert-buy-amount') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
@@ -275,7 +320,7 @@
                                 v-model="form.feeCoinSymbol"
                                 v-if="balance && balance.length"
                         >
-                            <option :value="''">{{ $td('Same as coin to spend', 'form.convert-buy-fee-same') }}</option>
+                            <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as coin to spend', 'form.convert-buy-fee-same') }}</option>
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                                 {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
                             </option>
@@ -289,7 +334,11 @@
                     </label>
                     <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                    <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                    <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                    <div class="form-field__help" v-else>
+                        {{ fee.coinSymbol }} {{ fee.value | pretty }}
+                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                    </div>
                 </div>
                 <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -304,14 +353,26 @@
                 </div>
 
                 <!-- Generation -->
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <FieldQr inputmode="numeric"
-                             v-model.number="form.nonce"
+                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <FieldQr v-model="form.nonce"
                              :$value="$v.form.nonce"
                              :label="$td('Nonce', 'form.checks-issue-nonce')"
+                             :isInteger="true"
                     />
                     <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                     <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+                </div>
+                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
+                        <InputMaskedInteger class="form-field__input" v-check-empty
+                               v-model="form.gasPrice"
+                               @blur="$v.form.gasPrice.$touch()"
+                        />
+                        <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
+                        <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                    </label>
+                    <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                     <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">

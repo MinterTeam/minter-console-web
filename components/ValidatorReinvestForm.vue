@@ -1,6 +1,7 @@
 <script>
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
@@ -11,11 +12,15 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
         components: {
             FieldQr,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
         },
         directives: {
@@ -55,12 +60,14 @@
                     required,
                 },
                 gasPrice: {
+                    minValue: minValue(1),
                 },
             };
 
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
                 };
             }
 
@@ -143,6 +150,7 @@
                 } else {
                     this.form.nonce = '';
                 }
+                this.formTxCount = '';
                 this.$v.$reset();
             },
             setDownload(text, name) {
@@ -196,46 +204,48 @@
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.stake"
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model="form.stake"
                            @blur="$v.form.stake.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.formTxCount.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="formTxCount"
+                    <InputMaskedInteger class="form-field__input" type="text" v-check-empty
+                           v-model="formTxCount"
                            @blur="$v.formTxCount.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Tx count', 'form.delegation-reinvest-tx-count') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.formTxCount.$dirty && !$v.formTxCount.required">{{ $td('Enter tx count', 'form.delegation-reinvest-tx-count-error-required') }}</span>
 <!--                <div class="form-field__help">{{ $td('', 'form.delegation-reinvest-tx-count-help') }}</div>-->
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell--order-2" :class="$store.getters.isOfflineMode ? 'u-cell--small--1-2 u-cell--xlarge--1-4' : 'u-cell--large--1-2'">
                 <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.gasPrice"
-                           @blur="$v.form.gasPrice.$touch()"
-                    >
+                    <InputMaskedInteger class="form-field__input" v-check-empty
+                                        v-model="form.gasPrice"
+                                        @blur="$v.form.gasPrice.$touch()"
+                    />
+                    <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                     <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                 </label>
                 <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
             </div>
 
             <!-- Generation -->
-            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr inputmode="numeric"
-                         v-model.number="form.nonce"
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="$store.getters.isOfflineMode">
+                <FieldQr v-model="form.nonce"
                          :$value="$v.form.nonce"
                          :label="$td('Nonce', 'form.checks-issue-nonce')"
+                         :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
@@ -245,7 +255,7 @@
             </div>
 
             <!-- Controls -->
-            <div class="u-cell u-cell--order-2" v-if="!$store.getters.isOfflineMode">
+            <div class="u-cell u-cell--large--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">

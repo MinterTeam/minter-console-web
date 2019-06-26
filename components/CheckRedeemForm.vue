@@ -2,6 +2,7 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import {RedeemCheckTxParams} from "minter-js-sdk/src";
     import {isValidCheck} from "minterjs-util";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
@@ -32,9 +33,9 @@
                 serverError: '',
                 serverSuccess: '',
                 form: {
-                    nonce: '',
                     check: '',
                     password: '',
+                    nonce: '',
                 },
                 signedTx: null,
             };
@@ -53,6 +54,7 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
                 };
             }
 
@@ -153,13 +155,14 @@
             </div>
 
             <!-- Generation -->
-            <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr inputmode="numeric"
-                         v-model.number="form.nonce"
+            <div class="u-cell u-cell--small--1-2" v-if="$store.getters.isOfflineMode">
+                <FieldQr v-model="form.nonce"
                          :$value="$v.form.nonce"
                          :label="$td('Nonce', 'form.checks-issue-nonce')"
+                         :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">

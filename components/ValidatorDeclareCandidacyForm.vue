@@ -1,8 +1,10 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
@@ -10,22 +12,28 @@
     import DeclareCandidacyTxParams from "minter-js-sdk/src/tx-params/candidacy-declare";
     import {TX_TYPE_DECLARE_CANDIDACY} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
-    import {getFeeValue} from 'minterjs-util/src/fee';
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
+    import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+
+    let feeBus;
 
     export default {
         components: {
             VueAutonumeric,
             QrcodeVue,
             FieldQr,
+            FieldUseMax,
             InputUppercase,
+            InputMaskedInteger,
             ButtonCopyIcon,
         },
         directives: {
@@ -47,10 +55,11 @@
                     address: this.$store.getters.address,
                     publicKey: '',
                     commission: null,
-                    stake: null,
+                    stake: '',
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: '',
                     message: '',
+                    gasPrice: '',
                 },
                 commissionFormatted: '0',
                 formAdvanced: {
@@ -58,6 +67,8 @@
                     message: '',
                 },
                 isModeAdvanced: false,
+                /** @type FeeData */
+                fee: {},
                 signedTx: null,
             };
         },
@@ -95,6 +106,10 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
+                };
+                form.gasPrice = {
+                    minValue: minValue(1),
                 };
             }
 
@@ -104,11 +119,34 @@
             ...mapGetters({
                 balance: 'balance',
             }),
-            feeValue() {
-                return pretty(getFeeValue(TX_TYPE_DECLARE_CANDIDACY, this.form.message.length));
+            maxAmount() {
+                const selectedCoin = this.$store.getters.balance.find((coin) => {
+                    return coin.coin === this.form.coinSymbol;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                // fee not in selected coins
+                if (selectedCoin.coin !== this.fee.coinSymbol) {
+                    return selectedCoin.amount;
+                }
+                // fee in selected coin, subtract fee
+                const amount = new Big(selectedCoin.amount).minus(this.fee.value).toFixed();
+                return amount > 0 ? amount : '0';
             },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
+            },
+            feeBusParams() {
+                return {
+                    txType: TX_TYPE_DECLARE_CANDIDACY,
+                    messageLength: this.form.message.length,
+                    selectedCoinSymbol: this.form.coinSymbol,
+                    selectedFeeCoinSymbol: this.form.feeCoinSymbol,
+                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    isOffline: this.$store.getters.isOfflineMode,
+                };
             },
         },
         watch: {
@@ -119,8 +157,24 @@
                 },
                 immediate: true,
             },
+            feeBusParams: {
+                handler(newVal) {
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
+                },
+                deep: true,
+            },
+        },
+        created() {
+            feeBus = new FeeBus(this.feeBusParams);
+            this.fee = feeBus.fee;
+            feeBus.$on('updateFee', (newVal) => {
+                this.fee = newVal;
+            });
         },
         methods: {
+            pretty,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -142,6 +196,8 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    feeCoinSymbol: this.fee.coinSymbol,
+                    gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
             },
@@ -162,6 +218,8 @@
                         postTx(new DeclareCandidacyTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            feeCoinSymbol: this.fee.coinSymbol,
+                            gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;
@@ -196,7 +254,7 @@
                 this.form.address = this.$store.getters.address;
                 this.form.publicKey = '';
                 this.form.commission = null;
-                this.form.stake = null;
+                this.form.stake = '';
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = '';
                 this.form.message = '';
@@ -207,6 +265,7 @@
                 } else {
                     this.form.nonce = '';
                 }
+                this.form.gasPrice = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -222,16 +281,6 @@
                 <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
                 <div class="form-field__help">{{ $td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
-            </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.stake"
-                           @blur="$v.form.stake.$touch()"
-                    >
-                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -253,6 +302,15 @@
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+            </div>
+            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+                <FieldUseMax
+                    v-model="form.stake"
+                    :$value="$v.form.stake"
+                    :label="$td('Stake', 'form.masternode-stake')"
+                    :max-value="maxAmount"
+                />
+                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
                 <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
@@ -289,7 +347,7 @@
                             v-model="form.feeCoinSymbol"
                             v-if="balance && balance.length"
                     >
-                        <option :value="''">{{ $td('Same as stake coin', 'form.masternode-fee-same') }}</option>
+                        <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as stake coin', 'form.masternode-fee-same') }}</option>
                         <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                             {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
                         </option>
@@ -303,7 +361,11 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else>
+                    {{ fee.coinSymbol }} {{ fee.value | pretty }}
+                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                </div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -318,14 +380,26 @@
             </div>
 
             <!-- Generation -->
-            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr inputmode="numeric"
-                         v-model.number="form.nonce"
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <FieldQr v-model="form.nonce"
                          :$value="$v.form.nonce"
                          :label="$td('Nonce', 'form.checks-issue-nonce')"
+                         :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
+                    <InputMaskedInteger class="form-field__input" v-check-empty
+                                        v-model="form.gasPrice"
+                                        @blur="$v.form.gasPrice.$touch()"
+                    />
+                    <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
+                    <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                </label>
+                <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
