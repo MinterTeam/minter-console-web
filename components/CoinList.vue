@@ -54,7 +54,7 @@
                     </td>
                     <!-- balance -->
                     <td>
-                        {{ coinItem.amount | pretty }} {{ coinItem.coin }}
+                        {{ coinItem.amount | pretty }}
                     </td>
                 </tr>
                 </tbody>

@@ -81,7 +81,7 @@
                 if (this.isMultisend(tx) && this.isMultisendMultipleCoin(tx)) {
                     return 'Multiple coins';
                 } else {
-                    return pretty(this.getAmount(tx) || 0) + ' ' + (tx.data.coin || tx.data.symbol || this.getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) || this.getMultisendCoin(tx));
+                    return (tx.data.coin || tx.data.symbol || this.getConvertCoinSymbol(tx) || (tx.data.check && tx.data.check.coin) || this.getMultisendCoin(tx)) + ' ' + pretty(this.getAmount(tx) || 0);
                 }
             },
             getConvertCoinSymbol(tx) {
@@ -228,20 +228,20 @@
                                 <!-- SELL -->
                                 <div class="table__inner-item" v-if="isSell(tx)">
                                     <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
-                                    {{ tx.data.value_to_sell | pretty }} {{ tx.data.coin_to_sell }}
+                                    {{ tx.data.coin_to_sell }} {{ tx.data.value_to_sell | pretty }}
                                 </div>
                                 <div class="table__inner-item" v-if="isSell(tx)">
                                     <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
-                                    {{ tx.data.value_to_buy | pretty  }} {{ tx.data.coin_to_buy }}
+                                    {{ tx.data.coin_to_buy }} {{ tx.data.value_to_buy | pretty }}
                                 </div>
                                 <!-- BUY -->
                                 <div class="table__inner-item" v-if="isBuy(tx)">
                                     <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
-                                    {{ tx.data.value_to_buy | pretty }} {{ tx.data.coin_to_buy }}
+                                    {{ tx.data.coin_to_buy }} {{ tx.data.value_to_buy | pretty }}
                                 </div>
                                 <div class="table__inner-item" v-if="isBuy(tx)">
                                     <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
-                                    {{ tx.data.value_to_sell | pretty }} {{ tx.data.coin_to_sell }}
+                                    {{ tx.data.coin_to_sell }} {{ tx.data.value_to_sell | pretty }}
                                 </div>
 
                                 <!-- type CREATE_COIN -->
@@ -276,7 +276,7 @@
                                 </div>
                                 <div class="table__inner-item" v-if="isDefined(tx.data.stake)">
                                     <strong>{{ $td('Stake', 'wallet.tx-table-stake') }}</strong> <br>
-                                    {{ tx.data.stake | pretty }} {{ tx.data.coin }}
+                                    {{ tx.data.coin }} {{ tx.data.stake | pretty }}
                                 </div>
                                 <div class="table__inner-item" v-if="isDefined(tx.data.commission)">
                                     <strong>{{ $td('Commission', 'wallet.tx-table-commission') }}</strong> <br>
@@ -340,7 +340,7 @@
                                 <!-- fee -->
                                 <div class="table__inner-item">
                                     <strong>{{ $td('Fee', 'wallet.tx-table-fee') }}</strong> <br>
-                                    {{ tx.fee | pretty }} {{ $store.getters.COIN_NAME }}
+                                    {{ $store.getters.COIN_NAME }} {{ tx.fee | pretty }}
                                 </div>
                             </div>
                         </td>
