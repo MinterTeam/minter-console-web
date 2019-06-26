@@ -6,6 +6,7 @@ import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} fro
 import accounts from '~/api/accounts';
 import explorer from '~/api/explorer';
 import autoDelegation from '~/api/auto-delegation';
+import {COIN_NAME} from '~/assets/variables';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
@@ -92,13 +93,6 @@ export function putProfileAvatar(avatar) {
 }
 
 
-export function postLinkConfirmation({id, code}) {
-    const methodUrl = 'profile/link/' + id + '/confirm';
-    return accounts.post(methodUrl, {
-        'code': code,
-    }).then((response) => response.data.data);
-}
-
 
 /**
  * @typedef {Object} TransactionListInfo
@@ -125,10 +119,12 @@ export function getAddressTransactionList(address, params = {}) {
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
-        .then((response) => response.data.data.balances.sort((coinItem) => {
-                // set MNT first
-                if (coinItem.coin === 'MNT') {
+        .then((response) => response.data.data.balances.sort((a, b) => {
+                // set base coin first
+                if (a.coin === COIN_NAME) {
                     return -1;
+                } else if (b.coin === COIN_NAME) {
+                    return 1;
                 } else {
                     return 0;
                 }

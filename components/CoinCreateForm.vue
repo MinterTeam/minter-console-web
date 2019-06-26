@@ -3,21 +3,23 @@
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
+    import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
-    import minValue from 'vuelidate/lib/validators/minValue';
     import withParams from 'vuelidate/lib/withParams';
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
     import {TX_TYPE_CREATE_COIN} from 'minterjs-tx/src/tx-types';
-    import {getFeeValue} from 'minterjs-util/src/fee';
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
+    import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     const MIN_CRR = 10;
@@ -27,6 +29,8 @@
         let crr = parseInt(value, 10);
         return MIN_CRR <= crr && MAX_CRR >= crr;
     });
+
+    let feeBus;
 
     export default {
         // first key not handled by webstorm intelliSense
@@ -49,6 +53,8 @@
             QrcodeVue,
             FieldQr,
             InputUppercase,
+            InputMaskedAmount,
+            InputMaskedInteger,
             ButtonCopyIcon,
         },
         directives: {
@@ -74,12 +80,15 @@
                     initialReserve: null,
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
+                    gasPrice: '',
                 },
                 formAdvanced: {
                     feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     message: '',
                 },
                 isModeAdvanced: false,
+                /** @type FeeData */
+                fee: {},
                 signedTx: null,
             };
         },
@@ -119,6 +128,10 @@
             if (this.$store.getters.isOfflineMode) {
                 form.nonce = {
                     required,
+                    minValue: minValue(1),
+                };
+                form.gasPrice = {
+                    minValue: minValue(1),
                 };
             }
 
@@ -128,14 +141,39 @@
             ...mapGetters({
                 balance: 'balance',
             }),
-            feeValue() {
-                return pretty(getFeeValue(TX_TYPE_CREATE_COIN, this.form.message.length, {coinSymbolLength: this.form.coinSymbol.length}) || 0);
-            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
+            feeBusParams() {
+                return {
+                    txType: TX_TYPE_CREATE_COIN,
+                    txFeeOptions: {coinSymbolLength: this.form.coinSymbol.length},
+                    messageLength: this.form.message.length,
+                    selectedFeeCoinSymbol: this.form.feeCoinSymbol,
+                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    isOffline: this.$store.getters.isOfflineMode,
+                };
+            },
+        },
+        watch: {
+            feeBusParams: {
+                handler(newVal) {
+                    if (feeBus && typeof feeBus.$emit === 'function') {
+                        feeBus.$emit('updateParams', newVal);
+                    }
+                },
+                deep: true,
+            },
+        },
+        created() {
+            feeBus = new FeeBus(this.feeBusParams);
+            this.fee = feeBus.fee;
+            feeBus.$on('updateFee', (newVal) => {
+                this.fee = newVal;
+            });
         },
         methods: {
+            pretty,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -157,6 +195,8 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    feeCoinSymbol: this.fee.coinSymbol,
+                    gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
                 this.clearForm();
             },
@@ -177,6 +217,8 @@
                         postTx(new CreateCoinTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            feeCoinSymbol: this.fee.coinSymbol,
+                            gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;
@@ -222,6 +264,7 @@
                 } else {
                     this.form.nonce = '';
                 }
+                this.form.gasPrice = '';
                 this.$v.$reset();
             },
             getExplorerTxUrl,
@@ -259,10 +302,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.initialAmount.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.initialAmount"
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model="form.initialAmount"
                            @blur="$v.form.initialAmount.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Initial amount', 'form.coiner-create-amount') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
@@ -270,10 +313,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
-                    <input class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                           v-model.number="form.initialReserve"
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                           v-model="form.initialReserve"
                            @blur="$v.form.initialReserve.$touch()"
-                    >
+                    />
                     <span class="form-field__label">{{ $td('Initial reserve', 'form.coiner-create-reserve') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.required">{{ $td('Enter reserve', 'form.coiner-create-reserve-error-required') }}</span>
@@ -313,7 +356,11 @@
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <div class="form-field__help" v-else>{{ $td(`Equivalent of ${feeValue} ${$store.getters.COIN_NAME}`, 'form.fee-help', {value: feeValue, coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else>
+                    {{ fee.coinSymbol }} {{ fee.value | pretty }}
+                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                </div>
             </div>
             <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.message.$error}">
@@ -328,14 +375,26 @@
             </div>
 
             <!-- Generation -->
-            <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr inputmode="numeric"
-                         v-model.number="form.nonce"
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <FieldQr v-model="form.nonce"
                          :$value="$v.form.nonce"
                          :label="$td('Nonce', 'form.checks-issue-nonce')"
+                         :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
                 <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+            </div>
+            <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
+                    <InputMaskedInteger class="form-field__input" v-check-empty
+                                        v-model="form.gasPrice"
+                                        @blur="$v.form.gasPrice.$touch()"
+                    />
+                    <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
+                    <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                </label>
+                <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
@@ -381,27 +440,27 @@
 
             <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'en'">
-                <p>Note: coin will be deleted if reserve is less than 100 {{$store.getters.COIN_NAME}}, OR price is less than 0.0001 {{$store.getters.COIN_NAME}}, OR volume is less than 1 coin</p>
-                <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
+                <p>Note: coin will be deleted if reserve is less than {{$store.getters.COIN_NAME}} 100, OR price is less than {{$store.getters.COIN_NAME}} 0.0001, OR volume is less than 1 coin</p>
+                <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
-                    3 letters — 1 000 000 BIPs<br>
-                    4 letters — 100 000 BIPs<br>
-                    5 letters — 10 000 BIPs<br>
-                    6 letters — 1 000 BIPs<br>
-                    7-10 letters — 100 BIPs<br>
+                    3 letters — BIP 1 000 000<br>
+                    4 letters — BIP 100 000<br>
+                    5 letters — BIP 10 000<br>
+                    6 letters — BIP 1 000<br>
+                    7-10 letters — BIP 100<br>
                 </p>
             </div>
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'ru'">
-                <p>Внимание: монета будет удалена, если ее резерв меньше 100 {{$store.getters.COIN_NAME}} ИЛИ её цена ниже 0.0001 {{$store.getters.COIN_NAME}} ИЛИ её объем меньше 1й монеты</p>
-                <p>Вы можете проверить как работает связь между выпуском, резером и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
+                <p>Внимание: монета будет удалена, если ее резерв меньше {{$store.getters.COIN_NAME}} 100 ИЛИ её цена ниже {{$store.getters.COIN_NAME}} 0.0001 ИЛИ её объем меньше 1й монеты</p>
+                <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
-                    3 буквы — 1 000 000 BIP<br>
-                    4 буквы — 100 000 BIP<br>
-                    5 букв — 10 000 BIP<br>
-                    6 букв — 1 000 BIP<br>
-                    7-10 букв — 100 BIP<br>
+                    3 буквы — BIP 1 000 000<br>
+                    4 буквы — BIP 100 000<br>
+                    5 букв — BIP 10 000<br>
+                    6 букв — BIP 1 000<br>
+                    7-10 букв — BIP 100<br>
                 </p>
             </div>
         </div>
