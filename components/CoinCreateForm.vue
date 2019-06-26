@@ -440,27 +440,27 @@
 
             <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'en'">
-                <p>Note: coin will be deleted if reserve is less than 100 {{$store.getters.COIN_NAME}}, OR price is less than 0.0001 {{$store.getters.COIN_NAME}}, OR volume is less than 1 coin</p>
-                <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
+                <p>Note: coin will be deleted if reserve is less than {{$store.getters.COIN_NAME}} 100, OR price is less than {{$store.getters.COIN_NAME}} 0.0001, OR volume is less than 1 coin</p>
+                <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
-                    3 letters — 1 000 000 BIPs<br>
-                    4 letters — 100 000 BIPs<br>
-                    5 letters — 10 000 BIPs<br>
-                    6 letters — 1 000 BIPs<br>
-                    7-10 letters — 100 BIPs<br>
+                    3 letters — BIP 1 000 000<br>
+                    4 letters — BIP 100 000<br>
+                    5 letters — BIP 10 000<br>
+                    6 letters — BIP 1 000<br>
+                    7-10 letters — BIP 100<br>
                 </p>
             </div>
             <div class="u-cell u-cell--order-2" v-if="$i18n.locale === 'ru'">
-                <p>Внимание: монета будет удалена, если ее резерв меньше 100 {{$store.getters.COIN_NAME}} ИЛИ её цена ниже 0.0001 {{$store.getters.COIN_NAME}} ИЛИ её объем меньше 1й монеты</p>
-                <p>Вы можете проверить как работает связь между выпуском, резером и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.beta.minter.network" target="_blank">calculator.beta.minter.network</a></p>
+                <p>Внимание: монета будет удалена, если ее резерв меньше {{$store.getters.COIN_NAME}} 100 ИЛИ её цена ниже {{$store.getters.COIN_NAME}} 0.0001 ИЛИ её объем меньше 1й монеты</p>
+                <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
-                    3 буквы — 1 000 000 BIP<br>
-                    4 буквы — 100 000 BIP<br>
-                    5 букв — 10 000 BIP<br>
-                    6 букв — 1 000 BIP<br>
-                    7-10 букв — 100 BIP<br>
+                    3 буквы — BIP 1 000 000<br>
+                    4 буквы — BIP 100 000<br>
+                    5 букв — BIP 10 000<br>
+                    6 букв — BIP 1 000<br>
+                    7-10 букв — BIP 100<br>
                 </p>
             </div>
         </div>
