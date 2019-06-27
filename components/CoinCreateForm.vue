@@ -289,7 +289,7 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
+                    <InputUppercase class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
                            v-model.trim="form.coinSymbol"
                            @blur="$v.form.coinSymbol.$touch()"
                     />
