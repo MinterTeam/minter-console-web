@@ -298,6 +298,9 @@ export default {
 
         'delegation-delegate-button': 'Делегировать',
         'delegation-unbond-button': 'Отозвать',
+        'delegation-unbond-confirm-description': 'Вы уверены, что хотите отозвать монеты? Отозванные&nbsp;монеты вернутся на ваш кошелек примерно через <strong>30&nbsp;дней</strong> (518&#x202F;400&nbsp;блоков) и не&nbsp;будут приносить награды в течение этого времени.',
+        'delegation-unbond-confirm-amount': 'Вы отзываете',
+        'delegation-unbond-confirm-address': 'Из мастерноды',
         'delegation-reinvest-tx-count': 'Количество транзакций',
         'delegation-reinvest-tx-count-error-required': 'Укажите количество',
         'delegation-reinvest-tx-count-help': '',
