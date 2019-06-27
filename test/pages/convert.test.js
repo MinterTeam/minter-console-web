@@ -56,6 +56,34 @@ describe('convert page', () => {
         await page.waitForSelector('[data-test-id="convertSellErrorMessage"]');
     }, 30000);
 
+    test('buy coins', async () => {
+        await page.type('[data-test-id="convertBuyInputBuyAmount"]', '1');
+        await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'TESTCOIN01');
+        await page.select('[data-test-id="convertBuyInputSellCoin"]', 'MNT');
+        // submit (opens modal)
+        await page.click('[data-test-id="convertBuySubmitButton"]');
+        // wait for modal
+        await page.waitForSelector('[data-test-id="convertBuyModalSubmitButton"]');
+        // submit
+        await page.click('[data-test-id="convertBuyModalSubmitButton"]');
+        // wait for success
+        await page.waitForSelector('[data-test-id="convertBuySuccessMessage"]');
+    }, 30000);
+
+    test('fail buy too much coins', async () => {
+        await page.type('[data-test-id="convertBuyInputBuyAmount"]', '9999999999999999999999999');
+        await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'TESTCOIN01');
+        await page.select('[data-test-id="convertBuyInputSellCoin"]', 'MNT');
+        // submit (opens modal)
+        await page.click('[data-test-id="convertBuySubmitButton"]');
+        // wait for modal
+        await page.waitForSelector('[data-test-id="convertBuyModalSubmitButton"]');
+        // submit
+        await page.click('[data-test-id="convertBuyModalSubmitButton"]');
+        // wait for success
+        await page.waitForSelector('[data-test-id="convertBuyErrorMessage"]');
+    }, 30000);
+
     test('sell all coins', async () => {
         await page.waitForSelector('[data-test-id="convertSellAllInputSellCoin"] > option[value="TESTCOIN01"]');
         await page.select('[data-test-id="convertSellAllInputSellCoin"]', 'TESTCOIN01');
@@ -86,33 +114,5 @@ describe('convert page', () => {
         // await page.click('[data-test-id="convertSellAllModalSubmitButton"]');
         // wait for success
         await page.waitForSelector('[data-test-id="convertSellAllErrorMessage"]');
-    }, 30000);
-
-    test('buy coins', async () => {
-        await page.type('[data-test-id="convertBuyInputBuyAmount"]', '1');
-        await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'TESTCOIN01');
-        await page.select('[data-test-id="convertBuyInputSellCoin"]', 'MNT');
-        // submit (opens modal)
-        await page.click('[data-test-id="convertBuySubmitButton"]');
-        // wait for modal
-        await page.waitForSelector('[data-test-id="convertBuyModalSubmitButton"]');
-        // submit
-        await page.click('[data-test-id="convertBuyModalSubmitButton"]');
-        // wait for success
-        await page.waitForSelector('[data-test-id="convertBuySuccessMessage"]');
-    }, 30000);
-
-    test('fail buy too much coins', async () => {
-        await page.type('[data-test-id="convertBuyInputBuyAmount"]', '9999999999999999999999999');
-        await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'TESTCOIN01');
-        await page.select('[data-test-id="convertBuyInputSellCoin"]', 'MNT');
-        // submit (opens modal)
-        await page.click('[data-test-id="convertBuySubmitButton"]');
-        // wait for modal
-        await page.waitForSelector('[data-test-id="convertBuyModalSubmitButton"]');
-        // submit
-        await page.click('[data-test-id="convertBuyModalSubmitButton"]');
-        // wait for success
-        await page.waitForSelector('[data-test-id="convertBuyErrorMessage"]');
     }, 30000);
 });
