@@ -100,6 +100,7 @@
             },
         },
         methods: {
+            prettyExact,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -345,7 +346,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="$options.filters.prettyExact(sellAmount) + ' ' + form.coinFrom"
+                                       :value="form.coinFrom + ' ' + prettyExact(sellAmount)"
                                 >
                                 <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
                             </label>
@@ -353,7 +354,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="$options.filters.pretty(estimation) + ' ' + form.coinTo"
+                                       :value="form.coinTo + ' ' + $options.filters.pretty(estimation)"
                                 >
                                 <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive') }}</span>
                             </label>

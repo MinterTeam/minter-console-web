@@ -13,7 +13,7 @@
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -141,6 +141,7 @@
         },
         methods: {
             pretty,
+            prettyExact,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -431,7 +432,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="$options.filters.pretty(form.buyAmount) + ' ' + form.coinTo"
+                                       :value="form.coinTo + ' ' + prettyExact(form.buyAmount)"
                                 >
                                 <span class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</span>
                             </label>
@@ -439,7 +440,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="$options.filters.pretty(estimation) + ' ' + form.coinFrom"
+                                       :value="form.coinFrom + ' ' + pretty(estimation)"
                                 >
                                 <span class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay') }}</span>
                             </label>
