@@ -442,7 +442,7 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" autocapitalize="off" spellcheck="false" readonly
                                        :value="form.address"
                                 >
                                 <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
