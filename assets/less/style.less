@@ -64,7 +64,7 @@
 .main-wrap {display: flex; flex-direction: column; min-height: 100vh; position: relative;}
 .main-content {width: 100%; flex-grow: 2;}
 .main-content--grid {}
-.main-content__aside {position: absolute; z-index: 1; top: @header-height; min-height: calc(100% - @header-height); overflow: auto; background: #fff;}
+.main-content__aside {position: absolute; z-index: 2; /* higher than input buttons */ top: @header-height; min-height: calc(100% - @header-height); overflow: auto; background: #fff;}
 .main-content__aside-section {padding-top: 24px; padding-bottom: 24px;}
 .main-content__main {}
 @media (min-width: @breakpoint-medium-up) {
@@ -174,11 +174,11 @@
 
 
 // footer
-.footer {background: #3c3c3c; color: #fff; padding: 38px 0; width: 100%;}
+.footer {background: #3c3c3c; color: #fff; padding: 34px 0; width: 100%;}
 .footer__container {display: flex; justify-content: center; flex-wrap: wrap;}
 .footer__logo-link {}
-.footer__logo {width: 76px; display: block;}
-.footer__menu {width: 100%; margin-top: 20px; text-align: center;}
+.footer__logo {display: block; margin: -4px 0 20px;}
+.footer__menu {width: 100%; text-align: center;}
 .footer__menu-item {
     font-size: 14px; font-weight: 700; display: inline-block;
     &::after {content: ' | '; /* mid spaces U+2005, bc. last regular space not preserved */ margin: 0 3px;}
@@ -186,8 +186,8 @@
 }
 @media (min-width: @breakpoint-large-up) {
     .footer__container {align-items: center; justify-content: space-between;}
-    .footer__logo {margin-top: -8px;}
-    .footer__menu {width: auto; margin-top: 0;}
+    .footer__logo {margin: 0 0 8px;}
+    .footer__menu {width: auto;}
 }
 
 

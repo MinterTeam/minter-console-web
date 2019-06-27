@@ -145,7 +145,7 @@
             </div>
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
+                    <input class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
                            v-model.trim="form.password"
                            @blur="$v.form.password.$touch()"
                     >
