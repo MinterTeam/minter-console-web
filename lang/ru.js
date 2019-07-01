@@ -297,6 +297,9 @@ export default {
         'masternode-off-button': '«Выключить» мастерноду',
 
         'delegation-delegate-button': 'Делегировать',
+        'delegation-delegate-confirm-amount': 'Вы делегируете',
+        'delegation-delegate-confirm-address': 'В мастерноду',
+        'delegation-delegate-confirm-note': 'В случае отзыва монет, они вернутся на ваш кошелек примерно через <strong>30&nbsp;дней</strong> (518&#x202F;400&nbsp;блоков) и не&nbsp;будут приносить награды в течение этого времени.',
         'delegation-unbond-button': 'Отозвать',
         'delegation-unbond-confirm-description': 'Вы уверены, что хотите отозвать монеты? Отозванные&nbsp;монеты вернутся на ваш кошелек примерно через <strong>30&nbsp;дней</strong> (518&#x202F;400&nbsp;блоков) и не&nbsp;будут приносить награды в течение этого времени.',
         'delegation-unbond-confirm-amount': 'Вы отзываете',

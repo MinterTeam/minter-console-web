@@ -374,51 +374,50 @@
                 <br>
                 <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
             </div>
+        </div>
 
-            <!-- Modal -->
-            <Modal v-bind:isOpen.sync="isConfirmModalVisible">
-                <div class="panel">
-                    <div class="panel__header">
-                        <h1 class="panel__header-title">
-                            <img class="panel__header-title-icon" src="/img/icon-unbond.svg" alt="" role="presentation" width="40" height="40">
-                            {{ $td('Unbond', 'delegation.unbond-title') }}
-                        </h1>
-                    </div>
-                    <div class="panel__section">
-                        <div class="u-grid u-grid--small u-grid--vertical-margin">
-                            <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-unbond-confirm-description')">
-                            </div>
-                            <div class="u-cell">
-                                <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" type="text" readonly
-                                           :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
-                                    >
-                                    <span class="form-field__label">{{ $td('You unbond', 'form.delegation-unbond-confirm-amount') }}</span>
-                                </label>
-                            </div>
-                            <div class="u-cell">
-                                <label class="form-field form-field--dashed">
+        <!-- Modal -->
+        <Modal v-bind:isOpen.sync="isConfirmModalVisible">
+            <div class="panel">
+                <div class="panel__header">
+                    <h1 class="panel__header-title">
+                        <img class="panel__header-title-icon" src="/img/icon-unbond.svg" alt="" role="presentation" width="40" height="40">
+                        {{ $td('Unbond', 'delegation.unbond-title') }}
+                    </h1>
+                </div>
+                <div class="panel__section">
+                    <div class="u-grid u-grid--small u-grid--vertical-margin">
+                        <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-unbond-confirm-description')"></div>
+                        <div class="u-cell">
+                            <label class="form-field form-field--dashed">
+                                <input class="form-field__input is-not-empty" type="text" readonly
+                                       :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
+                                >
+                                <span class="form-field__label">{{ $td('You unbond', 'form.delegation-unbond-confirm-amount') }}</span>
+                            </label>
+                        </div>
+                        <div class="u-cell">
+                            <label class="form-field form-field--dashed">
                                     <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                           :value="form.publicKey"
+                                              :value="form.publicKey"
                                     ></textarea>
-                                    <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
-                                </label>
-                            </div>
-                            <div class="u-cell">
-                                <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
-                                    <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                    </svg>
-                                </button>
-                                <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
-                                    {{ $td('Cancel', 'form.submit-cancel-button') }}
-                                </button>
-                            </div>
+                                <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
+                            </label>
+                        </div>
+                        <div class="u-cell">
+                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                                <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
+                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
+                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
+                                </svg>
+                            </button>
+                            <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                                {{ $td('Cancel', 'form.submit-cancel-button') }}
+                            </button>
                         </div>
                     </div>
                 </div>
-            </Modal>
-        </div>
+            </div>
+        </Modal>
     </form>
 </template>
