@@ -42,20 +42,6 @@
 
 <template>
     <section class="u-section u-container">
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-
-                </h1>
-                <p class="panel__header-description"></p>
-                <h1 class="panel__header-title">
-                    {{ $td('Create Coin', 'coiner.create-title') }}
-                </h1>
-                <p class="panel__header-description">
-                    {{ $td('Create your own coin from scratch. It is completely up to you to decide what role it will play&nbsp;— that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
-                </p>
-            </div>
-            <CoinCreateForm/>
-        </div>
+        <CoinCreateForm/>
     </section>
 </template>
