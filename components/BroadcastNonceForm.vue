@@ -64,7 +64,7 @@
             </div>
             <div class="u-cell" v-if="serverSuccess">
                 <p>
-                    <strong>{{ $td('Nonce for new Tx:', 'form.broadcast-nonce-got') }}</strong> {{ serverSuccess }}
+                    <strong>{{ $td('Nonce for a new transaction:', 'form.broadcast-nonce-got') }}</strong> {{ serverSuccess }}
                 </p>
                 <p>
                     <qrcode-vue :value="serverSuccess" :size="100" level="L"></qrcode-vue>

@@ -1,7 +1,7 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
 import decode from 'entity-decode';
-import prettyNum, {PRECISION_SETTING} from 'pretty-num';
+import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-tx/src/tx-types';
@@ -75,14 +75,15 @@ export function getExplorerValidatorUrl(pubKey) {
 
 /**
  * @param {string|number} value
+ * @param {ROUNDING_MODE} [roundingMode]
  * @return {string}
  */
-export function pretty(value) {
+export function pretty(value, roundingMode) {
     const PRECISION = 2;
     if (value >= 1 || value <= -1 || Number(value) === 0) {
-        return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
+        return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
     } else {
-        value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, thousandsSeparator: '&#x202F;'}));
+        value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&#x202F;'}));
         value = value.substr(0, 10);
         if (value === '0.00000000') {
             return '0.00';
@@ -92,19 +93,37 @@ export function pretty(value) {
 }
 
 /**
+ * @param {string|number} value
+ * @return {string}
+ */
+export function prettyCeil(value) {
+    return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode: ROUNDING_MODE.CEIL, thousandsSeparator: '&#x202F;'}));
+}
+
+/**
+ * Ensure value to have from 2 to 8 decimal digits
+ * @param {string|number} value
+ * @param {ROUNDING_MODE} [roundingMode]
+ * @return {string}
+ */
+export function prettyPrecise(value, roundingMode) {
+    const parts = stripZeros(fromExponential(value)).split('.');
+    const isReduced = parts[1] && parts[1].length > 2;
+    if (isReduced) {
+        return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.REDUCE, roundingMode, thousandsSeparator: '&#x202F;'}));
+    } else {
+        // ensure at least 2 decimal digits
+        return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
+    }
+}
+
+/**
  * Ensure value to have from 2 to 8 decimal digits
  * @param {string|number} value
  * @return {string}
  */
-export function prettyPrecise(value) {
-    const parts = stripZeros(fromExponential(value)).split('.');
-    const isReduced = parts[1] && parts[1].length > 2;
-    if (isReduced) {
-        return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.REDUCE, thousandsSeparator: '&#x202F;'}));
-    } else {
-        // ensure at least 2 decimal digits
-        return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, thousandsSeparator: '&#x202F;'}));
-    }
+export function prettyPreciseFloor(value) {
+    return prettyPrecise(value, ROUNDING_MODE.FLOOR);
 }
 
 /**

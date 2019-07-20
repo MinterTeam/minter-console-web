@@ -170,7 +170,7 @@
             </div>
             <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--3-4">
                 <label class="form-field" :class="{'is-error': $v.form.passPhrase.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
+                    <input class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
                            v-model.trim="form.passPhrase"
                            @blur="$v.form.passPhrase.$touch()"
                     >

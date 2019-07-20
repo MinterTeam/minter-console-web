@@ -42,7 +42,7 @@
             </div>
             <div class="u-cell" v-if="address">
                 <label class="form-field form-field--with-icon">
-                    <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" readonly v-autosize
+                    <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" spellcheck="false" readonly v-autosize
                               :value="address"
                     ></textarea>
                     <ButtonCopy class="form-field__icon form-field__icon--copy u-semantic-button link--opacity" :copy-text="address">
@@ -53,7 +53,7 @@
             </div>
             <div class="u-cell" v-if="mnemonic">
                 <label class="form-field form-field--with-icon">
-                    <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" readonly v-autosize
+                    <textarea class="form-field__input is-not-empty" rows="1" autocapitalize="off" spellcheck="false" readonly v-autosize
                               :value="mnemonic"
                     ></textarea>
                     <ButtonCopy class="form-field__icon form-field__icon--copy u-semantic-button link--opacity" data-test-id="authAdvancedRegisterCopyButton" :copy-text="mnemonic">

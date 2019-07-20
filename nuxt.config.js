@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 
 const envConfig = dotenv.config();
 
+import langEn from './lang/en';
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
@@ -79,7 +80,7 @@ export default {
                 fallbackLocale: 'en',
                 messages: {
                     ru: langRu,
-                    en: {},
+                    en: langEn,
                 },
             },
             seo: false,
