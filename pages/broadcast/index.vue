@@ -40,7 +40,7 @@
                     {{ $td('Get nonce', 'broadcast.nonce-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Get nonce for new tx to generate it on the offline device', 'sbroadcast.nonce-description') }}
+                    {{ $td('Get nonce needed to generate a new tx on an off-line device.', 'broadcast.nonce-description') }}
                 </p>
             </div>
             <BroadcastNonceForm/>
@@ -51,7 +51,7 @@
                     {{ $td('Send signed tx', 'broadcast.tx-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Send tx generated on the offline device', 'broadcast.tx-description') }}
+                    {{ $td('Send a tx generated on an off-line device.', 'broadcast.tx-description') }}
                 </p>
             </div>
             <BroadcastSendForm/>

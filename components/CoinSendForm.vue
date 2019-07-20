@@ -15,7 +15,7 @@
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
@@ -158,6 +158,7 @@
         },
         methods: {
             pretty,
+            prettyExact,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -435,14 +436,14 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="form.amount + ' ' + form.coinSymbol"
+                                       :value="form.coinSymbol + ' ' + prettyExact(form.amount)"
                                 >
                                 <span class="form-field__label">{{ $td('You send', 'form.wallet-send-confirm-amount') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" autocapitalize="off" spellcheck="false" readonly
                                        :value="form.address"
                                 >
                                 <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>

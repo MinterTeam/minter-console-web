@@ -37,5 +37,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" :value="usernameMasked" v-imask="imaskNameOptions" @accept="onAcceptUsername"/>
+    <input type="text" autocapitalize="off" spellcheck="false" :value="usernameMasked" v-imask="imaskNameOptions" @accept="onAcceptUsername"/>
 </template>

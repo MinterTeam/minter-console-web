@@ -14,7 +14,7 @@
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
@@ -160,6 +160,7 @@
         },
         methods: {
             pretty,
+            prettyExact,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -449,7 +450,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="$options.filters.pretty(form.sellAmount) + ' ' + form.coinFrom"
+                                       :value="form.coinFrom + ' ' + prettyExact(form.sellAmount)"
                                 >
                                 <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
                             </label>
@@ -457,7 +458,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="$options.filters.pretty(estimation) + ' ' + form.coinTo"
+                                       :value="form.coinTo + ' ' + $options.filters.pretty(estimation)"
                                 >
                                 <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive') }}</span>
                             </label>
