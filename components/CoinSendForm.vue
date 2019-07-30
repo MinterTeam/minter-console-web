@@ -284,7 +284,7 @@
             resolveDomain(value){
                 mns.resolve(value)
                     .then((response) => {
-                        if(response.data.address){
+                        if(isValidAddress(response.data.address)){
                             this.resolved = {
                                 ...response.data,
                                 status: true,

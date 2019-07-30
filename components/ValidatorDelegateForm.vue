@@ -13,6 +13,7 @@
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
+    import mns from '~/api/mns';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -69,13 +70,20 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
+                isSendToDomain: false,
+                resolved: {
+                    status: false,
+                    address: null,
+                    publickey: null,
+                    coin: null,
+                },
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isValidPublic,
                 },
                 stake: {
                     required,
@@ -251,6 +259,35 @@
                 this.$v.$reset();
             },
             getExplorerTxUrl,
+            isValidPublic(value){
+                this.isSendToDomain = false;
+                if(isValidPublic(value)){
+                    return true;
+                }else{
+                    if(mns.isValidDomain(value)){
+                        this.isSendToDomain = true;
+                        this.resolveDomain(value);
+                        return true;
+                    }else{
+                        return false;    
+                    }
+                }
+            },
+            resolveDomain(value){
+                mns.resolve(value)
+                    .then((response) => {
+                        if(isValidPublic(response.data.publickey)){
+                            this.resolved = {
+                                ...response.data,
+                                status: true,
+                            }; 
+                        }else{
+                            this.resolved.status = false;    
+                        }
+                    }).catch(() => {
+                        this.resolved.status = false;
+                    });
+            },
         },
     };
 </script>
@@ -262,6 +299,7 @@
                 <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <span class="form-field__error" v-else-if="isSendToDomain && !resolved.status">{{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -370,7 +408,9 @@
                 </button>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button
+                    class="button button--main button--full"
+                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolved.status)}">
                     <span class="button__content">{{ $td('Delegate', `form.delegation-delegate-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
@@ -418,9 +458,12 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                    <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                              :value="form.publicKey"
-                                    ></textarea>
+                                <textarea v-if="isSendToDomain && resolved.status" class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                       :value="form.publicKey + ' (' + resolved.publickey + ')'"
+                                >
+                                <textarea v-else class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                          :value="form.publicKey"
+                                ></textarea>
                                 <span class="form-field__label">{{ $td('To the masternode', 'form.delegation-delegate-confirm-address') }}</span>
                             </label>
                         </div>
