@@ -75,6 +75,7 @@
                     publickey: null,
                     coin: null,
                 },
+                isResolving: false,
             };
         },
         validations() {
@@ -328,6 +329,7 @@
                              v-model.trim="form.address"
                              :$value="$v.form.address"
                              :label="$td('Address or domain', 'form.wallet-send-address')"
+                             :loading="isResolving"
                     />
                     <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>

@@ -78,6 +78,7 @@
                     publickey: null,
                     coin: null,
                 },
+                isResolving: false,
             };
         },
         validations() {
