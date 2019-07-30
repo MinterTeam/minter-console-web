@@ -3,6 +3,7 @@
     import QrcodeVue from 'qrcode.vue';
     import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
+    import { debounce } from 'lodash-es';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -181,6 +182,9 @@
                     this.$v.$touch();
                     return;
                 }
+                if(this.isSendToDomain && !this.resolved.status){
+                    return;
+                }
                 this.isConfirmModalVisible = true;
             },
             generateTx() {
@@ -281,21 +285,26 @@
                     }
                 }
             },
-            resolveDomain(value){
-                mns.resolve(value)
-                    .then((response) => {
-                        if(isValidAddress(response.data.address)){
-                            this.resolved = {
-                                ...response.data,
-                                status: true,
-                            }; 
-                        }else{
-                            this.resolved.status = false;    
-                        }
-                    }).catch(() => {
-                        this.resolved.status = false;
-                    });
-            },
+            resolveDomain: debounce(function(value){
+                if(!this.isFormSending){
+                    this.isResolving = true;
+                    mns.resolve(value)
+                        .then((response) => {
+                            this.isResolving = false;
+                            if(isValidAddress(response.data.address)){
+                                this.resolved = {
+                                    ...response.data,
+                                    status: true,
+                                }; 
+                            }else{
+                                this.resolved.status = false;    
+                            }
+                        }).catch(() => {
+                            this.isResolving = false;
+                            this.resolved.status = false;
+                        });
+                }
+            }, 500),
         },
     };
 </script>

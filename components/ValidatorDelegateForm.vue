@@ -3,6 +3,7 @@
     import QrcodeVue from 'qrcode.vue';
     import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
+    import { debounce } from 'lodash-es';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -183,6 +184,9 @@
                     this.$v.$touch();
                     return;
                 }
+                if(this.isSendToDomain && !this.resolved.status){
+                    return;
+                }
                 this.isConfirmModalVisible = true;
             },
             generateTx() {
@@ -210,10 +214,15 @@
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
+                let publicKey = this.form.publicKey;
+                if(this.isSendToDomain){
+                    publickey = this.resolved.publickey;
+                }
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => postTx(new DelegateTxParams({
                         privateKey: this.$store.getters.privateKey,
                         ...this.form,
+                        publicKey,
                         feeCoinSymbol: this.fee.coinSymbol,
                         gasPrice: this.form.gasPrice || undefined,
                     })))
@@ -273,21 +282,27 @@
                     }
                 }
             },
-            resolveDomain(value){
-                mns.resolve(value)
-                    .then((response) => {
-                        if(isValidPublic(response.data.publickey)){
-                            this.resolved = {
-                                ...response.data,
-                                status: true,
-                            }; 
-                        }else{
-                            this.resolved.status = false;    
-                        }
-                    }).catch(() => {
-                        this.resolved.status = false;
-                    });
-            },
+            resolveDomain: debounce(function(value){
+                if(!this.isFormSending){
+                    this.isResolving = true;
+                    mns.resolve(value)
+                        .then((response) => {
+                            this.isResolving = false;
+                            //if(isValidPublic(response.data.publickey)){
+                            if(response.data.publickey){ 
+                                this.resolved = {
+                                    ...response.data,
+                                    status: true,
+                                }; 
+                            }else{
+                                this.resolved.status = false;    
+                            }
+                        }).catch(() => {
+                            this.isResolving = false;
+                            this.resolved.status = false;
+                        });
+                }
+            }, 500),
         },
     };
 </script>
@@ -296,7 +311,7 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
+                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')" :loading="isResolving"/>
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
                 <span class="form-field__error" v-else-if="isSendToDomain && !resolved.status">{{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}</span>
