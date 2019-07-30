@@ -183,11 +183,15 @@
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
-
+                let publicKey = this.form.publicKey;
+                if(this.isSendToDomain){
+                    publickey = this.resolved.publickey;
+                }
                 this.signedTx = prepareSignedTx(new UnbondTxParams({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    publickey,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
