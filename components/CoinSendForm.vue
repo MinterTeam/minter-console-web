@@ -18,6 +18,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import {MNS_PUBLIC_KEY} from "~/assets/variables";
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
@@ -292,10 +293,11 @@
                     this.isResolving = true; 
                     mns.resolve(value)
                         .then((response) => {
+                            const { data } = response;
                             this.isResolving = false;
-                            if(isValidAddress(response.data.address)){
-                                this.resolved = response.data;
-                                this.resolvedResult = true;
+                            if(isValidAddress(data.address)){
+                                this.resolved = data;
+                                this.resolvedResult = mns.checkSignature(data, MNS_PUBLIC_KEY);
                             }else{
                                 this.resolvedResult = false;
                             }
