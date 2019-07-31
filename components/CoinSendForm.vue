@@ -445,7 +445,14 @@
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" data-test-id="walletSendSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolvedResult)}">
+                    <button
+                        class="button button--main button--full"
+                        data-test-id="walletSendSubmitButton"
+                        :class="{
+                            'is-loading': isFormSending,
+                            'is-disabled': $v.$invalid || (isResolving || isSendToDomain && !resolvedResult)
+                        }"
+                    >
                         <span class="button__content">{{ $td('Send', 'form.wallet-send-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                             <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>

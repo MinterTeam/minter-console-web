@@ -18,6 +18,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import {MNS_PUBLIC_KEY} from "~/assets/variables";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -71,8 +72,8 @@
                 isConfirmModalVisible: false,
                 signedTx: null,
                 isSendToDomain: false,
+                resolvedResult: true,
                 resolved: {
-                    status: false,
                     address: null,
                     publickey: null,
                     coin: null,
@@ -169,7 +170,7 @@
                     this.$v.$touch();
                     return;
                 }
-                if(this.isSendToDomain && !this.resolved.status){
+                if(this.isSendToDomain && !this.resolvedResult){
                     return;
                 }
                 this.isConfirmModalVisible = true;
@@ -276,19 +277,17 @@
                     this.isResolving = true;
                     mns.resolve(value)
                         .then((response) => {
+                            const { data } = response;
                             this.isResolving = false;
-                            //if(isValidPublic(response.data.publickey)){
-                            if(response.data.publickey){ 
-                                this.resolved = {
-                                    ...response.data,
-                                    status: true,
-                                }; 
+                            if(isValidPublic(data.publickey)){
+                                this.resolved = data;
+                                this.resolvedResult = mns.checkSignature(data, MNS_PUBLIC_KEY);
                             }else{
-                                this.resolved.status = false;    
+                                this.resolvedResult = false;
                             }
                         }).catch(() => {
                             this.isResolving = false;
-                            this.resolved.status = false;
+                            this.resolvedResult = false;
                         });
                 }
             }, 500),
@@ -308,7 +307,12 @@
                 />
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
-                <span class="form-field__error" v-else-if="isSendToDomain && !resolved.status">{{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}</span>
+                <span
+                    class="form-field__error"
+                    v-else-if="!isResolving && isSendToDomain && !resolvedResult"
+                >
+                    {{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}
+                </span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -409,7 +413,10 @@
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button
                     class="button button--main button--full"
-                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolved.status)}"
+                    :class="{
+                        'is-loading': isFormSending,
+                        'is-disabled': $v.$invalid || (isResolving || isSendToDomain && !resolvedResult)
+                    }"
                 >
                     <span class="button__content">{{ $td('Unbond', `form.delegation-unbond-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
@@ -459,10 +466,7 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <textarea v-if="isSendToDomain && resolved.status" class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                       :value="form.publicKey + ' (' + resolved.publickey + ')'"
-                                >
-                                <textarea v-else class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
                                           :value="form.publicKey"
                                 ></textarea>
                                 <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>

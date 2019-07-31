@@ -48,8 +48,8 @@
                 signedTxList: null,
                 signedTxListFile: null,
                 isSendToDomain: false,
+                resolvedResult: true,
                 resolved: {
-                    status: false,
                     address: null,
                     publickey: null,
                     coin: null,
@@ -90,7 +90,7 @@
         },
         methods: {
             submit() {
-                if(this.isSendToDomain && !this.resolved.status){
+                if(this.isSendToDomain && !this.resolvedResult){
                     return;
                 }
                 if (this.$store.getters.isOfflineMode) {
@@ -204,19 +204,17 @@
                     this.isResolving = true;
                     mns.resolve(value)
                         .then((response) => {
+                            const { data } = response;
                             this.isResolving = false;
-                            //if(isValidPublic(response.data.publickey)){
-                            if(response.data.publickey){ 
-                                this.resolved = {
-                                    ...response.data,
-                                    status: true,
-                                }; 
+                            if(isValidPublic(data.publickey)){
+                                this.resolved = data;
+                                this.resolvedResult = mns.checkSignature(data, MNS_PUBLIC_KEY);
                             }else{
-                                this.resolved.status = false;    
+                                this.resolvedResult = false;
                             }
                         }).catch(() => {
                             this.isResolving = false;
-                            this.resolved.status = false;
+                            this.resolvedResult = false;
                         });
                 }
             }, 500),
@@ -261,7 +259,10 @@
                 />
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
-                <span class="form-field__error" v-else-if="isSendToDomain && !resolved.status">
+                <span
+                    class="form-field__error"
+                    v-else-if="!isResolving && isSendToDomain && !resolvedResult"
+                >
                     {{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}
                 </span>
             </div>
@@ -319,7 +320,7 @@
             <div class="u-cell u-cell--large--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button
                     class="button button--main button--full"
-                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolved.status)}"
+                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolvedResult)}"
                 >
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
