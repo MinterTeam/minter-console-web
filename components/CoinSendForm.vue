@@ -69,8 +69,8 @@
                 isConfirmModalVisible: false,
                 signedTx: null,
                 isSendToDomain: false,
+                resolvedResult: true,
                 resolved: {
-                    status: false,
                     address: null,
                     publickey: null,
                     coin: null,
@@ -274,6 +274,7 @@
             getExplorerTxUrl,
             isValidAddress(value){
                 this.isSendToDomain = false;
+                this.resolvedResult = true;
                 if(isValidAddress(value)){
                     return true;
                 }else{
@@ -282,30 +283,28 @@
                         this.resolveDomain(value);
                         return true;
                     }else{
-                        return false;    
+                        return false;
                     }
                 }
             },
             resolveDomain: debounce(function(value){
-                if(!this.isFormSending){
-                    this.isResolving = true;
+                if(!this.isFormSending && this.isSendToDomain){
+                    this.isResolving = true; 
                     mns.resolve(value)
                         .then((response) => {
                             this.isResolving = false;
                             if(isValidAddress(response.data.address)){
-                                this.resolved = {
-                                    ...response.data,
-                                    status: true,
-                                }; 
+                                this.resolved = response.data;
+                                this.resolvedResult = true;
                             }else{
-                                this.resolved.status = false;    
+                                this.resolvedResult = false;
                             }
                         }).catch(() => {
                             this.isResolving = false;
-                            this.resolved.status = false;
+                            this.resolvedResult = false;
                         });
                 }
-            }, 500),
+            }, 750),
         },
     };
 </script>
@@ -333,7 +332,7 @@
                     />
                     <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
-                    <span class="form-field__error" v-else-if="isSendToDomain && !resolved.status">{{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}</span>
+                    <span class="form-field__error" v-else-if="!isResolving && (isSendToDomain && !resolvedResult)">{{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -496,11 +495,13 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input v-if="isSendToDomain && resolved.status" class="form-field__input is-not-empty" type="text" autocapitalize="off" spellcheck="false" readonly
-                                       :value="form.address + ' (' + resolved.address + ')'"
-                                >
-                                <input v-else class="form-field__input is-not-empty" type="text" autocapitalize="off" spellcheck="false" readonly
-                                       :value="form.address"
+                                <input
+                                    class="form-field__input is-not-empty"
+                                    type="text"
+                                    autocapitalize="off"
+                                    spellcheck="false"
+                                    readonly
+                                    :value="form.address"
                                 >
                                 <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
                             </label>
