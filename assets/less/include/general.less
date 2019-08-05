@@ -262,21 +262,13 @@ dd {overflow-wrap: break-word; margin: 0;}
 .form-field__error {.error-text(); margin-top: 6px; overflow-wrap: break-word; display: block;}
 @media (min-width: @breakpoint-large-up) {
     .form-field--with-icon > .form-field__input {padding-right: 32px;}
-    .form-field__icon--qr {
-        top: @field-padding;
-        & > img {width: 30px; height: 30px;}
-    }
     .form-field__loader {
         top: @field-padding;
     }
 }
 
 .form-field__loader {
-    color: @c-orange;
-}
-
-.form-field--qr.form-field--with-icon .form-field__loader {
-    right: 40px;
+    color: @c-orange; right: 40px;
 }
 
 

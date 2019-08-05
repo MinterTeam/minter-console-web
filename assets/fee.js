@@ -10,6 +10,7 @@ let coinPricePromiseList = {};
 /**
  * @typedef {Object} FeeData
  * @property {boolean} isBaseCoin
+ * @property {boolean} isBaseCoinEnough
  * @property {number|string} baseCoinValue
  * @property {number|string} value
  * @property {string} coinSymbol
@@ -49,15 +50,19 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
             },
             isBaseCoinFee() {
                 // use selectedFeeCoinSymbol if it is defined
-                if (this.selectedFeeCoinSymbol && this.selectedFeeCoinSymbol !== COIN_NAME) {
-                    return false;
+                if (this.selectedFeeCoinSymbol) {
+                    return this.selectedFeeCoinSymbol === COIN_NAME;
                 }
                 // no coins selected: show base
                 if (!this.selectedCoinSymbol) {
                     return true;
                 }
-                // base coin is selected or it is enough to pay fee
-                return this.selectedFeeCoinSymbol === COIN_NAME || this.selectedCoinSymbol === COIN_NAME || this.isBaseCoinEnough;
+                // base coin is selected
+                if (this.selectedCoinSymbol === COIN_NAME) {
+                    return true;
+                }
+                // base coin is enough to pay fee
+                return this.isBaseCoinEnough;
             },
             feeValue() {
                 if (this.isBaseCoinFee) {

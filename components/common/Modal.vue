@@ -44,21 +44,24 @@
 
 <template>
     <transition name="v-transition-modal">
-        <div class="modal u-container" tabindex="-1" role="dialog"
-             v-if="isOpen || keepMarkup"
-             v-show="isOpen"
-             :class="modalClass"
-             @click="handleModalClick"
-             @keydown="handleModalKeydown"
-        >
-            <button class="modal__close u-semantic-button link--opacity" type="button" v-if="!hideCloseButton">
-                <span class="modal__close-icon">Close</span>
-            </button>
-            <div class="modal__wrap">
-                <div class="modal__container" ref="modalContainer" :class="modalContainerClass">
-                    <slot></slot>
+        <div v-if="isOpen || keepMarkup">
+            <transition name="v-transition-modal">
+                <div class="modal u-container u-container--wide" tabindex="-1" role="dialog"
+                     v-show="isOpen || !keepMarkup"
+                     :class="modalClass"
+                     @click="handleModalClick"
+                     @keydown="handleModalKeydown"
+                >
+                    <button class="modal__close u-semantic-button link--opacity" type="button" v-if="!hideCloseButton">
+                        <span class="modal__close-icon">Close</span>
+                    </button>
+                    <div class="modal__wrap">
+                        <div class="modal__container" ref="modalContainer" :class="modalContainerClass">
+                            <slot></slot>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </transition>
         </div>
     </transition>
 </template>

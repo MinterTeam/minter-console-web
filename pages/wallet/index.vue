@@ -110,8 +110,8 @@
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
                         <ButtonCopyIcon :copy-text="address"/>
-                        <button class="u-icon--qr u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="30" height="30"/>
+                        <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
+                            <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
                         </button>
                     </div>
                 </div>
