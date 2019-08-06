@@ -235,6 +235,7 @@ export default {
         'wallet-send-address': 'Адрес',
         'wallet-send-address-error-required': 'Укажите адрес',
         'wallet-send-address-error-invalid': 'Некорректный адрес',
+        'wallet-send-domain-error-invalid': 'Некорректный домен',
         'wallet-send-amount': 'Количество',
         'wallet-send-fee-same': 'Та же, которую отправляем',
         'wallet-send-fee-base': 'Базовая монета',

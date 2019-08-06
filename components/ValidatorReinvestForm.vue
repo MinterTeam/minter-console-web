@@ -1,5 +1,6 @@
 <script>
     import {validationMixin} from 'vuelidate';
+    import { debounce } from 'lodash-es';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
@@ -8,6 +9,7 @@
     import {privateToAddressString} from 'minterjs-util';
     import {postAutoDelegationTxList} from '~/api';
     import {getNonce} from '~/api/gate';
+    import mns from '~/api/mns';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
@@ -45,6 +47,14 @@
                 },
                 signedTxList: null,
                 signedTxListFile: null,
+                isSendToDomain: false,
+                resolvedResult: true,
+                resolved: {
+                    address: null,
+                    publickey: null,
+                    coin: null,
+                },
+                isResolving: false,
             };
         },
         validations() {
@@ -54,7 +64,7 @@
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isValidPublic,
                 },
                 stake: {
                     required,
@@ -80,6 +90,9 @@
         },
         methods: {
             submit() {
+                if(this.isSendToDomain && !this.resolvedResult){
+                    return;
+                }
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTxList();
                 } else {
@@ -95,10 +108,15 @@
                 this.signedTxList = null;
                 this.serverError = '';
                 this.serverSuccess = false;
+                let publicKey = this.form.publicKey;
+                if(this.isSendToDomain){
+                    publickey = this.resolved.publickey;
+                }
                 generateBatchTx({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    publicKey,
                     gasPrice: this.form.gasPrice || undefined,
                     coinSymbol: this.$store.getters.COIN_NAME,
                     feeCoinSymbol: this.$store.getters.COIN_NAME,
@@ -167,6 +185,39 @@
                 }
             },
             getExplorerTxUrl,
+            isValidPublic(value){
+                this.isSendToDomain = false;
+                if(isValidPublic(value)){
+                    return true;
+                }else{
+                    if(mns.isValidDomain(value)){
+                        this.isSendToDomain = true;
+                        this.resolveDomain(value);
+                        return true;
+                    }else{
+                        return false;    
+                    }
+                }
+            },
+            resolveDomain: debounce(function(value){
+                if(!this.isFormSending){
+                    this.isResolving = true;
+                    mns.resolve(value)
+                        .then((response) => {
+                            const { data } = response;
+                            this.isResolving = false;
+                            if(isValidPublic(data.publickey)){
+                                this.resolved = data;
+                                this.resolvedResult = mns.checkSignature(data, MNS_PUBLIC_KEY);
+                            }else{
+                                this.resolvedResult = false;
+                            }
+                        }).catch(() => {
+                            this.isResolving = false;
+                            this.resolvedResult = false;
+                        });
+                }
+            }, 500),
         },
     };
 
@@ -200,9 +251,20 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
+                <FieldQr
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    :label="$td('Public key', 'form.masternode-public')"
+                    :loading="isResolving"
+                />
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <span
+                    class="form-field__error"
+                    v-else-if="!isResolving && isSendToDomain && !resolvedResult"
+                >
+                    {{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}
+                </span>
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
@@ -256,7 +318,10 @@
 
             <!-- Controls -->
             <div class="u-cell u-cell--large--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button
+                    class="button button--main button--full"
+                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolvedResult)}"
+                >
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
                     <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                         <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>

@@ -3,6 +3,7 @@
     import QrcodeVue from 'qrcode.vue';
     import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
+    import { debounce } from 'lodash-es';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -12,17 +13,18 @@
     import {isValidAddress} from "minterjs-util/src/prefix";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
+    import mns from '~/api/mns';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import {MNS_PUBLIC_KEY} from "~/assets/variables";
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Modal from '~/components/common/Modal';
-
     let feeBus;
 
     export default {
@@ -67,13 +69,21 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
+                isSendToDomain: false,
+                resolvedResult: true,
+                resolved: {
+                    address: null,
+                    publickey: null,
+                    coin: null,
+                },
+                isResolving: false,
             };
         },
         validations() {
             const form = {
                 address: {
                     required,
-                    validAddress: isValidAddress,
+                    validAddress: this.isValidAddress,
                 },
                 amount: {
                     required,
@@ -174,6 +184,9 @@
                     this.$v.$touch();
                     return;
                 }
+                if(this.isSendToDomain && !this.resolvedResult){
+                    return;
+                }
                 this.isConfirmModalVisible = true;
             },
             generateTx() {
@@ -201,11 +214,16 @@
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
+                let address = this.form.address;
+                if(this.isSendToDomain && this.resolvedResult){
+                    address = this.resolved.address;
+                }
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
                         postTx(new SendTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
+                            address,
                             feeCoinSymbol: this.fee.coinSymbol,
                             gasPrice: this.form.gasPrice || undefined,
                         })).then((txHash) => {
@@ -255,6 +273,40 @@
                 this.$v.$reset();
             },
             getExplorerTxUrl,
+            isValidAddress(value){
+                this.isSendToDomain = false;
+                this.resolvedResult = true;
+                if(isValidAddress(value)){
+                    return true;
+                }else{
+                    if(mns.isValidDomain(value)){
+                        this.isSendToDomain = true;
+                        this.resolveDomain(value);
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
+            },
+            resolveDomain: debounce(function(value){
+                if(!this.isFormSending && this.isSendToDomain){
+                    this.isResolving = true; 
+                    mns.resolve(value)
+                        .then((response) => {
+                            const { data } = response;
+                            this.isResolving = false;
+                            if(isValidAddress(data.address)){
+                                this.resolved = data;
+                                this.resolvedResult = mns.checkSignature(data, MNS_PUBLIC_KEY);
+                            }else{
+                                this.resolvedResult = false;
+                            }
+                        }).catch(() => {
+                            this.isResolving = false;
+                            this.resolvedResult = false;
+                        });
+                }
+            }, 750),
         },
     };
 </script>
@@ -277,10 +329,12 @@
                     <FieldQr data-test-id="walletSendInputAddress"
                              v-model.trim="form.address"
                              :$value="$v.form.address"
-                             :label="$td('Address', 'form.wallet-send-address')"
+                             :label="$td('Address or domain', 'form.wallet-send-address')"
+                             :loading="isResolving"
                     />
                     <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
+                    <span class="form-field__error" v-else-if="!isResolving && (isSendToDomain && !resolvedResult)">{{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -391,7 +445,14 @@
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" data-test-id="walletSendSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <button
+                        class="button button--main button--full"
+                        data-test-id="walletSendSubmitButton"
+                        :class="{
+                            'is-loading': isFormSending,
+                            'is-disabled': $v.$invalid || (isResolving || isSendToDomain && !resolvedResult)
+                        }"
+                    >
                         <span class="button__content">{{ $td('Send', 'form.wallet-send-button') }}</span>
                         <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
                             <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
@@ -443,8 +504,13 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" autocapitalize="off" spellcheck="false" readonly
-                                       :value="form.address"
+                                <input
+                                    class="form-field__input is-not-empty"
+                                    type="text"
+                                    autocapitalize="off"
+                                    spellcheck="false"
+                                    readonly
+                                    :value="form.address"
                                 >
                                 <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
                             </label>
