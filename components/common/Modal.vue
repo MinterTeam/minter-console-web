@@ -44,7 +44,7 @@
 
 <template>
     <transition name="v-transition-modal">
-        <div v-if="isOpen || keepMarkup">
+        <div class="modal-wrap" v-if="isOpen || keepMarkup">
             <transition name="v-transition-modal">
                 <div class="modal u-container u-container--wide" tabindex="-1" role="dialog"
                      v-show="isOpen || !keepMarkup"

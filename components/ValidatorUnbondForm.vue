@@ -2,7 +2,6 @@
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
-    import { debounce } from 'lodash-es';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -13,12 +12,11 @@
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
-    import mns from '~/api/mns';
+    import * as mns from '~/api/mns';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
-    import {MNS_PUBLIC_KEY} from "~/assets/variables";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -73,21 +71,17 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
-                isSendToDomain: false,
-                resolvedResult: true,
-                resolved: {
-                    address: null,
-                    publickey: null,
-                    coin: null,
-                },
-                isResolving: false,
+                /** @type DomainData|Object */
+                domain: {},
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: this.isValidPublic,
+                    // "valid" mean have no error, e.g. validDomain === noDomainError
+                    validPublicKey: this.isSendToDomain ? () => true : isValidPublic,
+                    validDomain: this.isSendToDomain ? this.resolveDomain : () => true,
                 },
                 stake: {
                     required,
@@ -123,6 +117,9 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            isSendToDomain() {
+                return mns.isDomain(this.form.publicKey);
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -172,9 +169,6 @@
                     this.$v.$touch();
                     return;
                 }
-                if(this.isSendToDomain && !this.resolvedResult){
-                    return;
-                }
                 this.isConfirmModalVisible = true;
             },
             generateTx() {
@@ -187,14 +181,14 @@
                 this.serverError = '';
                 this.serverSuccess = '';
                 let publicKey = this.form.publicKey;
-                if(this.isSendToDomain){
-                    publickey = this.resolved.publickey;
+                if(this.isSendToDomain && this.domain.publickey){
+                    publicKey = this.domain.publickey;
                 }
                 this.signedTx = prepareSignedTx(new UnbondTxParams({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
-                    publickey,
+                    publicKey,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
@@ -260,39 +254,21 @@
                 this.$v.$reset();
             },
             getExplorerTxUrl,
-            isValidPublic(value){
-                this.isSendToDomain = false;
-                if(isValidPublic(value)){
-                    return true;
-                }else{
-                    if(mns.isValidDomain(value)){
-                        this.isSendToDomain = true;
-                        this.resolveDomain(value);
-                        return true;
-                    }else{
+            resolveDomain: function(value) {
+                this.domain = {};
+                return mns.resolveDomain(value)
+                    .then((domainData) => {
+                        if(isValidPublic(domainData.publickey) && mns.checkDomainSignature(domainData)){
+                            this.domain = domainData;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .catch(() => {
                         return false;
-                    }
-                }
+                    });
             },
-            resolveDomain: debounce(function(value){
-                if(!this.isFormSending){
-                    this.isResolving = true;
-                    mns.resolve(value)
-                        .then((response) => {
-                            const { data } = response;
-                            this.isResolving = false;
-                            if(isValidPublic(data.publickey)){
-                                this.resolved = data;
-                                this.resolvedResult = mns.checkSignature(data, MNS_PUBLIC_KEY);
-                            }else{
-                                this.resolvedResult = false;
-                            }
-                        }).catch(() => {
-                            this.isResolving = false;
-                            this.resolvedResult = false;
-                        });
-                }
-            }, 500),
         },
     };
 </script>
@@ -304,16 +280,17 @@
                 <FieldQr
                     v-model.trim="form.publicKey"
                     :$value="$v.form.publicKey"
-                    :label="$td('Public key', 'form.masternode-public')"
-                    :isLoading="isResolving"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :isLoading="$v.form.publicKey.$pending"
                 />
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
-                <span
-                    class="form-field__error"
-                    v-else-if="!isResolving && isSendToDomain && !resolvedResult"
-                >
-                    {{ $td('Domain is invalid', 'form.wallet-send-domain-error-invalid') }}
+                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">
+                    {{ $td('Enter public key', 'form.masternode-public-error-required') }}
+                </span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">
+                    {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
+                </span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validDomain && !$v.form.publicKey.$pending">
+                    {{ $td('Addres not found for such domain', 'form.wallet-send-domain-error-invalid') }}
                 </span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
@@ -413,13 +390,7 @@
                 </button>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button
-                    class="button button--main button--full"
-                    :class="{
-                        'is-loading': isFormSending,
-                        'is-disabled': $v.$invalid || (isResolving || isSendToDomain && !resolvedResult)
-                    }"
-                >
+                <button class="button button--main button--full" :class="{ 'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Unbond', `form.delegation-unbond-button`) }}</span>
                     <Loader class="button__loader" :isLoading="true"/>
                 </button>

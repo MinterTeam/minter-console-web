@@ -2,6 +2,7 @@
 
 @modal-padding-vertical: 40px;
 
+.modal-wrap {position: fixed; z-index: 15;}
 .modal {
     display: flex; padding-top: @modal-padding-vertical; position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 15; overflow-x: hidden; background: rgba(0,0,0,0.8); color: #fff; -webkit-tap-highlight-color: transparent; outline: none; // outline can emit transitionEnd
     button, a {-webkit-tap-highlight-color: initial; /* revert after .modal */}

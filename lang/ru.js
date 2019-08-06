@@ -232,10 +232,10 @@ export default {
         'checks-issue-result-pass': 'Пароль:',
         'checks-issue-button': 'Создать',
 
-        'wallet-send-address': 'Адрес',
+        'wallet-send-address': 'Адрес или домен',
         'wallet-send-address-error-required': 'Укажите адрес',
         'wallet-send-address-error-invalid': 'Некорректный адрес',
-        'wallet-send-domain-error-invalid': 'Некорректный домен',
+        'wallet-send-domain-error-invalid': 'Не найден адрес для указанного домена',
         'wallet-send-amount': 'Количество',
         'wallet-send-fee-same': 'Та же, которую отправляем',
         'wallet-send-fee-base': 'Базовая монета',
@@ -243,6 +243,7 @@ export default {
         'wallet-send-error': 'Нет монет для отправки',
         'wallet-send-confirm-amount': 'Вы отправляете',
         'wallet-send-confirm-address': 'На адрес',
+        'wallet-send-confirm-domain': 'На домен',
 
 
         'checks-redeem-check': 'Чек',
@@ -283,7 +284,7 @@ export default {
         'masternode-reward-address-help': 'Адрес, куда будет приходить&nbsp;награда',
         'masternode-owner-address': 'Адрес владельца',
         'masternode-owner-address-help': 'Адрес нового владельца мастерноды',
-        'masternode-public': 'Публичный ключ',
+        'masternode-public': 'Публичный ключ', // или домен
         'masternode-public-error-required': 'Укажите публичный ключ',
         'masternode-public-error-invalid': 'Некорректный публичный ключ',
         'masternode-stake': 'Стэйк',
