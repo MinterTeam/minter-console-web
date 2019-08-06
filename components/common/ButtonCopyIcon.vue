@@ -17,7 +17,7 @@
 </script>
 
 <template>
-    <ButtonCopy class="u-icon--copy u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy" :copy-text="copyText">
+    <ButtonCopy class="u-icon u-icon--copy--right u-semantic-button link--opacity" aria-label="Copy" :copy-text="copyText">
         <InlineSvg src="/img/icon-copy.svg"/>
     </ButtonCopy>
 </template>

@@ -7,7 +7,7 @@ This is the repository containing the code for the official Minter Console websi
 
 ## Install
 
-- ensure Node.js and NPM are installed
+- ensure latest stable Node.js and NPM are installed
 - clone the repo
 - copy .env.example `cp .env.example .env`
 - set correct .env variables

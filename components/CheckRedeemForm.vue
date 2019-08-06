@@ -13,12 +13,14 @@
     import {COIN_NAME} from "~/assets/variables";
     import FieldQr from '~/components/common/FieldQr';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
             QrcodeVue,
             FieldQr,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
@@ -175,9 +177,7 @@
             <div class="u-cell" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Redeem', 'form.checks-redeem-button') }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>

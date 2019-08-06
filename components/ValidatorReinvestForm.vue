@@ -8,6 +8,7 @@
     import {privateToAddressString} from 'minterjs-util';
     import {postAutoDelegationTxList} from '~/api';
     import {getNonce} from '~/api/gate';
+    import * as mns from '~/api/mns';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
@@ -15,6 +16,7 @@
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
@@ -22,6 +24,7 @@
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
@@ -45,6 +48,8 @@
                 },
                 signedTxList: null,
                 signedTxListFile: null,
+                /** @type DomainData|Object */
+                domain: {},
             };
         },
         validations() {
@@ -54,7 +59,9 @@
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    // "valid" mean have no error, e.g. validDomain === noDomainError
+                    validPublicKey: this.isSendToDomain ? () => true : isValidPublic,
+                    validDomain: this.isSendToDomain ? this.resolveDomain : () => true,
                 },
                 stake: {
                     required,
@@ -74,6 +81,9 @@
             return {formTxCount, form};
         },
         computed: {
+            isSendToDomain() {
+                return mns.isDomain(this.form.publicKey);
+            },
         },
         destroyed() {
             this.clearDownload();
@@ -95,10 +105,15 @@
                 this.signedTxList = null;
                 this.serverError = '';
                 this.serverSuccess = false;
+                let publicKey = this.form.publicKey;
+                if(this.isSendToDomain && this.domain.publickey){
+                    publicKey = this.domain.publickey;
+                }
                 generateBatchTx({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    publicKey,
                     gasPrice: this.form.gasPrice || undefined,
                     coinSymbol: this.$store.getters.COIN_NAME,
                     feeCoinSymbol: this.$store.getters.COIN_NAME,
@@ -167,6 +182,21 @@
                 }
             },
             getExplorerTxUrl,
+            resolveDomain: function(value) {
+                this.domain = {};
+                return mns.resolveDomain(value)
+                    .then((domainData) => {
+                        if(isValidPublic(domainData.publickey) && mns.checkDomainSignature(domainData)){
+                            this.domain = domainData;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .catch(() => {
+                        return false;
+                    });
+            },
         },
     };
 
@@ -200,9 +230,21 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldQr
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :isLoading="$v.form.publicKey.$pending"
+                />
+                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">
+                    {{ $td('Enter public key', 'form.masternode-public-error-required') }}
+                </span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">
+                    {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
+                </span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validDomain && !$v.form.publicKey.$pending">
+                    {{ $td('Addres not found for such domain', 'form.wallet-send-domain-error-invalid') }}
+                </span>
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
@@ -256,11 +298,12 @@
 
             <!-- Controls -->
             <div class="u-cell u-cell--large--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button
+                    class="button button--main button--full"
+                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
+                >
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>

@@ -3,10 +3,12 @@
     import Big from 'big.js';
     import * as TX_TYPES from 'minterjs-tx/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
+    import Loader from '~/components/common/Loader';
     import TableLink from '~/components/common/TableLink';
 
     export default {
         components: {
+            Loader,
             TableLink,
         },
         filters: {
@@ -349,9 +351,7 @@
                 </tbody>
             </table>
             <div class="panel__content panel__section u-text-center" v-else-if="isLoading">
-                <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
-                    <circle class="loader__path" cx="14" cy="14" r="12"></circle>
-                </svg>
+                <Loader :isLoading="true"/>
             </div>
             <div class="panel__content panel__section u-text-center" v-else>No Transactions</div>
         </div>

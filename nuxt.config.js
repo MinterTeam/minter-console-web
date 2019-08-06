@@ -19,7 +19,7 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy', content: `default-src 'self' https://*.minter.network https://minter.org; script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.minter.network data:; font-src 'self' data:; base-uri 'none'; form-action 'none';`},
+            { 'http-equiv': 'Content-Security-Policy', content: `default-src 'self' https://*.minter.network https://minter.org https://mns.hashex.org; script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.minter.network data:; font-src 'self' data:; base-uri 'none'; form-action 'none';`},
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
             { hid: 'og-title', name: 'og:title', content: BASE_TITLE },
             { hid: 'og-description', name: 'og:description', content: BASE_DESCRIPTION },
@@ -28,6 +28,7 @@ export default {
         link: [
             { rel: 'icon', href: '/favicon.png' },
             { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+            { rel: 'preconnect', href: 'https://mns.hashex.org/resolve'},
         ],
     },
     css: [

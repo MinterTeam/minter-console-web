@@ -12,6 +12,7 @@
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
+    import * as mns from '~/api/mns';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -21,6 +22,7 @@
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
@@ -33,6 +35,7 @@
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
             Modal,
         },
         directives: {
@@ -68,13 +71,17 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
+                /** @type DomainData|Object */
+                domain: {},
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    // "valid" mean have no error, e.g. validDomain === noDomainError
+                    validPublicKey: this.isSendToDomain ? () => true : isValidPublic,
+                    validDomain: this.isSendToDomain ? this.resolveDomain : () => true,
                 },
                 stake: {
                     required,
@@ -110,6 +117,9 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            isSendToDomain() {
+                return mns.isDomain(this.form.publicKey);
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -170,11 +180,15 @@
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
-
+                let publicKey = this.form.publicKey;
+                if(this.isSendToDomain && this.domain.publickey){
+                    publicKey = this.domain.publickey;
+                }
                 this.signedTx = prepareSignedTx(new UnbondTxParams({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    publicKey,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
@@ -240,6 +254,21 @@
                 this.$v.$reset();
             },
             getExplorerTxUrl,
+            resolveDomain: function(value) {
+                this.domain = {};
+                return mns.resolveDomain(value)
+                    .then((domainData) => {
+                        if(isValidPublic(domainData.publickey) && mns.checkDomainSignature(domainData)){
+                            this.domain = domainData;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    })
+                    .catch(() => {
+                        return false;
+                    });
+            },
         },
     };
 </script>
@@ -248,9 +277,21 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldQr
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :isLoading="$v.form.publicKey.$pending"
+                />
+                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">
+                    {{ $td('Enter public key', 'form.masternode-public-error-required') }}
+                </span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">
+                    {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
+                </span>
+                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validDomain && !$v.form.publicKey.$pending">
+                    {{ $td('Addres not found for such domain', 'form.wallet-send-domain-error-invalid') }}
+                </span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -349,11 +390,9 @@
                 </button>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button class="button button--main button--full" :class="{ 'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Unbond', `form.delegation-unbond-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
@@ -398,18 +437,16 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                    <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                              :value="form.publicKey"
-                                    ></textarea>
+                                <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                          :value="form.publicKey"
+                                ></textarea>
                                 <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
                             <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                </svg>
+                                <Loader class="button__loader" :isLoading="true"/>
                             </button>
                             <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}

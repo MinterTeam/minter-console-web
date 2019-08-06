@@ -2,14 +2,16 @@
 
 @modal-padding-vertical: 40px;
 
+.modal-wrap {position: fixed; z-index: 15;}
 .modal {
-    display: flex; padding-top: @modal-padding-vertical; position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 15; overflow-x: hidden; background: rgba(0,0,0,0.8); color: #fff; transition: opacity 0.3s; -webkit-tap-highlight-color: transparent; outline: none; // outline can emit transitionEnd
+    display: flex; padding-top: @modal-padding-vertical; position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 15; overflow-x: hidden; background: rgba(0,0,0,0.8); color: #fff; -webkit-tap-highlight-color: transparent; outline: none; // outline can emit transitionEnd
     button, a {-webkit-tap-highlight-color: initial; /* revert after .modal */}
 }
 //@supports (backdrop-filter: blur(10px)) {
 //    .modal {background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);}
 //}
 .v-transition-modal-enter {opacity: 0;}
+.v-transition-modal-enter-active {transition: opacity 0.3s;}
 .v-transition-modal-leave-active {opacity: 0; transition: opacity 0.2s;}
 .modal__wrap {display: flex; width: 100%;}
 .modal__close {width: 40px; height: 40px; position: absolute; right: (16px - 7px); top: 11px; z-index: 3; font-size: 0;}
