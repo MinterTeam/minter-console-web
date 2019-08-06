@@ -1,10 +1,11 @@
 <script>
     import {pretty} from '~/assets/utils';
     import {getCoinIconUrl} from '~/api/accounts';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
-
+            Loader,
         },
         filters: {
             pretty,
@@ -60,9 +61,7 @@
                 </tbody>
             </table>
             <div class="panel__content panel__section u-text-center" v-else-if="isLoading">
-                <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
-                    <circle class="loader__path" cx="14" cy="14" r="12"></circle>
-                </svg>
+                <Loader :isLoading="true"/>
             </div>
             <div class="panel__content panel__section u-text-center" v-else>No Coins</div>
         </div>

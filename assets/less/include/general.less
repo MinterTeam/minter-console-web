@@ -203,11 +203,15 @@ dd {overflow-wrap: break-word; margin: 0;}
 @loader-length: 12 * 3.14 * 2; // длина окружности
 .loader {width: 28px; height: 28px; margin: auto; animation: loader-rotate 2s linear infinite;}
 .loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: loader-dash 1.5s ease-in-out infinite; }
-.button-loader {
-    position: absolute; left: 0; right: 0; top: 0; bottom: 0; width: 42px; height: 42px; margin: auto; opacity: 0; pointer-events: none; animation: loader-rotate 2s linear infinite; /*transition: 0.05s;*/ /*intensive js calculations interrupts css transition*/
-    .is-loading > & { opacity: 1; /*transition: 0.1s 0.1s;*/}
+.button__loader {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; display: none;
+    .is-loading > & { display: block;}
 }
-.button-loader__path { fill: none; stroke: currentColor; stroke-width: 2px; stroke-linecap: round; animation: loader-dash 1.5s ease-in-out infinite; }
+/* @TODO intensive js calculations interrupts css transition */
+/*.loader {
+    opacity: 0; transition: 0.05s;
+    .is-loading > & { opacity: 1; transition: 0.1s 0.1s;}
+}*/
 @keyframes loader-rotate {
     0% {transform: rotate(-90deg);}
     100% { transform: rotate(270deg); }
@@ -253,6 +257,7 @@ dd {overflow-wrap: break-word; margin: 0;}
 .form-field__use-max {position: absolute; right: 0; top: (4px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; text-transform: uppercase; font-weight: 700;}
 .form-field__icon {position: absolute; right: 0; top: (2px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; font-size: 0;}
 .form-field__icon--copy {top: calc((100% - 12px) / 2 - 2px);}
+.form-field__icon--loader {width: 24px; height: 24px; right: 32px;}
 .form-field__help {
     font-size: 12px; line-height: 16px; margin-top: 6px; display: block; color: @c-black-light;
     .form-field__error + & {margin-top: 0;}
@@ -262,13 +267,6 @@ dd {overflow-wrap: break-word; margin: 0;}
 .form-field__error {.error-text(); margin-top: 6px; overflow-wrap: break-word; display: block;}
 @media (min-width: @breakpoint-large-up) {
     .form-field--with-icon > .form-field__input {padding-right: 32px;}
-    .form-field__loader {
-        top: @field-padding;
-    }
-}
-
-.form-field__loader {
-    color: @c-orange; right: 40px;
 }
 
 

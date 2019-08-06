@@ -1,6 +1,7 @@
 <script>
     import QrScanner from 'qr-scanner/src/qr-scanner';
     import QrScannerWorkerPath from '!!file-loader!~/node_modules/qr-scanner/qr-scanner-worker.min.js';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     QrScanner.WORKER_PATH = QrScannerWorkerPath;
@@ -8,6 +9,7 @@
 
     export default {
         components: {
+            Loader,
             Modal,
         },
         props: {
@@ -103,9 +105,7 @@
         >
             <div class="qr-scan__wrap">
                 <div class="qr-scan__notice">
-                    <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
-                        <circle class="loader__path" cx="14" cy="14" r="12"></circle>
-                    </svg>
+                    <Loader :isLoading="true"/>
                     <div v-if="cameraError">Allow camera access</div>
                 </div>
                 <video class="qr-scan__video" ref="qrVideo" autoplay playsinline muted></video>

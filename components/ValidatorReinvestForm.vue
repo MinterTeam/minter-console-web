@@ -17,6 +17,7 @@
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
@@ -24,6 +25,7 @@
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
@@ -195,7 +197,7 @@
                         this.resolveDomain(value);
                         return true;
                     }else{
-                        return false;    
+                        return false;
                     }
                 }
             },
@@ -255,7 +257,7 @@
                     v-model.trim="form.publicKey"
                     :$value="$v.form.publicKey"
                     :label="$td('Public key', 'form.masternode-public')"
-                    :loading="isResolving"
+                    :isLoading="isResolving"
                 />
                 <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
@@ -323,9 +325,7 @@
                     :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid || (isSendToDomain && !resolvedResult)}"
                 >
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>

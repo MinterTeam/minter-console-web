@@ -31,7 +31,7 @@
                 type: Boolean,
                 default: false,
             },
-            loading: {
+            isLoading: {
                 type: Boolean,
                 default: false,
             },
@@ -67,7 +67,7 @@
                @blur="$value.$touch()"
                v-else
         >
-        <Loader v-if="loading" class="form-field__loader form-field__icon" />
+        <Loader class="form-field__icon form-field__icon--loader" :isLoading="isLoading"/>
         <QrScan @qrScanned="handleQrScanned" :qrVisible.sync="hasCamera"/>
         <span class="form-field__label">{{ label }}</span>
     </label>
