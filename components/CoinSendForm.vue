@@ -79,7 +79,7 @@
                     required,
                     // "valid" mean have no error, e.g. validAddress === noAddressError
                     validAddress: this.isSendToDomain ? () => true : isValidAddress,
-                    validDomain: this.isSendToDomain ? this.resolveDomain : () => true,
+                    validDomain: this.isSendToDomain ? this.resolveDomainThrottled : () => true,
                 },
                 amount: {
                     required,
@@ -268,10 +268,18 @@
                 this.form.gasPrice = '';
                 this.$v.$reset();
             },
-            getExplorerTxUrl,
-            resolveDomain: function(value) {
+            addressBlur() {
+                if (this.isSendToDomain) {
+                    // instant resolve without throttle
+                    this.resolveDomain(this.form.address);
+                }
+            },
+            resolveDomainThrottled(value) {
+                return this.resolveDomain(value, {throttle: true});
+            },
+            resolveDomain(value, {throttle} = {}) {
                 this.domain = {};
-                return mns.resolveDomain(value)
+                return mns.resolveDomain(value, {throttle})
                     .then((domainData) => {
                         if(isValidAddress(domainData.address) && mns.checkDomainSignature(domainData)){
                             this.domain = domainData;
@@ -284,6 +292,7 @@
                         return false;
                     });
             },
+            getExplorerTxUrl,
         },
     };
 </script>
@@ -308,6 +317,7 @@
                              :$value="$v.form.address"
                              :label="$td('Address or domain', 'form.wallet-send-address')"
                              :isLoading="$v.form.address.$pending"
+                             @blur="addressBlur"
                     />
                     <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>

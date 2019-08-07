@@ -6,17 +6,75 @@ const mns = axios.create({
     baseURL: MNS_API_URL,
 });
 
+
+let resolveLatestValue;
+let resolveLatestPromise;
+let resolveDelayForce;
+let resolveDelayCancel;
+let resolveRequestCancel;
+
 /**
- * @TODO add debounce
+ * @param value
+ * @param [throttle]
+ * @return {Promise<DomainData>}
+ */
+export function resolveDomain(value, {throttle} = {}) {
+    // not cancel request and reuse it if value is same
+    if (resolveLatestValue === value) {
+        // force delay
+        if (!throttle) {
+            tryCall(resolveDelayForce);
+            resolveDelayForce = null;
+        }
+        return resolveLatestPromise;
+    }
+    resolveLatestValue = value;
+
+    // cancel previous resolve
+    tryCall(resolveDelayCancel);
+    tryCall(resolveRequestCancel);
+    resolveDelayCancel = null;
+    resolveRequestCancel = null;
+
+    // delay if `throttle` and save resolve promise
+    if (throttle) {
+        return resolveLatestPromise = delay(700)
+            .then(() => resolveDomainDirect(value));
+    }
+    return resolveLatestPromise = resolveDomainDirect(value);
+}
+
+/**
+ * @TODO add cache
  * @param value
  * @return {Promise<DomainData>}
  */
-export function resolveDomain(value) {
+function resolveDomainDirect(value) {
     return mns.get('resolve', {
         params: {
             domain: value,
         },
+        cancelToken: new axios.CancelToken((cancelFn) => {
+            resolveRequestCancel = cancelFn;
+        }),
     }).then((response) => response.data);
+}
+
+function delay(ms) {
+    return new Promise((resolve, reject) => {
+        // resolveDelayForce can be used outside to resolve promise
+        resolveDelayForce = resolve;
+        // resolveDelayCancel can be used outside to reject promise
+        resolveDelayCancel = reject;
+
+        setTimeout(resolve, ms);
+    });
+}
+
+function tryCall(fn) {
+    if (typeof fn === 'function') {
+        fn();
+    }
 }
 
 // allow "asd.asd." to be handled by domain validation instead of address validation
