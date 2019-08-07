@@ -3,12 +3,50 @@ import 'dotenv/config';
 import dotenv from 'dotenv';
 
 const envConfig = dotenv.config();
+const envConfigParsed = envConfig.error ? {} : envConfig.parsed;
 
 import langEn from './lang/en';
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
 const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production' ? 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=' : 'boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=';
+
+
+/**
+ * prepare CSP string from env config
+ * @param {Object} env - env config
+ * @param {Function} keyFilter
+ */
+function prepareCSP(env, keyFilter) {
+    // make array of filtered URLs
+    const filteredKeys = Object.keys(env).filter(keyFilter);
+    const filtered = filteredKeys.map((key) => env[key]);
+
+    const parsed = filtered.map((item) => {
+        const hostname = item.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/\?.*$/, '');
+        // const domainParts = hostname.split('.');
+        // const topLevelDomain = domainParts[domainParts.length - 2] + '.' + domainParts[domainParts.length - 1];
+        // if (topLevelDomain !== hostname) {
+        //     return '*.' + topLevelDomain;
+        // } else {
+        //     return topLevelDomain;
+        // }
+        return hostname;
+    });
+
+    const parsedUnique = parsed.filter((item, pos) => {
+        return parsed.indexOf(item) === pos && parsed.indexOf('*.' + item) === -1;
+    });
+
+    return parsedUnique.join(' ');
+}
+
+const connectCSP = prepareCSP(envConfigParsed, (item) => {
+    return item.indexOf('API_URL') >= 0 || item.indexOf('API_HOST') >= 0;
+});
+const imageCSP = prepareCSP(envConfigParsed, (item) => {
+    return item === 'APP_ACCOUNTS_API_URL';
+});
 
 export default {
     /*
@@ -19,7 +57,16 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy', content: `default-src 'self' https://*.minter.network https://minter.org https://mns.hashex.org; script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://*.minter.network data:; font-src 'self' data:; base-uri 'none'; form-action 'none';`},
+            { 'http-equiv': 'Content-Security-Policy', content: `
+                    default-src 'self' ${connectCSP};
+                    script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval';
+                    style-src 'self' 'unsafe-inline';
+                    img-src 'self' ${imageCSP} data:;
+                    font-src 'self' data:;
+                    base-uri 'none';
+                    form-action 'none';
+                `,
+            },
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
             { hid: 'og-title', name: 'og:title', content: BASE_TITLE },
             { hid: 'og-description', name: 'og:description', content: BASE_DESCRIPTION },
@@ -52,7 +99,7 @@ export default {
         { src: '~/plugins/click-blur.js', ssr: false },
         { src: '~/plugins/classlist-svg-polyfill.js', ssr: false },
     ],
-    env: envConfig.error ? {} : envConfig.parsed,
+    env: envConfigParsed,
     modules: [
         ['nuxt-i18n-preferred', {
             routesNameSeparator: I18N_ROUTE_NAME_SEPARATOR,
