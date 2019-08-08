@@ -6,7 +6,7 @@ const mns = axios.create({
     baseURL: MNS_API_URL,
 });
 
-
+//@TODO move to instance
 let resolveLatestValue;
 let resolveLatestPromise;
 let resolveDelayForce;
@@ -31,8 +31,8 @@ export function resolveDomain(value, {throttle} = {}) {
     resolveLatestValue = value;
 
     // cancel previous resolve
-    tryCall(resolveDelayCancel);
-    tryCall(resolveRequestCancel);
+    tryCall(resolveDelayCancel, {isCancel: true});
+    tryCall(resolveRequestCancel, {isCancel: true});
     resolveDelayCancel = null;
     resolveRequestCancel = null;
 
@@ -71,9 +71,9 @@ function delay(ms) {
     });
 }
 
-function tryCall(fn) {
+function tryCall(fn, {isCancel} = {}) {
     if (typeof fn === 'function') {
-        fn();
+        fn(isCancel ? 'Request aborted' : undefined);
     }
 }
 

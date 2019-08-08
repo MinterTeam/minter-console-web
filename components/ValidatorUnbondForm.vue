@@ -12,11 +12,11 @@
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
     import {postTx} from '~/api/gate';
-    import * as mns from '~/api/mns';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -30,6 +30,7 @@
     export default {
         components: {
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             InputUppercase,
             InputMaskedAmount,
@@ -71,17 +72,15 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
-                /** @type DomainData|Object */
-                domain: {},
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    // "valid" mean have no error, e.g. validDomain === noDomainError
-                    validPublicKey: this.isSendToDomain ? () => true : isValidPublic,
-                    validDomain: this.isSendToDomain ? this.resolveDomain : () => true,
+                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 stake: {
                     required,
@@ -117,9 +116,6 @@
             ...mapGetters({
                 balance: 'balance',
             }),
-            isSendToDomain() {
-                return mns.isDomain(this.form.publicKey);
-            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -180,15 +176,10 @@
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
-                let publicKey = this.form.publicKey;
-                if(this.isSendToDomain && this.domain.publickey){
-                    publicKey = this.domain.publickey;
-                }
                 this.signedTx = prepareSignedTx(new UnbondTxParams({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
-                    publicKey,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                 })).serialize().toString('hex');
@@ -254,21 +245,6 @@
                 this.$v.$reset();
             },
             getExplorerTxUrl,
-            resolveDomain: function(value) {
-                this.domain = {};
-                return mns.resolveDomain(value)
-                    .then((domainData) => {
-                        if(isValidPublic(domainData.publickey) && mns.checkDomainSignature(domainData)){
-                            this.domain = domainData;
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    })
-                    .catch(() => {
-                        return false;
-                    });
-            },
         },
     };
 </script>
@@ -277,21 +253,14 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr
+                <FieldDomain
                     v-model.trim="form.publicKey"
                     :$value="$v.form.publicKey"
+                    valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
-                    :isLoading="$v.form.publicKey.$pending"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
                 />
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">
-                    {{ $td('Enter public key', 'form.masternode-public-error-required') }}
-                </span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">
-                    {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
-                </span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validDomain && !$v.form.publicKey.$pending">
-                    {{ $td('Addres not found for such domain', 'form.wallet-send-domain-error-invalid') }}
-                </span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -437,18 +406,20 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                          :value="form.publicKey"
+                                <textarea
+                                    class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly rows="1"
+                                    v-autosize
+                                    :value="form.publicKey + (domain ? `\n(${domain})` : '')"
                                 ></textarea>
                                 <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <Loader class="button__loader" :isLoading="true"/>
                             </button>
-                            <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                            <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}
                             </button>
                         </div>
