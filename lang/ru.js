@@ -276,17 +276,18 @@ export default {
 
         'convert-confirm-note': '* Итоговая сумма зависит от текущего курса непосредственно в момент обмена и может отличаться от представленной выше.',
 
-        'masternode-address': 'Адрес',
+        'masternode-address': 'Адрес или домен',
         'masternode-address-help': 'Адрес владельца мастерноды, куда будет приходить&nbsp;награда',
         'masternode-address-error-required': 'Укажите адрес',
         'masternode-address-error-invalid': 'Некорректный адрес',
-        'masternode-reward-address': 'Адрес для начислений',
+        'masternode-reward-address': 'Адрес или домен для начислений',
         'masternode-reward-address-help': 'Адрес, куда будет приходить&nbsp;награда',
-        'masternode-owner-address': 'Адрес владельца',
+        'masternode-owner-address': 'Адрес или домен владельца',
         'masternode-owner-address-help': 'Адрес нового владельца мастерноды',
-        'masternode-public': 'Публичный ключ', // или домен
+        'masternode-public': 'Публичный ключ или домен',
         'masternode-public-error-required': 'Укажите публичный ключ',
         'masternode-public-error-invalid': 'Некорректный публичный ключ',
+        'masternode-domain-error-invalid': 'Не найден публичный ключ для указанного домена',
         'masternode-stake': 'Стэйк',
         'masternode-stake-error-required': 'Укажите количество',
         'masternode-fee-same': 'Та же, что и в стэйке',

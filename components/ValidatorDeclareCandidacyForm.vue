@@ -18,6 +18,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
@@ -31,6 +32,7 @@
         components: {
             VueAutonumeric,
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             FieldUseMax,
             InputUppercase,
@@ -72,17 +74,21 @@
                 /** @type FeeData */
                 fee: {},
                 signedTx: null,
+                addressDomain: '',
+                isAddressDomainResolving: false,
+                publicKeyDomain: '',
+                isPublicKeyDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 address: {
                     required,
-                    validAddress: isValidAddress,
+                    validAddress: this.isAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isPublicKeyDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 commission: {
                     required,
@@ -279,10 +285,15 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.address" :$value="$v.form.address" :label="$td('Address', 'form.masternode-address')"/>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
-                <div class="form-field__help">{{ $td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
+                <FieldDomain
+                    v-model.trim="form.address"
+                    :$value="$v.form.address"
+                    valueType="address"
+                    :label="$td('Address or domain', 'form.masternode-address')"
+                    :help="$td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help')"
+                    @update:domain="addressDomain = $event"
+                    @update:resolving="isAddressDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -315,9 +326,14 @@
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="publicKeyDomain = $event"
+                    @update:resolving="isPublicKeyDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.commission.$error}">

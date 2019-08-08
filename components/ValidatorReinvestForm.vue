@@ -8,10 +8,10 @@
     import {privateToAddressString} from 'minterjs-util';
     import {postAutoDelegationTxList} from '~/api';
     import {getNonce} from '~/api/gate';
-    import * as mns from '~/api/mns';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
@@ -20,6 +20,7 @@
 
     export default {
         components: {
+            FieldDomain,
             FieldQr,
             InputMaskedAmount,
             InputMaskedInteger,
@@ -48,8 +49,8 @@
                 },
                 signedTxList: null,
                 signedTxListFile: null,
-                /** @type DomainData|Object */
-                domain: {},
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
@@ -59,9 +60,7 @@
             const form = {
                 publicKey: {
                     required,
-                    // "valid" mean have no error, e.g. validDomain === noDomainError
-                    validPublicKey: this.isSendToDomain ? () => true : isValidPublic,
-                    validDomain: this.isSendToDomain ? this.resolveDomain : () => true,
+                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 stake: {
                     required,
@@ -81,9 +80,6 @@
             return {formTxCount, form};
         },
         computed: {
-            isSendToDomain() {
-                return mns.isDomain(this.form.publicKey);
-            },
         },
         destroyed() {
             this.clearDownload();
@@ -105,15 +101,10 @@
                 this.signedTxList = null;
                 this.serverError = '';
                 this.serverSuccess = false;
-                let publicKey = this.form.publicKey;
-                if(this.isSendToDomain && this.domain.publickey){
-                    publicKey = this.domain.publickey;
-                }
                 generateBatchTx({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
-                    publicKey,
                     gasPrice: this.form.gasPrice || undefined,
                     coinSymbol: this.$store.getters.COIN_NAME,
                     feeCoinSymbol: this.$store.getters.COIN_NAME,
@@ -182,21 +173,6 @@
                 }
             },
             getExplorerTxUrl,
-            resolveDomain: function(value) {
-                this.domain = {};
-                return mns.resolveDomain(value)
-                    .then((domainData) => {
-                        if(isValidPublic(domainData.publickey) && mns.checkDomainSignature(domainData)){
-                            this.domain = domainData;
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    })
-                    .catch(() => {
-                        return false;
-                    });
-            },
         },
     };
 
@@ -230,21 +206,14 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr
+                <FieldDomain
                     v-model.trim="form.publicKey"
                     :$value="$v.form.publicKey"
+                    valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
-                    :isLoading="$v.form.publicKey.$pending"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
                 />
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">
-                    {{ $td('Enter public key', 'form.masternode-public-error-required') }}
-                </span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">
-                    {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
-                </span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validDomain && !$v.form.publicKey.$pending">
-                    {{ $td('Addres not found for such domain', 'form.wallet-send-domain-error-invalid') }}
-                </span>
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
