@@ -6,69 +6,74 @@ const mns = axios.create({
     baseURL: MNS_API_URL,
 });
 
-//@TODO move to instance
-let resolveLatestValue;
-let resolveLatestPromise;
-let resolveDelayForce;
-let resolveDelayCancel;
-let resolveRequestCancel;
 
 /**
- * @param value
- * @param [throttle]
- * @return {Promise<DomainData>}
+ * @TODO add cache @see https://github.com/RasCarlito/axios-cache-adapter/issues/99
+ * @return {function}
  */
-export function resolveDomain(value, {throttle} = {}) {
-    // not cancel request and reuse it if value is same
-    if (resolveLatestValue === value) {
-        // force delay
-        if (!throttle) {
-            tryCall(resolveDelayForce);
-            resolveDelayForce = null;
+export function ResolveDomain() {
+    let resolveLatestValue;
+    let resolveLatestPromise;
+    let resolveDelayForce;
+    let resolveDelayCancel;
+    let resolveRequestCancel;
+
+    /**
+     * @param value
+     * @param [throttle]
+     * @return {Promise<DomainData>}
+     */
+    return function resolveDomain(value, {throttle} = {}) {
+        // not cancel request and reuse it if value is same
+        if (resolveLatestValue === value) {
+            // force delay
+            if (!throttle) {
+                tryCall(resolveDelayForce);
+                resolveDelayForce = null;
+            }
+            return resolveLatestPromise;
         }
-        return resolveLatestPromise;
+        resolveLatestValue = value;
+
+        // cancel previous resolve
+        tryCall(resolveDelayCancel, {isCancel: true});
+        tryCall(resolveRequestCancel, {isCancel: true});
+        resolveDelayCancel = null;
+        resolveRequestCancel = null;
+
+        // delay if `throttle` and save resolve promise
+        if (throttle) {
+            return resolveLatestPromise = delay(700)
+                .then(() => resolveDomainDirect(value));
+        }
+        return resolveLatestPromise = resolveDomainDirect(value);
+    };
+
+    /**
+     * @param value
+     * @return {Promise<DomainData>}
+     */
+    function resolveDomainDirect(value) {
+        return mns.get('resolve', {
+            params: {
+                domain: value,
+            },
+            cancelToken: new axios.CancelToken((cancelFn) => {
+                resolveRequestCancel = cancelFn;
+            }),
+        }).then((response) => response.data);
     }
-    resolveLatestValue = value;
 
-    // cancel previous resolve
-    tryCall(resolveDelayCancel, {isCancel: true});
-    tryCall(resolveRequestCancel, {isCancel: true});
-    resolveDelayCancel = null;
-    resolveRequestCancel = null;
+    function delay(ms) {
+        return new Promise((resolve, reject) => {
+            // resolveDelayForce can be used outside to resolve promise
+            resolveDelayForce = resolve;
+            // resolveDelayCancel can be used outside to reject promise
+            resolveDelayCancel = reject;
 
-    // delay if `throttle` and save resolve promise
-    if (throttle) {
-        return resolveLatestPromise = delay(700)
-            .then(() => resolveDomainDirect(value));
+            setTimeout(resolve, ms);
+        });
     }
-    return resolveLatestPromise = resolveDomainDirect(value);
-}
-
-/**
- * @TODO add cache
- * @param value
- * @return {Promise<DomainData>}
- */
-function resolveDomainDirect(value) {
-    return mns.get('resolve', {
-        params: {
-            domain: value,
-        },
-        cancelToken: new axios.CancelToken((cancelFn) => {
-            resolveRequestCancel = cancelFn;
-        }),
-    }).then((response) => response.data);
-}
-
-function delay(ms) {
-    return new Promise((resolve, reject) => {
-        // resolveDelayForce can be used outside to resolve promise
-        resolveDelayForce = resolve;
-        // resolveDelayCancel can be used outside to reject promise
-        resolveDelayCancel = reject;
-
-        setTimeout(resolve, ms);
-    });
 }
 
 function tryCall(fn, {isCancel} = {}) {

@@ -11,7 +11,7 @@
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
     import {TX_TYPE_SEND} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';

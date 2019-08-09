@@ -5,7 +5,7 @@
     import minValue from 'vuelidate/lib/validators/minValue';
     import {RedeemCheckTxParams} from "minter-js-sdk/src";
     import {isValidCheck} from "minterjs-util";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";

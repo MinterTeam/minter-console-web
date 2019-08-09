@@ -9,7 +9,7 @@
     import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src";
     import {TX_TYPE_SET_CANDIDATE_ON, TX_TYPE_SET_CANDIDATE_OFF} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';

@@ -10,7 +10,7 @@
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
     import {TX_TYPE_CREATE_COIN} from 'minterjs-tx/src/tx-types';
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';

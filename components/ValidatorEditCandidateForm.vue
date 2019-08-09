@@ -9,7 +9,7 @@
     import EditCandidateTxParams from "minter-js-sdk/src/tx-params/candidate-edit";
     import {TX_TYPE_EDIT_CANDIDATE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
