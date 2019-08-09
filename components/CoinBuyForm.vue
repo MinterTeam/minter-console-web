@@ -8,7 +8,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import BuyTxParams from "minter-js-sdk/src/tx-params/convert-buy";
     import {TX_TYPE_BUY} from 'minterjs-tx/src/tx-types';
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx, estimateCoinBuy} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';

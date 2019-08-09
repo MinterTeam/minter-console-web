@@ -4,7 +4,7 @@
     import minValue from 'vuelidate/lib/validators/minValue';
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
     import {isValidPublic} from "minterjs-util/src/public";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {privateToAddressString} from 'minterjs-util';
     import {postAutoDelegationTxList} from '~/api';
     import {getNonce} from '~/api/gate';
