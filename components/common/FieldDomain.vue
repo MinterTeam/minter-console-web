@@ -1,7 +1,7 @@
 <script>
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidPublic} from "minterjs-util/src/public";
-    import * as mns from '~/api/mns';
+    import {ResolveDomain, isDomain, checkDomainSignature} from '~/api/mns';
     import FieldQr from '~/components/common/FieldQr';
 
     export default {
@@ -42,12 +42,13 @@
             return {
                 domain: this.value,
                 isResolving: 0,
+                mnsResolveDomain: ResolveDomain(),
             };
         },
         methods: {
             handleInput(inputValue) {
                 inputValue = inputValue.trim();
-                if (mns.isDomain(inputValue)) {
+                if (isDomain(inputValue)) {
                     // instant resolve without throttle
                     this.resolveDomain(inputValue, {throttle: true});
                     this.$emit('input', '');
@@ -68,11 +69,11 @@
             resolveDomain(value, {throttle} = {}) {
                 this.isResolving += 1;
                 this.$emit('update:resolving', !!this.isResolving);
-                return mns.resolveDomain(value, {throttle})
+                return this.mnsResolveDomain(value, {throttle})
                     .then((domainData) => {
-                        if(this.valueType === 'address' && isValidAddress(domainData.address) && mns.checkDomainSignature(domainData)){
+                        if(this.valueType === 'address' && isValidAddress(domainData.address) && checkDomainSignature(domainData)){
                             this.$emit('input', domainData.address);
-                        } else if(this.valueType === 'publicKey' && isValidPublic(domainData.publickey) && mns.checkDomainSignature(domainData)){
+                        } else if(this.valueType === 'publicKey' && isValidPublic(domainData.publickey) && checkDomainSignature(domainData)){
                             this.$emit('input', domainData.publickey);
                         }
                         this.isResolving -= 1;
