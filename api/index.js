@@ -119,22 +119,26 @@ export function getAddressTransactionList(address, params = {}) {
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
-        .then((response) => response.data.data.balances.sort((a, b) => {
-                // set base coin first
-                if (a.coin === COIN_NAME) {
-                    return -1;
-                } else if (b.coin === COIN_NAME) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })
-            .map((coinItem) => {
-                return {
-                    ...coinItem,
-                    amount: stripZeros(coinItem.amount),
-                };
-            }));
+        .then((response) => prepareBalance(response.data.data.balances));
+}
+
+export function prepareBalance(balanceList) {
+    return balanceList.sort((a, b) => {
+            // set base coin first
+            if (a.coin === COIN_NAME) {
+                return -1;
+            } else if (b.coin === COIN_NAME) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })
+        .map((coinItem) => {
+            return {
+                ...coinItem,
+                amount: stripZeros(coinItem.amount),
+            };
+        });
 }
 
 

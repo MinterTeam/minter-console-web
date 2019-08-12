@@ -9,10 +9,8 @@
             BroadcastSendForm,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Broadcast', 'common.page-broadcast'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Broadcast', 'common.page-broadcast'));
+            return Promise.resolve();
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);

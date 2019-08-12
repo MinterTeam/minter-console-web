@@ -4,8 +4,6 @@
     import ValidatorEditCandidateForm from '~/components/ValidatorEditCandidateForm';
     import ValidatorSetCandidateOnOffForm from '~/components/ValidatorSetCandidateOnOffForm';
 
-    let balanceInterval;
-
     export default {
         components: {
             ValidatorDeclareCandidacyForm,
@@ -13,10 +11,8 @@
             ValidatorSetCandidateOnOffForm,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Masternode', 'common.page-masternode'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Masternode', 'common.page-masternode'));
+            return Promise.resolve();
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -32,14 +28,6 @@
                     { hid: 'og-image', name: 'og:image', content: `/img/social-share-masternode${localeSuffix}.png` },
                 ],
             };
-        },
-        mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-            }, 10000);
-        },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
         },
     };
 </script>

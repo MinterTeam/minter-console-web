@@ -5,8 +5,6 @@
     import ValidatorReinvestForm from '~/components/ValidatorReinvestForm';
     import ValidatorReinvestPostForm from '~/components/ValidatorReinvestStartForm';
 
-    let balanceInterval;
-
     export default {
         components: {
             ValidatorDelegateForm,
@@ -15,11 +13,8 @@
             ValidatorReinvestPostForm,
         },
         fetch({ app, store }) {
-            //@TODO fetch balance in middleware
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
+            return Promise.resolve();
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -35,14 +30,6 @@
                     { hid: 'og-image', name: 'og:image', content: `/img/social-share-delegation${localeSuffix}.png` },
                 ],
             };
-        },
-        mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-            }, 10000);
-        },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
         },
     };
 </script>
