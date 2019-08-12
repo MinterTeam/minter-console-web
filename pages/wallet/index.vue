@@ -16,8 +16,6 @@
         return getAddressTransactionList(addres, {limit: 5});
     }
 
-    let balanceInterval;
-
     export default {
         components: {
             QrcodeVue,
@@ -32,10 +30,8 @@
             pretty,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
+            return Promise.resolve();
         },
         asyncData({ store }) {
             if (store.getters.isOfflineMode) {
@@ -82,20 +78,14 @@
                 return NETWORK === TESTNET;
             },
         },
-        mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-                if (this.$store.getters.isOfflineMode) {
-                    return;
-                }
+        watch: {
+            // update tx list on balance updated
+            "$store.state.balance": function() {
                 getAddressLatestTransactionList(this.address)
                     .then((txListInfo) => {
                         this.txList = txListInfo.data;
                     });
-            }, 10000);
-        },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
+            },
         },
     };
 </script>
