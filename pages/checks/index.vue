@@ -3,18 +3,14 @@
     import CheckRedeemForm from '~/components/CheckRedeemForm';
     import CheckIssueForm from '~/components/CheckIssueForm';
 
-    let balanceInterval;
-
     export default {
         components: {
             CheckRedeemForm,
             CheckIssueForm,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Checks', 'common.page-checks'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Checks', 'common.page-checks'));
+            return Promise.resolve();
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -30,14 +26,6 @@
                     { hid: 'og-image', name: 'og:image', content: `/img/social-share-checks${localeSuffix}.png` },
                 ],
             };
-        },
-        mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-            }, 10000);
-        },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
         },
     };
 </script>

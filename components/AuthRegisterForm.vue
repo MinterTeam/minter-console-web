@@ -12,9 +12,12 @@
     import {makeAccepter, removeEmptyKeys} from "~/assets/utils";
     import {USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH} from '~/assets/variables';
     import InputMaskedName from '~/components/common/InputMaskedName';
+    import Loader from '~/components/common/Loader';
+
     export default {
         components: {
             InputMaskedName,
+            Loader,
         },
         mixins: [validationMixin],
         directives: {
@@ -157,9 +160,7 @@
             <div class="u-cell">
                 <button class="button button--main button--full" data-test-id="authRegisterSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Register', 'index.auth-sign-up-button') }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
