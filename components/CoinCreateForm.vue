@@ -215,8 +215,10 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_CREATE_COIN,
-                    txFeeOptions: {coinSymbolLength: this.form.coinSymbol.length},
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {
+                        payload: this.form.message,
+                        coinSymbol: this.form.coinSymbol,
+                    },
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,

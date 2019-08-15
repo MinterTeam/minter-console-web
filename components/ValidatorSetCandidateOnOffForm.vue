@@ -111,7 +111,7 @@
             feeBusParams() {
                 return {
                     txType: this.formType === 'on' ? TX_TYPE_SET_CANDIDATE_ON : TX_TYPE_SET_CANDIDATE_OFF,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
