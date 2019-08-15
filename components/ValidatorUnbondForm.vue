@@ -122,7 +122,7 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_UNBOND,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     // selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,

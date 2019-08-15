@@ -19,8 +19,7 @@ let coinPricePromiseList = {};
 /**
  *
  * @param {string} txType
- * @param {Object} [txFeeOptions]
- * @param {number} [messageLength]
+ * @param {{payload: string, coinSymbol: string, multisendCount: number}} [txFeeOptions]
  * @param {string} [selectedCoinSymbol]
  * @param {string} [selectedFeeCoinSymbol]
  * @param {number} [baseCoinAmount]
@@ -29,12 +28,11 @@ let coinPricePromiseList = {};
  * @constructor
  */
 
-export default function FeeBus({txType, txFeeOptions, messageLength = 0, selectedCoinSymbol, selectedFeeCoinSymbol, baseCoinAmount = 0, isOffline}) {
+export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, selectedFeeCoinSymbol, baseCoinAmount = 0, isOffline}) {
     return new Vue({
         data: {
             txType,
             txFeeOptions,
-            messageLength,
             selectedCoinSymbol,
             selectedFeeCoinSymbol,
             baseCoinAmount,
@@ -43,7 +41,7 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
         },
         computed: {
             baseCoinFeeValue() {
-                return getFeeValue(this.txType, this.messageLength, this.txFeeOptions) || 0;
+                return getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
             isBaseCoinEnough() {
                 return baseCoinAmount >= this.baseCoinFeeValue;
