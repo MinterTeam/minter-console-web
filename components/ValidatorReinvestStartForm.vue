@@ -107,7 +107,8 @@
                                @on-add="handleFileUpdate"
                                @on-error="fileApiError = true"
                                @on-drag-start="isDragLayerVisible = true"
-                               @on-drag-end="isDragLayerVisible = false"/>
+                               @on-drag-end="isDragLayerVisible = false"
+                    />
                     {{ $td('Select or drop file', 'delegation.reinvest-upload-input') }}
                 </label>
             </div>

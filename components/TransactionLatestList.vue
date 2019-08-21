@@ -344,6 +344,12 @@
                                     <strong>{{ $td('Fee', 'wallet.tx-table-fee') }}</strong> <br>
                                     {{ $store.getters.COIN_NAME }} {{ tx.fee | pretty }}
                                 </div>
+
+                                <!-- message -->
+                                <div class="table__inner-item" v-if="tx.payload">
+                                    <strong>Message</strong> <br>
+                                    {{ fromBase64(tx.payload) }}
+                                </div>
                             </div>
                         </td>
                     </tr>
