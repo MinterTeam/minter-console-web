@@ -8,7 +8,7 @@ export const BASE_DESCRIPTION = `Minter Console is by far the most advanced part
 export const COIN_NAME = NETWORK === MAINNET ? 'BIP' : 'MNT';
 export const CHAIN_ID = NETWORK === MAINNET ? 1 : 2;
 export const ACCOUNTS_API_URL = process.env.APP_ACCOUNTS_API_URL;
-export const GATE_API_HOST = process.env.APP_GATE_API_HOST;
+export const GATE_API_URL = process.env.APP_GATE_API_URL;
 export const AUTO_DELEGATION_API_URL = process.env.APP_AUTO_DELEGATION_API_URL;
 export const EXPLORER_API_URL = process.env.APP_EXPLORER_API_URL;
 export const EXPLORER_RTM_URL = process.env.APP_EXPLORER_RTM_URL;
