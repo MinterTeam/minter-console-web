@@ -29,11 +29,9 @@
             };
         },
         computed: {
-            // pass native events
-            inputListeners: function() {
-                let listeners = Object.assign({}, this.$listeners);
-                // input event fires separately
-                delete listeners.input;
+            // all parent listeners except `input`
+            listeners() {
+                const { input, ...listeners } = this.$listeners;
                 return listeners;
             },
         },
@@ -55,5 +53,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" inputmode="numeric" :value="value" v-imask="$options.imaskAmount" v-on="inputListeners" @accept="onAcceptUsername" ref="input"/>
+    <input type="text" autocapitalize="off" inputmode="numeric" :value="value" v-imask="$options.imaskAmount" v-on="listeners" @accept="onAcceptUsername" ref="input"/>
 </template>

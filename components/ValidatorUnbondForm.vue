@@ -18,6 +18,7 @@
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
+    import FieldCoinList from '~/components/common/FieldCoinList';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
@@ -32,6 +33,7 @@
             QrcodeVue,
             FieldDomain,
             FieldQr,
+            FieldCoinList,
             InputUppercase,
             InputMaskedAmount,
             InputMaskedInteger,
@@ -263,13 +265,12 @@
                 />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
-                                    v-model.trim="form.coinSymbol"
-                                    @blur="$v.form.coinSymbol.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Coin', 'form.coin') }}</span>
-                </label>
+                <!--@TODO use delegated list for suggestions-->
+                <FieldCoinList
+                        v-model="form.coinSymbol"
+                        :$value="$v.form.coinSymbol"
+                        :label="$td('Coin', 'form.coin')"
+                />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>

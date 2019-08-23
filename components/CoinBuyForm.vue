@@ -15,6 +15,7 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import FieldCoinList from '~/components/common/FieldCoinList';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
@@ -28,6 +29,7 @@
         components: {
             QrcodeVue,
             FieldQr,
+            FieldCoinList,
             InputUppercase,
             InputMaskedAmount,
             InputMaskedInteger,
@@ -274,13 +276,12 @@
         <form class="panel__section" novalidate @submit.prevent="submit">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
-                    <label class="form-field" :class="{'is-error': $v.form.coinTo.$error}">
-                        <InputUppercase class="form-field__input" type="text" v-check-empty data-test-id="convertBuyInputBuyCoin"
-                                        v-model.trim="form.coinTo"
-                                        @blur="$v.form.coinTo.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Coin to buy', 'form.convert-buy-coin-buy') }}</span>
-                    </label>
+                    <FieldCoinList
+                            data-test-id="convertBuyInputBuyCoin"
+                            v-model="form.coinTo"
+                            :$value="$v.form.coinTo"
+                            :label="$td('Coin to buy', 'form.convert-buy-coin-buy')"
+                    />
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
