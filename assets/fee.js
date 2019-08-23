@@ -86,6 +86,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                 }
             },
             fee() {
+                //@TODO always change, even if data stay the same
                 return {
                     baseCoinValue: this.baseCoinFeeValue,
                     isBaseCoin: this.isBaseCoinFee,

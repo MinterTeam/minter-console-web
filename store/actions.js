@@ -1,5 +1,8 @@
-import {getBalance, getProfile, getProfileAddressEncrypted} from "~/api";
+import {getBalance, getProfile, getProfileAddressEncrypted, getCoinList} from "~/api";
 // import explorer from "~/api/explorer";
+
+let activeCoinListPromise;
+let coinListTime = 0;
 
 export default {
     FETCH_PROFILE: ({ state, commit }) => {
@@ -60,5 +63,12 @@ export default {
                 commit('SET_BALANCE', balance);
                 return balance;
             });
+    },
+    FETCH_COIN_LIST: () => {
+        if (Date.now() - coinListTime > 60 * 1000) {
+            activeCoinListPromise = getCoinList();
+            coinListTime = Date.now();
+        }
+        return activeCoinListPromise;
     },
 };
