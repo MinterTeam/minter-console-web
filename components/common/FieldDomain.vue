@@ -26,7 +26,7 @@
             },
             $value: {
                 type: Object,
-                require: true,
+                required: true,
             },
             label: {
                 type: String,
@@ -113,14 +113,14 @@
 
         <template v-if="valueType === $options.TYPE_PUBLIC_KEY && !$value.$pending">
             <span class="form-field__error" v-if="$value.$dirty && !$value.required && !domain">
-                    {{ $td('Enter public key', 'form.masternode-public-error-required') }}
-                </span>
+                {{ $td('Enter public key', 'form.masternode-public-error-required') }}
+            </span>
             <span class="form-field__error" v-else-if="$value.$dirty && !$value.validPublicKey && !domain">
-                    {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
-                </span>
+                {{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}
+            </span>
             <span class="form-field__error" v-else-if="$value.$dirty && !$value.validPublicKey && domain">
-                    {{ $td('Public key not found for such domain', 'form.masternode-domain-error-invalid') }}
-                </span>
+                {{ $td('Public key not found for such domain', 'form.masternode-domain-error-invalid') }}
+            </span>
         </template>
 
         <div class="form-field__help" v-if="help">{{ help }}</div>

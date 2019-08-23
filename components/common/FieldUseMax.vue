@@ -17,7 +17,7 @@
             },
             $value: {
                 type: Object,
-                require: true,
+                required: true,
             },
             label: {
                 type: String,
