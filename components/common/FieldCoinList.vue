@@ -4,9 +4,10 @@
     import InputUppercase from '~/components/common/InputUppercase';
 
     const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+    const isFirefox = /firefox/i.test(window.navigator.userAgent);
 
     const MAX_ITEM_COUNT = 10;
-    const SLICE_END = isSafari ? undefined : MAX_ITEM_COUNT - 1;
+    const SLICE_END = (isSafari || isFirefox) ? undefined : MAX_ITEM_COUNT - 1;
 
     export default {
         components: {
@@ -58,8 +59,9 @@
                     // })
                     .sort((a, b) => {
                         // @TODO reconsider after https://bugs.webkit.org/show_bug.cgi?id=201121 will be resolved
+                        // @TODO reconsider after https://bugzilla.mozilla.org/show_bug.cgi?id=1474137 will be resolved
                         // don't do anything for safari because displayed datalist is out of sync with DOM
-                        if (isSafari) {
+                        if (isSafari || isFirefox) {
                             return 0;
                         }
                         if (!this.value) {
