@@ -68,6 +68,12 @@
                 const isOutcomeMultisend = this.address === tx.from;
                 return !isOutcomeMultisend;
             },
+            isIncomeSend(tx) {
+                return this.address === tx.data.to;
+            },
+            isReceive(tx) {
+                return this.isIncomeSend(tx) || this.isIncomeMultisend(tx);
+            },
             getAmount(tx) {
                 return tx.data.value
                     || this.getConvertValue(tx)
@@ -187,7 +193,10 @@
                             />
                         </td>
                         <!-- type -->
-                        <td class="u-hidden-large-down">{{ tx.type | txType }}</td>
+                        <td class="u-hidden-large-down">
+                            <span v-if="isReceive(tx)">Receive</span>
+                            <span v-else>{{ tx.type | txType }}</span>
+                        </td>
                         <!-- amount -->
                         <td class="u-hidden-large-down">
                             <div v-if="hasAmount(tx)">
@@ -196,7 +205,8 @@
                         </td>
                         <!-- value -->
                         <td class="u-hidden-large-up">
-                            {{ tx.type | txType }}
+                            <span v-if="isReceive(tx)">Receive</span>
+                            <span v-else>{{ tx.type | txType }}</span>
                             <span v-if="hasAmount(tx)">
                                 {{ getAmountWithCoin(tx) }}
                             </span>
