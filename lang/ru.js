@@ -11,6 +11,7 @@ export default {
         'page-dao': '',
         'page-support': 'Поддержка',
         'page-account': 'Аккаунт',
+        'logout': 'Выйти',
     },
     error: {
         'title-error': 'Ошибка',
