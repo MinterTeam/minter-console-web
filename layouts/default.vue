@@ -76,7 +76,10 @@
 
                 <div class="header__controls">
                     <div class="header__user u-hidden-medium-down">
-                        <nuxt-link class="button button--ghost-white" :to="preferredPath('account')" v-if="username">{{ username }}</nuxt-link>
+                        <!--
+                        <nuxt-link class="button button&#45;&#45;ghost-white" :to="preferredPath('account')" v-if="username">{{ username }}</nuxt-link>
+                        -->
+                        <span class="header__user-name">{{ username }}</span>
                         <button class="header__user-logout u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
                             <img class="" src="/img/icon-auth-logout.svg" width="40" height="40" alt="Logout">
                         </button>
@@ -174,7 +177,6 @@
                                     {{ $td('Support', 'common.page-support') }}
                                 </nuxt-link>
                             </li>
-                            -->
                             <li class="menu__item menu__user u-cell">
                                 <nuxt-link class="menu__link menu__user-link link--hover" :to="preferredPath('account')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
@@ -182,6 +184,13 @@
                                 </nuxt-link>
                                 <button class="menu__user-logout u-semantic-button u-hidden-medium-up" data-test-id="headerLogoutButton" @click="logout">
                                     <img class="" src="/img/icon-auth-logout-menu.svg" alt="Logout">
+                                </button>
+                            </li>
+                            -->
+                            <li class="menu__item menu__user u-cell">
+                                <button class="menu__link link--hover u-semantic-button u-hidden-medium-up" data-test-id="headerLogoutButton" @click="logout">
+                                    <img class="menu__icon" src="/img/icon-auth-logout-menu.svg" alt="" role="presentation">
+                                    {{ $td('Logout', 'common.logout') }}
                                 </button>
                             </li>
                         </menu>
