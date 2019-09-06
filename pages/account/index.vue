@@ -95,6 +95,7 @@
                 </dd>
 -->
 
+<!--
                 <dt>{{ $td('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
@@ -102,9 +103,10 @@
                         <ButtonCopyIcon :copy-text="mnemonic"/>
                     </div>
                     <div v-else>
-                        <button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ $td('Click to view', 'account.click-view') }}</button>
+                        <button class="u-semantic-button link&#45;&#45;default" @click="visibleMnemonic = true">{{ $td('Click to view', 'account.click-view') }}</button>
                     </div>
                 </dd>
+-->
             </dl>
         </div>
 

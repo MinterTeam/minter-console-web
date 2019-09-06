@@ -18,9 +18,15 @@ export async function logout(page) {
  * @return {Promise<void>}
  */
 export async function login(page) {
-    await page.goto(ROUTES.public.index);
-    await page.waitForSelector('[data-test-id="authSection"]');
-    await page.type('[data-test-id="authAdvancedLoginInputMnemonic"]', USER_MNEMONIC);
-    await page.click('[data-test-id="authAdvancedLoginSubmitButton"]');
-    await page.waitForSelector('[data-test-id="walletAddressLink"]');
+    try {
+        await page.goto(ROUTES.public.index);
+        await page.waitForSelector('[data-test-id="authSection"]');
+        await page.type('[data-test-id="authAdvancedLoginInputMnemonic"]', USER_MNEMONIC);
+        await page.click('[data-test-id="authAdvancedLoginSubmitButton"]');
+        await page.waitForSelector('[data-test-id="walletAddressLink"]');
+    } catch (e) {
+        const html = await page.evaluate(() => document.documentElement.outerHTML);
+        console.log(html);
+        throw e;
+    }
 }
