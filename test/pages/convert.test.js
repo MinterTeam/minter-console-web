@@ -10,10 +10,6 @@ let page;
 beforeAll(async function beforeAllFn() {
     browser = global.browser;
     page = await browser.newPage();
-    page.on("error", function(err) {
-        const theTempValue = err.toString();
-        console.log("Error: " + theTempValue);
-    });
     await login(page);
 }, 30000);
 
