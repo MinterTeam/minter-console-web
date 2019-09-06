@@ -187,8 +187,8 @@
                                 </button>
                             </li>
                             -->
-                            <li class="menu__item menu__user u-cell">
-                                <button class="menu__link link--hover u-semantic-button u-hidden-medium-up" data-test-id="headerLogoutButton" @click="logout">
+                            <li class="menu__item u-cell u-hidden-medium-up">
+                                <button class="menu__link link--hover u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
                                     <img class="menu__icon" src="/img/icon-auth-logout-menu.svg" alt="" role="presentation">
                                     {{ $td('Logout', 'common.logout') }}
                                 </button>
