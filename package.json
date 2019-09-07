@@ -14,7 +14,7 @@
     "analyze": "gulp once && nuxt build --spa --analyze",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "lint:fix": "eslint --ext .js,.vue --ignore-path .gitignore --fix .",
-    "test": "gulp once && NODE_ENV=test jest --bail --runInBand --verbose",
+    "test": "gulp once && NODE_ENV=test APP_BRANCH_ENV=mainnet jest --bail --runInBand --verbose",
     "test:debug": "DEBUG=true npm run test",
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
