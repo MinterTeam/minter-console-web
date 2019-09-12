@@ -1,5 +1,6 @@
 <script>
     import getTitle from '~/assets/get-title';
+    import StakeListTable from '~/components/StakeListTable';
     import ValidatorDelegateForm from '~/components/ValidatorDelegateForm';
     import ValidatorUnbondForm from '~/components/ValidatorUnbondForm';
     import ValidatorReinvestForm from '~/components/ValidatorReinvestForm';
@@ -7,6 +8,7 @@
 
     export default {
         components: {
+            StakeListTable,
             ValidatorDelegateForm,
             ValidatorUnbondForm,
             ValidatorReinvestForm,
@@ -14,7 +16,10 @@
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
-            return Promise.resolve();
+            if (store.getters.isOfflineMode) {
+                return;
+            }
+            return store.dispatch('FETCH_STAKE_LIST');
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -36,6 +41,16 @@
 
 <template>
     <section class="u-section u-container">
+        <section class="panel">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    {{ $td('Delegated Stakes', 'delegation.stake-list-title') }}
+                </h1>
+            </div>
+            <StakeListTable :stake-list="$store.state.stakeList" stake-item-type="validator" v-if="!$store.getters.isOfflineMode"/>
+        </section>
+
+
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">

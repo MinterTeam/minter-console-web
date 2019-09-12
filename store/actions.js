@@ -1,4 +1,4 @@
-import {getBalance, getProfile, getProfileAddressEncrypted, getCoinList} from "~/api";
+import {getBalance, getProfile, getProfileAddressEncrypted, getCoinList, getAddressStakeList} from "~/api";
 // import explorer from "~/api/explorer";
 
 let activeCoinListPromise;
@@ -62,6 +62,13 @@ export default {
             .then((balance) => {
                 commit('SET_BALANCE', balance);
                 return balance;
+            });
+    },
+    FETCH_STAKE_LIST: ({ commit, getters }) => {
+        return getAddressStakeList(getters.address)
+            .then((stakeList) => {
+                commit('SET_STAKE_LIST', stakeList);
+                return stakeList;
             });
     },
     FETCH_COIN_LIST: () => {
