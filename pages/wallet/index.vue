@@ -35,9 +35,7 @@
         },
         asyncData({ store }) {
             if (store.getters.isOfflineMode) {
-                return {
-                    txList: [],
-                };
+                return;
             }
             return getAddressLatestTransactionList(store.getters.address)
                 .then((txListInfo) => {

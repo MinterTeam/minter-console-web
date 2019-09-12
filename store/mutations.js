@@ -32,6 +32,9 @@ export default {
     SET_BALANCE: (state, balance) => {
         state.balance = balance;
     },
+    SET_STAKE_LIST: (state, stakeList) => {
+        state.stakeList = stakeList;
+    },
     // PUSH_HISTORY: (state, historyItem) => {
     //     state.history.push(historyItem);
     // },

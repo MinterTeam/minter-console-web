@@ -169,6 +169,34 @@ export function getCoinList() {
  */
 
 
+/**
+ * @param {string} address
+ * @return {Promise<Array<StakeItem>>}
+ */
+export function getAddressStakeList(address) {
+    return explorer.get(`addresses/${address}/delegations`)
+        .then((response) => response.data.data);
+}
+
+/**
+ * @typedef {Object} StakeItem
+ * @property {string} [pub_key]
+ * @property {ValidatorMeta} [validator_meta]
+ * @property {string} [address]
+ * @property {string|number} value
+ * @property {string|number} bip_value
+ * @property {string} coin
+ */
+
+/**
+ * @typedef {Object} ValidatorMeta
+ * @property {string} name
+ * @property {string} description
+ * @property {string} icon_url
+ * @property {string} site_url
+ */
+
+
 
 /**
  * Get addresses saved in profile
