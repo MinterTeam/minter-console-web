@@ -6,6 +6,8 @@
     import ValidatorReinvestForm from '~/components/ValidatorReinvestForm';
     import ValidatorReinvestPostForm from '~/components/ValidatorReinvestStartForm';
 
+    let stakeInterval;
+
     export default {
         components: {
             StakeListTable,
@@ -19,6 +21,7 @@
             if (store.getters.isOfflineMode) {
                 return;
             }
+            store.dispatch('FETCH_VALIDATOR_LIST');
             return store.dispatch('FETCH_STAKE_LIST');
         },
         head() {
@@ -35,6 +38,15 @@
                     { hid: 'og-image', name: 'og:image', content: `/img/social-share-delegation${localeSuffix}.png` },
                 ],
             };
+        },
+        mounted() {
+            //@TODO move to websocket https://minterteam.atlassian.net/browse/EX-205
+            stakeInterval = setInterval(() => {
+                this.$store.dispatch('FETCH_STAKE_LIST');
+            }, 10 * 1000);
+        },
+        destroyed() {
+            clearInterval(stakeInterval);
         },
     };
 </script>

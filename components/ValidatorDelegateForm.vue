@@ -22,11 +22,14 @@
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
+    import BaseDataList from '~/components/common/BaseDataList';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
+
+    const isFirefox = window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
     export default {
         components: {
@@ -36,6 +39,7 @@
             FieldUseMax,
             InputUppercase,
             InputMaskedInteger,
+            BaseDataList,
             ButtonCopyIcon,
             Loader,
             Modal,
@@ -144,6 +148,26 @@
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
+            },
+            id() {
+                const rand = Math.random().toString().replace('.', '');
+                return`input-stake-list-${rand}`;
+            },
+            validatorList() {
+                //@TODO safari doesn't use label, reconsider after https://bugs.webkit.org/show_bug.cgi?id=201768 is fixed
+                return this.$store.state.validatorList.map((item) => {
+                    let label;
+                    if (item.meta && item.meta.name) {
+                        // show pub_key only for Firefox, because it doesn't use value if label is present
+                        //@TODO remove when fixed https://bugzilla.mozilla.org/show_bug.cgi?id=869690
+                        const pubKeyPart = isFirefox ? (', ' + item.public_key) : '';
+                        label = item.meta.name + pubKeyPart;
+                    } else {
+                        label = item.public_key;
+                    }
+                    const key = item.public_key;
+                    return {label, key, value: item.public_key};
+                });
             },
         },
         watch: {
@@ -270,9 +294,11 @@
                     :$value="$v.form.publicKey"
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
+                    :list="id"
                     @update:domain="domain = $event"
                     @update:resolving="isDomainResolving = $event"
                 />
+                <BaseDataList :id="id" :itemList="validatorList"/>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">

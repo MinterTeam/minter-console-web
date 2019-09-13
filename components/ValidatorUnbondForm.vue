@@ -22,11 +22,14 @@
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
+    import BaseDataList from '~/components/common/BaseDataList';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
+
+    const isFirefox = window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
     export default {
         components: {
@@ -37,6 +40,7 @@
             InputUppercase,
             InputMaskedAmount,
             InputMaskedInteger,
+            BaseDataList,
             ButtonCopyIcon,
             Loader,
             Modal,
@@ -130,6 +134,46 @@
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
+            },
+            id() {
+                const rand = Math.random().toString().replace('.', '');
+                return`input-stake-list-${rand}`;
+            },
+            validatorDataList() {
+                let validatorList = {};
+                this.$store.state.stakeList.forEach((item) => {
+                    if (!validatorList[item.pub_key]) {
+                        validatorList[item.pub_key] = Object.assign({stakeList: []}, item);
+                        delete validatorList[item.pub_key].coin;
+                        delete validatorList[item.pub_key].value;
+                        delete validatorList[item.pub_key].bip_value;
+                    }
+                    validatorList[item.pub_key].stakeList.push({
+                        coin: item.coin,
+                        value: item.value,
+                    });
+                });
+                return validatorList;
+            },
+            validatorList() {
+                //@TODO safari doesn't use label, reconsider after https://bugs.webkit.org/show_bug.cgi?id=201768 is fixed
+                return Object.values(this.validatorDataList).map((item) => {
+                    const namePart = (item.validator_meta && item.validator_meta.name) ? item.validator_meta.name + ', ' : '';
+                    const value = item.stakeList.reduce((accumulator, stakeItem) => {
+                        const stakeItemValue = stakeItem.coin + ' ' + pretty(stakeItem.value);
+                        if (!accumulator) {
+                            return stakeItemValue;
+                        } else {
+                            return accumulator + ', ' + stakeItemValue;
+                        }
+                    }, '');
+                    // show pub_key only for Firefox, because it doesn't use value if label is present
+                    //@TODO remove when fixed https://bugzilla.mozilla.org/show_bug.cgi?id=869690
+                    const pubKeyPart = isFirefox ? (', ' + item.pub_key) : '';
+                    const label = namePart + '(' + value + ')' + pubKeyPart;
+                    const key = item.pub_key;
+                    return {label, key, value: item.pub_key};
+                });
             },
         },
         watch: {
@@ -260,9 +304,11 @@
                     :$value="$v.form.publicKey"
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
+                    :list="id"
                     @update:domain="domain = $event"
                     @update:resolving="isDomainResolving = $event"
                 />
+                <BaseDataList :id="id" :itemList="validatorList"/>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <!--@TODO use delegated list for suggestions-->
