@@ -19,12 +19,17 @@
                 // domProps: {
                 //     innerHTML: options,
                 // },
-            }, context.props.itemList.map((item) => createElement('option', {
+            }, context.props.itemList.map((item) => typeof item === 'string' ? createElement('option', {
                 key: item,
                 attrs: {
                     value: item,
                 },
-            }, item)));
+            }, item) : createElement('option', {
+                key: item.key,
+                attrs: {
+                    value: item.value,
+                },
+            }, item.label)));
         },
     };
 </script>
