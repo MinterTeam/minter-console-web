@@ -1,6 +1,6 @@
 <script>
     import debounce from 'lodash-es/debounce';
-    import {pretty, prettyPrecise} from '~/assets/utils';
+    import {pretty, prettyPrecise, getExplorerValidatorUrl, getExplorerAddressUrl} from '~/assets/utils';
     import TableLink from "~/components/common/TableLink";
 
     let resizeHandler;
@@ -87,10 +87,10 @@
             },
             getUrl(stakeItem) {
                 if (this.stakeItemType === 'validator') {
-                    return '/validator/' + stakeItem.pub_key;
+                    return getExplorerValidatorUrl(stakeItem.pub_key);
                 }
                 if (this.stakeItemType === 'delegator') {
-                    return '/address/' + stakeItem.address;
+                    return getExplorerAddressUrl(stakeItem.address);
                 }
             },
             getShouldShortenLabel() {
