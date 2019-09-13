@@ -17,6 +17,8 @@ export default function() {
         balance: [],
         /** @type Array<StakeItem> */
         stakeList: [],
+        /** @type Array<Validator> */
+        validatorList: [],
         // transactionListInfo: {
         //     data: [],
         //     meta: {},

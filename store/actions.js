@@ -1,4 +1,4 @@
-import {getBalance, getProfile, getProfileAddressEncrypted, getCoinList, getAddressStakeList} from "~/api";
+import {getBalance, getProfile, getProfileAddressEncrypted, getCoinList, getAddressStakeList, getValidatorList} from "~/api";
 // import explorer from "~/api/explorer";
 
 let activeCoinListPromise;
@@ -77,5 +77,12 @@ export default {
             coinListTime = Date.now();
         }
         return activeCoinListPromise;
+    },
+    FETCH_VALIDATOR_LIST({ commit }) {
+        return getValidatorList()
+            .then((validatorList) => {
+                commit('SET_VALIDATOR_LIST', validatorList);
+                return validatorList;
+            });
     },
 };

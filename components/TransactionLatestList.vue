@@ -142,6 +142,13 @@
                     return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(new Big(delivery.value)), new Big(0)).toFixed();
                 }
             },
+            getValidatorName(tx) {
+                if (!tx.data.pub_key) {
+                    return;
+                }
+                const validator = this.$store.state.validatorList.find((validatorItem) => validatorItem.public_key === tx.data.pub_key);
+                return validator && validator.meta && validator.meta.name;
+            },
             fromBase64,
             getExplorerBlockUrl,
             getExplorerTxUrl,
@@ -279,6 +286,13 @@
                                 </div>
 
                                 <!-- type DECLARE_CANDIDACY, DELEGATE, UNBOND, SET_CANDIDATE_ONLINE, SET_CANDIDATE_OFFLINE -->
+                                <div class="table__inner-item" v-if="getValidatorName(tx)">
+                                    <strong>Validator</strong> <br>
+                                    <TableLink :link-text="getValidatorName(tx)"
+                                               :link-path="getExplorerValidatorUrl(tx.data.pub_key)"
+                                               :should-not-shorten="true"
+                                    />
+                                </div>
                                 <div class="table__inner-item" v-if="tx.data.pub_key">
                                     <strong>{{ $td('Public Key', 'wallet.tx-table-public') }}</strong> <br>
                                     <TableLink :link-text="tx.data.pub_key"
