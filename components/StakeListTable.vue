@@ -109,12 +109,18 @@
                     }
                 });
                 const step = inverseDirection ? -1 : 1;
-                // change field sort order between -1, 0, 1
-                if (this.sort[field] === step) {
-                    this.sort[field] = -1 * step;
-                } else {
+                // change field sort order between -1 and 1
+                if (this.sort[field] === 0) {
                     this.sort[field] += step;
+                } else {
+                    this.sort[field] = -1 * this.sort[field];
                 }
+                // change field sort order between -1, 0, 1
+                // if (this.sort[field] === step) {
+                //     this.sort[field] = -1 * step;
+                // } else {
+                //     this.sort[field] += step;
+                // }
             },
             getSortClass(field) {
                 switch (this.sort[field]) {
