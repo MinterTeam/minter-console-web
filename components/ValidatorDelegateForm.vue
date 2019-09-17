@@ -151,7 +151,7 @@
             },
             id() {
                 const rand = Math.random().toString().replace('.', '');
-                return`input-stake-list-${rand}`;
+                return `input-stake-list-${rand}`;
             },
             validatorList() {
                 //@TODO safari doesn't use label, reconsider after https://bugs.webkit.org/show_bug.cgi?id=201768 is fixed

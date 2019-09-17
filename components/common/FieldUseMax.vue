@@ -1,4 +1,5 @@
 <script>
+    import Big from 'big.js';
     import checkEmpty from '~/assets/v-check-empty';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
 
@@ -38,6 +39,19 @@
             },
         },
         watch: {
+            value(newVal) {
+                if (!newVal && newVal !== 0) {
+                    this.isUseMax = false;
+                    return;
+                }
+                if (!this.isMaxValueDefined) {
+                    this.isUseMax = false;
+                    return;
+                }
+                if (new Big(newVal).toFixed() !== new Big(this.maxValue).toFixed()) {
+                    this.isUseMax = false;
+                }
+            },
             maxValue(newVal) {
                 if (this.isMaxValueDefined && this.isUseMax) {
                     this.useMax();
@@ -45,9 +59,6 @@
             },
         },
         methods: {
-            handleInput(e) {
-                this.isUseMax = false;
-            },
             useMax() {
                 if (!this.isMaxValueDefined) {
                     return false;
@@ -67,7 +78,6 @@
             v-bind="$attrs"
             :value="value"
             @input="$emit('input', $event)"
-            @input.native="handleInput"
             @blur="$value.$touch()"
         />
         <button class="form-field__use-max link--main link--opacity u-semantic-button" type="button" @click="useMax" v-if="isMaxValueDefined">Use max</button>

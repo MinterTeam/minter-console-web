@@ -30,11 +30,16 @@
                 type: String,
                 required: true,
             },
+            /** @type Array */
+            coinList: {
+                type: Array,
+                default: () => [],
+            },
         },
         data() {
             return {
-                /** @type Array<CoinItem> */
-                coinList: [],
+                /** @type Array */
+                coinListAll: [],
             };
         },
         computed: {
@@ -44,7 +49,8 @@
                 return listeners;
             },
             coinListSorted() {
-                return this.coinList
+                const currentCoinList = this.coinList && this.coinList.length ? this.coinList : this.coinListAll;
+                return currentCoinList
                     .slice()
                     // disable filter due strange animation in chrome and hanged dropdown in safari with list from 1 letter for 0 letter after deletion
                     // .filter((coin) => {
@@ -69,22 +75,22 @@
                         }
                         // move coins first if it's name starts with current value
                         // prevent "ABIP" coin to be higher than "BIP" for "BIP" request
-                        const aHasStartValue = a.symbol.indexOf(this.value) === 0;
-                        const bHasStartValue = b.symbol.indexOf(this.value) === 0;
+                        const aHasStart = a.indexOf(this.value) === 0;
+                        const bHasStart = b.indexOf(this.value) === 0;
                         // need to save browser's datalist order to prevent lose these values after slice
-                        const aHasAnyValue = a.symbol.indexOf(this.value) !== -1;
-                        const bHasAnyValue = b.symbol.indexOf(this.value) !== -1;
+                        const aHasAny = a.indexOf(this.value) !== -1;
+                        const bHasAny = b.indexOf(this.value) !== -1;
 
-                        if (aHasStartValue && !bHasStartValue) {
+                        if (aHasStart && !bHasStart) {
                             // set a first
                             return -1;
-                        } else if (bHasStartValue && !aHasStartValue) {
+                        } else if (bHasStart && !aHasStart) {
                             // set b first
                             return 1;
-                        } else if (aHasAnyValue && !bHasAnyValue) {
+                        } else if (aHasAny && !bHasAny) {
                             // set a first
                             return -1;
-                        } else if (bHasAnyValue && !aHasAnyValue) {
+                        } else if (bHasAny && !aHasAny) {
                             // set b first
                             return 1;
                         } else {
@@ -92,18 +98,17 @@
                             return 0;
                         }
                     })
-                    .slice(0, SLICE_END)
-                    .map((item) => item.symbol);
+                    .slice(0, SLICE_END);
             },
             id() {
                 const rand = Math.random().toString().replace('.', '');
-                return`input-coin-list-${rand}`;
+                return `input-coin-list-${rand}`;
             },
         },
         mounted() {
             this.$store.dispatch('FETCH_COIN_LIST')
-                .then((coinList) => {
-                    this.coinList = Object.freeze(coinList);
+                .then((coinListAll) => {
+                    this.coinListAll = Object.freeze(coinListAll.map((item) => item.symbol));
                 })
                 .catch((e) => {
                     console.log(e);
