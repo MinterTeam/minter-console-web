@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -19,8 +20,8 @@
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import FieldCoinList from '~/components/common/FieldCoinList';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
-    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import BaseDataList from '~/components/common/BaseDataList';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
@@ -37,8 +38,8 @@
             FieldDomain,
             FieldQr,
             FieldCoinList,
+            FieldUseMax,
             InputUppercase,
-            InputMaskedAmount,
             InputMaskedInteger,
             BaseDataList,
             ButtonCopyIcon,
@@ -122,6 +123,24 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            maxAmount() {
+                // no validator selected
+                if (!this.stakeList.length) {
+                    return;
+                }
+                // no coinSymbol entered
+                if (!this.form.coinSymbol) {
+                    return;
+                }
+                const selectedCoin = this.stakeList.find((coin) => {
+                    return coin.coin === this.form.coinSymbol;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                return selectedCoin.value;
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
@@ -137,7 +156,7 @@
             },
             id() {
                 const rand = Math.random().toString().replace('.', '');
-                return`input-stake-list-${rand}`;
+                return `input-stake-list-${rand}`;
             },
             validatorDataList() {
                 let validatorList = {};
@@ -175,6 +194,17 @@
                     return {label, key, value: item.pub_key};
                 });
             },
+            stakeList() {
+                const selectedValidator = this.validatorDataList[this.form.publicKey];
+                if (selectedValidator) {
+                    return selectedValidator.stakeList;
+                } else {
+                    return [];
+                }
+            },
+            stakeCoinList() {
+                return this.stakeList.map((item) => item.coin);
+            },
         },
         watch: {
             feeBusParams: {
@@ -184,6 +214,11 @@
                     }
                 },
                 deep: true,
+            },
+            'form.publicKey': function(newVal) {
+                if (this.stakeCoinList.length === 1) {
+                    this.form.coinSymbol = this.stakeCoinList[0];
+                }
             },
         },
         created() {
@@ -311,24 +346,23 @@
                 <BaseDataList :id="id" :itemList="validatorList"/>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <!--@TODO use delegated list for suggestions-->
                 <FieldCoinList
                         v-model="form.coinSymbol"
                         :$value="$v.form.coinSymbol"
                         :label="$td('Coin', 'form.coin')"
+                        :coinList="this.stakeCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                                       v-model="form.stake"
-                                       @blur="$v.form.stake.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
-                </label>
+                <FieldUseMax
+                        v-model="form.stake"
+                        :$value="$v.form.stake"
+                        :label="$td('Stake', 'form.masternode-stake')"
+                        :max-value="maxAmount"
+                />
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
