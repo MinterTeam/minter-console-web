@@ -73,13 +73,12 @@
         },
         methods: {
             prettyPrecise,
-            getName(stakeItem) {
+            getValidatorName(stakeItem) {
                 return stakeItem.validator_meta && stakeItem.validator_meta.name;
             },
             getLabel(stakeItem) {
                 if (this.stakeItemType === 'validator') {
-                    const name = this.getName(stakeItem) || stakeItem.pub_key;
-                    return name.toString();
+                    return stakeItem.pub_key.toString();
                 }
                 if (this.stakeItemType === 'delegator') {
                     return stakeItem.address.toString();
@@ -95,7 +94,7 @@
             },
             getShouldShortenLabel() {
                 if (this.stakeItemType === 'validator') {
-                    return process.client && window.innerWidth < 700;
+                    return process.client && window.innerWidth < 900;
                 }
                 if (this.stakeItemType === 'delegator') {
                     return process.client && window.innerWidth < 600;
@@ -136,8 +135,8 @@
              * Default ascending: A -> B
              */
             hashSortFn(a, b) {
-                const nameA = this.getName(a);
-                const nameB = this.getName(b);
+                const nameA = this.getValidatorName(a);
+                const nameB = this.getValidatorName(b);
                 if (!nameA && nameB) {
                     return 1;
                 } else if (nameA && !nameB) {
@@ -208,7 +207,7 @@
                         <img class="table__sort-button-icon" src="/img/icon-sort.svg" alt="Sort" :class="getSortClass('hash')">
                     </button>
                 </th>
-                <th class="u-hidden-medium-down">
+                <th class="u-hidden-xlarge-down">
                     <button class="table__sort-button u-semantic-button link--hover" @click="toggleSort('coin')">
                         <span class="table__sort-button-text">Coin</span>
                         <img class="table__sort-button-icon" src="/img/icon-sort.svg" alt="Sort" :class="getSortClass('coin')">
@@ -225,14 +224,17 @@
             <tbody>
             <tr v-for="stakeItem in stakeListSorted" :key="getLabel(stakeItem) + stakeItem.coin">
                 <td>
-                    <TableLink :link-text="getLabel(stakeItem)"
-                               :link-path="getUrl(stakeItem)"
-                               :should-not-shorten="!shouldShortenLabel || getName(stakeItem)"
+                    <div class="table__cell-title" v-if="getValidatorName(stakeItem)">{{ getValidatorName(stakeItem) }}</div>
+                    <TableLink
+                            class="table__cell-sub"
+                            :link-text="getLabel(stakeItem)"
+                            :link-path="getUrl(stakeItem)"
+                            :should-not-shorten="!shouldShortenLabel"
                     />
                 </td>
-                <td class="u-hidden-medium-down">{{ stakeItem.coin }}</td>
+                <td class="u-hidden-xlarge-down">{{ stakeItem.coin }}</td>
                 <td>
-                    <span class="u-hidden-medium-up">{{ stakeItem.coin }}</span>
+                    <span class="u-hidden-xlarge-up">{{ stakeItem.coin }}</span>
 
                     <span :title="prettyPrecise(stakeItem.value)">{{ stakeItem.value | pretty }}</span>
 
