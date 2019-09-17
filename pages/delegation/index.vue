@@ -53,13 +53,13 @@
 
 <template>
     <section class="u-section u-container">
-        <section class="panel">
+        <section class="panel" v-if="$store.state.stakeList.length && !$store.getters.isOfflineMode">
             <div class="panel__header">
                 <h1 class="panel__header-title">
                     {{ $td('Delegated Stakes', 'delegation.stake-list-title') }}
                 </h1>
             </div>
-            <StakeListTable :stake-list="$store.state.stakeList" stake-item-type="validator" v-if="!$store.getters.isOfflineMode"/>
+            <StakeListTable :stake-list="$store.state.stakeList" stake-item-type="validator"/>
         </section>
 
 
