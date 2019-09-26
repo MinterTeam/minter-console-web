@@ -217,7 +217,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                            v-model="form.stake"
                            @blur="$v.form.stake.$touch()"
                     />
