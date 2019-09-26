@@ -392,7 +392,7 @@
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.initialAmount.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                            v-model="form.initialAmount"
                                            @blur="$v.form.initialAmount.$touch()"
                         />
@@ -403,7 +403,7 @@
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                            v-model="form.initialReserve"
                                            @blur="$v.form.initialReserve.$touch()"
                         />

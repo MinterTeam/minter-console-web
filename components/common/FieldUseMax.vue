@@ -74,7 +74,7 @@
 <template>
     <label class="form-field" :class="{'is-error': $value.$error, 'form-field--with-use-max': isMaxValueDefined}">
         <InputMaskedAmount
-            class="form-field__input" type="text" inputmode="numeric" v-check-empty
+            class="form-field__input" type="text" inputmode="decimal" v-check-empty
             v-bind="$attrs"
             :value="value"
             @input="$emit('input', $event)"
