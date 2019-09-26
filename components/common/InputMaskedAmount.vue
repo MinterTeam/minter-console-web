@@ -53,5 +53,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" inputmode="numeric" :value="value" v-imask="$options.imaskAmount" v-on="listeners" @accept="onAcceptUsername" ref="input"/>
+    <input type="text" autocapitalize="off" inputmode="decimal" :value="value" v-imask="$options.imaskAmount" v-on="listeners" @accept="onAcceptUsername" ref="input"/>
 </template>
