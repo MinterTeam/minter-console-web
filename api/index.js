@@ -130,7 +130,8 @@ export function prepareBalance(balanceList) {
             } else if (b.coin === COIN_NAME) {
                 return 1;
             } else {
-                return 0;
+                // sort coins by name, instead of reserve
+                return a.coin.localeCompare(b.coin);
             }
         })
         .map((coinItem) => {
