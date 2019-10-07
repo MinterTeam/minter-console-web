@@ -1,4 +1,4 @@
-import Centrifuge from 'centrifuge';
+import Centrifuge from 'centrifuge/src';
 import {prepareBalance} from '~/api';
 import {EXPLORER_RTM_URL} from "~/assets/variables";
 
