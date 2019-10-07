@@ -1,17 +1,15 @@
 <script>
     import checkEmpty from '~/assets/v-check-empty';
-    import BaseDataList from '~/components/common/BaseDataList';
+    import VueSimpleSuggest from 'vue-simple-suggest/lib/vue-simple-suggest';
     import InputUppercase from '~/components/common/InputUppercase';
 
-    const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
-    const isFirefox = /firefox/i.test(window.navigator.userAgent);
-
-    const MAX_ITEM_COUNT = 10;
-    const SLICE_END = (isSafari || isFirefox) ? undefined : MAX_ITEM_COUNT - 1;
+    const MAX_ITEM_COUNT = 6;
 
     export default {
+        inheritAttrs: false,
+        MAX_ITEM_COUNT,
         components: {
-            BaseDataList,
+            VueSimpleSuggest,
             InputUppercase,
         },
         directives: {
@@ -38,8 +36,9 @@
         },
         data() {
             return {
-                /** @type Array */
+                /** @type Array<string> */
                 coinListAll: [],
+                innerValue: this.value,
             };
         },
         computed: {
@@ -48,61 +47,17 @@
                 const { input, ...listeners } = this.$listeners;
                 return listeners;
             },
-            coinListSorted() {
-                const currentCoinList = this.coinList && this.coinList.length ? this.coinList : this.coinListAll;
-                return currentCoinList
-                    .slice()
-                    // disable filter due strange animation in chrome and hanged dropdown in safari with list from 1 letter for 0 letter after deletion
-                    // .filter((coin) => {
-                    //     if (!this.value) {
-                    //         return true;
-                    //     }
-                    //     // for 1 letter search keep only values started with this letter (e.g. remove "WALLET" for "T" search)
-                    //     if (this.value.length === 1 && coin.symbol.indexOf(this.value) !== 0) {
-                    //         return false;
-                    //     }
-                    //     return true
-                    // })
-                    .sort((a, b) => {
-                        // @TODO reconsider after https://bugs.webkit.org/show_bug.cgi?id=201121 will be resolved
-                        // @TODO reconsider after https://bugzilla.mozilla.org/show_bug.cgi?id=1474137 will be resolved
-                        // don't do anything for safari because displayed datalist is out of sync with DOM
-                        if (isSafari || isFirefox) {
-                            return 0;
-                        }
-                        if (!this.value) {
-                            return 0;
-                        }
-                        // move coins first if it's name starts with current value
-                        // prevent "ABIP" coin to be higher than "BIP" for "BIP" request
-                        const aHasStart = a.indexOf(this.value) === 0;
-                        const bHasStart = b.indexOf(this.value) === 0;
-                        // need to save browser's datalist order to prevent lose these values after slice
-                        const aHasAny = a.indexOf(this.value) !== -1;
-                        const bHasAny = b.indexOf(this.value) !== -1;
-
-                        if (aHasStart && !bHasStart) {
-                            // set a first
-                            return -1;
-                        } else if (bHasStart && !aHasStart) {
-                            // set b first
-                            return 1;
-                        } else if (aHasAny && !bHasAny) {
-                            // set a first
-                            return -1;
-                        } else if (bHasAny && !aHasAny) {
-                            // set b first
-                            return 1;
-                        } else {
-                            // save order
-                            return 0;
-                        }
-                    })
-                    .slice(0, SLICE_END);
+            currentCoinList() {
+                return this.coinList && this.coinList.length ? this.coinList : this.coinListAll;
             },
-            id() {
-                const rand = Math.random().toString().replace('.', '');
-                return `input-coin-list-${rand}`;
+        },
+        watch: {
+            value(newVal) {
+                // update suggestion list data on external value change
+                if (newVal !== this.innerValue) {
+                    this.$refs.suggest.clearSuggestions();
+                    this.innerValue = newVal;
+                }
             },
         },
         mounted() {
@@ -115,7 +70,22 @@
                 });
         },
         methods: {
-
+            filter(item, query) {
+                if (!query) {
+                    return true;
+                }
+                // keep only values started with query (e.g. remove "WALLET" for "LET" search)
+                return item.indexOf(query) === 0;
+            },
+            handleTab() {
+                if (this.$refs.suggest.hovered) {
+                    this.$refs.suggest.select(this.$refs.suggest.hovered);
+                }
+            },
+            handleSuggestionClick(item, e) {
+                // prevent reopen suggestion list by parent label click
+                e.preventDefault();
+            },
         },
     };
 
@@ -124,15 +94,28 @@
 
 <template>
     <label class="form-field" :class="{'is-error': $value.$error}">
-        <InputUppercase
-                class="form-field__input" type="text" v-check-empty
-                v-bind="$attrs"
+        <VueSimpleSuggest
                 :value="value"
-                @input="$emit('input', $event)"
-                :list="id"
-                @blur="$value.$touch()"
-        />
-        <span class="form-field__label">{{ label }}</span>
-        <BaseDataList :id="id" :itemList="coinListSorted"/>
+                :list="currentCoinList"
+                :max-suggestions="$options.MAX_ITEM_COUNT"
+                :min-length="0"
+                :filter-by-query="true"
+                :filter="filter"
+                :destyled="true"
+                :controls="{showList: [38, 40]}"
+                @input="innerValue = $event; $emit('input', $event)"
+                @blur="$value.$touch(); $emit('blur')"
+                @keydown.tab="handleTab"
+                @suggestion-click="handleSuggestionClick"
+                ref="suggest"
+        >
+            <InputUppercase
+                    class="form-field__input" type="text" v-check-empty
+                    v-bind="$attrs"
+                    :value="value"
+                    @keydown.tab="handleTab"
+            />
+            <span class="form-field__label">{{ label }}</span>
+        </VueSimpleSuggest>
     </label>
 </template>
