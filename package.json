@@ -57,7 +57,7 @@
     "vue-autonumeric": "github:shrpne/vue-autonumeric#allow-use-source",
     "vue-imask": "^5.2.1",
     "vue-inline-svg": "^1.1.3",
-    "vue-simple-suggest": "github:KazanExpress/vue-simple-suggest#037b7913ac1e222b830a98e71c3f8238fb0f88c5",
+    "vue-simple-suggest": "github:KazanExpress/vue-simple-suggest#3999287560363908b62a48eaf50ad7e1e38dde0e",
     "vuelidate": "^0.7.4",
     "vuex-persistedstate": "^2.5.4"
   },
