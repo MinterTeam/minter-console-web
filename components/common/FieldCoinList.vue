@@ -38,7 +38,6 @@
             return {
                 /** @type Array<string> */
                 coinListAll: [],
-                innerValue: this.value,
             };
         },
         computed: {
@@ -49,15 +48,6 @@
             },
             currentCoinList() {
                 return this.coinList && this.coinList.length ? this.coinList : this.coinListAll;
-            },
-        },
-        watch: {
-            value(newVal) {
-                // update suggestion list data on external value change
-                if (newVal !== this.innerValue) {
-                    this.$refs.suggest.clearSuggestions();
-                    this.innerValue = newVal;
-                }
             },
         },
         mounted() {
@@ -76,11 +66,6 @@
                 }
                 // keep only values started with query (e.g. remove "WALLET" for "LET" search)
                 return item.indexOf(query) === 0;
-            },
-            handleTab() {
-                if (this.$refs.suggest.hovered) {
-                    this.$refs.suggest.select(this.$refs.suggest.hovered);
-                }
             },
             handleSuggestionClick(item, e) {
                 // prevent reopen suggestion list by parent label click
@@ -103,9 +88,8 @@
                 :filter="filter"
                 :destyled="true"
                 :controls="{showList: [38, 40]}"
-                @input="innerValue = $event; $emit('input', $event)"
+                @input="$emit('input', $event)"
                 @blur="$value.$touch(); $emit('blur')"
-                @keydown.tab="handleTab"
                 @suggestion-click="handleSuggestionClick"
                 ref="suggest"
         >
@@ -113,7 +97,6 @@
                     class="form-field__input" type="text" v-check-empty
                     v-bind="$attrs"
                     :value="value"
-                    @keydown.tab="handleTab"
             />
             <span class="form-field__label">{{ label }}</span>
         </VueSimpleSuggest>
