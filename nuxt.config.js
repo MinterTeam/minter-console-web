@@ -1,6 +1,7 @@
 // register env before other imports @see https://www.npmjs.com/package/dotenv#how-do-i-use-dotenv-with-import-
 import 'dotenv/config';
 import dotenv from 'dotenv';
+import webpack from 'webpack';
 
 const envConfig = dotenv.config();
 const envConfigParsed = envConfig.error ? {} : envConfig.parsed;
@@ -135,6 +136,7 @@ export default {
             detectBrowserLanguage: false,
         }],
     ],
+    modern: 'client',
     /*
     ** Build configuration
     */
@@ -149,19 +151,26 @@ export default {
             './api/',
             // `./lang/`, // this watcher dont-work yet
         ],
-        /*
-        ** Run ESLint on save
-        */
-        // extend(config, { isDev, isClient, isServer }) {
-        //     // if (isDev && isClient) {
-        //     //     config.module.rules.push({
-        //     //         enforce: 'pre',
-        //     //         test: /\.(js|vue)$/,
-        //     //         loader: 'eslint-loader',
-        //     //         exclude: /(node_modules)/,
-        //     //     });
-        //     // }
-        // },
+        extend(config, { isDev, isClient, isServer }) {
+            /*
+            ** Run ESLint on save
+            */
+            // if (isDev && isClient) {
+            //     config.module.rules.push({
+            //         enforce: 'pre',
+            //         test: /\.(js|vue)$/,
+            //         loader: 'eslint-loader',
+            //         exclude: /(node_modules)/,
+            //     });
+            // }
+            if (!config.resolve) {
+                config.resolve = {};
+            }
+            config.resolve.mainFields =  ['module', 'browser', 'main'];
+        },
+        plugins: [
+            new webpack.IgnorePlugin(/^\.\/wordlists\/(?!english)/, /bip39\/src$/),
+        ],
         babel: {
             presets: [
                 [
@@ -181,6 +190,9 @@ export default {
             '@material/',
             'date-fns/esm',
             'lodash-es',
+            'centrifuge/src',
+            'autonumeric/src',
+            'vue-autonumeric/src',
             'nuxt-i18n/src',
             'qr-scanner',
             'v-autosize/src',
