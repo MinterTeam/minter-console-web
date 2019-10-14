@@ -331,6 +331,7 @@
                     :$value="$v.form.publicKey"
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
+                    :suggestion-list="[]"
                     @update:domain="publicKeyDomain = $event"
                     @update:resolving="isPublicKeyDomainResolving = $event"
                 />

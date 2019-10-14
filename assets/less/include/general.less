@@ -6,7 +6,7 @@
     font-family: 'Ubuntu';
     font-style: normal;
     font-weight: 400;
-    src: local('Ubuntu Regular'), local('Ubuntu-Regular'),
+    src: local('Ubuntu'), local('Ubuntu Regular'), local('Ubuntu-Regular'),
     url('../fonts/ubuntu-v11-cyrillic_latin-regular.woff2') format('woff2'),
     url('../fonts/ubuntu-v11-cyrillic_latin-regular.woff') format('woff');
 }
@@ -248,22 +248,22 @@ dd {overflow-wrap: break-word; margin: 0;}
 .form-field__input {
     padding: @field-input-padding 0 4px; font-size: 16px; line-height: 22px; color: inherit; background: transparent; border: none; border-bottom: 1px solid #a1a3a4; transition: 0.15s; display: block; width: 100%; pointer-events: auto; border-radius: 0; opacity: 1; /* safari disabled fix */ -webkit-text-fill-color: currentcolor; /* safari disabled fix */
     &:focus {border-color: @c-main;}
-    .is-error > & {border-color: @c-red;}
-    .form-field--dashed > & {border-bottom-style: dashed;}
-    .form-field--with-icon > & {padding-right: 26px;}
-    .form-field--with-use-max > & {padding-right: 65px;}
+    .is-error & {border-color: @c-red;}
+    .form-field--dashed & {border-bottom-style: dashed;}
+    .form-field--with-icon & {padding-right: 26px;}
+    .form-field--with-use-max & {padding-right: 65px;}
 }
 .form-field__input--select {appearance: none; background: url(../img/icon-dropdown.svg) no-repeat 100% 50%; padding-right: 24px;}
 .form-field__label {
     font-size: 16px; line-height: @field-label-height; color: @c-black-light; position: absolute; left: 0; top: @field-label-top; transition: 0.15s; transform-origin: 0 0; user-select: none; white-space: nowrap;
     .form-field__input:focus ~ &, .is-not-empty ~ & {transform: translateY(@field-label-translate) scale(@field-label-scale);}
     .form-field__input:focus ~ & {color: @c-main;}
-    .form-field.is-error > & {color: @c-red;}
+    .form-field.is-error & {color: @c-red;}
 }
 .form-field__use-max {position: absolute; right: 0; top: (4px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; text-transform: uppercase; font-weight: 700;}
 .form-field__icon {position: absolute; right: 0; top: (2px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; font-size: 0;}
 .form-field__icon--copy {top: calc((100% - 12px) / 2 - 2px);}
-.form-field__icon--loader {width: 24px; height: 24px; right: 32px;}
+.form-field__icon--loader {width: 20px; height: 20px; right: 30px; top: 16px;}
 .form-field__help {
     font-size: 12px; line-height: 16px; margin-top: 6px; display: block; color: @c-black-light;
     .form-field__error + & {margin-top: 0;}
