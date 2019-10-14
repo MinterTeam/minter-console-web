@@ -172,6 +172,51 @@ export function fromBase64(str) {
 }
 
 
+export function suggestionValidatorFilter(suggestion, query) {
+    if (!query) {
+        return true;
+    }
+    return [suggestion.value, suggestion.name].some((item) => ~item.toLowerCase().indexOf(query.toLowerCase()));
+}
+
+/**
+ * @typedef {Object} SuggestionValidatorListItem
+ * @property {string} [name]
+ * @property {string} value
+ * @property {string} [delegatedAmount]
+ */
+
+/**
+ *
+ * @param {{suggestion: SuggestionValidatorListItem, query: string}} scope
+ * @return {string|*}
+ */
+export function suggestionValidatorContent(scope) {
+    if (!scope) return scope;
+
+    const { suggestion, query } = scope;
+
+    let result = [];
+    if (suggestion.name) {
+        result.push(`<span class="suggest-item--large">${boldenSuggestion(suggestion.name, query)}</span>`);
+    }
+    if (suggestion.delegatedAmount) {
+        result.push(`<span>${suggestion.delegatedAmount}</span>`);
+    }
+    result.push(`<span class="suggest-item--small">${boldenSuggestion(suggestion.value, query)}</span>`);
+
+    return result.join(' ');
+}
+
+function boldenSuggestion(text, query) {
+    if (!query) {
+        return text;
+    }
+    const queries = query.split(/[\s-_/\\|.]/gm).filter((t) => !!t) || [''];
+    return text.replace(new RegExp('(.*?)(' + queries.join('|') + ')(.*?)', 'gi'), '$1<b>$2</b>$3');
+}
+
+
 
 // support
 export let support = {};
