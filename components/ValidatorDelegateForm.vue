@@ -22,16 +22,17 @@
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
-    import BaseDataList from '~/components/common/BaseDataList';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
 
-    const isFirefox = window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
     export default {
+        ideFix: null,
+        pretty,
+        prettyExact,
+        getExplorerTxUrl,
         components: {
             QrcodeVue,
             FieldDomain,
@@ -39,7 +40,6 @@
             FieldUseMax,
             InputUppercase,
             InputMaskedInteger,
-            BaseDataList,
             ButtonCopyIcon,
             Loader,
             Modal,
@@ -149,26 +149,6 @@
                     isOffline: this.$store.getters.isOfflineMode,
                 };
             },
-            id() {
-                const rand = Math.random().toString().replace('.', '');
-                return `input-stake-list-${rand}`;
-            },
-            validatorList() {
-                //@TODO safari doesn't use label, reconsider after https://bugs.webkit.org/show_bug.cgi?id=201768 is fixed
-                return this.$store.state.validatorList.map((item) => {
-                    let label;
-                    if (item.meta && item.meta.name) {
-                        // show pub_key only for Firefox, because it doesn't use value if label is present
-                        //@TODO remove when fixed https://bugzilla.mozilla.org/show_bug.cgi?id=869690
-                        const pubKeyPart = isFirefox ? (', ' + item.public_key) : '';
-                        label = item.meta.name + pubKeyPart;
-                    } else {
-                        label = item.public_key;
-                    }
-                    const key = item.public_key;
-                    return {label, key, value: item.public_key};
-                });
-            },
         },
         watch: {
             feeBusParams: {
@@ -188,8 +168,6 @@
             });
         },
         methods: {
-            pretty,
-            prettyExact,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -280,7 +258,6 @@
                 this.form.gasPrice = '';
                 this.$v.$reset();
             },
-            getExplorerTxUrl,
         },
     };
 </script>
@@ -294,11 +271,9 @@
                     :$value="$v.form.publicKey"
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
-                    :list="id"
                     @update:domain="domain = $event"
                     @update:resolving="isDomainResolving = $event"
                 />
-                <BaseDataList :id="id" :itemList="validatorList"/>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -351,7 +326,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${$options.pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: $options.pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
                     {{ fee.coinSymbol }} {{ fee.value | pretty }}
                     <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
@@ -414,7 +389,7 @@
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell u-cell--order-2" v-if="serverSuccess">
-                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="$options.getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
 
             <div class="u-cell u-cell--order-2" v-if="signedTx">
@@ -446,7 +421,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
+                                       :value="form.coinSymbol + ' ' + $options.prettyExact(form.stake)"
                                 >
                                 <span class="form-field__label">{{ $td('You delegate', 'form.delegation-delegate-confirm-amount') }}</span>
                             </label>

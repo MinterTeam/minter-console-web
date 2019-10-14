@@ -2,19 +2,24 @@
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidPublic} from "minterjs-util/src/public";
     import {ResolveDomain, isDomain, checkDomainSignature} from '~/api/mns';
+    import {suggestionValidatorFilter, suggestionValidatorContent} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
 
+    const TYPE_ADDRESS = 'address';
+    const TYPE_PUBLIC_KEY = 'publicKey';
+
     export default {
-        ideFix: true,
-        TYPE_ADDRESS: 'address',
-        TYPE_PUBLIC_KEY: 'publicKey',
         inheritAttrs: false,
+        TYPE_ADDRESS,
+        TYPE_PUBLIC_KEY,
+        suggestionValidatorFilter,
+        suggestionValidatorContent,
         components: {
             FieldQr,
         },
         props: {
             // self
-            /** @type "address"|"publicKey" */
+            /** @type TYPE_ADDRESS|TYPE_PUBLIC_KEY */
             valueType: {
                 type: String,
                 required: true,
@@ -37,6 +42,9 @@
                 type: String,
                 default: '',
             },
+            suggestionList: {
+                type: Array,
+            },
         },
         data() {
             return {
@@ -44,6 +52,24 @@
                 isResolving: 0,
                 mnsResolveDomain: ResolveDomain(),
             };
+        },
+        computed: {
+            /**
+             * @return {Array<SuggestionValidatorListItem>|undefined}
+             */
+            validatorList() {
+                if (this.valueType !== TYPE_PUBLIC_KEY) {
+                    return;
+                }
+
+                return this.$store.state.validatorList.map((item) => {
+                    let name = '';
+                    if (item.meta && item.meta.name) {
+                        name = item.meta.name;
+                    }
+                    return {name, value: item.public_key};
+                });
+            },
         },
         methods: {
             handleInput(inputValue) {
@@ -96,6 +122,9 @@
             @input="handleInput"
             :$value="$value"
             :label="label"
+            :suggestionList="suggestionList || validatorList"
+            :suggestionContent="$options.suggestionValidatorContent"
+            :suggestionFilter="$options.suggestionValidatorFilter"
             @blur="handleBlur"
         />
 

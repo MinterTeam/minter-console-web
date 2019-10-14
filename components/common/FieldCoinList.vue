@@ -1,6 +1,6 @@
 <script>
-    import checkEmpty from '~/assets/v-check-empty';
     import VueSimpleSuggest from 'vue-simple-suggest/lib/vue-simple-suggest';
+    import checkEmpty from '~/assets/v-check-empty';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
@@ -60,7 +60,7 @@
                 });
         },
         methods: {
-            filter(item, query) {
+            suggestionFilter(item, query) {
                 if (!query) {
                     return true;
                 }
@@ -85,13 +85,12 @@
                 :max-suggestions="$options.MAX_ITEM_COUNT"
                 :min-length="0"
                 :filter-by-query="true"
-                :filter="filter"
+                :filter="suggestionFilter"
                 :destyled="true"
                 :controls="{showList: [38, 40]}"
                 @input="$emit('input', $event)"
-                @blur="$value.$touch(); $emit('blur')"
+                @blur="$value.$touch(); $emit('blur', $event)"
                 @suggestion-click="handleSuggestionClick"
-                ref="suggest"
         >
             <InputUppercase
                     class="form-field__input" type="text" v-check-empty

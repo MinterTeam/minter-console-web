@@ -194,7 +194,10 @@ export function getAddressStakeList(address) {
  */
 export function getValidatorList() {
     return explorer.get(`validators`)
-        .then((response) => response.data.data);
+        .then((response) => response.data.data.sort((a, b) => {
+            // Sort by stake descending
+            return Number(b.stake) >= Number(a.stake);
+        }));
 }
 
 /**
