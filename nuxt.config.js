@@ -10,7 +10,7 @@ import langEn from './lang/en';
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
-const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production' ? 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=' : 'boxyvYX4ButGhwNqfdpXtx/7RJdIvBO4KMxG+v2zKFo=';
+const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production' ? [ 'G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=', '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=', 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg='] : ['G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=', '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM='];
 
 
 /**
@@ -48,6 +48,9 @@ const connectCSP = prepareCSP(envConfigParsed, (item) => {
 const imageCSP = prepareCSP(envConfigParsed, (item) => {
     return item === 'APP_ACCOUNTS_API_URL';
 });
+const scriptCSP = NUXT_LOADING_INLINE_SCRIPT_SHA.map((item) => {
+    return `'sha256-${item}'`;
+}).join(' ');
 
 export default {
     /*
@@ -60,7 +63,7 @@ export default {
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
             { 'http-equiv': 'Content-Security-Policy', content: `
                     default-src 'self' ${connectCSP};
-                    script-src 'self' 'sha256-${NUXT_LOADING_INLINE_SCRIPT_SHA}' 'unsafe-eval';
+                    script-src 'self' ${scriptCSP} 'unsafe-eval';
                     style-src 'self' 'unsafe-inline';
                     img-src 'self' ${imageCSP} data:;
                     font-src 'self' data:;
