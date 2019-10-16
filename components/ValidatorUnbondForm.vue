@@ -172,8 +172,8 @@
             suggestionValidatorList() {
                 return Object.values(this.validatorData).map((item) => {
                     let name = '';
-                    if (item.meta && item.meta.name) {
-                        name = item.meta.name;
+                    if (item.validator_meta && item.validator_meta.name) {
+                        name = item.validator_meta.name;
                     }
 
                     const delegatedAmount = item.stakeList.reduce((accumulator, stakeItem) => {
