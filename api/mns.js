@@ -84,7 +84,7 @@ function tryCall(fn, {isCancel} = {}) {
 
 // allow "a." to be handled by domain validation instead of address validation
 const DOMAIN_REG_EXP = /^([a-z0-9][a-z0-9-_]*\.)+[a-z]*$/i;
-// const DOMAIN_REG_EXP_VALID = /^([a-z0-9-_]+\.)*[a-z0-9][a-z0-9-_]+\.[a-z]{2,11}?$/i;
+const DOMAIN_REG_EXP_VALID = /^([a-z0-9][a-z0-9-_]*\.)+[a-z]{2,}$/i;
 
 /**
  * @param {string} domain
@@ -92,6 +92,10 @@ const DOMAIN_REG_EXP = /^([a-z0-9][a-z0-9-_]*\.)+[a-z]*$/i;
  */
 export function isDomain(domain) {
     return DOMAIN_REG_EXP.test(domain);
+}
+
+export function isValidDomain(domain) {
+    return DOMAIN_REG_EXP_VALID.test(domain);
 }
 
 /**
