@@ -82,8 +82,8 @@ function tryCall(fn, {isCancel} = {}) {
     }
 }
 
-// allow "asd.asd." to be handled by domain validation instead of address validation
-const DOMAIN_REG_EXP = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]*$/;
+// allow "asd.asd." and "a.asd" to be handled by domain validation instead of address validation
+const DOMAIN_REG_EXP = /^([a-z0-9][a-z0-9-_]*\.)*([a-z0-9](?:[a-z0-9-]{1,61})?[a-z0-9]|[a-z0-9])\.([(a-z]{2,})+/;
 // const DOMAIN_REG_EXP_VALID = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/;
 
 /**
