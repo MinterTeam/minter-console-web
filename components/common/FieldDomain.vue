@@ -1,7 +1,7 @@
 <script>
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidPublic} from "minterjs-util/src/public";
-    import {ResolveDomain, isDomain, checkDomainSignature} from '~/api/mns';
+    import {ResolveDomain, isDomain, isValidDomain, checkDomainSignature} from '~/api/mns';
     import {suggestionValidatorFilter, suggestionValidatorContent} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
 
@@ -93,6 +93,9 @@
                 }
             },
             resolveDomain(value, {throttle} = {}) {
+                if (!isValidDomain(value)) {
+                    return;
+                }
                 this.isResolving += 1;
                 this.$emit('update:resolving', !!this.isResolving);
                 return this.mnsResolveDomain(value, {throttle})
