@@ -35,7 +35,7 @@
     "cookie": "^0.4.0",
     "core-js": "^3.3.2",
     "custom-event-polyfill": "^1.0.7",
-    "date-fns": "^2.5.0",
+    "date-fns": "^2.5.1",
     "entity-decode": "^2.0.2",
     "ethereumjs-util": "^6.1.0",
     "js-cookie": "^2.2.1",
