@@ -203,7 +203,7 @@ export function suggestionValidatorContent(scope) {
     if (suggestion.delegatedAmount) {
         result.push(`<span>(${suggestion.delegatedAmount})</span>`);
     }
-    result.push(`<span class="suggest-item--small">${boldenSuggestion(suggestion.value, query)}</span>`);
+    result.push(`<div class="suggest-item--small">${boldenSuggestion(suggestion.value, query)}</div>`);
 
     return result.join(' ');
 }
