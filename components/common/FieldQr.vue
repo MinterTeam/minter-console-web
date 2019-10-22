@@ -86,7 +86,7 @@
         >
             <!--@select="(item) => $emit('input', item.value)"-->
             <input
-                    class="form-field__input" type="text" v-check-empty
+                    class="form-field__input" type="text" spellcheck="false" v-check-empty
                     v-bind="$attrs"
                     :value="value"
             >

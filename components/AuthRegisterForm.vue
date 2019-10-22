@@ -134,7 +134,7 @@
             </div>-->
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
-                    <input class="form-field__input" type="password" v-check-empty data-test-id="authRegisterInputPassword"
+                    <input class="form-field__input" type="password" autocomplete="new-password" v-check-empty data-test-id="authRegisterInputPassword"
                            v-model="form.password"
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
@@ -148,7 +148,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.passwordConfirm.$error}">
-                    <input class="form-field__input" type="password" v-check-empty data-test-id="authRegisterInputPasswordRepeat"
+                    <input class="form-field__input" type="password" autocomplete="new-password" v-check-empty data-test-id="authRegisterInputPasswordRepeat"
                            v-model="form.passwordConfirm"
                            @blur="$v.form.passwordConfirm.$touch()"
                     >

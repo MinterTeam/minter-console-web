@@ -102,7 +102,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
-                    <input class="form-field__input" type="password" v-check-empty data-test-id="authLoginInputPassword"
+                    <input class="form-field__input" type="password" autocomplete="current-password" v-check-empty data-test-id="authLoginInputPassword"
                            v-model="form.password"
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
