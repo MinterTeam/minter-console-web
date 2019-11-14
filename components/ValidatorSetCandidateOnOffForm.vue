@@ -37,11 +37,11 @@
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         props: {
             formType: {
                 type: String,

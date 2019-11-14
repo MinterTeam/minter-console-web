@@ -8,7 +8,7 @@
     const MAX_ITEM_COUNT = 5;
 
     export default {
-        inheritAttrs: false,
+        ideFix: null,
         MAX_ITEM_COUNT,
         components: {
             VueSimpleSuggest,
@@ -19,6 +19,7 @@
         directives: {
             checkEmpty,
         },
+        inheritAttrs: false,
         props: {
             value: {
                 type: [String, Number],
@@ -42,9 +43,15 @@
             },
             suggestionFilter: {
                 type: Function,
+                default: undefined,
             },
             suggestionContent: {
                 type: Function,
+                default: undefined,
+            },
+            suggestionMinInputLength: {
+                type: Number,
+                default: 1,
             },
         },
         data() {
@@ -72,7 +79,7 @@
                 :value="value"
                 :list="suggestionList"
                 :max-suggestions="$options.MAX_ITEM_COUNT"
-                :min-length="0"
+                :min-length="suggestionMinInputLength"
                 :filter-by-query="true"
                 :filter="suggestionFilter"
                 :destyled="true"
@@ -86,7 +93,7 @@
         >
             <!--@select="(item) => $emit('input', item.value)"-->
             <input
-                    class="form-field__input" type="text" v-check-empty
+                    class="form-field__input" type="text" spellcheck="false" v-check-empty
                     v-bind="$attrs"
                     :value="value"
             >

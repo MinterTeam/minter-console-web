@@ -34,12 +34,12 @@
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             prettyExact,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {

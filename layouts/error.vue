@@ -5,7 +5,12 @@
         layout({store}) {
             return store.getters.isAuthorized ? 'default' : 'nonAuth';
         },
-        props: ['error'],
+        props: {
+            error: {
+                type: Object,
+                required: true,
+            },
+        },
         computed: {
             statusCode() {
                 if (this.error.response) {
@@ -44,5 +49,4 @@
             </p>
         </div>
     </div>
-
 </template>

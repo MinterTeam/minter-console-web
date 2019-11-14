@@ -6,7 +6,7 @@
     const MAX_ITEM_COUNT = 6;
 
     export default {
-        inheritAttrs: false,
+        ideFix: null,
         MAX_ITEM_COUNT,
         components: {
             VueSimpleSuggest,
@@ -15,6 +15,7 @@
         directives: {
             checkEmpty,
         },
+        inheritAttrs: false,
         props: {
             value: {
                 type: String,

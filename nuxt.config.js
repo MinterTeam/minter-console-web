@@ -184,6 +184,9 @@ export default {
                     },
                 ],
             ],
+            plugins: [
+                "@babel/plugin-proposal-optional-chaining",
+            ],
             // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
             sourceType: 'unambiguous',
         },

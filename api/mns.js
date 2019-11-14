@@ -1,5 +1,6 @@
 import axios from 'axios';
-import {keccak, ecrecover} from 'ethereumjs-util';
+import {keccak} from 'ethereumjs-util/dist/hash';
+import {ecrecover} from 'ethereumjs-util/dist/signature';
 import {MNS_API_URL, MNS_PUBLIC_KEY} from "~/assets/variables";
 
 const mns = axios.create({
