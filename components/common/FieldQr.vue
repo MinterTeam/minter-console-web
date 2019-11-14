@@ -8,7 +8,7 @@
     const MAX_ITEM_COUNT = 5;
 
     export default {
-        inheritAttrs: false,
+        ideFix: null,
         MAX_ITEM_COUNT,
         components: {
             VueSimpleSuggest,
@@ -19,6 +19,7 @@
         directives: {
             checkEmpty,
         },
+        inheritAttrs: false,
         props: {
             value: {
                 type: [String, Number],
@@ -42,9 +43,11 @@
             },
             suggestionFilter: {
                 type: Function,
+                default: undefined,
             },
             suggestionContent: {
                 type: Function,
+                default: undefined,
             },
         },
         data() {

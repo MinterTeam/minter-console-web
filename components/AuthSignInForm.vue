@@ -16,10 +16,10 @@
             InputMaskedName,
             Loader,
         },
-        mixins: [validationMixin],
         directives: {
             checkEmpty,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 //@TODO common loading flag

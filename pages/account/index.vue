@@ -115,6 +115,5 @@
         >
             <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
         </Modal>
-
-    </section>
+</section>
 </template>

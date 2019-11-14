@@ -11,11 +11,11 @@
     const mnemonicValidator = withParams({type: 'mnemonic'}, isValidMnemonic);
 
     export default {
-        mixins: [validationMixin],
         directives: {
             checkEmpty,
             autosize,
         },
+        mixins: [validationMixin],
         props: {
             // address used for sign in
             isAuthAddress: {

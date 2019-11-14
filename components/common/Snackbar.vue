@@ -40,7 +40,8 @@
         <div class="mdc-snackbar__surface">
             <div class="mdc-snackbar__label"
                  role="status"
-                 aria-live="polite">
+                 aria-live="polite"
+            >
                 Copied to clipboard
             </div>
             <div class="mdc-snackbar__actions">

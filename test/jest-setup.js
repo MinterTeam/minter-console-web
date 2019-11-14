@@ -67,7 +67,7 @@ module.exports = async function() {
                 headless: false,
                 slowMo: 150,
             }
-            : {}
+            : {},
     );
     // page = await browser.newPage();
 

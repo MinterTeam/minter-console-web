@@ -30,11 +30,11 @@
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 isFormSending: false,
@@ -284,7 +284,7 @@
                 <dl>
                     <dt>{{ $td('Signed tx list:', 'form.delegation-reinvest-result') }}</dt>
                     <dd class="u-icon-wrap">
-                        <textarea class="u-icon-text reinvest__textarea" rows="6" autocapitalize="off"  spellcheck="false" v-model="signedTxList"></textarea>
+                        <textarea class="u-icon-text reinvest__textarea" rows="6" autocapitalize="off" spellcheck="false" v-model="signedTxList"></textarea>
 <!--                            <span class="u-select-all u-icon-text">-->
 <!--                                {{ signedTxList }}-->
 <!--                            </span>-->

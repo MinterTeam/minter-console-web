@@ -45,6 +45,12 @@
 
             };
         },
+        computed: {
+            ...mapGetters(['isAuthorized']),
+            isTestnet() {
+                return NETWORK === TESTNET;
+            },
+        },
         watch: {
             isAuthorized(newVal) {
                 if (newVal) {
@@ -57,12 +63,6 @@
         },
         destroyed() {
 
-        },
-        computed: {
-            ...mapGetters(['isAuthorized']),
-            isTestnet() {
-                return NETWORK === TESTNET;
-            },
         },
         methods: {
 

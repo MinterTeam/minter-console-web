@@ -101,12 +101,12 @@
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             prettyCeil,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -352,8 +352,7 @@
     <div class="panel">
         <div class="panel__header">
             <h1 class="panel__header-title">
-
-            </h1>
+</h1>
             <p class="panel__header-description"></p>
             <h1 class="panel__header-title">
                 {{ $td('Create Coin', 'coiner.create-title') }}
@@ -547,7 +546,7 @@
 
             <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
             <template v-if="$i18n.locale === 'en'">
-                <p>Note: coin will be deleted if reserve is less than {{$store.getters.COIN_NAME}} {{$options.MIN_DESTROY_RESERVE}}, OR price is less than {{$store.getters.COIN_NAME}} {{$options.MIN_PRICE}}, OR volume is less than {{$options.MIN_SUPPLY}} coin</p>
+                <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
@@ -559,7 +558,7 @@
                 </p>
             </template>
             <template v-if="$i18n.locale === 'ru'">
-                <p>Внимание: монета будет удалена, если ее резерв меньше {{$store.getters.COIN_NAME}} {{$options.MIN_DESTROY_RESERVE}} ИЛИ её цена ниже {{$store.getters.COIN_NAME}} {{$options.MIN_PRICE}} ИЛИ её объем выпуска меньше {{$options.MIN_SUPPLY}}</p>
+                <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
                 <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">

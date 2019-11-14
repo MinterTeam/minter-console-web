@@ -112,7 +112,7 @@ gulp.task('default', gulp.series(
             .on('unlinkDir', function(dirPath) {
                 del(paths.dest.img + path.basename(dirPath));
             });
-    }
+    },
 ));
 
 

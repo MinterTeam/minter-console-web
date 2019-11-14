@@ -19,10 +19,10 @@
             InputMaskedName,
             Loader,
         },
-        mixins: [validationMixin],
         directives: {
             checkEmpty,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 isFormSending: false,

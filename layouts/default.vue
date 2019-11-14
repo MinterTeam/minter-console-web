@@ -71,7 +71,7 @@
             <div class="header__container u-container u-container--large">
                 <nuxt-link class="header__logo no-link" :to="preferredPath('index')">
                     <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
-                    <div class="header__logo-text">{{ $store.state.sectionName || `${this.isTestnet ? 'Testnet ' : '' }Console` }}</div>
+                    <div class="header__logo-text">{{ $store.state.sectionName || `${isTestnet ? 'Testnet ' : '' }Console` }}</div>
                 </nuxt-link>
 
                 <div class="header__controls">
@@ -119,7 +119,7 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('delegation')"  @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="preferredPath('delegation')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
                                     {{ $td('Delegation', 'common.page-delegation') }}
                                 </nuxt-link>

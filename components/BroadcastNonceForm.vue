@@ -70,7 +70,6 @@
                     <qrcode-vue :value="serverSuccess" :size="100" level="L"></qrcode-vue>
                 </p>
             </div>
-
         </div>
     </form>
 </template>
