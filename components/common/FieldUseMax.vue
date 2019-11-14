@@ -4,13 +4,13 @@
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
 
     export default {
-        inheritAttrs: false,
         components: {
             InputMaskedAmount,
         },
         directives: {
             checkEmpty,
         },
+        inheritAttrs: false,
         props: {
             value: {
                 type: [String, Number],
@@ -26,6 +26,7 @@
             },
             maxValue: {
                 type: [String, Number],
+                default: undefined,
             },
         },
         data() {

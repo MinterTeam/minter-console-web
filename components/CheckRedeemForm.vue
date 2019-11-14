@@ -25,10 +25,10 @@
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 isFormSending: false,

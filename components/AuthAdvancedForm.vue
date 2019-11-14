@@ -11,11 +11,11 @@
     const mnemonicValidator = withParams({type: 'mnemonic'}, isValidMnemonic);
 
     export default {
-        mixins: [validationMixin],
         directives: {
             checkEmpty,
             autosize,
         },
+        mixins: [validationMixin],
         props: {
             // address used for sign in
             isAuthAddress: {
@@ -52,7 +52,7 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.mnemonic.$error, 'is-success': !$v.mnemonic.$invalid}">
-                    <textarea class="form-field__input" rows="1" autocapitalize="off" spellcheck="false" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
+                    <textarea class="form-field__input" rows="1" autocomplete="off" autocapitalize="off" spellcheck="false" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
                               v-model.trim="mnemonic"
                               @blur="$v.mnemonic.$touch()"
                     ></textarea>

@@ -172,7 +172,7 @@
                     <th class="u-hidden-small-down">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
                     <th class="u-hidden-small-up" colspan="3">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
                     <th class="u-hidden-small-down">{{ $td('Block', 'wallet.tx-table-block') }}</th>
-                    <th class="u-hidden-xlarge-down">{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone}})</th>
+                    <th class="u-hidden-xlarge-down">{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone }})</th>
                     <th class="u-hidden-xlarge-down">{{ $td('From', 'wallet.tx-table-from') }}</th>
                     <th class="u-hidden-large-down">{{ $td('Type', 'wallet.tx-table-type') }}</th>
                     <th class="u-hidden-large-down">{{ $td('Amount', 'wallet.tx-table-amount') }}</th>
@@ -359,7 +359,7 @@
 
                                 <!-- time -->
                                 <div class="table__inner-item u-hidden-xlarge-up">
-                                    <strong>{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone}})</strong> <br>
+                                    <strong>{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone }})</strong> <br>
                                     {{ tx.timestamp | time }}
                                 </div>
 
@@ -386,7 +386,7 @@
             <div class="panel__content panel__section u-text-center" v-else>No Transactions</div>
         </div>
         <div class="panel__section u-text-center">
-            <a :href="getExplorerAddressUrl(address)" class="button button--ghost-main" target="_blank">{{ $td('Show All Transactions', 'wallet.explore-tx')}}</a>
+            <a :href="getExplorerAddressUrl(address)" class="button button--ghost-main" target="_blank">{{ $td('Show All Transactions', 'wallet.explore-tx') }}</a>
         </div>
     </section>
 </template>

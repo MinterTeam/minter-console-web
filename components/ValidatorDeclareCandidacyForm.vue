@@ -43,11 +43,11 @@
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -331,7 +331,7 @@
                     :$value="$v.form.publicKey"
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
-                    :suggestion-list="[]"
+                    :suggestion-disabled="true"
                     @update:domain="publicKeyDomain = $event"
                     @update:resolving="isPublicKeyDomainResolving = $event"
                 />

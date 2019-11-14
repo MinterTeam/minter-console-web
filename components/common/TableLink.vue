@@ -69,7 +69,7 @@
                 this.elementData,
                 [
                     this.shortText,
-                ]
+                ],
             );
         },
     };

@@ -5,21 +5,27 @@
     import {suggestionValidatorFilter, suggestionValidatorContent} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
 
-    const TYPE_ADDRESS = 'address';
-    const TYPE_PUBLIC_KEY = 'publicKey';
+    /**
+     * @readonly
+     * @enum {string}
+     */
+    const VALUE_TYPE = {
+        ADDRESS: 'address',
+        PUBLIC_KEY: 'publicKey',
+    };
 
     export default {
-        inheritAttrs: false,
-        TYPE_ADDRESS,
-        TYPE_PUBLIC_KEY,
-        suggestionValidatorFilter,
-        suggestionValidatorContent,
+        ideFix: null,
+        VALUE_TYPE,
         components: {
             FieldQr,
         },
+        inheritAttrs: false,
+        suggestionValidatorFilter,
+        suggestionValidatorContent,
         props: {
             // self
-            /** @type TYPE_ADDRESS|TYPE_PUBLIC_KEY */
+            /** @type VALUE_TYPE */
             valueType: {
                 type: String,
                 required: true,
@@ -44,7 +50,17 @@
             },
             suggestionList: {
                 type: Array,
+                default: undefined,
             },
+            suggestionDisabled: {
+                type: Boolean,
+                default: false,
+            },
+            suggestionMinInputLength: {
+                type: Number,
+                default: undefined,
+            },
+
         },
         data() {
             return {
@@ -58,7 +74,7 @@
              * @return {Array<SuggestionValidatorListItem>|undefined}
              */
             validatorList() {
-                if (this.valueType !== TYPE_PUBLIC_KEY) {
+                if (this.valueType !== VALUE_TYPE.PUBLIC_KEY) {
                     return;
                 }
 
@@ -125,13 +141,14 @@
             @input="handleInput"
             :$value="$value"
             :label="label"
-            :suggestionList="suggestionList || validatorList"
+            :suggestionList="suggestionDisabled ? false : (suggestionList || validatorList)"
+            :suggestionMinInputLength="suggestionMinInputLength"
             :suggestionContent="$options.suggestionValidatorContent"
             :suggestionFilter="$options.suggestionValidatorFilter"
             @blur="handleBlur"
         />
 
-        <template v-if="valueType === $options.TYPE_ADDRESS && !$value.$pending">
+        <template v-if="valueType === $options.VALUE_TYPE.ADDRESS && !$value.$pending">
             <span class="form-field__error" v-if="$value.$dirty && !$value.required && !domain">
                 {{ $td('Enter address', 'form.wallet-send-address-error-required') }}
             </span>
@@ -143,7 +160,7 @@
             </span>
         </template>
 
-        <template v-if="valueType === $options.TYPE_PUBLIC_KEY && !$value.$pending">
+        <template v-if="valueType === $options.VALUE_TYPE.PUBLIC_KEY && !$value.$pending">
             <span class="form-field__error" v-if="$value.$dirty && !$value.required && !domain">
                 {{ $td('Enter public key', 'form.masternode-public-error-required') }}
             </span>
