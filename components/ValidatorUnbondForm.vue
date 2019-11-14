@@ -333,6 +333,7 @@
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
                     :suggestionList="suggestionValidatorList"
+                    :suggestionMinInputLength="0"
                     @update:domain="domain = $event"
                     @update:resolving="isDomainResolving = $event"
                 />

@@ -52,6 +52,15 @@
                 type: Array,
                 default: undefined,
             },
+            suggestionDisabled: {
+                type: Boolean,
+                default: false,
+            },
+            suggestionMinInputLength: {
+                type: Number,
+                default: undefined,
+            },
+
         },
         data() {
             return {
@@ -132,7 +141,8 @@
             @input="handleInput"
             :$value="$value"
             :label="label"
-            :suggestionList="suggestionList || validatorList"
+            :suggestionList="suggestionDisabled ? false : (suggestionList || validatorList)"
+            :suggestionMinInputLength="suggestionMinInputLength"
             :suggestionContent="$options.suggestionValidatorContent"
             :suggestionFilter="$options.suggestionValidatorFilter"
             @blur="handleBlur"

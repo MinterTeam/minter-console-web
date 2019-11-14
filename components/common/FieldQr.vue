@@ -49,6 +49,10 @@
                 type: Function,
                 default: undefined,
             },
+            suggestionMinInputLength: {
+                type: Number,
+                default: 1,
+            },
         },
         data() {
             return {
@@ -75,7 +79,7 @@
                 :value="value"
                 :list="suggestionList"
                 :max-suggestions="$options.MAX_ITEM_COUNT"
-                :min-length="0"
+                :min-length="suggestionMinInputLength"
                 :filter-by-query="true"
                 :filter="suggestionFilter"
                 :destyled="true"
