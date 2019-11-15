@@ -177,7 +177,7 @@
                     <th class="u-hidden-large-down">{{ $td('Type', 'wallet.tx-table-type') }}</th>
                     <th class="u-hidden-large-down">{{ $td('Amount', 'wallet.tx-table-amount') }}</th>
                     <th class="u-hidden-large-up u-hidden-small-down">{{ $td('Value', 'wallet.tx-table-value') }}</th>
-                    <th class="table__expand-cell u-hidden-small-down"></th>
+                    <th class="table__controls-cell u-hidden-small-down"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -219,8 +219,8 @@
                             </span>
                         </td>
                         <!--expand button -->
-                        <td class="table__expand-cell">
-                            <button class="table__expand-button u-semantic-button" :class="{'is-expanded': isTxExpanded[tx.txn]}" @click="toggleTx(tx.txn)">Show Tx Data</button>
+                        <td class="table__controls-cell">
+                            <button class="table__controls-button table__controls-button--expand u-semantic-button link--opacity" :class="{'is-expanded': isTxExpanded[tx.txn]}" @click="toggleTx(tx.txn)">Show Tx Data</button>
                         </td>
                     </tr>
                     <tr class="table__row-expanded-data" :key="'exp' + tx.txn" v-if="isTxExpanded[tx.txn]">
