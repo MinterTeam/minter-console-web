@@ -80,7 +80,7 @@
                         <nuxt-link class="button button&#45;&#45;ghost-white" :to="preferredPath('account')" v-if="username">{{ username }}</nuxt-link>
                         -->
                         <span class="header__user-name">{{ username }}</span>
-                        <button class="header__user-logout u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
+                        <button class="header__user-logout u-semantic-button link--opacity" data-test-id="headerLogoutButton" @click="logout">
                             <img class="" src="/img/icon-auth-logout.svg" width="40" height="40" alt="Logout">
                         </button>
                     </div>
@@ -188,7 +188,7 @@
                             </li>
                             -->
                             <li class="menu__item u-cell u-hidden-medium-up">
-                                <button class="menu__link link--hover u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
+                                <button class="menu__link link--opacity u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
                                     <img class="menu__icon" src="/img/icon-auth-logout-menu.svg" alt="" role="presentation">
                                     {{ $td('Logout', 'common.logout') }}
                                 </button>

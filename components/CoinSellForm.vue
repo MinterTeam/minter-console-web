@@ -429,7 +429,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                            <ButtonCopyIcon :copy-text="signedTx"/>
+                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                         </dd>
                     </dl>
                     <br>
