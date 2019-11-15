@@ -288,7 +288,7 @@
 <!--                            <span class="u-select-all u-icon-text">-->
 <!--                                {{ signedTxList }}-->
 <!--                            </span>-->
-                        <ButtonCopyIcon :copy-text="signedTxList"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTxList"/>
                     </dd>
                     <dd>
                         <a class="link--default" :href="signedTxListFile.url" :download="signedTxListFile.name" v-if="signedTxListFile" target="_blank" rel="noopener">Download File</a>

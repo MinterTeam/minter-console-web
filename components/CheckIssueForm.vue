@@ -199,7 +199,7 @@
                         <span class="u-select-all u-icon-text">
                             {{ check }}
                         </span>
-                        <ButtonCopyIcon :copy-text="check"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="check"/>
                     </dd>
 
                     <dt>{{ $td('Pass Phrase:', 'form.checks-issue-result-pass') }}</dt>

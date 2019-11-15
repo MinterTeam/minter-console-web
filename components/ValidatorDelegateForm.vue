@@ -14,6 +14,8 @@
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
+    import eventBus from '~/assets/event-bus';
+    import focusElement from '~/assets/focus-element';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
@@ -167,6 +169,17 @@
                 this.fee = newVal;
             });
         },
+        mounted() {
+            eventBus.$on('activate-delegate', ({hash}) => {
+                this.form.publicKey = hash;
+
+                const inputEl = this.$refs.fieldCoin.querySelector('select, input');
+                focusElement(inputEl);
+            });
+        },
+        destroyed() {
+            eventBus.$off('activate-delegate');
+        },
         methods: {
             submit() {
                 if (this.$store.getters.isOfflineMode) {
@@ -276,7 +289,7 @@
                 />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
+                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}" ref="fieldCoin">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
@@ -399,7 +412,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>

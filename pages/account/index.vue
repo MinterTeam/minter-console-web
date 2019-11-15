@@ -76,7 +76,7 @@
                 <dt>{{ $td('Address:', 'account.address') }}</dt>
                 <dd class="u-icon-wrap">
                     <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
-                    <ButtonCopyIcon :copy-text="address"/>
+                    <ButtonCopyIcon class="u-icon--copy--right" :copy-text="address"/>
                     <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
                         <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
                     </button>
@@ -87,7 +87,7 @@
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
                         <span class="u-select-all u-icon-text">{{ privateKey }}</span>
-                        <ButtonCopyIcon :copy-text="privateKey"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="privateKey"/>
                     </div>
                     <div v-else>
                         <button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ $td('Click to view', 'account.click-view') }}</button>
@@ -100,7 +100,7 @@
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
                         <span class="u-select-all u-icon-text">{{ mnemonic }}</span>
-                        <ButtonCopyIcon :copy-text="mnemonic"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="mnemonic"/>
                     </div>
                     <div v-else>
                         <button class="u-semantic-button link&#45;&#45;default" @click="visibleMnemonic = true">{{ $td('Click to view', 'account.click-view') }}</button>

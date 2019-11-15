@@ -14,6 +14,8 @@
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
+    import eventBus from '~/assets/event-bus';
+    import focusElement from '~/assets/focus-element';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
@@ -221,6 +223,18 @@
                 this.fee = newVal;
             });
         },
+        mounted() {
+            eventBus.$on('activate-unbond', ({hash, coin}) => {
+                this.form.publicKey = hash;
+                this.form.coinSymbol = coin;
+
+                const inputEl = this.$refs.fieldStake.$el.querySelector('input');
+                focusElement(inputEl);
+            });
+        },
+        destroyed() {
+            eventBus.$off('activate-unbond');
+        },
         methods: {
             pretty,
             prettyExact,
@@ -351,6 +365,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldUseMax
+                        ref="fieldStake"
                         v-model="form.stake"
                         :$value="$v.form.stake"
                         :label="$td('Stake', 'form.masternode-stake')"
@@ -450,7 +465,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>
