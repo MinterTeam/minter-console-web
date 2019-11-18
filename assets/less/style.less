@@ -139,6 +139,7 @@ td, th {
     border: none; border-top: 1px solid @c-border; padding: 10px; text-align: left;
     //&:first-child {border-left: none;}
     //&:last-child {border-right: none;}
+    tr:last-child & {border-bottom: 1px solid @c-border;}
 }
 .table__inner {margin-top: -10px;}
 .table__inner-item {margin-top: 10px; max-width: calc(100vw - @container-padding * 2 - 10px * 2); overflow-wrap: break-word;}

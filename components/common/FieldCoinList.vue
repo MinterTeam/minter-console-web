@@ -61,11 +61,26 @@
                 });
         },
         methods: {
+            suggestionOrder(query) {
+                if (!query) {
+                    return this.currentCoinList;
+                }
+                // set coin from query on first position
+                return this.currentCoinList.slice(0).sort((a, b) => {
+                    if (a === query) {
+                        return -1;
+                    } else if (b === query) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                });
+            },
             suggestionFilter(item, query) {
                 if (!query) {
                     return true;
                 }
-                // keep only values started with query (e.g. remove "WALLET" for "LET" search)
+                // keep only values started with query (e.g. remove "WALLET" for "LET" query)
                 return item.indexOf(query) === 0;
             },
             handleSuggestionClick(item, e) {
@@ -82,7 +97,7 @@
     <label class="form-field" :class="{'is-error': $value.$error}">
         <VueSimpleSuggest
                 :value="value"
-                :list="currentCoinList"
+                :list="suggestionOrder"
                 :max-suggestions="$options.MAX_ITEM_COUNT"
                 :min-length="0"
                 :filter-by-query="true"
