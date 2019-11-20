@@ -22,6 +22,32 @@
                 default: false,
             },
         },
+        data() {
+            return {
+                elFocusedBeforeOpen: null,
+            };
+        },
+        watch: {
+            isOpen(newVal) {
+                if (newVal) {
+                    // on open
+                    this.elFocusedBeforeOpen = document.activeElement;
+                    setTimeout(() => {
+                        this.$el.querySelector('[data-focus-on-open]').focus();
+                    }, 0);
+                } else {
+                    // on close
+                    setTimeout(() => {
+                        if (this.elFocusedBeforeOpen) {
+                            setTimeout(() => {
+                                this.elFocusedBeforeOpen.focus();
+                                this.elFocusedBeforeOpen = null;
+                            }, 0);
+                        }
+                    }, 0);
+                }
+            },
+        },
         methods: {
             closeModal() {
                 this.$emit('update:isOpen', false);

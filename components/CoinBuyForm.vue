@@ -432,7 +432,7 @@
                     <div class="u-grid u-grid--small u-grid--vertical-margin">
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinTo + ' ' + prettyExact(form.buyAmount)"
                                 >
                                 <span class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</span>
@@ -440,14 +440,17 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinFrom + ' ' + pretty(estimation)"
                                 >
                                 <span class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="convertBuyModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" data-test-id="convertBuyModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <Loader class="button__loader" :isLoading="true"/>
                             </button>
