@@ -112,7 +112,7 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 .button--main {
     color: #fff; background: @c-main;
-    &:hover, &:focus {background: tint(@c-main, 10%);}
+    &:hover, &:focus {background: tint(@c-main, 15%);}
     &:active {background: shade(@c-main, 10%);}
 }
 .button--white {
@@ -121,13 +121,13 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 .button--ghost {
     color: @c-black; background: transparent; border-color: @c-black;
-    &:hover, &:focus {color: #fff; background: @c-black;}
-    &:active {color: #fff; background: shade(@c-black, 10%);}
+    &:hover, &:focus {background: fade(@c-black, 10%);}
+    &:active {background: fade(@c-black, 20%);}
 }
 .button--ghost-main {
     color: @c-main; background: transparent; border-color: @c-main;
-    &:hover, &:focus {color: #fff; background: @c-main;}
-    &:active {color: #fff; background: shade(@c-main, 10%);}
+    &:hover, &:focus {background: fade(@c-main, 10%);}
+    &:active {background: fade(@c-main, 20%);}
 }
 .button--ghost-white {
     color: #fff; background: transparent; border-color: #fff;
