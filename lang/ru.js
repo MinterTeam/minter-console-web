@@ -232,6 +232,7 @@ export default {
         'checks-issue-pass-error-required': 'Введите пароль',
         'checks-issue-result-check': 'Чек:',
         'checks-issue-result-pass': 'Пароль:',
+        'checks-issue-result-link': 'Ссылка на получение:',
         'checks-issue-button': 'Создать',
 
         'wallet-send-address': 'Адрес или домен',
