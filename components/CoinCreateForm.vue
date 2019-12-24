@@ -9,7 +9,8 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
-    import CreateCoinTxParams, {MIN_MAX_SUPPLY, MAX_MAX_SUPPLY} from "minter-js-sdk/src/tx-params/create-coin";
+    import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
+    import {MIN_MAX_SUPPLY, MAX_MAX_SUPPLY} from "minter-js-sdk/src/tx-data/create-coin";
     import {TX_TYPE_CREATE_COIN} from 'minterjs-tx/src/tx-types';
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';

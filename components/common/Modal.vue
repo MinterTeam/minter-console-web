@@ -33,7 +33,10 @@
                     // on open
                     this.elFocusedBeforeOpen = document.activeElement;
                     setTimeout(() => {
-                        this.$el.querySelector('[data-focus-on-open]').focus();
+                        const focusEl = this.$el.querySelector('[data-focus-on-open]');
+                        if (focusEl) {
+                            focusEl.focus();
+                        }
                     }, 0);
                 } else {
                     // on close
