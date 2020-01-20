@@ -10,7 +10,15 @@ import langEn from './lang/en';
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
-const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production' ? [ 'G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=', '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=', 'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg='] : ['G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=', '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM='];
+const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production'
+    ? [
+        'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=',
+        'G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=',
+    ]
+    : [
+        '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
+        'G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=',
+    ];
 
 
 /**
@@ -24,7 +32,8 @@ function prepareCSP(env, keyFilter) {
     const filtered = filteredKeys.map((key) => env[key]);
 
     const parsed = filtered.map((item) => {
-        const hostname = item.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/\?.*$/, '');
+        // remove path, remove query
+        const hostname = item.replace(/(\w)\/.*$/, '$1').replace(/\?.*$/, '');
         // const domainParts = hostname.split('.');
         // const topLevelDomain = domainParts[domainParts.length - 2] + '.' + domainParts[domainParts.length - 1];
         // if (topLevelDomain !== hostname) {
@@ -185,7 +194,7 @@ export default {
                 ],
             ],
             plugins: [
-                "@babel/plugin-proposal-optional-chaining",
+                // "@babel/plugin-proposal-optional-chaining",
             ],
             // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
             sourceType: 'unambiguous',
