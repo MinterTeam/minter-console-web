@@ -13,6 +13,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
+    import {NETWORK, TESTNET} from '~/assets/variables';
     import Modal from '~/components/common/Modal';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -119,11 +120,11 @@
                             const redeemCheckTxParamsWithoutProof = removeProofFromData(redeemCheckTxParams);
                             delete redeemCheckTxParamsWithoutProof.privateKey;
                             delete redeemCheckTxParamsWithoutProof.gasPrice;
-                            console.log(redeemCheckTxParamsWithoutProof);
+                            const linkHost = NETWORK === TESTNET ? 'https://testnet.bip.to' : undefined;
                             this.deeplink = prepareLink({
                                 ...redeemCheckTxParamsWithoutProof,
                                 password: this.form.password,
-                            });
+                            }, linkHost);
                             this.clearForm();
                         } catch (error) {
                             this.serverError = getErrorText(error);
