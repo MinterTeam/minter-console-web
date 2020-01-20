@@ -346,7 +346,7 @@ export default {
         'coiner-create-crr-help': 'CRR отвечает за коэффициент постоянного резервирования монетами BIP в составе выпущенной новой. Чем выше коэффициент, тем больше обеспечение, а значит, меньше волатильность. И&nbsp;наоборот. Устанавливается&nbsp;в&nbsp;%, допустимое значение: от&nbsp;10&nbsp;до&nbsp;100.',
         'coiner-create-reserve': 'Количество резервируемых BIP',
         'coiner-create-reserve-error-required': 'Укажите объем резерва',
-        'coiner-create-reserve-error-min': 'Минимальный резерв — {min} {coin}',
+        'coiner-create-reserve-error-min': 'Минимальный резерв — {coin} {min}',
         'coiner-create-max-supply': 'Максимальная эмиссия',
         'coiner-create-max-supply-help': 'покупка монеты будет невозможна при превышении лимита',
         'coiner-create-max-supply-error-min': 'Минимум: {value}',
