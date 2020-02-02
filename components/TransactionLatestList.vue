@@ -386,7 +386,7 @@
             <div class="panel__content panel__section u-text-center" v-else>No Transactions</div>
         </div>
         <div class="panel__section u-text-center">
-            <a :href="getExplorerAddressUrl(address)" class="button button--ghost-main" target="_blank">{{ $td('Show All Transactions', 'wallet.explore-tx') }}</a>
+            <a :href="getExplorerAddressUrl(address)" class="button button--ghost-main" target="_blank" tabindex="0">{{ $td('Show All Transactions', 'wallet.explore-tx') }}</a>
         </div>
     </section>
 </template>

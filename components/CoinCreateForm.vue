@@ -604,7 +604,7 @@
                         <template v-else>
                             <div class="u-cell">
                                 <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly
+                                    <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly tabindex="-1"
                                            :value="form.coinSymbol + ' ' + prettyExact(form.initialAmount)"
                                     />
                                     <span class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</span>
@@ -612,7 +612,7 @@
                             </div>
                             <div class="u-cell">
                                 <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
                                            :value="form.crr + '%'"
                                     />
                                     <span class="form-field__label">{{ $td('With CRR', 'form.coiner-create-confirm-crr') }}</span>
@@ -620,7 +620,7 @@
                             </div>
                             <div class="u-cell">
                                 <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
                                            :value="$store.getters.COIN_NAME + ' ' + prettyExact(form.initialReserve)"
                                     />
                                     <span class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</span>
@@ -628,7 +628,10 @@
                             </div>
                         </template>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <Loader class="button__loader" :isLoading="true"/>
                             </button>

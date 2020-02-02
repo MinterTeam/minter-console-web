@@ -449,7 +449,7 @@
                     <div class="u-grid u-grid--small u-grid--vertical-margin">
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinSymbol + ' ' + prettyExact(form.amount)"
                                 >
                                 <span class="form-field__label">{{ $td('You send', 'form.wallet-send-confirm-amount') }}</span>
@@ -458,7 +458,7 @@
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
                                 <textarea
-                                    class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly rows="1"
+                                    class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
                                     v-autosize
                                     :value="form.address + (domain ? `\n(${domain})` : '')"
                                 ></textarea>
@@ -466,7 +466,10 @@
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                                 <Loader class="button__loader" :isLoading="true"/>
                             </button>

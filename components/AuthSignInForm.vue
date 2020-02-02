@@ -67,7 +67,7 @@
                 login(this.form)
                     .then((authData) => {
                         this.$store.commit('SET_AUTH_PROFILE', authData);
-                        this.$router.push(this.preferredPath('index'));
+                        this.$router.push(this.$i18nGetPreferredPath('index'));
                         // don't remove loader during redirect
                         // this.isFormSending = false;
                     })

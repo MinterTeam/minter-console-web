@@ -16,6 +16,7 @@ const path = require('path');
 const cache = require('gulp-cache');
 const imagemin = require('gulp-imagemin');
 const mozjpeg = require('imagemin-mozjpeg');
+const jpegtran = require('imagemin-jpegtran');
 //const pngquant = require('imagemin-pngquant');
 
 
@@ -72,7 +73,7 @@ gulp.task('imagemin', function() {
             imagemin([
                 imagemin.gifsicle({interlaced: true}),
                 mozjpeg({quality: 90}),
-                imagemin.jpegtran({progressive: true}),
+                jpegtran({progressive: true}),
                 //pngquant(),
                 imagemin.optipng({optimizationLevel: 5}),
                 imagemin.svgo({plugins: [{removeViewBox: false}]}),
