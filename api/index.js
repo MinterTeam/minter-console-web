@@ -175,7 +175,7 @@ export function getCoinList() {
  * @return {Promise<Array<StakeItem>>}
  */
 export function getAddressStakeList(address) {
-    return explorer.get(`addresses/${address}/delegations`)
+    return explorer.get(`addresses/${address}/delegations`, {params: {limit: 999}})
         .then((response) => response.data.data);
 }
 
