@@ -44,7 +44,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                 return getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
             isBaseCoinEnough() {
-                return baseCoinAmount >= this.baseCoinFeeValue;
+                return this.baseCoinAmount >= this.baseCoinFeeValue;
             },
             isBaseCoinFee() {
                 // use selectedFeeCoinSymbol if it is defined
