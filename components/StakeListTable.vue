@@ -269,7 +269,7 @@
                 <circle class="loader__path" cx="14" cy="14" r="12"></circle>
             </svg>
         </div>
-        <table class="table-stake-list u-text-nowrap table--vertical-top" v-else-if="stakeListGrouped.length">
+        <table class="table--stake-list u-text-nowrap" v-else-if="stakeListGrouped.length">
             <thead class="u-hidden-medium-down">
             <tr>
                 <!-- hash (colspan copy cell) -->
@@ -369,7 +369,7 @@
                                 v-if="isGroupCanExpand(stakeGroup)"
                                 @click="toggleExpand(stakeGroup.hash)"
                         >
-                            Show Stakes
+                            Toggle Stakes
                         </button>
                     </td>
                 </tr>

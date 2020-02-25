@@ -44,7 +44,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                 return getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
             isBaseCoinEnough() {
-                return baseCoinAmount >= this.baseCoinFeeValue;
+                return this.baseCoinAmount >= this.baseCoinFeeValue;
             },
             isBaseCoinFee() {
                 // use selectedFeeCoinSymbol if it is defined
@@ -68,7 +68,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                 } else {
                     const coinEstimation = this.coinPriceList[this.feeCoinSymbol];
                     if (coinEstimation) {
-                        return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue);
+                        return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue).toFixed();
                     } else {
                         return 0;
                     }

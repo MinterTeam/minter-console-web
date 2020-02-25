@@ -44,7 +44,7 @@
             <p>
                 <span class="button-group">
                     <a class="button button--ghost" href="" v-if="statusCode !== 404">{{ $td('Refresh page', 'error.refresh-link') }}</a>
-                    <a class="button button--ghost" href="/">{{ $td('Return to main page', 'error.return-link') }}</a>
+                    <a class="button button--ghost" href="/" v-if="$route.path !== '/'">{{ $td('Return to main page', 'error.return-link') }}</a>
                 </span>
             </p>
         </div>
