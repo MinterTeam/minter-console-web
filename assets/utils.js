@@ -144,6 +144,15 @@ export function prettyExact(value) {
 }
 
 /**
+ * Only format spaces for the whole part
+ * @param {string|number} value
+ * @return {string}
+ */
+export function prettyExactDecrease(value) {
+    return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&#x202F;'}));
+}
+
+/**
  * @param {string} value
  * @param {number} [endLength]
  * @param {number} [minLengthToShort]

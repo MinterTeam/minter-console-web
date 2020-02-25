@@ -18,7 +18,7 @@
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty, prettyCeil, prettyPreciseFloor, prettyExact, prettyRound} from "~/assets/utils";
+    import {getExplorerTxUrl, pretty, prettyCeil, prettyPreciseFloor, prettyExact, prettyExactDecrease, prettyRound} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -32,8 +32,8 @@
 
     // const MIN_DESTROY_RESERVE = 100;
     const MIN_CREATE_RESERVE = 10000;
-    const MIN_PRICE = 0.0001;
-    const MIN_SUPPLY = 1;
+    const MIN_PRICE = 0;
+    const MIN_SUPPLY = 0;
 
     const coinNameValidator = withParams({type: 'coinName'}, function(value) {
         return /^[A-Z0-9]{3,10}$/.test(value);
@@ -96,6 +96,7 @@
         pretty,
         prettyPreciseFloor,
         prettyExact,
+        prettyExactDecrease,
         components: {
             VueAutonumeric,
             QrcodeVue,
@@ -160,7 +161,7 @@
                 initialAmount: {
                     required,
                     minValue: minValue(1),
-                    maxValue: this.form.maxSupply ? maxValue(this.form.maxSupply) : () => true,
+                    maxValue: maxValue(this.form.maxSupply || MAX_MAX_SUPPLY),
                 },
                 constantReserveRatio: {
                     required,
@@ -415,7 +416,11 @@
                     </label>
                     <span class="form-field__error" v-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.minValue">{{ $td(`Min amount is 1`, 'form.coiner-create-amount-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.maxValue">{{ $td(`Initial amount should be less or equal of Max supply`, 'form.coiner-create-amount-error-max') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.maxValue">
+                        {{ $td(`Initial amount should be less or equal of Max supply`, 'form.coiner-create-amount-error-max') }}:
+                        <span v-if="form.maxSupply">{{ $options.prettyExactDecrease(form.maxSupply) }}</span>
+                        <span v-else>10<sup>15</sup></span>
+                    </span>
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
@@ -451,7 +456,7 @@
                     </label>
                     <span class="form-field__error" v-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.minValue">{{ $td(`Min value is ${$options.MIN_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-min', {value: $options.MIN_MAX_SUPPLY}) }}</span>
                     <span class="form-field__error" v-else-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.maxValue">{{ $td(`Max value is ${$options.MAX_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-max', {value: $options.MAX_MAX_SUPPLY}) }}</span>
-                    <div class="form-field__help">{{ $td('Coin purchase will not be possible if the limit is exceeded', 'form.coiner-create-crr-help') }}</div>
+                    <div class="form-field__help">{{ $td('Coin purchase will not be possible if the limit is exceeded', 'form.coiner-create-max-supply-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
@@ -559,7 +564,7 @@
             </div>
         </form>
 
-        <div class="panel__section">
+        <div class="panel__section panel__section--tint">
             <div class="u-grid">
                 <div class="u-cell u-cell--large--1-2">
                     <label class="form-field form-field--dashed" :class="{'is-error': $v.coinPrice.$error}">
@@ -578,7 +583,7 @@
 <!--
                 <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
 -->
-                <p>Warning! Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}, OR price less than {{ $options.MIN_PRICE }} {{ $store.getters.COIN_NAME }}, OR volume less than {{ $options.MIN_SUPPLY }} coin.</p>
+                <p><span class="u-emoji">⚠️</span> Warning! Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
@@ -594,7 +599,7 @@
 <!--
                 <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
 -->
-                <p>Внимание! Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже 10&#x202F;000 {{ $store.getters.COIN_NAME }} ИЛИ её цену ниже {{ $options.MIN_PRICE }} {{ $store.getters.COIN_NAME }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}.</p>
+                <p><span class="u-emoji">⚠️</span> Внимание! Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
                 <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
