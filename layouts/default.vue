@@ -138,14 +138,12 @@
                                     {{ $td('Masternode', 'common.page-masternode') }}
                                 </nuxt-link>
                             </li>
-                            <!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-multisignature.svg" alt="" role="presentation">
                                     {{ $td('Multisignature', 'common.page-multisignature') }}
                                 </nuxt-link>
                             </li>
-                            -->
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
                                     <img class="menu__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">

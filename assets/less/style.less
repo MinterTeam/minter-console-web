@@ -99,6 +99,8 @@
     padding: 20px;
     &+& {border-top: 1px solid @c-border;}
 }
+.panel__section--wrap {padding: 0;}
+.panel__section--medium {padding-top: 16px; padding-bottom: 16px;}
 .panel__section--tint {background: #f6f6f6;}
 .panel-title() {font: inherit; font-weight: 700; text-transform: uppercase; margin: 0;}
 .panel__header {padding-top: 18px; padding-bottom: 18px; /*display: flex; justify-content: space-between; align-items: center;*/}
@@ -107,6 +109,8 @@
 .panel__header-description {margin-top: 4px;}
 @media (min-width: @breakpoint-small-up) {
     .panel__section, .panel__header {padding-left: 24px; padding-right: 24px;}
+    .panel__section--wrap {padding: 0;}
+    .panel__section--medium {padding-top: 16px; padding-bottom: 16px;}
 }
 
 
@@ -306,10 +310,18 @@ td, th {
 }
 
 
+.multisig-participant {}
+.multisig-participant__number-cell {width: (30px + 16px); flex-shrink: 0;}
+.multisig-participant__address-cell {width: calc(100% - 30px - 16px);}
+.multisig-participant__weight-cell {width: calc(100% - 24px - 16px);}
+.multisig-participant__remove-cell {width: (24px + 16px); flex-shrink: 0;}
+.multisig-participant__remove {margin-top: 14px;}
 
-.multisig__address-wrap {display: flex;}
-.multisig__address-number {width: 42px; flex-shrink: 0; margin-right: 16px;}
-.multisig__address {flex-grow: 2;}
+@media (min-width: @breakpoint-xlarge-up) {
+    .multisig-participant__number-cell {width: (42px + 16px);}
+    .multisig-participant__address-cell {width: calc(75% - 42px - 16px);}
+    .multisig-participant__weight-cell {width: calc(25% - 24px - 16px);}
+}
 
 
 .reinvest__textarea {width: 100%; padding: 4px 8px; border: 1px solid @c-border; border-radius: 10px;}

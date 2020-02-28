@@ -193,14 +193,16 @@ dd {overflow-wrap: break-word; margin: 0;}
 @field-padding: (@field-label-height * @field-label-scale - @field-label-top-line-height-compensation);
 @field-label-top: (@field-padding + @field-input-padding);
 @field-label-translate: (-1 * (@field-label-top + @field-label-top-line-height-compensation));
+@field-input-color: #a1a3a4;
 .form-row {&+& {margin-top: 20px;}}
 .form-field {
     display: block; position: relative; cursor: pointer; font-weight: 400; padding-top: @field-padding; pointer-events: none;
     &.is-disabled {opacity: 0.6;}
 }
 .form-field__input {
-    padding: @field-input-padding 0 4px; font-size: 16px; line-height: 22px; color: inherit; background: transparent; border: none; border-bottom: 1px solid #a1a3a4; transition: 0.15s; display: block; width: 100%; pointer-events: auto; border-radius: 0; opacity: 1; /* safari disabled fix */ -webkit-text-fill-color: currentcolor; /* safari disabled fix */
+    padding: @field-input-padding 0 4px; font-size: 16px; line-height: 22px; color: inherit; background: transparent; border: none; border-bottom: 1px solid @field-input-color; transition: 0.15s; display: block; width: 100%; pointer-events: auto; border-radius: 0; opacity: 1; /* safari disabled fix */ -webkit-text-fill-color: currentcolor; /* safari disabled fix */
     &:focus {border-color: @c-main;}
+    &:read-only {border-color: @field-input-color;}
     .is-error & {border-color: @c-red;}
     .form-field--dashed & {border-bottom-style: dashed;}
     .form-field--with-icon & {padding-right: 26px;}
@@ -209,8 +211,13 @@ dd {overflow-wrap: break-word; margin: 0;}
 .form-field__input--select {appearance: none; background: url(../img/icon-dropdown.svg) no-repeat 100% 50%; padding-right: 24px;}
 .form-field__label {
     font-size: 16px; line-height: @field-label-height; color: @c-black-light; position: absolute; left: 0; top: @field-label-top; transition: 0.15s; transform-origin: 0 0; user-select: none; white-space: nowrap;
-    .form-field__input:focus ~ &, .is-not-empty ~ & {transform: translateY(@field-label-translate) scale(@field-label-scale);}
+    /* use next 3 lines, because this produce buggy autoprefixed code */
+    //.form-field__input:focus:not(:read-only) ~ &, .is-not-empty ~ & {transform: translateY(@field-label-translate) scale(@field-label-scale);}
+    .form-field__input:focus ~ & {transform: translateY(@field-label-translate) scale(@field-label-scale);}
+    .form-field__input:read-only ~ & {transform: translateY(0) scale(1);}
+    .is-not-empty ~ && {transform: translateY(@field-label-translate) scale(@field-label-scale);}
     .form-field__input:focus ~ & {color: @c-main;}
+    .form-field__input:read-only ~ & {color: @field-input-color;}
     .form-field.is-error & {color: @c-red;}
 }
 .form-field__use-max {position: absolute; right: 0; top: (4px + @field-padding); z-index: 1; cursor: pointer; pointer-events: auto; text-transform: uppercase; font-weight: 700;}

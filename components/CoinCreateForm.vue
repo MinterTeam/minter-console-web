@@ -595,7 +595,6 @@
                 </p>
             </template>
             <template v-if="$i18n.locale === 'ru'">
-
 <!--
                 <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
 -->
