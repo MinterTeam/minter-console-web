@@ -5,6 +5,7 @@ import webpack from 'webpack';
 
 const envConfig = dotenv.config();
 const envConfigParsed = envConfig.error ? {} : envConfig.parsed;
+envConfigParsed.APP_BASE_URL = process.env.APP_BASE_URL;
 
 import langEn from './lang/en';
 import langRu from './lang/ru';
