@@ -1,4 +1,4 @@
-name: deploy github pages
+name: github pages
 
 on:
   push:
@@ -25,7 +25,6 @@ jobs:
 #            ${{ runner.os }}-node-
       
       - run: npm ci
-      - run: npm test
       - run: npm run production
       
       - name: deploy
