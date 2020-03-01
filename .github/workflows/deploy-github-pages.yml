@@ -28,9 +28,9 @@ jobs:
 
       - run: cp .env.example .env
       - name: Build
-          run: npm run production
-          env:
-            APP_BASE_URL: /minter-console-web/
+        run: npm run production
+        env:
+          APP_BASE_URL: /minter-console-web/
       - run: cp ./dist/200.html ./dist/404.html
       
       - name: Deploy
