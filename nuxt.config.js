@@ -8,7 +8,7 @@ const envConfigParsed = envConfig.error ? {} : envConfig.parsed;
 
 import langEn from './lang/en';
 import langRu from './lang/ru';
-import {BASE_TITLE, BASE_DESCRIPTION, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
+import {BASE_TITLE, BASE_DESCRIPTION, APP_BASE_URL, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
 const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production'
     ? [
@@ -83,11 +83,11 @@ export default {
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
             { hid: 'og-title', name: 'og:title', content: BASE_TITLE },
             { hid: 'og-description', name: 'og:description', content: BASE_DESCRIPTION },
-            { hid: 'og-image', name: 'og:image', content: '/social-share.png' },
+            { hid: 'og-image', name: 'og:image', content: `${APP_BASE_URL}social-share.png` },
         ],
         link: [
-            { rel: 'icon', href: '/favicon.png' },
-            { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+            { rel: 'icon', href: `${APP_BASE_URL}favicon.png` },
+            { rel: 'apple-touch-icon', href: `${APP_BASE_URL}apple-touch-icon.png` },
         ],
     },
     css: [
@@ -108,6 +108,7 @@ export default {
         ],
     },
     plugins: [
+        { src: '~/plugins/base-url-prefix.js'},
         { src: '~/plugins/persistedState.js', ssr: false },
         { src: '~/plugins/online.js', ssr: false },
         { src: '~/plugins/click-blur.js', ssr: false },

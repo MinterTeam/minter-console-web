@@ -25,7 +25,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-convert${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-convert${localeSuffix}.png` },
                 ],
             };
         },

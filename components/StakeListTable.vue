@@ -278,7 +278,7 @@
 <!--
                     <button class="table__sort-button u-semantic-button link&#45;&#45;hover" @click="toggleSort('hash')">
                         <span class="table__sort-button-text">{{ hashName }}</span>
-                        <img class="table__sort-button-icon" src="/img/icon-sort.svg" alt="Sort" :class="getSortClass('hash')">
+                        <img class="table__sort-button-icon" :src="`${BASE_URL_PREFIX}/img/icon-sort.svg`" alt="Sort" :class="getSortClass('hash')">
                     </button>
 -->
                 </th>
@@ -287,7 +287,7 @@
 <!--
                     <button class="table__sort-button u-semantic-button link&#45;&#45;hover" @click="toggleSort('coin')">
                         <span class="table__sort-button-text">Coin</span>
-                        <img class="table__sort-button-icon" src="/img/icon-sort.svg" alt="Sort" :class="getSortClass('coin')">
+                        <img class="table__sort-button-icon" :src="`${BASE_URL_PREFIX}/img/icon-sort.svg`" alt="Sort" :class="getSortClass('coin')">
                     </button>
 -->
                 </th>
@@ -296,7 +296,7 @@
 <!--
                     <button class="table__sort-button u-semantic-button link&#45;&#45;hover" @click="toggleSort('value', true)">
                         <span class="table__sort-button-text">Amount</span>
-                        <img class="table__sort-button-icon" src="/img/icon-sort.svg" alt="Sort" :class="getSortClass('value')">
+                        <img class="table__sort-button-icon" :src="`${BASE_URL_PREFIX}/img/icon-sort.svg`" alt="Sort" :class="getSortClass('value')">
                     </button>
 -->
                 </th>
@@ -356,13 +356,13 @@
                         <button class="table__controls-button u-semantic-button link--opacity"
                                 @click="activateDelegate({hash: stakeGroup.hash})"
                         >
-                            <img src="/img/icon-plus.svg" alt="Delegate to validator">
+                            <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Delegate to validator">
                         </button>
                         <button class="table__controls-button u-semantic-button link--opacity"
                                 @click="activateUnbond({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin})"
                                 v-if="!isGroupCanExpand(stakeGroup)"
                         >
-                            <img src="/img/icon-minus.svg" alt="Unbond coin">
+                            <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
                         </button>
                         <button class="table__controls-button table__controls-button--expand u-semantic-button link--opacity"
                                 :class="{'is-expanded': expandedList[stakeGroup.hash]}"
@@ -411,7 +411,7 @@
                             <button class="table__controls-button u-semantic-button link--opacity"
                                     @click="activateUnbond({hash: stakeGroup.hash, coin: stakeItem.coin})"
                             >
-                                <img src="/img/icon-minus.svg" alt="Unbond coin">
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
                             </button>
                         </td>
                     </tr>
