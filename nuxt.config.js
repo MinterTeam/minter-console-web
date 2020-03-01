@@ -98,6 +98,7 @@ export default {
     */
     loading: { color: '#cf5c2c' },
     router: {
+        base: process.env.APP_BASE_URL || '/',
         linkActiveClass: '',
         linkExactActiveClass: 'is-active',
         middleware: [

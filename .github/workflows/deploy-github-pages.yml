@@ -25,9 +25,15 @@ jobs:
 #            ${{ runner.os }}-node-
       
       - run: npm ci
-      - run: npm run production
+
+      - run: cp .env.example .env
+      - name: Build
+          run: npm run production
+          env:
+            APP_BASE_URL: /minter-console-web/
+      - run: cp ./dist/200.html ./dist/404.html
       
-      - name: deploy
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
