@@ -136,7 +136,7 @@
 table {width: 100%; border-collapse: collapse;}
 th {background: #f6f6f6;}
 td, th {
-    border: none; border-top: 1px solid @c-border; padding: 10px; text-align: left;
+    border: none; border-top: 1px solid @c-border; padding: @table-cell-padding; text-align: left;
     //&:first-child {border-left: none;}
     //&:last-child {border-right: none;}
     tr:last-child & {border-bottom: 1px solid @c-border;}
@@ -188,7 +188,7 @@ td, th {
     .table__controls-cell--copy {
         & + td, & + th {padding-right: 0;}
     }
-    //.table-stake-list {
+    //.table--stake-list {
     //    display: grid;
     //    thead, tbody, tr {display: contents;}
     //}

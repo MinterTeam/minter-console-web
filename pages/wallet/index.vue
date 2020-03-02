@@ -56,7 +56,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-wallet${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-wallet${localeSuffix}.png` },
                 ],
             };
         },
@@ -93,14 +93,14 @@
     <section class="u-section u-container">
         <div class="panel panel__header wallet__info">
             <div class="wallet__address">
-                <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" width="40" height="40" alt="" role="presentation">
+                <img class="wallet__address-icon u-hidden-small-down" :src="`${BASE_URL_PREFIX}/img/icon-wallet.svg`" width="40" height="40" alt="" role="presentation">
                 <div class="wallet__address-content">
                     <div>{{ $td('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
                         <ButtonCopyIcon class="u-icon--copy--right u-text-white" :copy-text="address"/>
                         <button class="u-icon u-icon--qr--right u-text-white u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
+                            <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                         </button>
                     </div>
                 </div>

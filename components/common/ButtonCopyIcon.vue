@@ -18,6 +18,6 @@
 
 <template>
     <ButtonCopy class="u-icon u-semantic-button link--opacity" aria-label="Copy" :copy-text="copyText">
-        <InlineSvg src="/img/icon-copy.svg"/>
+        <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`"/>
     </ButtonCopy>
 </template>
