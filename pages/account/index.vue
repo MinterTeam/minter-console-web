@@ -30,7 +30,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-account${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-account${localeSuffix}.png` },
                 ],
             };
         },
@@ -78,7 +78,7 @@
                     <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
                     <ButtonCopyIcon class="u-icon--copy--right" :copy-text="address"/>
                     <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
-                        <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
+                        <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                     </button>
                 </dd>
 

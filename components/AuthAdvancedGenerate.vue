@@ -46,7 +46,7 @@
                               :value="address"
                     ></textarea>
                     <ButtonCopy class="form-field__icon form-field__icon--copy u-semantic-button link--opacity" :copy-text="address">
-                        <img src="/img/icon-copy-black.svg" alt="Copy">
+                        <img :src="`${BASE_URL_PREFIX}/img/icon-copy-black.svg`" alt="Copy">
                     </ButtonCopy>
                     <span class="form-field__label">{{ $td('Your generated address', 'index.auth-sign-up-seed-address') }}</span>
                 </label>
@@ -57,7 +57,7 @@
                               :value="mnemonic"
                     ></textarea>
                     <ButtonCopy class="form-field__icon form-field__icon--copy u-semantic-button link--opacity" data-test-id="authAdvancedRegisterCopyButton" :copy-text="mnemonic">
-                        <img src="/img/icon-copy-black.svg" :alt="$td('Copy Seed Phrase', 'index.auth-sign-up-seed-copy')">
+                        <img :src="`${BASE_URL_PREFIX}/img/icon-copy-black.svg`" :alt="$td('Copy Seed Phrase', 'index.auth-sign-up-seed-copy')">
                     </ButtonCopy>
                     <span class="form-field__label">{{ $td('Your generated seed phrase', 'index.auth-sign-up-seed-result') }}</span>
                 </label>

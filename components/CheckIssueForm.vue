@@ -279,7 +279,7 @@
                         </span>
                         <ButtonCopyIcon class="u-icon--copy--right" :copy-text="check"/>
                         <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isCheckQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
+                            <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                         </button>
                     </dd>
 
@@ -296,7 +296,7 @@
                         </span>
                         <ButtonCopyIcon class="u-icon--copy--right" :copy-text="deeplink"/>
                         <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isLinkQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
+                            <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                         </button>
                     </dd>
                 </dl>
