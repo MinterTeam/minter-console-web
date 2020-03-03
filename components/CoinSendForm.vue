@@ -194,12 +194,11 @@
                 this.serverSuccess = '';
 
                 this.signedTx = prepareSignedTx(new SendTxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
-                })).serialize().toString('hex');
+                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {

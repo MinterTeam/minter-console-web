@@ -154,7 +154,7 @@
                 this.serverError = '';
                 this.serverSuccess = '';
 
-                this.signedTx = prepareSignedTx(this.getTxParams()).serialize().toString('hex');
+                this.signedTx = prepareSignedTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
@@ -190,7 +190,6 @@
                 const TxParams = this.formType === 'on' ? SetCandidateOnTxParams : SetCandidateOffTxParams;
 
                 return new TxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,

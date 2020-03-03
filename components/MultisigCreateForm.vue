@@ -222,14 +222,13 @@
                 this.serverSuccess = '';
 
                 this.signedTx = prepareSignedTx({
-                    privateKey: this.$store.getters.privateKey,
                     type: TX_TYPE.CREATE_MULTISIG,
                     chainId: this.$store.getters.CHAIN_ID,
                     data: new CreateMultisigTxData(this.multisigData),
                     gasCoin: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
                     payload: this.form.payload || undefined,
-                }).serialize().toString('hex');
+                }, {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
