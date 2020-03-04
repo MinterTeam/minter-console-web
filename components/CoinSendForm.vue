@@ -9,7 +9,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
-    import {TX_TYPE_SEND} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import prepareSignedTx, {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce} from '~/api/gate';
@@ -149,7 +149,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_SEND,
+                    txType: TX_TYPE.SEND,
                     txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,

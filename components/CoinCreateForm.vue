@@ -11,7 +11,7 @@
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
     import {MIN_MAX_SUPPLY, MAX_MAX_SUPPLY} from "minter-js-sdk/src/tx-data/create-coin";
-    import {TX_TYPE_CREATE_COIN} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
     import {postTx} from '~/api/gate';
@@ -232,7 +232,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_CREATE_COIN,
+                    txType: TX_TYPE.CREATE_COIN,
                     txFeeOptions: {
                         payload: this.form.message,
                         coinSymbol: this.form.symbol,

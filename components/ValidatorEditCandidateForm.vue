@@ -7,7 +7,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import EditCandidateTxParams from "minter-js-sdk/src/tx-params/candidate-edit";
-    import {TX_TYPE_EDIT_CANDIDATE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
@@ -118,7 +118,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_EDIT_CANDIDATE,
+                    txType: TX_TYPE.EDIT_CANDIDATE,
                     txFeeOptions: {payload: this.form.message},
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,

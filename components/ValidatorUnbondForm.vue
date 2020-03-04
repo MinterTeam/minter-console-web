@@ -1,7 +1,6 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
-    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -9,7 +8,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
     import UnbondTxParams from "minter-js-sdk/src/tx-params/stake-unbond";
-    import {TX_TYPE_UNBOND} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
@@ -144,7 +143,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_UNBOND,
+                    txType: TX_TYPE.UNBOND,
                     txFeeOptions: {payload: this.form.message},
                     // selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
