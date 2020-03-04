@@ -347,7 +347,7 @@
                                     {{ fromBase64(tx.data.check.nonce) }}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.due_block">
-                                    <strong>{{ $td('Due Block', 'wallet.tx-table-check-issuer') }}</strong> <br>
+                                    <strong>{{ $td('Due Block', 'wallet.tx-table-due-block') }}</strong> <br>
                                     {{ tx.data.check.due_block }}
                                 </div>
 

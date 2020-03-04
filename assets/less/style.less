@@ -102,6 +102,7 @@
 .panel__section--wrap {padding: 0;}
 .panel__section--medium {padding-top: 16px; padding-bottom: 16px;}
 .panel__section--tint {background: #f6f6f6;}
+.panel__section--injected {}
 .panel-title() {font: inherit; font-weight: 700; text-transform: uppercase; margin: 0;}
 .panel__header {padding-top: 18px; padding-bottom: 18px; /*display: flex; justify-content: space-between; align-items: center;*/}
 .panel__header-title {.panel-title(); display: flex; align-items: center;}
@@ -322,6 +323,11 @@ td, th {
     .multisig-participant__address-cell {width: calc(75% - 42px - 16px);}
     .multisig-participant__weight-cell {width: calc(25% - 24px - 16px);}
 }
+
+
+.multisig-signature__cell {display: flex; flex-wrap: wrap;}
+.multisig-signature__field {width: calc(100% - 24px - 10px);}
+.multisig-signature__remove {margin-left: 10px; flex-shrink: 0; margin-top: 14px;}
 
 
 .reinvest__textarea {width: 100%; padding: 4px 8px; border: 1px solid @c-border; border-radius: 10px;}
