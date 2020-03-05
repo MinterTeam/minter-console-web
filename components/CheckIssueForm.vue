@@ -51,6 +51,7 @@
                     value: null,
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     password: '',
+                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                 },
                 deeplink: '',
                 isCheckQrModalVisible: false,
@@ -75,6 +76,10 @@
                 },
                 password: {
                     required,
+                },
+                feeCoinSymbol: {
+                    minLength: minLength(3),
+                    maxLength: maxLength(10),
                 },
             },
         },
@@ -107,7 +112,7 @@
                                 privateKey: this.$store.getters.privateKey,
                                 chainId: this.$store.getters.CHAIN_ID,
                                 ...this.form,
-                                passPhrase: this.form.password,
+                                gasCoin: this.form.feeCoinSymbol,
                             });
                             this.password = this.form.password;
                             // deeplink
@@ -147,6 +152,7 @@
                 this.form.value = null;
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.password = '';
+                this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.$v.$reset();
             },
         },
@@ -210,7 +216,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.value.$dirty && !$v.form.value.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--3-4">
+            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
                     <input class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
                            v-model.trim="form.password"
@@ -220,7 +226,37 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'form.checks-issue-pass-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--medium--1-2 u-cell--xlarge--1-4">
+            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
+                <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
+                    <select class="form-field__input form-field__input--select is-not-empty"
+                            v-model="form.feeCoinSymbol"
+                            v-if="balance && balance.length"
+                    >
+<!--
+                        <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
+-->
+                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
+                            {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
+                        </option>
+                    </select>
+                    <InputUppercase class="form-field__input" type="text" v-check-empty
+                                    v-model.trim="form.feeCoinSymbol"
+                                    @blur="$v.form.feeCoinSymbol.$touch()"
+                                    v-else
+                    />
+                    <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+<!--
+                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else>
+                    {{ fee.coinSymbol }} {{ fee.value | pretty }}
+                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                </div>
+-->
+            </div>
+            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
                     <InputMaskedInteger class="form-field__input" v-check-empty
                            v-model="form.dueBlock"
@@ -243,21 +279,24 @@
                         </span>
                         <ButtonCopyIcon class="u-icon--copy--right" :copy-text="check"/>
                         <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isCheckQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
+                            <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                         </button>
                     </dd>
 
                     <dt>{{ $td('Password:', 'form.checks-issue-result-pass') }}</dt>
                     <dd class="u-select-all">{{ password }}</dd>
 
-                    <dt>{{ $td('Link to redeem:', 'form.checks-issue-result-check') }}</dt>
+                    <dt>
+                        {{ $td('Link to redeem.', 'form.checks-issue-result-link') }} <br>
+                        <span class="u-emoji">⚠️</span> {{ $td('Warning! Password included in the link. Send the link only directly to the recipient.' , 'form.checks-issue-result-link-warning') }}
+                    </dt>
                     <dd class="u-icon-wrap">
                         <span class="u-select-all u-icon-text u-text-break-all">
                             <a class="link--main link--hover" :href="deeplink" target="_blank">{{ deeplinkPretty }}</a>
                         </span>
                         <ButtonCopyIcon class="u-icon--copy--right" :copy-text="deeplink"/>
                         <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isLinkQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="24" height="24"/>
+                            <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                         </button>
                     </dd>
                 </dl>

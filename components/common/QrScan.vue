@@ -95,7 +95,7 @@
 <template>
     <div v-show="qrScanner" @click.prevent>
         <button class="form-field__icon u-semantic-button link--opacity" type="button" @click.prevent="scanQr">
-            <img src="/img/icon-qr.svg" alt="Scan QR Code" width="24" height="24">
+            <img :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" alt="Scan QR Code" width="24" height="24">
         </button>
         <Modal class="qr-scan__modal"
                modal-container-class="qr-scan__modal-container"

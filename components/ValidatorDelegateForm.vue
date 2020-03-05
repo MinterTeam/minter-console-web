@@ -9,7 +9,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
-    import {TX_TYPE_DELEGATE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
@@ -143,7 +143,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_DELEGATE,
+                    txType: TX_TYPE.DELEGATE,
                     txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
@@ -209,12 +209,11 @@
                 this.serverSuccess = '';
 
                 this.signedTx = prepareSignedTx(new DelegateTxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
-                })).serialize().toString('hex');
+                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
@@ -425,7 +424,7 @@
             <div class="panel">
                 <div class="panel__header">
                     <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" src="/img/icon-delegate.svg" alt="" role="presentation" width="40" height="40">
+                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-delegate.svg`" alt="" role="presentation" width="40" height="40">
                         {{ $td('Delegate', 'delegation.delegate-title') }}
                     </h1>
                 </div>
