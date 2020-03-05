@@ -128,6 +128,14 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            hasBalance() {
+                if (this.form.multisigAddress) {
+                    return false;
+                }
+                return this.$store.getters.balance.find((coin) => {
+                    return coin.amount > 0;
+                });
+            },
             maxAmount() {
                 const selectedCoin = this.$store.getters.balance.find((coin) => {
                     return coin.coin === this.form.coinSymbol;
@@ -279,6 +287,7 @@
                 this.signature = null;
 
                 let txParams = new SendTxParams({
+                    chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     signatureType: 2,
                     feeCoinSymbol: this.fee.coinSymbol,
@@ -369,7 +378,7 @@
                         <select class="form-field__input form-field__input--select" v-check-empty
                                 v-model="form.coinSymbol"
                                 @blur="$v.form.coinSymbol.$touch()"
-                                v-if="balance && balance.length"
+                                v-if="hasBalance"
                         >
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                                 {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
@@ -400,7 +409,7 @@
                     <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
                         <select class="form-field__input form-field__input--select is-not-empty"
                                 v-model="form.feeCoinSymbol"
-                                v-if="balance && balance.length"
+                                v-if="hasBalance"
                         >
                             <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">

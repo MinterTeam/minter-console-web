@@ -25,7 +25,7 @@
         },
         data() {
             return {
-                list: this.value || [
+                list: (this.value && this.value.map((item) => ({signature: item}))) || [
                     {signature: ''},
                     {signature: ''},
                 ],
@@ -47,7 +47,7 @@
         computed: {
             listHash() {
                 return this.list.reduce((prev, current) => {
-                    return prev + current;
+                    return prev.signature + current.signature;
                 });
             },
         },
