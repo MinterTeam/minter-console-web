@@ -10,7 +10,7 @@
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
     import {TX_TYPE_CREATE_COIN} from 'minterjs-tx/src/tx-types';
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
@@ -22,6 +22,7 @@
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     const MIN_CRR = 10;
@@ -94,17 +95,18 @@
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
             Modal,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             prettyCeil,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -213,8 +215,10 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_CREATE_COIN,
-                    txFeeOptions: {coinSymbolLength: this.form.coinSymbol.length},
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {
+                        payload: this.form.message,
+                        coinSymbol: this.form.coinSymbol,
+                    },
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
@@ -348,8 +352,7 @@
     <div class="panel">
         <div class="panel__header">
             <h1 class="panel__header-title">
-
-            </h1>
+</h1>
             <p class="panel__header-description"></p>
             <h1 class="panel__header-title">
                 {{ $td('Create Coin', 'coiner.create-title') }}
@@ -388,7 +391,7 @@
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.initialAmount.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                            v-model="form.initialAmount"
                                            @blur="$v.form.initialAmount.$touch()"
                         />
@@ -399,7 +402,7 @@
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                            v-model="form.initialReserve"
                                            @blur="$v.form.initialReserve.$touch()"
                         />
@@ -500,9 +503,7 @@
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                         <span class="button__content">{{ $td('Create', 'form.coiner-create-button') }}</span>
-                        <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                            <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                        </svg>
+                        <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
                     <div class="form-field__error" v-else-if="$v.coinPrice.$invalid && $v.form.initialAmount.$dirty && $v.form.initialReserve.$dirty && $v.form.crr.$dirty">
@@ -520,7 +521,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                            <ButtonCopyIcon :copy-text="signedTx"/>
+                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                         </dd>
                     </dl>
                     <br>
@@ -545,7 +546,7 @@
 
             <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
             <template v-if="$i18n.locale === 'en'">
-                <p>Note: coin will be deleted if reserve is less than {{$store.getters.COIN_NAME}} {{$options.MIN_DESTROY_RESERVE}}, OR price is less than {{$store.getters.COIN_NAME}} {{$options.MIN_PRICE}}, OR volume is less than {{$options.MIN_SUPPLY}} coin</p>
+                <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
@@ -557,7 +558,7 @@
                 </p>
             </template>
             <template v-if="$i18n.locale === 'ru'">
-                <p>Внимание: монета будет удалена, если ее резерв меньше {{$store.getters.COIN_NAME}} {{$options.MIN_DESTROY_RESERVE}} ИЛИ её цена ниже {{$store.getters.COIN_NAME}} {{$options.MIN_PRICE}} ИЛИ её объем выпуска меньше {{$options.MIN_SUPPLY}}</p>
+                <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
                 <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
@@ -576,7 +577,7 @@
             <div class="panel">
                 <div class="panel__header">
                     <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation" width="40" height="40">
+                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation" width="40" height="40">
                         {{ $td('Create Coin', 'coiner.create-title') }}
                     </h1>
                 </div>
@@ -603,7 +604,7 @@
                         <template v-else>
                             <div class="u-cell">
                                 <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly
+                                    <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly tabindex="-1"
                                            :value="form.coinSymbol + ' ' + prettyExact(form.initialAmount)"
                                     />
                                     <span class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</span>
@@ -611,7 +612,7 @@
                             </div>
                             <div class="u-cell">
                                 <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
                                            :value="form.crr + '%'"
                                     />
                                     <span class="form-field__label">{{ $td('With CRR', 'form.coiner-create-confirm-crr') }}</span>
@@ -619,7 +620,7 @@
                             </div>
                             <div class="u-cell">
                                 <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
+                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
                                            :value="$store.getters.COIN_NAME + ' ' + prettyExact(form.initialReserve)"
                                     />
                                     <span class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</span>
@@ -627,11 +628,12 @@
                             </div>
                         </template>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                </svg>
+                                <Loader class="button__loader" :isLoading="true"/>
                             </button>
                             <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}

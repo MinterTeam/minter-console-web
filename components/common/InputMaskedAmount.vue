@@ -25,15 +25,13 @@
         data() {
             return {
                 // inner value set by imask
-                maskedValue: this.value,
+                maskedValue: '',
             };
         },
         computed: {
-            // pass native events
-            inputListeners: function() {
-                let listeners = Object.assign({}, this.$listeners);
-                // input event fires separately
-                delete listeners.input;
+            // all parent listeners except `input`
+            listeners() {
+                const { input, ...listeners } = this.$listeners;
                 return listeners;
             },
         },
@@ -41,12 +39,21 @@
             value(newVal) {
                 // typed value has to be updated if prop value changed programmatically
                 if (newVal !== this.maskedValue) {
-                    this.$refs.input.maskRef.typedValue = newVal;
+                    this.updateMaskState(newVal);
                 }
             },
         },
+        mounted() {
+            this.updateMaskState(this.value);
+        },
         methods: {
-            onAcceptUsername(e) {
+            updateMaskState(value) {
+                this.$refs.input.maskRef.typedValue = value;
+                const maskedValue = this.$refs.input.maskRef._value;
+                const cursorPos = maskedValue.length;
+                this.$refs.input.maskRef._selection = {start: cursorPos, end: cursorPos};
+            },
+            onAcceptInput(e) {
                 this.maskedValue = e.detail._unmaskedValue;
                 this.$emit('input', e.detail._unmaskedValue);
             },
@@ -55,5 +62,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" inputmode="numeric" :value="value" v-imask="$options.imaskAmount" v-on="inputListeners" @accept="onAcceptUsername" ref="input"/>
+    <input type="text" autocapitalize="off" inputmode="decimal" v-imask="$options.imaskAmount" v-on="listeners" @accept="onAcceptInput" ref="input"/>
 </template>

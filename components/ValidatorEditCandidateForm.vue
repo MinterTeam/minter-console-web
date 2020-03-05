@@ -9,35 +9,39 @@
     import EditCandidateTxParams from "minter-js-sdk/src/tx-params/candidate-edit";
     import {TX_TYPE_EDIT_CANDIDATE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     let feeBus;
 
     export default {
         components: {
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -61,21 +65,27 @@
                 /** @type FeeData */
                 fee: {},
                 signedTx: null,
+                rewardAddressDomain: '',
+                isRewardAddressDomainResolving: false,
+                ownerAddressDomain: '',
+                isOwnerAddressDomainResolving: false,
+                publicKeyDomain: '',
+                isPublicKeyDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isPublicKeyDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 rewardAddress: {
                     required,
-                    validAddress: isValidAddress,
+                    validAddress: this.isRewardAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
                 ownerAddress: {
                     required,
-                    validAddress: isValidAddress,
+                    validAddress: this.isOwnerAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
                 feeCoinSymbol: {
                     required,
@@ -109,7 +119,7 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_EDIT_CANDIDATE,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
@@ -234,21 +244,36 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="publicKeyDomain = $event"
+                    @update:resolving="isPublicKeyDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.rewardAddress" :$value="$v.form.rewardAddress" :label="$td('Reward Address', 'form.masternode-reward-address')"/>
-                <span class="form-field__error" v-if="$v.form.rewardAddress.$dirty && !$v.form.rewardAddress.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.rewardAddress.$dirty && !$v.form.rewardAddress.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
-                <div class="form-field__help">{{ $td('Address where the reward will be accrued', 'form.masternode-reward-address-help') }}</div>
+                <FieldDomain
+                    v-model.trim="form.rewardAddress"
+                    :$value="$v.form.rewardAddress"
+                    valueType="address"
+                    :label="$td('Reward Address or Domain', 'form.masternode-reward-address')"
+                    :help="$td('Address where the reward will be accrued', 'form.masternode-reward-address-help')"
+                    @update:domain="rewardAddressDomain = $event"
+                    @update:resolving="isRewardAddressDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.ownerAddress" :$value="$v.form.ownerAddress" :label="$td('Owner Address', 'form.masternode-owner-address')"/>
-                <span class="form-field__error" v-if="$v.form.ownerAddress.$dirty && !$v.form.ownerAddress.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.ownerAddress.$dirty && !$v.form.ownerAddress.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
-                <div class="form-field__help">{{ $td('Masternode owner\'s address', 'form.masternode-owner-address-help') }}</div>
+                <FieldDomain
+                    v-model.trim="form.ownerAddress"
+                    :$value="$v.form.ownerAddress"
+                    valueType="address"
+                    :label="$td('Owner Address or Domain', 'form.masternode-owner-address')"
+                    :help="$td('Masternode owner\'s address', 'form.masternode-owner-address-help')"
+                    @update:domain="ownerAddressDomain = $event"
+                    @update:resolving="isOwnerAddressDomainResolving = $event"
+                />
             </div>
 
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
@@ -330,9 +355,7 @@
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Edit candidate', 'form.masternode-edit-button') }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
@@ -347,7 +370,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>

@@ -1,6 +1,7 @@
 <script>
     import QrScanner from 'qr-scanner/src/qr-scanner';
     import QrScannerWorkerPath from '!!file-loader!~/node_modules/qr-scanner/qr-scanner-worker.min.js';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     QrScanner.WORKER_PATH = QrScannerWorkerPath;
@@ -8,6 +9,7 @@
 
     export default {
         components: {
+            Loader,
             Modal,
         },
         props: {
@@ -92,8 +94,8 @@
 
 <template>
     <div v-show="qrScanner" @click.prevent>
-        <button class="form-field__icon form-field__icon--qr u-semantic-button" type="button" @click.prevent="scanQr">
-            <img src="/img/icon-qr.svg" alt="Scan QR Code" width="24" height="24">
+        <button class="form-field__icon u-semantic-button link--opacity" type="button" @click.prevent="scanQr">
+            <img :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" alt="Scan QR Code" width="24" height="24">
         </button>
         <Modal class="qr-scan__modal"
                modal-container-class="qr-scan__modal-container"
@@ -103,9 +105,7 @@
         >
             <div class="qr-scan__wrap">
                 <div class="qr-scan__notice">
-                    <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
-                        <circle class="loader__path" cx="14" cy="14" r="12"></circle>
-                    </svg>
+                    <Loader :isLoading="true"/>
                     <div v-if="cameraError">Allow camera access</div>
                 </div>
                 <video class="qr-scan__video" ref="qrVideo" autoplay playsinline muted></video>

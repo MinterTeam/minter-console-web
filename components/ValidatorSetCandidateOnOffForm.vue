@@ -9,35 +9,39 @@
     import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src";
     import {TX_TYPE_SET_CANDIDATE_ON, TX_TYPE_SET_CANDIDATE_OFF} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     let feeBus;
 
     export default {
         components: {
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         props: {
             formType: {
                 type: String,
@@ -65,13 +69,15 @@
                 /** @type FeeData */
                 fee: {},
                 signedTx: null,
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 feeCoinSymbol: {
                     required,
@@ -105,7 +111,7 @@
             feeBusParams() {
                 return {
                     txType: this.formType === 'on' ? TX_TYPE_SET_CANDIDATE_ON : TX_TYPE_SET_CANDIDATE_OFF,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
@@ -229,9 +235,14 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
                 <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
@@ -312,9 +323,7 @@
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td(`Set candidate ${formType}`, `form.masternode-${formType}-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
@@ -329,7 +338,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>

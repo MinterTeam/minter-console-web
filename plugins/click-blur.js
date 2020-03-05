@@ -2,7 +2,8 @@
  * Remove unnecessary :focus from links and buttons after mouse click
  */
 document.addEventListener('click', (e) => {
-    if (e.screenX > 0 && e.target.tagName && (e.target.tagName.toLowerCase() === 'a' || e.target.tagName.toLowerCase() === 'button')) {
-        e.target.blur();
+    const el = typeof e.target.closest === 'function' && (e.target.closest('a') || e.target.closest('button'));
+    if (e.screenX > 0 && el) {
+        el.blur();
     }
 });

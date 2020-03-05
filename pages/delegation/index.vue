@@ -1,25 +1,28 @@
 <script>
     import getTitle from '~/assets/get-title';
+    import StakeListTable from '~/components/StakeListTable';
     import ValidatorDelegateForm from '~/components/ValidatorDelegateForm';
     import ValidatorUnbondForm from '~/components/ValidatorUnbondForm';
     import ValidatorReinvestForm from '~/components/ValidatorReinvestForm';
     import ValidatorReinvestPostForm from '~/components/ValidatorReinvestStartForm';
 
-    let balanceInterval;
+    let stakeInterval;
 
     export default {
         components: {
+            StakeListTable,
             ValidatorDelegateForm,
             ValidatorUnbondForm,
             ValidatorReinvestForm,
             ValidatorReinvestPostForm,
         },
         fetch({ app, store }) {
-            //@TODO fetch balance in middleware
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
+            if (store.getters.isOfflineMode) {
+                return;
+            }
+            store.dispatch('FETCH_VALIDATOR_LIST');
+            return store.dispatch('FETCH_STAKE_LIST');
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -32,23 +35,34 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-delegation${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-delegation${localeSuffix}.png` },
                 ],
             };
         },
         mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-            }, 10000);
+            //@TODO move to websocket https://minterteam.atlassian.net/browse/EX-205
+            stakeInterval = setInterval(() => {
+                this.$store.dispatch('FETCH_STAKE_LIST');
+            }, 10 * 1000);
         },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
+        destroyed() {
+            clearInterval(stakeInterval);
         },
     };
 </script>
 
 <template>
     <section class="u-section u-container">
+        <section class="panel" v-if="$store.state.stakeList.length && !$store.getters.isOfflineMode">
+            <div class="panel__header">
+                <h1 class="panel__header-title">
+                    {{ $td('Delegated Stakes', 'delegation.stake-list-title') }}
+                </h1>
+            </div>
+            <StakeListTable :stake-list="$store.state.stakeList" stake-item-type="validator"/>
+        </section>
+
+
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">

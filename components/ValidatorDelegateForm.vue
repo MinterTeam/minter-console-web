@@ -11,40 +11,50 @@
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
     import {TX_TYPE_DELEGATE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
+    import eventBus from '~/assets/event-bus';
+    import focusElement from '~/assets/focus-element';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
 
     export default {
+        ideFix: null,
+        pretty,
+        prettyExact,
+        getExplorerTxUrl,
         components: {
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             FieldUseMax,
             InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
             Modal,
         },
         directives: {
             checkEmpty,
             autosize,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -69,13 +79,15 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 stake: {
                     required,
@@ -132,7 +144,7 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_DELEGATE,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
@@ -157,9 +169,18 @@
                 this.fee = newVal;
             });
         },
+        mounted() {
+            eventBus.$on('activate-delegate', ({hash}) => {
+                this.form.publicKey = hash;
+
+                const inputEl = this.$refs.fieldCoin.querySelector('select, input');
+                focusElement(inputEl);
+            });
+        },
+        destroyed() {
+            eventBus.$off('activate-delegate');
+        },
         methods: {
-            pretty,
-            prettyExact,
             submit() {
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -250,7 +271,6 @@
                 this.form.gasPrice = '';
                 this.$v.$reset();
             },
-            getExplorerTxUrl,
         },
     };
 </script>
@@ -259,12 +279,17 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
+                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}" ref="fieldCoin">
                     <select class="form-field__input form-field__input--select" v-check-empty
                             v-model="form.coinSymbol"
                             @blur="$v.form.coinSymbol.$touch()"
@@ -314,7 +339,7 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${$options.pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: $options.pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
                     {{ fee.coinSymbol }} {{ fee.value | pretty }}
                     <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
@@ -372,14 +397,12 @@
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Delegate', `form.delegation-delegate-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell u-cell--order-2" v-if="serverSuccess">
-                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="$options.getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
 
             <div class="u-cell u-cell--order-2" v-if="signedTx">
@@ -389,7 +412,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>
@@ -402,7 +425,7 @@
             <div class="panel">
                 <div class="panel__header">
                     <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" src="/img/icon-delegate.svg" alt="" role="presentation" width="40" height="40">
+                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-delegate.svg`" alt="" role="presentation" width="40" height="40">
                         {{ $td('Delegate', 'delegation.delegate-title') }}
                     </h1>
                 </div>
@@ -410,28 +433,31 @@
                     <div class="u-grid u-grid--small u-grid--vertical-margin">
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
-                                       :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
+                                       :value="form.coinSymbol + ' ' + $options.prettyExact(form.stake)"
                                 >
                                 <span class="form-field__label">{{ $td('You delegate', 'form.delegation-delegate-confirm-amount') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                    <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                              :value="form.publicKey"
-                                    ></textarea>
+                                <textarea
+                                    class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                                    v-autosize
+                                    :value="form.publicKey + (domain ? `\n(${domain})` : '')"
+                                ></textarea>
                                 <span class="form-field__label">{{ $td('To the masternode', 'form.delegation-delegate-confirm-address') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                </svg>
+                                <Loader class="button__loader" :isLoading="true"/>
                             </button>
-                            <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                            <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}
                             </button>
                         </div>

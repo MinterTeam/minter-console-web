@@ -4,33 +4,37 @@
     import minValue from 'vuelidate/lib/validators/minValue';
     import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
     import {isValidPublic} from "minterjs-util/src/public";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {privateToAddressString} from 'minterjs-util';
     import {postAutoDelegationTxList} from '~/api';
     import {getNonce} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
+            FieldDomain,
             FieldQr,
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 isFormSending: false,
@@ -45,6 +49,8 @@
                 },
                 signedTxList: null,
                 signedTxListFile: null,
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
@@ -54,7 +60,7 @@
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 stake: {
                     required,
@@ -200,13 +206,18 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                            v-model="form.stake"
                            @blur="$v.form.stake.$touch()"
                     />
@@ -256,11 +267,12 @@
 
             <!-- Controls -->
             <div class="u-cell u-cell--large--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button
+                    class="button button--main button--full"
+                    :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
+                >
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
@@ -272,11 +284,11 @@
                 <dl>
                     <dt>{{ $td('Signed tx list:', 'form.delegation-reinvest-result') }}</dt>
                     <dd class="u-icon-wrap">
-                        <textarea class="u-icon-text reinvest__textarea" rows="6" autocapitalize="off"  spellcheck="false" v-model="signedTxList"></textarea>
+                        <textarea class="u-icon-text reinvest__textarea" rows="6" autocapitalize="off" spellcheck="false" v-model="signedTxList"></textarea>
 <!--                            <span class="u-select-all u-icon-text">-->
 <!--                                {{ signedTxList }}-->
 <!--                            </span>-->
-                        <ButtonCopyIcon :copy-text="signedTxList"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTxList"/>
                     </dd>
                     <dd>
                         <a class="link--default" :href="signedTxListFile.url" :download="signedTxListFile.name" v-if="signedTxListFile" target="_blank" rel="noopener">Download File</a>

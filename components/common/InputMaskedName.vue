@@ -23,13 +23,21 @@
                         }
                     },
                 },
-                usernameMasked: this.initialValue,
+                // usernameMasked: this.initialValue,
             };
         },
+        mounted() {
+            this.updateMaskState(this.initialValue);
+        },
         methods: {
+            updateMaskState(value) {
+                this.$refs.maskInput.maskRef.typedValue = value;
+                const maskedValue = this.$refs.maskInput.maskRef._value;
+                const cursorPos = maskedValue.length;
+                this.$refs.maskInput.maskRef._selection = {start: cursorPos, end: cursorPos};
+            },
             onAcceptUsername(e) {
-                this.usernameMasked = e.detail._value;
-                e.detail._unmaskedValue = this.usernameMasked.replace(/^@/, '');
+                e.detail._unmaskedValue = e.detail._value.replace(/^@/, '');
                 this.$emit('accept', e);
             },
         },
@@ -37,5 +45,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" spellcheck="false" :value="usernameMasked" v-imask="imaskNameOptions" @accept="onAcceptUsername"/>
+    <input type="text" autocomplete="username" autocapitalize="off" spellcheck="false" ref="maskInput" v-imask="imaskNameOptions" @accept="onAcceptUsername"/>
 </template>

@@ -3,10 +3,12 @@
     import Big from 'big.js';
     import * as TX_TYPES from 'minterjs-tx/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
+    import Loader from '~/components/common/Loader';
     import TableLink from '~/components/common/TableLink';
 
     export default {
         components: {
+            Loader,
             TableLink,
         },
         filters: {
@@ -65,6 +67,12 @@
                 }
                 const isOutcomeMultisend = this.address === tx.from;
                 return !isOutcomeMultisend;
+            },
+            isIncomeSend(tx) {
+                return this.address === tx.data.to;
+            },
+            isReceive(tx) {
+                return this.isIncomeSend(tx) || this.isIncomeMultisend(tx);
             },
             getAmount(tx) {
                 return tx.data.value
@@ -134,6 +142,13 @@
                     return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(new Big(delivery.value)), new Big(0)).toFixed();
                 }
             },
+            getValidatorName(tx) {
+                if (!tx.data.pub_key) {
+                    return;
+                }
+                const validator = this.$store.state.validatorList.find((validatorItem) => validatorItem.public_key === tx.data.pub_key);
+                return validator && validator.meta && validator.meta.name;
+            },
             fromBase64,
             getExplorerBlockUrl,
             getExplorerTxUrl,
@@ -157,12 +172,12 @@
                     <th class="u-hidden-small-down">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
                     <th class="u-hidden-small-up" colspan="3">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
                     <th class="u-hidden-small-down">{{ $td('Block', 'wallet.tx-table-block') }}</th>
-                    <th class="u-hidden-xlarge-down">{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone}})</th>
+                    <th class="u-hidden-xlarge-down">{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone }})</th>
                     <th class="u-hidden-xlarge-down">{{ $td('From', 'wallet.tx-table-from') }}</th>
                     <th class="u-hidden-large-down">{{ $td('Type', 'wallet.tx-table-type') }}</th>
                     <th class="u-hidden-large-down">{{ $td('Amount', 'wallet.tx-table-amount') }}</th>
                     <th class="u-hidden-large-up u-hidden-small-down">{{ $td('Value', 'wallet.tx-table-value') }}</th>
-                    <th class="table__expand-cell u-hidden-small-down"></th>
+                    <th class="table__controls-cell u-hidden-small-down"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -185,7 +200,10 @@
                             />
                         </td>
                         <!-- type -->
-                        <td class="u-hidden-large-down">{{ tx.type | txType }}</td>
+                        <td class="u-hidden-large-down">
+                            <span v-if="isReceive(tx)">Receive</span>
+                            <span v-else>{{ tx.type | txType }}</span>
+                        </td>
                         <!-- amount -->
                         <td class="u-hidden-large-down">
                             <div v-if="hasAmount(tx)">
@@ -194,14 +212,15 @@
                         </td>
                         <!-- value -->
                         <td class="u-hidden-large-up">
-                            {{ tx.type | txType }}
+                            <span v-if="isReceive(tx)">Receive</span>
+                            <span v-else>{{ tx.type | txType }}</span>
                             <span v-if="hasAmount(tx)">
                                 {{ getAmountWithCoin(tx) }}
                             </span>
                         </td>
                         <!--expand button -->
-                        <td class="table__expand-cell">
-                            <button class="table__expand-button u-semantic-button" :class="{'is-expanded': isTxExpanded[tx.txn]}" @click="toggleTx(tx.txn)">Show Tx Data</button>
+                        <td class="table__controls-cell">
+                            <button class="table__controls-button table__controls-button--expand u-semantic-button link--opacity" :class="{'is-expanded': isTxExpanded[tx.txn]}" @click="toggleTx(tx.txn)">Show Tx Data</button>
                         </td>
                     </tr>
                     <tr class="table__row-expanded-data" :key="'exp' + tx.txn" v-if="isTxExpanded[tx.txn]">
@@ -267,6 +286,13 @@
                                 </div>
 
                                 <!-- type DECLARE_CANDIDACY, DELEGATE, UNBOND, SET_CANDIDATE_ONLINE, SET_CANDIDATE_OFFLINE -->
+                                <div class="table__inner-item" v-if="getValidatorName(tx)">
+                                    <strong>Validator</strong> <br>
+                                    <TableLink :link-text="getValidatorName(tx)"
+                                               :link-path="getExplorerValidatorUrl(tx.data.pub_key)"
+                                               :should-not-shorten="true"
+                                    />
+                                </div>
                                 <div class="table__inner-item" v-if="tx.data.pub_key">
                                     <strong>{{ $td('Public Key', 'wallet.tx-table-public') }}</strong> <br>
                                     <TableLink :link-text="tx.data.pub_key"
@@ -333,7 +359,7 @@
 
                                 <!-- time -->
                                 <div class="table__inner-item u-hidden-xlarge-up">
-                                    <strong>{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone}})</strong> <br>
+                                    <strong>{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone }})</strong> <br>
                                     {{ tx.timestamp | time }}
                                 </div>
 
@@ -342,6 +368,12 @@
                                     <strong>{{ $td('Fee', 'wallet.tx-table-fee') }}</strong> <br>
                                     {{ $store.getters.COIN_NAME }} {{ tx.fee | pretty }}
                                 </div>
+
+                                <!-- message -->
+                                <div class="table__inner-item" v-if="tx.payload">
+                                    <strong>Message</strong> <br>
+                                    {{ fromBase64(tx.payload) }}
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -349,14 +381,12 @@
                 </tbody>
             </table>
             <div class="panel__content panel__section u-text-center" v-else-if="isLoading">
-                <svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28">
-                    <circle class="loader__path" cx="14" cy="14" r="12"></circle>
-                </svg>
+                <Loader :isLoading="true"/>
             </div>
             <div class="panel__content panel__section u-text-center" v-else>No Transactions</div>
         </div>
         <div class="panel__section u-text-center">
-            <a :href="getExplorerAddressUrl(address)" class="button button--ghost-main" target="_blank">{{ $td('Show All Transactions', 'wallet.explore-tx')}}</a>
+            <a :href="getExplorerAddressUrl(address)" class="button button--ghost-main" target="_blank" tabindex="0">{{ $td('Show All Transactions', 'wallet.explore-tx') }}</a>
         </div>
     </section>
 </template>

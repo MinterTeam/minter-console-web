@@ -4,8 +4,6 @@
     import CoinSellAllForm from '~/components/CoinSellAllForm';
     import CoinBuyForm from '~/components/CoinBuyForm';
 
-    let balanceInterval;
-
     export default {
         components: {
             CoinSellForm,
@@ -13,10 +11,8 @@
             CoinBuyForm,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
+            return Promise.resolve();
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -29,17 +25,9 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-convert${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-convert${localeSuffix}.png` },
                 ],
             };
-        },
-        mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-            }, 10000);
-        },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
         },
     };
 </script>

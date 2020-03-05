@@ -119,23 +119,108 @@ export function getAddressTransactionList(address, params = {}) {
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
-        .then((response) => response.data.data.balances.sort((a, b) => {
-                // set base coin first
-                if (a.coin === COIN_NAME) {
-                    return -1;
-                } else if (b.coin === COIN_NAME) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })
-            .map((coinItem) => {
-                return {
-                    ...coinItem,
-                    amount: stripZeros(coinItem.amount),
-                };
-            }));
+        .then((response) => prepareBalance(response.data.data.balances));
 }
+
+export function prepareBalance(balanceList) {
+    return balanceList.sort((a, b) => {
+            // set base coin first
+            if (a.coin === COIN_NAME) {
+                return -1;
+            } else if (b.coin === COIN_NAME) {
+                return 1;
+            } else {
+                // sort coins by name, instead of reserve
+                return a.coin.localeCompare(b.coin);
+            }
+        })
+        .map((coinItem) => {
+            return {
+                ...coinItem,
+                amount: stripZeros(coinItem.amount),
+            };
+        });
+}
+
+/**
+ * @return {Promise<Array<CoinItem>>}
+ */
+export function getCoinList() {
+    return explorer.get('coins')
+        .then((response) => response.data.data);
+        // don't sort, coins already sorted by reserve
+        // .then((response) => response.data.data.sort((a, b) => {
+        //     if (a.symbol === COIN_NAME) {
+        //         return -1;
+        //     } else if (b.symbol === COIN_NAME) {
+        //         return 1;
+        //     } else {
+        //         return a.symbol.localeCompare(b.symbol);
+        //     }
+        // }));
+}
+
+/**
+ * @typedef {Object} CoinItem
+ * @param {number} crr
+ * @param {number|string} volume
+ * @param {number|string} reserve_balance
+ * @param {string} name
+ * @param {string} symbol
+ */
+
+
+/**
+ * @param {string} address
+ * @return {Promise<Array<StakeItem>>}
+ */
+export function getAddressStakeList(address) {
+    return explorer.get(`addresses/${address}/delegations`, {params: {limit: 999}})
+        .then((response) => response.data.data);
+}
+
+/**
+ * @typedef {Object} StakeItem
+ * @property {string} [pub_key]
+ * @property {ValidatorMeta} [validator_meta]
+ * @property {string} [address]
+ * @property {string|number} value
+ * @property {string|number} bip_value
+ * @property {string} coin
+ */
+
+/**
+ * @return {Promise<Array<Validator>>}
+ */
+export function getValidatorList() {
+    return explorer.get(`validators`)
+        .then((response) => {
+            return response.data.data.sort((a, b) => {
+                // Sort by stake descending
+                return b.stake - a.stake;
+            });
+        });
+}
+
+/**
+ * @typedef {Object} Validator
+ * @property {string} [public_key]
+ * @property {ValidatorMeta} meta
+ * @property {number} status
+ * @property {string|number} stake
+ * @property {string|number} part
+ * @property {number} delegator_count
+ * @property {Array<{coin: string, value: string, address: string}>} delegator_list
+ */
+
+/**
+ * @typedef {Object} ValidatorMeta
+ * @property {string} name
+ * @property {string} description
+ * @property {string} icon_url
+ * @property {string} site_url
+ */
+
 
 
 /**

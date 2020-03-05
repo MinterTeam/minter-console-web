@@ -7,42 +7,47 @@
     import minValue from 'vuelidate/lib/validators/minValue';
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
+    import autosize from 'v-autosize';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
     import {TX_TYPE_SEND} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
-
     let feeBus;
 
     export default {
         components: {
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             FieldUseMax,
             InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
             Modal,
         },
         directives: {
+            autosize,
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -67,13 +72,15 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 address: {
                     required,
-                    validAddress: isValidAddress,
+                    validAddress: this.isDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
                 amount: {
                     required,
@@ -131,7 +138,7 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_SEND,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
@@ -274,13 +281,15 @@
         <form class="panel__section" novalidate @submit.prevent="submit">
             <div class="u-grid u-grid--small u-grid--vertical-margin">
                 <div class="u-cell u-cell--xlarge--1-2">
-                    <FieldQr data-test-id="walletSendInputAddress"
-                             v-model.trim="form.address"
-                             :$value="$v.form.address"
-                             :label="$td('Address', 'form.wallet-send-address')"
+                    <FieldDomain
+                        data-test-id="walletSendInputAddress"
+                        v-model.trim="form.address"
+                        :$value="$v.form.address"
+                        valueType="address"
+                        :label="$td('Address or domain', 'form.wallet-send-address')"
+                        @update:domain="domain = $event"
+                        @update:resolving="isDomainResolving = $event"
                     />
-                    <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.wallet-send-address-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.wallet-send-address-error-invalid') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -391,11 +400,16 @@
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" data-test-id="walletSendSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                    <button
+                        class="button button--main button--full"
+                        data-test-id="walletSendSubmitButton"
+                        :class="{
+                            'is-loading': isFormSending,
+                            'is-disabled': $v.$invalid
+                        }"
+                    >
                         <span class="button__content">{{ $td('Send', 'form.wallet-send-button') }}</span>
-                        <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                            <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                        </svg>
+                        <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" data-test-id="walletSendErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
@@ -413,7 +427,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                            <ButtonCopyIcon :copy-text="signedTx"/>
+                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                         </dd>
                     </dl>
                     <br>
@@ -427,7 +441,7 @@
             <div class="panel">
                 <div class="panel__header">
                     <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" src="/img/icon-send.svg" alt="" role="presentation" width="40" height="40">
+                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-send.svg`" alt="" role="presentation" width="40" height="40">
                         {{ $td('Send Coins', 'wallet.send-title') }}
                     </h1>
                 </div>
@@ -435,7 +449,7 @@
                     <div class="u-grid u-grid--small u-grid--vertical-margin">
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinSymbol + ' ' + prettyExact(form.amount)"
                                 >
                                 <span class="form-field__label">{{ $td('You send', 'form.wallet-send-confirm-amount') }}</span>
@@ -443,20 +457,23 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" autocapitalize="off" spellcheck="false" readonly
-                                       :value="form.address"
-                                >
+                                <textarea
+                                    class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                                    v-autosize
+                                    :value="form.address + (domain ? `\n(${domain})` : '')"
+                                ></textarea>
                                 <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                </svg>
+                                <Loader class="button__loader" :isLoading="true"/>
                             </button>
-                            <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                            <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}
                             </button>
                         </div>

@@ -16,8 +16,6 @@
         return getAddressTransactionList(addres, {limit: 5});
     }
 
-    let balanceInterval;
-
     export default {
         components: {
             QrcodeVue,
@@ -32,16 +30,13 @@
             pretty,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_BALANCE')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
+            store.dispatch('FETCH_VALIDATOR_LIST');
+            return Promise.resolve();
         },
         asyncData({ store }) {
             if (store.getters.isOfflineMode) {
-                return {
-                    txList: [],
-                };
+                return;
             }
             return getAddressLatestTransactionList(store.getters.address)
                 .then((txListInfo) => {
@@ -61,7 +56,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-wallet${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-wallet${localeSuffix}.png` },
                 ],
             };
         },
@@ -82,20 +77,14 @@
                 return NETWORK === TESTNET;
             },
         },
-        mounted() {
-            balanceInterval = setInterval(() => {
-                this.$store.dispatch('FETCH_BALANCE');
-                if (this.$store.getters.isOfflineMode) {
-                    return;
-                }
+        watch: {
+            // update tx list on balance updated
+            "$store.state.balance": function() {
                 getAddressLatestTransactionList(this.address)
                     .then((txListInfo) => {
                         this.txList = txListInfo.data;
                     });
-            }, 10000);
-        },
-        beforeDestroy() {
-            clearInterval(balanceInterval);
+            },
         },
     };
 </script>
@@ -104,14 +93,14 @@
     <section class="u-section u-container">
         <div class="panel panel__header wallet__info">
             <div class="wallet__address">
-                <img class="wallet__address-icon u-hidden-small-down" src="/img/icon-wallet.svg" width="40" height="40" alt="" role="presentation">
+                <img class="wallet__address-icon u-hidden-small-down" :src="`${BASE_URL_PREFIX}/img/icon-wallet.svg`" width="40" height="40" alt="" role="presentation">
                 <div class="wallet__address-content">
                     <div>{{ $td('Your address:', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
-                        <ButtonCopyIcon :copy-text="address"/>
-                        <button class="u-icon--qr u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
-                            <InlineSvg src="/img/icon-qr.svg" width="30" height="30"/>
+                        <ButtonCopyIcon class="u-icon--copy--right u-text-white" :copy-text="address"/>
+                        <button class="u-icon u-icon--qr--right u-text-white u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
+                            <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                         </button>
                     </div>
                 </div>
@@ -135,6 +124,5 @@
         >
             <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
         </Modal>
-
-    </section>
+</section>
 </template>

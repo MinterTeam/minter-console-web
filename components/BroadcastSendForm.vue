@@ -6,19 +6,21 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
             FieldQr,
+            Loader,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 isFormSending: false,
@@ -84,16 +86,13 @@
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Send', `form.broadcast-tx-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
             <div class="u-cell" v-if="serverSuccess">
                 <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
-
-        </div>
+</div>
     </form>
 </template>

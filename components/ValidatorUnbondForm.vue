@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import Big from 'big.js';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -10,17 +11,22 @@
     import UnbondTxParams from "minter-js-sdk/src/tx-params/stake-unbond";
     import {TX_TYPE_UNBOND} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
+    import eventBus from '~/assets/event-bus';
+    import focusElement from '~/assets/focus-element';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
+    import FieldCoinList from '~/components/common/FieldCoinList';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
-    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
@@ -28,22 +34,25 @@
     export default {
         components: {
             QrcodeVue,
+            FieldDomain,
             FieldQr,
+            FieldCoinList,
+            FieldUseMax,
             InputUppercase,
-            InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
             Modal,
         },
         directives: {
             checkEmpty,
             autosize,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -68,13 +77,15 @@
                 fee: {},
                 isConfirmModalVisible: false,
                 signedTx: null,
+                domain: '',
+                isDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 stake: {
                     required,
@@ -110,18 +121,84 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            maxAmount() {
+                // no validator selected
+                if (!this.stakeList.length) {
+                    return;
+                }
+                // no coinSymbol entered
+                if (!this.form.coinSymbol) {
+                    return;
+                }
+                const selectedCoin = this.stakeList.find((coin) => {
+                    return coin.coin === this.form.coinSymbol;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                return selectedCoin.value;
+            },
             showAdvanced() {
                 return this.isModeAdvanced || this.$store.getters.isOfflineMode;
             },
             feeBusParams() {
                 return {
                     txType: TX_TYPE_UNBOND,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     // selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
+            },
+            validatorData() {
+                let validatorList = {};
+                this.$store.state.stakeList.forEach((item) => {
+                    if (!validatorList[item.pub_key]) {
+                        validatorList[item.pub_key] = Object.assign({stakeList: []}, item);
+                        delete validatorList[item.pub_key].coin;
+                        delete validatorList[item.pub_key].value;
+                        delete validatorList[item.pub_key].bip_value;
+                    }
+                    validatorList[item.pub_key].stakeList.push({
+                        coin: item.coin,
+                        value: item.value,
+                    });
+                });
+                return validatorList;
+            },
+            /**
+             * @return {Array<SuggestionValidatorListItem>|undefined}
+             */
+            suggestionValidatorList() {
+                return Object.values(this.validatorData).map((item) => {
+                    let name = '';
+                    if (item.validator_meta && item.validator_meta.name) {
+                        name = item.validator_meta.name;
+                    }
+
+                    const delegatedAmount = item.stakeList.reduce((accumulator, stakeItem) => {
+                        const stakeItemValue = stakeItem.coin + '&nbsp;' + pretty(stakeItem.value);
+                        if (!accumulator) {
+                            return stakeItemValue;
+                        } else {
+                            return accumulator + ', ' + stakeItemValue;
+                        }
+                    }, '');
+                    return {name, value: item.pub_key, delegatedAmount};
+                });
+            },
+            stakeList() {
+                const selectedValidator = this.validatorData[this.form.publicKey];
+                if (selectedValidator) {
+                    return selectedValidator.stakeList;
+                } else {
+                    return [];
+                }
+            },
+            stakeCoinList() {
+                return this.stakeList.map((item) => item.coin);
             },
         },
         watch: {
@@ -133,6 +210,11 @@
                 },
                 deep: true,
             },
+            'form.publicKey': function(newVal) {
+                if (this.stakeCoinList.length === 1) {
+                    this.form.coinSymbol = this.stakeCoinList[0];
+                }
+            },
         },
         created() {
             feeBus = new FeeBus(this.feeBusParams);
@@ -140,6 +222,18 @@
             feeBus.$on('updateFee', (newVal) => {
                 this.fee = newVal;
             });
+        },
+        mounted() {
+            eventBus.$on('activate-unbond', ({hash, coin}) => {
+                this.form.publicKey = hash;
+                this.form.coinSymbol = coin;
+
+                const inputEl = this.$refs.fieldStake.$el.querySelector('input');
+                focusElement(inputEl);
+            });
+        },
+        destroyed() {
+            eventBus.$off('activate-unbond');
         },
         methods: {
             pretty,
@@ -170,7 +264,6 @@
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
-
                 this.signedTx = prepareSignedTx(new UnbondTxParams({
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
@@ -248,30 +341,36 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :suggestionList="suggestionValidatorList"
+                    :suggestionMinInputLength="0"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
-                                    v-model.trim="form.coinSymbol"
-                                    @blur="$v.form.coinSymbol.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Coin', 'form.coin') }}</span>
-                </label>
+                <FieldCoinList
+                        v-model="form.coinSymbol"
+                        :$value="$v.form.coinSymbol"
+                        :label="$td('Coin', 'form.coin')"
+                        :coinList="stakeCoinList"
+                />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="numeric" v-check-empty
-                                       v-model="form.stake"
-                                       @blur="$v.form.stake.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
-                </label>
+                <FieldUseMax
+                        ref="fieldStake"
+                        v-model="form.stake"
+                        :$value="$v.form.stake"
+                        :label="$td('Stake', 'form.masternode-stake')"
+                        :max-value="maxAmount"
+                />
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
@@ -293,7 +392,7 @@
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
                     {{ fee.coinSymbol }} {{ fee.value | pretty }}
                     <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
@@ -349,11 +448,9 @@
                 </button>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button class="button button--main button--full" :class="{ 'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Unbond', `form.delegation-unbond-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
@@ -368,7 +465,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>
@@ -381,7 +478,7 @@
             <div class="panel">
                 <div class="panel__header">
                     <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" src="/img/icon-unbond.svg" alt="" role="presentation" width="40" height="40">
+                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-unbond.svg`" alt="" role="presentation" width="40" height="40">
                         {{ $td('Unbond', 'delegation.unbond-title') }}
                     </h1>
                 </div>
@@ -390,7 +487,7 @@
                         <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-unbond-confirm-description')"></div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
                                 >
                                 <span class="form-field__label">{{ $td('You unbond', 'form.delegation-unbond-confirm-amount') }}</span>
@@ -398,20 +495,23 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                    <textarea class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly v-autosize
-                                              :value="form.publicKey"
-                                    ></textarea>
+                                <textarea
+                                    class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                                    v-autosize
+                                    :value="form.publicKey + (domain ? `\n(${domain})` : '')"
+                                ></textarea>
                                 <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                </svg>
+                                <Loader class="button__loader" :isLoading="true"/>
                             </button>
-                            <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                            <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}
                             </button>
                         </div>

@@ -42,7 +42,16 @@ function isSelect(el) {
 }
 
 /**
+ * @param {HTMLElement} el
+ * @return {boolean}
+ */
+// function isInput(el) {
+//     return el.nodeName.toUpperCase() === 'INPUT';
+// }
+
+/**
  * @param {Event} e
+ * @return void
  */
 function handleInputEvent(e) {
     checkInputElementIsEmpty(e.target);
@@ -52,6 +61,16 @@ function handleInputEvent(e) {
  * @param {HTMLInputElement|EventTarget} el
  */
 function checkInputElementIsEmpty(el) {
+    // let input;
+    // if (isInput(el) || isSelect(el)) {
+    //     input = el;
+    // } else {
+    //     input = el.querySelector('input, select');
+    // }
+    // console.log(input)
+    // if (!input) {
+    //     return
+    // }
     // wait select options to render or wait value updated programmatically by vue
     setTimeout(() => {
         if (el.value.length) {

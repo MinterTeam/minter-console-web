@@ -15,6 +15,10 @@ export default function() {
         userTimeStamp: 0,
         /** @type Array<CoinItem> */
         balance: [],
+        /** @type Array<StakeItem> */
+        stakeList: [],
+        /** @type Array<Validator> */
+        validatorList: [],
         // transactionListInfo: {
         //     data: [],
         //     meta: {},

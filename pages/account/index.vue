@@ -30,7 +30,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-account${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-account${localeSuffix}.png` },
                 ],
             };
         },
@@ -76,9 +76,9 @@
                 <dt>{{ $td('Address:', 'account.address') }}</dt>
                 <dd class="u-icon-wrap">
                     <a class="link--default u-icon-text" :href="addressUrl" target="_blank">{{ address }}</a>
-                    <ButtonCopyIcon :copy-text="address"/>
-                    <button class="u-icon--qr u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
-                        <InlineSvg src="/img/icon-qr.svg" width="30" height="30"/>
+                    <ButtonCopyIcon class="u-icon--copy--right" :copy-text="address"/>
+                    <button class="u-icon u-icon--qr--right u-semantic-button link--opacity" @click="isAddressQrModalVisible = true">
+                        <InlineSvg :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" width="24" height="24"/>
                     </button>
                 </dd>
 
@@ -87,7 +87,7 @@
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
                         <span class="u-select-all u-icon-text">{{ privateKey }}</span>
-                        <ButtonCopyIcon :copy-text="privateKey"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="privateKey"/>
                     </div>
                     <div v-else>
                         <button class="u-semantic-button link--default" @click="visiblePrivate = true">{{ $td('Click to view', 'account.click-view') }}</button>
@@ -95,16 +95,18 @@
                 </dd>
 -->
 
+<!--
                 <dt>{{ $td('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
                         <span class="u-select-all u-icon-text">{{ mnemonic }}</span>
-                        <ButtonCopyIcon :copy-text="mnemonic"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="mnemonic"/>
                     </div>
                     <div v-else>
-                        <button class="u-semantic-button link--default" @click="visibleMnemonic = true">{{ $td('Click to view', 'account.click-view') }}</button>
+                        <button class="u-semantic-button link&#45;&#45;default" @click="visibleMnemonic = true">{{ $td('Click to view', 'account.click-view') }}</button>
                     </div>
                 </dd>
+-->
             </dl>
         </div>
 
@@ -113,6 +115,5 @@
         >
             <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
         </Modal>
-
-    </section>
+</section>
 </template>

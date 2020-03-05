@@ -10,6 +10,7 @@ let coinPricePromiseList = {};
 /**
  * @typedef {Object} FeeData
  * @property {boolean} isBaseCoin
+ * @property {boolean} isBaseCoinEnough
  * @property {number|string} baseCoinValue
  * @property {number|string} value
  * @property {string} coinSymbol
@@ -18,8 +19,7 @@ let coinPricePromiseList = {};
 /**
  *
  * @param {string} txType
- * @param {Object} [txFeeOptions]
- * @param {number} [messageLength]
+ * @param {{payload: string, coinSymbol: string, multisendCount: number}} [txFeeOptions]
  * @param {string} [selectedCoinSymbol]
  * @param {string} [selectedFeeCoinSymbol]
  * @param {number} [baseCoinAmount]
@@ -28,12 +28,11 @@ let coinPricePromiseList = {};
  * @constructor
  */
 
-export default function FeeBus({txType, txFeeOptions, messageLength = 0, selectedCoinSymbol, selectedFeeCoinSymbol, baseCoinAmount = 0, isOffline}) {
+export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, selectedFeeCoinSymbol, baseCoinAmount = 0, isOffline}) {
     return new Vue({
         data: {
             txType,
             txFeeOptions,
-            messageLength,
             selectedCoinSymbol,
             selectedFeeCoinSymbol,
             baseCoinAmount,
@@ -42,22 +41,26 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
         },
         computed: {
             baseCoinFeeValue() {
-                return getFeeValue(this.txType, this.messageLength, this.txFeeOptions) || 0;
+                return getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
             isBaseCoinEnough() {
-                return baseCoinAmount >= this.baseCoinFeeValue;
+                return this.baseCoinAmount >= this.baseCoinFeeValue;
             },
             isBaseCoinFee() {
                 // use selectedFeeCoinSymbol if it is defined
-                if (this.selectedFeeCoinSymbol && this.selectedFeeCoinSymbol !== COIN_NAME) {
-                    return false;
+                if (this.selectedFeeCoinSymbol) {
+                    return this.selectedFeeCoinSymbol === COIN_NAME;
                 }
                 // no coins selected: show base
                 if (!this.selectedCoinSymbol) {
                     return true;
                 }
-                // base coin is selected or it is enough to pay fee
-                return this.selectedFeeCoinSymbol === COIN_NAME || this.selectedCoinSymbol === COIN_NAME || this.isBaseCoinEnough;
+                // base coin is selected
+                if (this.selectedCoinSymbol === COIN_NAME) {
+                    return true;
+                }
+                // base coin is enough to pay fee
+                return this.isBaseCoinEnough;
             },
             feeValue() {
                 if (this.isBaseCoinFee) {
@@ -65,7 +68,7 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
                 } else {
                     const coinEstimation = this.coinPriceList[this.feeCoinSymbol];
                     if (coinEstimation) {
-                        return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue);
+                        return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue).toFixed();
                     } else {
                         return 0;
                     }
@@ -83,6 +86,7 @@ export default function FeeBus({txType, txFeeOptions, messageLength = 0, selecte
                 }
             },
             fee() {
+                //@TODO always change, even if data stay the same
                 return {
                     baseCoinValue: this.baseCoinFeeValue,
                     isBaseCoin: this.isBaseCoinFee,

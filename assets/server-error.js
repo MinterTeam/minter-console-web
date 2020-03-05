@@ -68,7 +68,13 @@ export function getErrorText(error, startErrorText = 'Error: ') {
     if (error.response && error.response.data && (error.response.data.error || error.response.data.message)) {
         // server error
         const errorText = (error.response.data.error && error.response.data.error.message) || error.response.data.message;
-        return startErrorText + errorText.replace('Check tx error: ', '');
+        // don't add startErrorText if errorText contains 'error'
+        if (typeof startErrorText === 'string' && startErrorText.toLowerCase().indexOf('error') >= 0) {
+            if (errorText.toLowerCase().indexOf('error') >= 0) {
+                return errorText;
+            }
+        }
+        return startErrorText + errorText;
     } else if (error.message) {
         // network error
         return error.message;

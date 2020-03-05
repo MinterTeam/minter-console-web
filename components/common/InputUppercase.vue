@@ -7,9 +7,9 @@
             },
         },
         computed: {
-            // all parent listeners except `input`
+            // all parent listeners except `input`, `blur`, and `focus`
             listeners() {
-                const { input, ...listeners } = this.$listeners;
+                const { input, blur, focus, ...listeners } = this.$listeners;
                 return listeners;
             },
         },
@@ -30,7 +30,7 @@
 </script>
 
 <template>
-    <input ref="input" :value="value" @input="updateValue($event.target.value)" v-on="listeners">
+    <input ref="input" :value="value" @input="updateValue($event.target.value)" @blur="$emit('blur', $event)" @focus="$emit('focus', $event)" v-on="listeners">
     <!--v-on:focus="selectAll"
         v-on:blur="formatValue"-->
 </template>

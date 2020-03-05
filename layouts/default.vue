@@ -42,7 +42,7 @@
         methods: {
             logout() {
                 this.$store.commit('LOGOUT');
-                this.$router.push(this.preferredPath('index'));
+                this.$router.push(this.$i18nGetPreferredPath('index'));
             },
             toggleMenu() {
                 this.isMenuActive = !this.isMenuActive;
@@ -73,16 +73,19 @@
 
         <header class="header">
             <div class="header__container u-container u-container--large">
-                <nuxt-link class="header__logo no-link" :to="preferredPath('index')">
-                    <img class="header__logo-image" src="/img/minter-logo-circle.svg" alt="Minter" width="36" height="36">
-                    <div class="header__logo-text">{{ $store.state.sectionName || `${this.isTestnet ? 'Testnet ' : '' }Console` }}</div>
+                <nuxt-link class="header__logo no-link" :to="$i18nGetPreferredPath('index')">
+                    <img class="header__logo-image" :src="`${BASE_URL_PREFIX}/img/minter-logo-circle.svg`" alt="Minter" width="36" height="36">
+                    <div class="header__logo-text">{{ $store.state.sectionName || `${isTestnet ? 'Testnet ' : '' }Console` }}</div>
                 </nuxt-link>
 
                 <div class="header__controls">
                     <div class="header__user u-hidden-medium-down">
-                        <nuxt-link class="button button--ghost-white" :to="preferredPath('account')" v-if="username">{{ username }}</nuxt-link>
-                        <button class="header__user-logout u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
-                            <img class="" src="/img/icon-auth-logout.svg" width="40" height="40" alt="Logout">
+                        <!--
+                        <nuxt-link class="button button&#45;&#45;ghost-white" :to="$i18nGetPreferredPath('account')" v-if="username">{{ username }}</nuxt-link>
+                        -->
+                        <span class="header__user-name">{{ username }}</span>
+                        <button class="header__user-logout u-semantic-button link--opacity" data-test-id="headerLogoutButton" @click="logout">
+                            <img class="" :src="`${BASE_URL_PREFIX}/img/icon-auth-logout.svg`" width="40" height="40" alt="Logout">
                         </button>
                     </div>
                     <Language class="header__control-language"/>
@@ -102,90 +105,96 @@
                     <div class="u-container main-content__aside-section">
                         <menu class="menu no-list u-grid u-grid--vertical-margin--small">
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('wallet')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-coin-transfer.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('wallet')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-transfer.svg`" alt="" role="presentation">
                                     {{ $td('Wallet', 'common.page-wallet') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('convert')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-convert.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('convert')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation">
                                     {{ $td('Convert', 'common.page-convert') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('checks')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-check.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
                                     {{ $td('Checks', 'common.page-checks') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('delegation')"  @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-mining.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('delegation')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-mining.svg`" alt="" role="presentation">
                                     {{ $td('Delegation', 'common.page-delegation') }}
                                 </nuxt-link>
                             </li>
 <!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('reinvest')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-mining-automation.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('reinvest')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-mining-automation.svg`" alt="" role="presentation">
                                     {{ $td('Reinvest', 'common.page-reinvest') }}
                                 </nuxt-link>
                             </li>
 -->
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('masternode')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-node-management.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('masternode')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-node-management.svg`" alt="" role="presentation">
                                     {{ $td('Masternode', 'common.page-masternode') }}
                                 </nuxt-link>
                             </li>
                             <!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('multisignature')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-multisignature.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation">
                                     {{ $td('Multisignature', 'common.page-multisignature') }}
                                 </nuxt-link>
                             </li>
                             -->
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('coiner')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-coin-creation.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
                                     {{ $td('Coiner', 'common.page-coiner') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="preferredPath('broadcast')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-broadcast.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('broadcast')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-broadcast.svg`" alt="" role="presentation">
                                     {{ $td('Broadcast', 'common.page-broadcast') }}
                                 </nuxt-link>
                             </li>
                             <!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('pco')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-pco.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('pco')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pco.svg`" alt="" role="presentation">
                                     {{ $td('PCO', 'common.page-pco') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('dao')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-vote.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('dao')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-vote.svg`" alt="" role="presentation">
                                     {{ $td('DAO', 'common.page-dao') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="preferredPath('wallet')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-support.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('wallet')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-support.svg`" alt="" role="presentation">
                                     {{ $td('Support', 'common.page-support') }}
                                 </nuxt-link>
                             </li>
-                            -->
                             <li class="menu__item menu__user u-cell">
-                                <nuxt-link class="menu__link menu__user-link link--hover" :to="preferredPath('account')" @click.native="linkClick">
-                                    <img class="menu__icon" src="/img/icon-feature-account.svg" alt="" role="presentation">
+                                <nuxt-link class="menu__link menu__user-link link--hover" :to="$i18nGetPreferredPath('account')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-account.svg`" alt="" role="presentation">
                                     <span class="menu__user-name">{{ $store.state.user.username || $td('Account', 'common.page-account') }}</span>
                                 </nuxt-link>
                                 <button class="menu__user-logout u-semantic-button u-hidden-medium-up" data-test-id="headerLogoutButton" @click="logout">
-                                    <img class="" src="/img/icon-auth-logout-menu.svg" alt="Logout">
+                                    <img class="" :src="`${BASE_URL_PREFIX}/img/icon-auth-logout-menu.svg`" alt="Logout">
+                                </button>
+                            </li>
+                            -->
+                            <li class="menu__item u-cell u-hidden-medium-up">
+                                <button class="menu__link link--opacity u-semantic-button" data-test-id="headerLogoutButton" @click="logout">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-auth-logout-menu.svg`" alt="" role="presentation">
+                                    {{ $td('Logout', 'common.logout') }}
                                 </button>
                             </li>
                         </menu>

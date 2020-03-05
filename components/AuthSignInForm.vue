@@ -9,15 +9,17 @@
     import {makeAccepter} from "~/assets/utils";
     import {USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH} from '~/assets/variables';
     import InputMaskedName from '~/components/common/InputMaskedName';
+    import Loader from '~/components/common/Loader';
 
     export default {
         components: {
             InputMaskedName,
+            Loader,
         },
-        mixins: [validationMixin],
         directives: {
             checkEmpty,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 //@TODO common loading flag
@@ -65,7 +67,7 @@
                 login(this.form)
                     .then((authData) => {
                         this.$store.commit('SET_AUTH_PROFILE', authData);
-                        this.$router.push(this.preferredPath('index'));
+                        this.$router.push(this.$i18nGetPreferredPath('index'));
                         // don't remove loader during redirect
                         // this.isFormSending = false;
                     })
@@ -100,7 +102,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
-                    <input class="form-field__input" type="password" v-check-empty data-test-id="authLoginInputPassword"
+                    <input class="form-field__input" type="password" autocomplete="current-password" v-check-empty data-test-id="authLoginInputPassword"
                            v-model="form.password"
                            @blur="$v.form.password.$touch()"
                            @input="sve.password.isActual = false"
@@ -115,9 +117,7 @@
             <div class="u-cell">
                 <button class="button button--main button--full" data-test-id="authLoginSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Sign In', 'index.auth-sign-in-button') }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>

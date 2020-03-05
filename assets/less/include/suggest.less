@@ -1,0 +1,53 @@
+@import "variables";
+
+.vue-simple-suggest > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.vue-simple-suggest {
+    width: 100%;
+    //position: relative;
+}
+
+.vue-simple-suggest .suggestions {
+    pointer-events: auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 5px;
+    padding: 6px 0;
+
+    color: @c-black; background: #fff; border-radius: 8px; line-height: 20px;
+
+    opacity: 1;
+    z-index: 1000;
+    overflow: hidden;
+
+    box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.vue-simple-suggest .suggest-item {
+    cursor: pointer;
+    user-select: none;
+    word-wrap: break-word;
+}
+.suggest-item--large {font-size: 16px;}
+.suggest-item--small {font-size: 12px; font-variant-numeric: proportional-nums;}
+
+.vue-simple-suggest .suggest-item,
+.vue-simple-suggest .misc-item {
+    padding: 8px 12px;
+}
+
+//.vue-simple-suggest .suggest-item.selected {
+//    background-color: @c-violet;
+//    color: #fff;
+//}
+
+.vue-simple-suggest .suggest-item.hover {
+    background-color: #e5e5e8;
+    //color: #fff;
+}

@@ -9,17 +9,19 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import SellTxParams from "minter-js-sdk/src/tx-params/convert-sell";
     import {TX_TYPE_SELL} from 'minterjs-tx/src/tx-types';
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx, estimateCoinSell} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
+    import FieldCoinList from '~/components/common/FieldCoinList';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     let feeBus;
@@ -28,20 +30,22 @@
         components: {
             QrcodeVue,
             FieldQr,
+            FieldCoinList,
             FieldUseMax,
             InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
             Modal,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -133,7 +137,7 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_SELL,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinFrom,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
@@ -322,13 +326,12 @@
                     <span class="form-field__error" v-if="$v.form.sellAmount.$dirty && !$v.form.sellAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-3">
-                    <label class="form-field" :class="{'is-error': $v.form.coinTo.$error}">
-                        <InputUppercase class="form-field__input" type="text" v-check-empty data-test-id="convertSellInputBuyCoin"
-                                        v-model.trim="form.coinTo"
-                                        @blur="$v.form.coinTo.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Coin to get', 'form.convert-sell-coin-get') }}</span>
-                    </label>
+                    <FieldCoinList
+                            data-test-id="convertSellInputBuyCoin"
+                            v-model="form.coinTo"
+                            :$value="$v.form.coinTo"
+                            :label="$td('Coin to get', 'form.convert-sell-coin-get')"
+                    />
                     <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
@@ -411,9 +414,7 @@
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button class="button button--main button--full" data-test-id="convertSellSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                         <span class="button__content">{{ $td('Sell', 'form.convert-sell-button') }}</span>
-                        <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                            <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                        </svg>
+                        <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" data-test-id="convertSellErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
@@ -428,7 +429,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                            <ButtonCopyIcon :copy-text="signedTx"/>
+                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                         </dd>
                     </dl>
                     <br>
@@ -441,7 +442,7 @@
             <div class="panel">
                 <div class="panel__header">
                     <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" src="/img/icon-feature-convert.svg" alt="" role="presentation" width="40" height="40">
+                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation" width="40" height="40">
                         {{ $td('Convert Coins', 'convert.convert-title') }}
                     </h1>
                 </div>
@@ -449,7 +450,7 @@
                     <div class="u-grid u-grid--small u-grid--vertical-margin">
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinFrom + ' ' + prettyExact(form.sellAmount)"
                                 >
                                 <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
@@ -457,18 +458,19 @@
                         </div>
                         <div class="u-cell">
                             <label class="form-field form-field--dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly
+                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                        :value="form.coinTo + ' ' + $options.filters.pretty(estimation)"
                                 >
                                 <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive') }}</span>
                             </label>
                         </div>
                         <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="convertSellModalSubmitButton" :class="{'is-loading': isFormSending}" @click="postTx">
+                            <button class="button button--main button--full" data-test-id="convertSellModalSubmitButton" data-focus-on-open
+                                    :class="{'is-loading': isFormSending}"
+                                    @click="postTx"
+                            >
                                 <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                                    <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                                </svg>
+                                <Loader class="button__loader" :isLoading="true"/>
                             </button>
                             <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
                                 {{ $td('Cancel', 'form.submit-cancel-button') }}

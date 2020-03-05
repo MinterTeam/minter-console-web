@@ -12,17 +12,19 @@
     import DeclareCandidacyTxParams from "minter-js-sdk/src/tx-params/candidacy-declare";
     import {TX_TYPE_DECLARE_CANDIDACY} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
-    import prepareSignedTx from 'minter-js-sdk/src/prepare-tx';
+    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
     import FieldUseMax from '~/components/common/FieldUseMax';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
+    import Loader from '~/components/common/Loader';
 
     let feeBus;
 
@@ -30,20 +32,22 @@
         components: {
             VueAutonumeric,
             QrcodeVue,
+            FieldDomain,
             FieldQr,
             FieldUseMax,
             InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
+            Loader,
         },
         directives: {
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             const coinList = this.$store.getters.balance;
             return {
@@ -70,17 +74,21 @@
                 /** @type FeeData */
                 fee: {},
                 signedTx: null,
+                addressDomain: '',
+                isAddressDomainResolving: false,
+                publicKeyDomain: '',
+                isPublicKeyDomainResolving: false,
             };
         },
         validations() {
             const form = {
                 address: {
                     required,
-                    validAddress: isValidAddress,
+                    validAddress: this.isAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
                 publicKey: {
                     required,
-                    validPublicKey: isValidPublic,
+                    validPublicKey: this.isPublicKeyDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 commission: {
                     required,
@@ -141,7 +149,7 @@
             feeBusParams() {
                 return {
                     txType: TX_TYPE_DECLARE_CANDIDACY,
-                    messageLength: this.form.message.length,
+                    txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
@@ -277,10 +285,15 @@
     <form class="panel__section" novalidate @submit.prevent="submit">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
-                <FieldQr v-model.trim="form.address" :$value="$v.form.address" :label="$td('Address', 'form.masternode-address')"/>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter address', 'form.masternode-address-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Address is invalid', 'form.masternode-address-error-invalid') }}</span>
-                <div class="form-field__help">{{ $td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help') }}</div>
+                <FieldDomain
+                    v-model.trim="form.address"
+                    :$value="$v.form.address"
+                    valueType="address"
+                    :label="$td('Address or domain', 'form.masternode-address')"
+                    :help="$td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help')"
+                    @update:domain="addressDomain = $event"
+                    @update:resolving="isAddressDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
@@ -313,9 +326,15 @@
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
-                <FieldQr v-model.trim="form.publicKey" :$value="$v.form.publicKey" :label="$td('Public key', 'form.masternode-public')"/>
-                <span class="form-field__error" v-if="$v.form.publicKey.$dirty && !$v.form.publicKey.required">{{ $td('Enter public key', 'form.masternode-public-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.publicKey.$dirty && !$v.form.publicKey.validPublicKey">{{ $td('Public key is invalid', 'form.masternode-public-error-invalid') }}</span>
+                <FieldDomain
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :suggestion-disabled="true"
+                    @update:domain="publicKeyDomain = $event"
+                    @update:resolving="isPublicKeyDomainResolving = $event"
+                />
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
@@ -419,9 +438,7 @@
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Declare candidacy', 'form.masternode-declare-button') }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
@@ -436,7 +453,7 @@
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                        <ButtonCopyIcon :copy-text="signedTx"/>
+                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                     </dd>
                 </dl>
                 <br>

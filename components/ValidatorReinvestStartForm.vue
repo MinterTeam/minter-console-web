@@ -7,22 +7,24 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty} from "~/assets/utils";
+    import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
 
     export default {
         components: {
             FileInput,
+            Loader,
             Modal,
         },
         directives: {
             autosize,
             checkEmpty,
         },
-        mixins: [validationMixin],
         filters: {
             pretty,
             uppercase: (value) => value ? value.toUpperCase() : value,
         },
+        mixins: [validationMixin],
         data() {
             return {
                 isFormSending: false,
@@ -105,7 +107,8 @@
                                @on-add="handleFileUpdate"
                                @on-error="fileApiError = true"
                                @on-drag-start="isDragLayerVisible = true"
-                               @on-drag-end="isDragLayerVisible = false"/>
+                               @on-drag-end="isDragLayerVisible = false"
+                    />
                     {{ $td('Select or drop file', 'delegation.reinvest-upload-input') }}
                 </label>
             </div>
@@ -114,9 +117,7 @@
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Start auto-delegation', `form.delegation-reinvest-start-button`) }}</span>
-                    <svg class="button-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 42">
-                        <circle class="button-loader__path" cx="21" cy="21" r="12"></circle>
-                    </svg>
+                    <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
