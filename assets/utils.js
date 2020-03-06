@@ -96,6 +96,14 @@ export function pretty(value, roundingMode) {
  * @param {string|number} value
  * @return {string}
  */
+export function prettyRound(value) {
+    return decode(prettyNum(value, {precision: 0, thousandsSeparator: '&#x202F;'}));
+}
+
+/**
+ * @param {string|number} value
+ * @return {string}
+ */
 export function prettyCeil(value) {
     return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode: ROUNDING_MODE.CEIL, thousandsSeparator: '&#x202F;'}));
 }
@@ -133,6 +141,15 @@ export function prettyPreciseFloor(value) {
  */
 export function prettyExact(value) {
     return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&#x202F;'}));
+}
+
+/**
+ * Only format spaces for the whole part
+ * @param {string|number} value
+ * @return {string}
+ */
+export function prettyExactDecrease(value) {
+    return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&#x202F;'}));
 }
 
 /**

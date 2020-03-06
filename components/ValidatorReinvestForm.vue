@@ -102,13 +102,12 @@
                 this.serverError = '';
                 this.serverSuccess = false;
                 generateBatchTx({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     gasPrice: this.form.gasPrice || undefined,
                     coinSymbol: this.$store.getters.COIN_NAME,
                     feeCoinSymbol: this.$store.getters.COIN_NAME,
-                }, this.formTxCount)
+                }, this.$store.getters.privateKey, this.formTxCount)
                     .then(([signedTxList, nonce]) => {
                         this.signedTxList = signedTxList.join('\n');
                         this.setDownload(this.signedTxList, `${this.form.publicKey}-${nonce}-${nonce + this.formTxCount}`);
@@ -129,13 +128,12 @@
                 this.serverSuccess = false;
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => generateBatchTx({
-                        privateKey: this.$store.getters.privateKey,
                         chainId: this.$store.getters.CHAIN_ID,
                         ...this.form,
                         gasPrice: this.form.gasPrice || undefined,
                         coinSymbol: this.$store.getters.COIN_NAME,
                         feeCoinSymbol: this.$store.getters.COIN_NAME,
-                    }, this.formTxCount))
+                    }, this.$store.getters.privateKey, this.formTxCount))
                     .then(([signedTxList]) => postAutoDelegationTxList(signedTxList))
                     .then(() => {
                         this.isFormSending = false;
@@ -176,8 +174,7 @@
         },
     };
 
-    function generateBatchTx(txParams, txCount) {
-        const privateKey = txParams.privateKey;
+    function generateBatchTx(txParams, privateKey, txCount) {
         const nonce = txParams.nonce;
 
         // ensure nonce
@@ -191,7 +188,7 @@
                 const signedTx = prepareSignedTx(new DelegateTxParams({
                     ...txParams,
                     nonce,
-                })).serialize().toString('hex');
+                }), {privateKey}).serialize().toString('hex');
                 result.push(signedTx);
                 nonce++;
             }

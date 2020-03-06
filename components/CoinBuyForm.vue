@@ -7,7 +7,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import BuyTxParams from "minter-js-sdk/src/tx-params/convert-buy";
-    import {TX_TYPE_BUY} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx, estimateCoinBuy} from '~/api/gate';
     import FeeBus from '~/assets/fee';
@@ -117,7 +117,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_BUY,
+                    txType: TX_TYPE.BUY,
                     txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinFrom,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
@@ -191,12 +191,11 @@
                 this.serverSuccess = '';
 
                 this.signedTx = prepareSignedTx(new BuyTxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
-                })).serialize().toString('hex');
+                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {

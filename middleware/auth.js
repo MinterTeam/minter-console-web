@@ -14,6 +14,7 @@ export default function({app, store, route, redirect, error}) {
         /^(\/ru)?\/dao(\/|$)/,
         /^(\/ru)?\/delegation(\/|$)/,
         /^(\/ru)?\/masternode(\/|$)/,
+        /^(\/ru)?\/multisignature(\/|$)/,
         /^(\/ru)?\/pco(\/|$)/,
         /^(\/ru)?\/support(\/|$)/,
         /^(\/ru)?\/wallet(\/|$)/,
