@@ -10,7 +10,7 @@
     import between from 'vuelidate/lib/validators/between';
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import DeclareCandidacyTxParams from "minter-js-sdk/src/tx-params/candidacy-declare";
-    import {TX_TYPE_DECLARE_CANDIDACY} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
@@ -148,7 +148,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_DECLARE_CANDIDACY,
+                    txType: TX_TYPE.DECLARE_CANDIDACY,
                     txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
@@ -201,12 +201,11 @@
                 this.serverSuccess = '';
 
                 this.signedTx = prepareSignedTx(new DeclareCandidacyTxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
-                })).serialize().toString('hex');
+                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {

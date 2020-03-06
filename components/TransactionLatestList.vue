@@ -1,7 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import Big from 'big.js';
-    import * as TX_TYPES from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
     import Loader from '~/components/common/Loader';
     import TableLink from '~/components/common/TableLink';
@@ -53,13 +53,13 @@
                 // this.$set(this.isTxExpanded, txn, !this.isTxExpanded[txn]);
             },
             isSell(tx) {
-                return tx.type === Number(TX_TYPES.TX_TYPE_SELL) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL);
+                return tx.type === Number(TX_TYPE.SELL) || tx.type === Number(TX_TYPE.SELL_ALL);
             },
             isBuy(tx) {
-                return tx.type === Number(TX_TYPES.TX_TYPE_BUY);
+                return tx.type === Number(TX_TYPE.BUY);
             },
             isMultisend(tx) {
-                return tx.type === Number(TX_TYPES.TX_TYPE_MULTISEND);
+                return tx.type === Number(TX_TYPE.MULTISEND);
             },
             isIncomeMultisend(tx) {
                 if (!this.isMultisend(tx)) {
@@ -93,18 +93,18 @@
                 }
             },
             getConvertCoinSymbol(tx) {
-                if (tx.type === Number(TX_TYPES.TX_TYPE_SELL) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL)) {
+                if (tx.type === Number(TX_TYPE.SELL) || tx.type === Number(TX_TYPE.SELL_ALL)) {
                     return tx.data.coin_to_sell;
                 }
-                if (tx.type === Number(TX_TYPES.TX_TYPE_BUY)) {
+                if (tx.type === Number(TX_TYPE.BUY)) {
                     return tx.data.coin_to_buy;
                 }
             },
             getConvertValue(tx) {
-                if (tx.type === Number(TX_TYPES.TX_TYPE_SELL) || tx.type === Number(TX_TYPES.TX_TYPE_SELL_ALL)) {
+                if (tx.type === Number(TX_TYPE.SELL) || tx.type === Number(TX_TYPE.SELL_ALL)) {
                     return tx.data.value_to_sell;
                 }
-                if (tx.type === Number(TX_TYPES.TX_TYPE_BUY)) {
+                if (tx.type === Number(TX_TYPE.BUY)) {
                     return tx.data.value_to_buy;
                 }
             },
@@ -347,7 +347,7 @@
                                     {{ fromBase64(tx.data.check.nonce) }}
                                 </div>
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.due_block">
-                                    <strong>{{ $td('Due Block', 'wallet.tx-table-check-issuer') }}</strong> <br>
+                                    <strong>{{ $td('Due Block', 'wallet.tx-table-due-block') }}</strong> <br>
                                     {{ tx.data.check.due_block }}
                                 </div>
 

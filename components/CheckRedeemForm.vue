@@ -10,7 +10,6 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl} from "~/assets/utils";
-    import {COIN_NAME} from "~/assets/variables";
     import FieldQr from '~/components/common/FieldQr';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Loader from '~/components/common/Loader';
@@ -84,8 +83,7 @@
                     privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
-                    feeCoinSymbol: COIN_NAME,
-                })).serialize().toString('hex');
+                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
@@ -105,7 +103,6 @@
                         postTx(new RedeemCheckTxParams({
                             privateKey: this.$store.getters.privateKey,
                             ...this.form,
-                            feeCoinSymbol: COIN_NAME,
                         })).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;

@@ -9,10 +9,10 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
     import SendTxParams from "minter-js-sdk/src/tx-params/send";
-    import {TX_TYPE_SEND} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
-    import prepareSignedTx from 'minter-js-sdk/src/tx';
-    import {postTx} from '~/api/gate';
+    import prepareSignedTx, {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
+    import {postTx, ensureNonce} from '~/api/gate';
     import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
@@ -25,6 +25,7 @@
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Loader from '~/components/common/Loader';
     import Modal from '~/components/common/Modal';
+    import SignatureList from '~/components/common/SignatureList.vue';
     let feeBus;
 
     export default {
@@ -38,6 +39,7 @@
             ButtonCopyIcon,
             Loader,
             Modal,
+            SignatureList,
         },
         directives: {
             autosize,
@@ -61,6 +63,8 @@
                     coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
                     feeCoinSymbol: '',
                     message: '',
+                    signatureList: null,
+                    multisigAddress: '',
                     gasPrice: '',
                 },
                 formAdvanced: {
@@ -71,9 +75,13 @@
                 /** @type FeeData */
                 fee: {},
                 isConfirmModalVisible: false,
+                isSigning: false,
+                signature: null,
                 signedTx: null,
                 domain: '',
                 isDomainResolving: false,
+                multisigDomain: '',
+                isMultisigDomainResolving: false,
             };
         },
         validations() {
@@ -97,6 +105,10 @@
                 message: {
                     maxLength: maxLength(1024),
                 },
+                multisigAddress: {
+                    required: () => true,
+                    validAddress: this.isMultisigDomainResolving ? () => new Promise(() => 0) : (this.form.multisigAddress ? isValidAddress : () => true),
+                },
                 nonce: {},
             };
 
@@ -116,6 +128,14 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            hasBalance() {
+                if (this.form.multisigAddress) {
+                    return false;
+                }
+                return this.$store.getters.balance.find((coin) => {
+                    return coin.amount > 0;
+                });
+            },
             maxAmount() {
                 const selectedCoin = this.$store.getters.balance.find((coin) => {
                     return coin.coin === this.form.coinSymbol;
@@ -137,7 +157,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: TX_TYPE_SEND,
+                    txType: TX_TYPE.SEND,
                     txFeeOptions: {payload: this.form.message},
                     selectedCoinSymbol: this.form.coinSymbol,
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
@@ -189,45 +209,106 @@
                     return;
                 }
 
+                this.signature = null;
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
 
                 this.signedTx = prepareSignedTx(new SendTxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,
                     gasPrice: this.form.gasPrice || undefined,
-                })).serialize().toString('hex');
+                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
                 this.isConfirmModalVisible = false;
                 this.isFormSending = true;
+                this.signature = null;
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
-                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                    .then(() => {
-                        postTx(new SendTxParams({
-                            privateKey: this.$store.getters.privateKey,
-                            ...this.form,
-                            feeCoinSymbol: this.fee.coinSymbol,
-                            gasPrice: this.form.gasPrice || undefined,
-                        })).then((txHash) => {
-                            this.isFormSending = false;
-                            this.serverSuccess = txHash;
-                            this.clearForm();
-                        }).catch((error) => {
-                            console.log(error);
+                if (!this.form.multisigAddress) {
+                    this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
+                        .then(() => {
+                            postTx(new SendTxParams({
+                                privateKey: this.$store.getters.privateKey,
+                                ...this.form,
+                                feeCoinSymbol: this.fee.coinSymbol,
+                                gasPrice: this.form.gasPrice || undefined,
+                            })).then((txHash) => {
+                                this.isFormSending = false;
+                                this.serverSuccess = txHash;
+                                this.clearForm();
+                            }).catch((error) => {
+                                console.log(error);
+                                this.isFormSending = false;
+                                this.serverError = getErrorText(error);
+                            });
+                        })
+                        .catch((error) => {
                             this.isFormSending = false;
                             this.serverError = getErrorText(error);
                         });
-                    })
-                    .catch((error) => {
+                } else {
+                    postTx(new SendTxParams({
+                        ...this.form,
+                        signatureType: 2,
+                        signatureData: {
+                            multisig: this.form.multisigAddress,
+                            signatures: this.form.signatureList,
+                        },
+                        feeCoinSymbol: this.fee.coinSymbol,
+                        gasPrice: this.form.gasPrice || undefined,
+                    }), {address: this.form.multisigAddress}).then((txHash) => {
+                        this.isFormSending = false;
+                        this.serverSuccess = txHash;
+                        this.clearForm();
+                    }).catch((error) => {
+                        console.log(error);
                         this.isFormSending = false;
                         this.serverError = getErrorText(error);
+                    });
+                }
+            },
+            signTx() {
+                if (this.isSigning) {
+                    return;
+                }
+                if (!this.form.multisigAddress) {
+                    return;
+                }
+                if (this.$v.$invalid) {
+                    this.$v.$touch();
+                    return;
+                }
+                this.isSigning = true;
+                this.signature = null;
+
+                let txParams = new SendTxParams({
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...this.form,
+                    signatureType: 2,
+                    feeCoinSymbol: this.fee.coinSymbol,
+                    gasPrice: this.form.gasPrice || undefined,
+                });
+
+                Promise.all([
+                    ensureNonce(txParams, {address: this.form.multisigAddress}),
+                    this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                ])
+                    .then(([nonce]) => {
+                        const tx = prepareTx({...txParams, nonce});
+                        const signature = makeSignature(tx, this.$store.getters.privateKey).toString('hex');
+
+                        this.signature = `0x${signature}`;
+                        this.isSigning = false;
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                        this.signature = e.message;
+                        this.isSigning = false;
                     });
             },
             switchToAdvanced() {
@@ -251,6 +332,7 @@
                 this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
                 this.form.feeCoinSymbol = '';
                 this.form.message = '';
+                this.form.multisigAddress = '';
                 this.formAdvanced.feeCoinSymbol = '';
                 this.formAdvanced.message = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
@@ -296,7 +378,7 @@
                         <select class="form-field__input form-field__input--select" v-check-empty
                                 v-model="form.coinSymbol"
                                 @blur="$v.form.coinSymbol.$touch()"
-                                v-if="balance && balance.length"
+                                v-if="hasBalance"
                         >
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
                                 {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
@@ -327,7 +409,7 @@
                     <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
                         <select class="form-field__input form-field__input--select is-not-empty"
                                 v-model="form.feeCoinSymbol"
-                                v-if="balance && balance.length"
+                                v-if="hasBalance"
                         >
                             <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
                             <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
@@ -360,6 +442,17 @@
                     <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
                     <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced && !$store.getters.isOfflineMode">
+                    <FieldDomain
+                            v-model.trim="form.multisigAddress"
+                            :$value="$v.form.multisigAddress"
+                            valueType="address"
+                            :label="$td('Multisig address', 'form.multisig-address')"
+                            @update:domain="multisigDomain = $event"
+                            @update:resolving="isMultisigDomainResolving = $event"
+                    />
+                </div>
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2 u-hidden-xlarge-down" v-show="showAdvanced && !$store.getters.isOfflineMode"></div>
 
                 <!-- Generation -->
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
@@ -391,12 +484,24 @@
                 </div>
 
                 <!-- Controls -->
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
                     <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
                     <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced">
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
+                    </button>
+                </div>
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
+                    <button
+                            class="button button--ghost-main button--full"
+                            type="button"
+                            v-show="showAdvanced"
+                            :class="{'is-disabled': $v.form.multisigAddress.$invalid, 'is-loading': isSigning}"
+                            @click="signTx"
+                    >
+                        <span class="button__content">{{ $td('Sign', 'form.multisig-sign') }}</span>
+                        <Loader class="button__loader" :isLoading="true"/>
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
@@ -418,6 +523,20 @@
                 <div class="u-cell u-cell--order-2" data-test-id="walletSendSuccessMessage" v-if="serverSuccess">
                     <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
                     <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
+                </div>
+
+                <div class="u-cell u-cell--order-2" v-if="signature">
+                    <dl>
+                        <dt>{{ $td('Signature', 'form.multisig-result-signature') }}</dt>
+                        <dd class="u-icon-wrap">
+                            <span class="u-select-all u-icon-text">
+                                {{ signature }}
+                            </span>
+                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signature"/>
+                        </dd>
+                    </dl>
+<!--                    <br>-->
+<!--                    <qrcode-vue :value="signature" :size="200" level="L"></qrcode-vue>-->
                 </div>
 
                 <div class="u-cell u-cell--order-2" v-if="signedTx">
@@ -465,19 +584,22 @@
                                 <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
                             </label>
                         </div>
-                        <div class="u-cell">
-                            <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
-                                    :class="{'is-loading': isFormSending}"
-                                    @click="postTx"
-                            >
-                                <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <Loader class="button__loader" :isLoading="true"/>
-                            </button>
-                            <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
-                                {{ $td('Cancel', 'form.submit-cancel-button') }}
-                            </button>
-                        </div>
                     </div>
+                </div>
+                <div class="panel__section" v-if="form.multisigAddress">
+                    <SignatureList v-model="form.signatureList"/>
+                </div>
+                <div class="panel__section">
+                    <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                            :class="{'is-loading': isFormSending}"
+                            @click="postTx"
+                    >
+                        <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
+                        <Loader class="button__loader" :isLoading="true"/>
+                    </button>
+                    <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                        {{ $td('Cancel', 'form.submit-cancel-button') }}
+                    </button>
                 </div>
             </div>
         </Modal>

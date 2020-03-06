@@ -7,7 +7,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import {SetCandidateOnTxParams, SetCandidateOffTxParams} from "minter-js-sdk/src";
-    import {TX_TYPE_SET_CANDIDATE_ON, TX_TYPE_SET_CANDIDATE_OFF} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {postTx} from '~/api/gate';
@@ -110,7 +110,7 @@
             },
             feeBusParams() {
                 return {
-                    txType: this.formType === 'on' ? TX_TYPE_SET_CANDIDATE_ON : TX_TYPE_SET_CANDIDATE_OFF,
+                    txType: this.formType === 'on' ? TX_TYPE.SET_CANDIDATE_ON : TX_TYPE.SET_CANDIDATE_OFF,
                     txFeeOptions: {payload: this.form.message},
                     selectedFeeCoinSymbol: this.form.feeCoinSymbol,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
@@ -154,7 +154,7 @@
                 this.serverError = '';
                 this.serverSuccess = '';
 
-                this.signedTx = prepareSignedTx(this.getTxParams()).serialize().toString('hex');
+                this.signedTx = prepareSignedTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
@@ -190,7 +190,6 @@
                 const TxParams = this.formType === 'on' ? SetCandidateOnTxParams : SetCandidateOffTxParams;
 
                 return new TxParams({
-                    privateKey: this.$store.getters.privateKey,
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
                     feeCoinSymbol: this.fee.coinSymbol,
