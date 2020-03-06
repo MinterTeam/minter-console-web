@@ -1,13 +1,11 @@
 <script>
     import {NETWORK, TESTNET} from '~/assets/variables';
-    import TestnetNotice from '~/components/common/TestnetNotice';
     import Snackbar from '~/components/common/Snackbar';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
     export default {
         components: {
-            TestnetNotice,
             Snackbar,
             Language,
             Footer,
@@ -22,8 +20,6 @@
 
 <template>
     <div class="main-wrap">
-        <TestnetNotice/>
-
         <header class="header">
             <div class="header__container u-container u-container--medium">
                 <nuxt-link class="header__logo no-link" :to="$i18nGetPreferredPath('index')">
