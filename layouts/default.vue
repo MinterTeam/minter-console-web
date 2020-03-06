@@ -138,7 +138,7 @@
                                     {{ $td('Masternode', 'common.page-masternode') }}
                                 </nuxt-link>
                             </li>
-                            <li class="menu__item u-cell">
+                            <li class="menu__item u-cell u-hidden">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation">
                                     {{ $td('Multisignature', 'common.page-multisignature') }}

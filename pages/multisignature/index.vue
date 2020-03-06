@@ -1,10 +1,10 @@
 <script>
     import getTitle from '~/assets/get-title';
-    import MultisigCreateForm from '~/components/MultisigCreateForm.vue';
+    // import MultisigCreateForm from '~/components/MultisigCreateForm.vue';
 
     export default {
         components: {
-            MultisigCreateForm,
+            // MultisigCreateForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Multisignature', 'common.page-multisignature'));
@@ -36,7 +36,10 @@
                     {{ $td('Create Multisig Address', 'multisig.create-title') }}
                 </h1>
             </div>
-            <MultisigCreateForm/>
+            <div class="panel__section">
+                Temporarily disabled
+            </div>
+<!--            <MultisigCreateForm/>-->
         </div>
     </section>
 </template>
