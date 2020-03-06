@@ -171,7 +171,7 @@
                 this.serverSuccess = '';
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                     .then(() => {
-                        postTx(this.getTxParams()).then((txHash) => {
+                        postTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey}).then((txHash) => {
                             this.isFormSending = false;
                             this.serverSuccess = txHash;
                             this.clearForm();
