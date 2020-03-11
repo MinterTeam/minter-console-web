@@ -1,5 +1,6 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
+import formatDistanceStrict from "date-fns/esm/formatDistanceStrict";
 import decode from 'entity-decode';
 import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
@@ -55,6 +56,20 @@ export function getTimeZone(timestamp) {
     const time = format(timestamp, 'O');
 
     return time && time !== 'Invalid Date' ? time : false;
+}
+
+export function getTimeDistance(timestamp, allowFuture) {
+    if (typeof timestamp === 'string') {
+        timestamp = parseISO(timestamp);
+    }
+    const now = new Date();
+    // if timestamp from future
+    if (timestamp > now && !allowFuture) {
+        timestamp = now;
+    }
+    const distance = formatDistanceStrict(timestamp, now, {roundingMethod: 'floor'});
+
+    return distance && distance !== 'Invalid Date' ? distance : false;
 }
 
 export function getExplorerBlockUrl(block) {

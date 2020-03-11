@@ -2,12 +2,14 @@
     import {shortHashFilter, support} from "~/assets/utils";
     import {NETWORK, TESTNET} from '~/assets/variables';
     import Snackbar from '~/components/common/Snackbar';
+    import ConnectionNotice from '~/components/ConnectionNotice.vue';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
     export default {
         components: {
             Snackbar,
+            ConnectionNotice,
             Language,
             Footer,
         },
@@ -225,6 +227,7 @@
 
         <Footer/>
 
+        <ConnectionNotice/>
         <Snackbar/>
     </div>
 </template>
