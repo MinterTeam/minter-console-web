@@ -3,6 +3,7 @@
     import {NETWORK, TESTNET} from '~/assets/variables';
     import TestnetNotice from '~/components/common/TestnetNotice';
     import Snackbar from '~/components/common/Snackbar';
+    import ConnectionNotice from '~/components/ConnectionNotice.vue';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
@@ -10,6 +11,7 @@
         components: {
             TestnetNotice,
             Snackbar,
+            ConnectionNotice,
             Language,
             Footer,
         },
@@ -229,6 +231,7 @@
 
         <Footer/>
 
+        <ConnectionNotice/>
         <Snackbar/>
     </div>
 </template>
