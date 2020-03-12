@@ -1,6 +1,7 @@
 import Centrifuge from 'centrifuge/src';
 import {prepareBalance} from '~/api';
 import {EXPLORER_RTM_URL} from "~/assets/variables";
+import toCamel from '~/assets/to-camel.js';
 
 let centrifuge;
 
@@ -14,7 +15,8 @@ export default function({app, store, redirect}) {
         if (centrifuge) {
             return Promise.resolve();
         }
-        // wait for profile, bc its data need for all pages
+        store.commit('SET_LAST_UPDATE_TIME', Date.now());
+        // wait for balance, bc its data need for all pages
         return store.dispatch('FETCH_BALANCE')
             .then(() => {
                 centrifuge = new Centrifuge(EXPLORER_RTM_URL, {
@@ -27,6 +29,13 @@ export default function({app, store, redirect}) {
                 centrifuge.subscribe(store.getters.address, (response) => {
                     const balance = response.data;
                     store.commit('SET_BALANCE', prepareBalance(balance));
+                });
+
+                centrifuge.subscribe("blocks", (response) => {
+                    const newBlock = toCamel(response.data);
+                    // block timestamp is block's precommit time, fixing it
+                    const fixedTimestamp = new Date(newBlock.timestamp).getTime() + Math.round(newBlock.blockTime * 1000);
+                    store.commit('SET_LAST_UPDATE_TIME', fixedTimestamp);
                 });
 
                 centrifuge.connect();

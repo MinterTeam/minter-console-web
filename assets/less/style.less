@@ -132,6 +132,18 @@
 }
 
 
+.is-connection-notice-open {padding-bottom: 46px;}
+.connection-notice {position: fixed; background: @c-black; color: #fff; left: 0; bottom: 0; right: 0; font-weight: 700; font-size: 16px; line-height: 22px; text-align: center; padding: 12px 0; z-index: 3; /* more than aside */}
+.connection-notice__icon {margin-right: 4px;}
+
+.v-transition-toast-enter-active, .v-transition-toast-leave-active {
+    transition: .25s;
+}
+.v-transition-toast-enter, .v-transition-toast-leave-to {
+    opacity: 0;
+    transform: translateY(100%);
+}
+
 // table
 @table-cell-padding: 10px;
 @table-cell-vertical-padding-large: 14px;
@@ -301,6 +313,9 @@ td, th {
 .wallet__balance {flex-grow: 2;}
 .wallet__coin-icon {margin-right: 10px; margin-top: -6px; margin-bottom: -5px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); vertical-align: middle;}
 .wallet__coin-name {font-weight: 700; vertical-align: middle;}
+.wallet__time {margin-top: 4px; line-height: 0;}
+.wallet__time-icon {vertical-align: middle; margin-right: 6px;}
+.wallet__time-text {vertical-align: middle; font-size: 12px;}
 
 @media (min-width: @breakpoint-xlarge-up) {
     .wallet__info {display: flex; justify-content: space-between;}
