@@ -1,5 +1,9 @@
 <script>
+    const NOTICE_DELAY = 5; // time to reconnect after switching back to the tab
+    const NOTICE_TIME = 25 - NOTICE_DELAY;
+
     let timeInterval = null;
+    let openingDelay = null;
 
     export default {
         data() {
@@ -31,7 +35,18 @@
         },
         methods: {
             checkTime() {
-                this.isNoticeOpen = Date.now() - this.$store.state.lastUpdateTime > 25 * 1000;
+                const shouldOpenNotice = Date.now() - this.$store.state.lastUpdateTime > NOTICE_TIME * 1000;
+                if (shouldOpenNotice && !this.isNoticeOpen && !openingDelay) {
+                    openingDelay = setTimeout(() => {
+                        this.isNoticeOpen = true;
+                        openingDelay = null;
+                    }, NOTICE_DELAY * 1000);
+                }
+                if (!shouldOpenNotice && (this.isNoticeOpen || openingDelay)) {
+                    this.isNoticeOpen = false;
+                    clearTimeout(openingDelay);
+                    openingDelay = null;
+                }
             },
         },
     };
