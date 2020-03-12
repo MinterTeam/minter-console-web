@@ -333,6 +333,7 @@
                 this.form.feeCoinSymbol = '';
                 this.form.message = '';
                 this.form.multisigAddress = '';
+                this.form.signatureList = null;
                 this.formAdvanced.feeCoinSymbol = '';
                 this.formAdvanced.message = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
