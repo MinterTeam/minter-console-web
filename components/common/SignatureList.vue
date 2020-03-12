@@ -25,10 +25,7 @@
         },
         data() {
             return {
-                list: (this.value && this.value.map((item) => ({signature: item}))) || [
-                    {signature: ''},
-                    {signature: ''},
-                ],
+                list: getListValueFromProp(this.value),
             };
         },
         validations() {
@@ -46,12 +43,20 @@
         },
         computed: {
             listHash() {
-                return this.list.reduce((prev, current) => {
-                    return prev.signature + current.signature;
-                });
+                let signatures = this.list.reduce((accumulator, item) => {
+                    return accumulator + item.signature;
+                }, '');
+
+                return this.list.length.toString() + signatures;
             },
         },
         watch: {
+            value(newVal) {
+                // clear list on clearForm()
+                if (newVal === null) {
+                    this.list = getListValueFromProp(newVal);
+                }
+            },
             listHash() {
                 this.updateModel();
             },
@@ -74,6 +79,17 @@
             },
         },
     };
+
+    function getListValueFromProp(modelValue) {
+        if (modelValue) {
+            return modelValue.map((item) => ({signature: item}));
+        } else {
+            return [
+                {signature: ''},
+                {signature: ''},
+            ];
+        }
+    }
 </script>
 
 <template>
