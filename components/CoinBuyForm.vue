@@ -15,7 +15,7 @@
     import {getErrorText} from "~/assets/server-error";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldQr from '~/components/common/FieldQr';
-    import FieldCoinList from '~/components/common/FieldCoinList';
+    import FieldCoin from '~/components/common/FieldCoin';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
@@ -29,7 +29,7 @@
         components: {
             QrcodeVue,
             FieldQr,
-            FieldCoinList,
+            FieldCoin,
             InputUppercase,
             InputMaskedAmount,
             InputMaskedInteger,
@@ -275,7 +275,7 @@
         <form class="panel__section" novalidate @submit.prevent="submit">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
-                    <FieldCoinList
+                    <FieldCoin
                             data-test-id="convertBuyInputBuyCoin"
                             v-model="form.coinTo"
                             :$value="$v.form.coinTo"
@@ -351,8 +351,8 @@
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
-                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 bytes', 'form.message-error-max') }}</span>
+                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;bytes.', 'form.message-help') }}</div>
                 </div>
 
                 <!-- Generation -->

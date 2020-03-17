@@ -455,7 +455,7 @@
                     </label>
                     <span class="form-field__error" v-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.minValue">{{ $td(`Min value is ${$options.MIN_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-min', {value: $options.MIN_MAX_SUPPLY}) }}</span>
                     <span class="form-field__error" v-else-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.maxValue">{{ $td(`Max value is ${$options.MAX_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-max', {value: $options.MAX_MAX_SUPPLY}) }}</span>
-                    <div class="form-field__help">{{ $td('Coin purchase will not be possible if the limit is exceeded', 'form.coiner-create-max-supply-help') }}</div>
+                    <div class="form-field__help">{{ $td('Coin purchase will not be possible if the limit is exceeded. (By default: 10^15)', 'form.coiner-create-max-supply-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
@@ -492,8 +492,8 @@
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
-                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 bytes', 'form.message-error-max') }}</span>
+                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;bytes.', 'form.message-help') }}</div>
                 </div>
 
                 <!-- Generation -->
@@ -681,7 +681,7 @@
                             </button>
                         </div>
                         <div class="u-cell u-text-left">
-                            <p><strong>{{ $td('Warning!', 'form.coiner-create-confirm-warning') }}</strong></p>
+                            <strong>{{ $td('Warning!', 'form.coiner-create-confirm-warning') }}</strong>
                             <p v-if="$i18n.locale === 'en'">
                                 Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
                             </p>

@@ -357,7 +357,7 @@ export default {
         'coiner-create-reserve-error-required': 'Укажите объем резерва',
         'coiner-create-reserve-error-min': 'Минимальный резерв — {coin} {min}',
         'coiner-create-max-supply': 'Максимальная эмиссия',
-        'coiner-create-max-supply-help': 'Покупка монеты будет невозможна при превышении лимита',
+        'coiner-create-max-supply-help': 'Покупка монеты будет невозможна при превышении лимита. (По-умолчанию: 10^15)',
         'coiner-create-max-supply-error-min': 'Минимум: {value}',
         'coiner-create-max-supply-error-max': 'Максимум: {value}',
         'coiner-create-form-price-error-min': 'Минимальная цена: {min}, текущая цена: {price}',

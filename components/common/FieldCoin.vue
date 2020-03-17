@@ -1,6 +1,7 @@
 <script>
     import VueSimpleSuggest from 'vue-simple-suggest/lib/vue-simple-suggest';
     import checkEmpty from '~/assets/v-check-empty';
+    import {pretty} from '~/assets/utils.js';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
@@ -81,11 +82,18 @@
                     return true;
                 }
                 // keep only values started with query (e.g. remove "WALLET" for "LET" query)
-                return item.indexOf(query) === 0;
+                return this.getSuggestionCoin(item).indexOf(query) === 0;
             },
             handleSuggestionClick(item, e) {
                 // prevent reopen suggestion list by parent label click
                 e.preventDefault();
+            },
+            getSuggestionCoin(suggestion) {
+                return suggestion.coin || suggestion;
+            },
+            getSuggestionAmount(suggestion) {
+                const amount = suggestion.value || suggestion.amount;
+                return amount ? `(${pretty(amount)})` : '';
             },
         },
     };
@@ -102,6 +110,8 @@
                 :min-length="0"
                 :filter-by-query="true"
                 :filter="suggestionFilter"
+                :display-attribute="'coin'"
+                :value-attribute="'coin'"
                 :destyled="true"
                 :controls="{showList: [38, 40]}"
                 @input="$emit('input', $event)"
@@ -114,6 +124,11 @@
                     :value="value"
             />
             <span class="form-field__label">{{ label }}</span>
+
+            <span slot="suggestion-item" slot-scope="{ suggestion }">
+                {{ getSuggestionCoin(suggestion) }}<span v-if="getSuggestionAmount(suggestion)">
+                <!--space here --> {{ getSuggestionAmount(suggestion) }}</span>
+            </span>
         </VueSimpleSuggest>
     </label>
 </template>

@@ -115,6 +115,12 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
+                                    {{ $td('Coiner', 'common.page-coiner') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
                                     {{ $td('Checks', 'common.page-checks') }}
@@ -144,12 +150,6 @@
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation">
                                     {{ $td('Multisignature', 'common.page-multisignature') }}
-                                </nuxt-link>
-                            </li>
-                            <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
-                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
-                                    {{ $td('Coiner', 'common.page-coiner') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
