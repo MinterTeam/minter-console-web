@@ -20,9 +20,8 @@
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldQr from '~/components/common/FieldQr';
-    import FieldCoinList from '~/components/common/FieldCoinList';
+    import FieldCoin from '~/components/common/FieldCoin';
     import FieldUseMax from '~/components/common/FieldUseMax';
-    import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
     import Loader from '~/components/common/Loader';
@@ -35,9 +34,8 @@
             QrcodeVue,
             FieldDomain,
             FieldQr,
-            FieldCoinList,
+            FieldCoin,
             FieldUseMax,
-            InputUppercase,
             InputMaskedInteger,
             ButtonCopyIcon,
             Loader,
@@ -196,9 +194,6 @@
                     return [];
                 }
             },
-            stakeCoinList() {
-                return this.stakeList.map((item) => item.coin);
-            },
         },
         watch: {
             feeBusParams: {
@@ -210,8 +205,8 @@
                 deep: true,
             },
             'form.publicKey': function(newVal) {
-                if (this.stakeCoinList.length === 1) {
-                    this.form.coinSymbol = this.stakeCoinList[0];
+                if (this.stakeList.length === 1) {
+                    this.form.coinSymbol = this.stakeList[0].coin;
                 }
             },
         },
@@ -351,11 +346,11 @@
                 />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
-                <FieldCoinList
+                <FieldCoin
                         v-model="form.coinSymbol"
                         :$value="$v.form.coinSymbol"
                         :label="$td('Coin', 'form.coin')"
-                        :coinList="stakeCoinList"
+                        :coinList="stakeList"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -372,21 +367,12 @@
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
-                <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
-                    <select class="form-field__input form-field__input--select" v-check-empty
-                            v-model="form.feeCoinSymbol"
-                            @blur="$v.form.feeCoinSymbol.$touch()"
-                            v-if="balance && balance.length"
-                    >
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">{{ coin.coin | uppercase }} ({{ coin.amount | pretty }})</option>
-                    </select>
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
-                                    v-model.trim="form.feeCoinSymbol"
-                                    @blur="$v.form.feeCoinSymbol.$touch()"
-                                    v-else
-                    />
-                    <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
-                </label>
+                <FieldCoin
+                        v-model="form.feeCoinSymbol"
+                        :$value="$v.form.feeCoinSymbol"
+                        :label="$td('Coin to pay fee', 'form.fee')"
+                        :coin-list="balance"
+                />
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
@@ -404,8 +390,8 @@
                     >
                     <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
-                <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 bytes', 'form.message-error-max') }}</span>
+                <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
             </div>
 
             <!-- Generation -->
@@ -428,7 +414,7 @@
                     <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                     <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                 </label>
-                <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
+                <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
             </div>
             <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
