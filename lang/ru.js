@@ -6,7 +6,7 @@ export default {
         'page-delegation': 'Делегирование',
         'page-reinvest': 'Автоделегирование',
         'page-masternode': 'Мастернода',
-        'page-multisignature': 'Мультиподпись',
+        'page-multisig': 'Мультисиг адрес',
         'page-coiner': 'Создание монет',
         'page-pco': undefined,
         'page-dao': undefined,
@@ -223,6 +223,7 @@ export default {
         'message-error-max': 'Максимум 1024 байт',
         'message-help': 'Сообщение к транзакции. Произвольный набор символов. Обратите внимание, что информация, находящаяся здесь, будет видна всем участникам&nbsp;сети.',
         'help-default': 'По-умолчанию:',
+        'multisig-address': 'Мультисиг адрес',
         'tx-sent': 'Транзакция отправлена:',
 
         'checks-issue-nonce': 'Nonce',
@@ -235,7 +236,7 @@ export default {
         'checks-issue-pass-error-required': 'Введите пароль',
         'checks-issue-result-check': 'Чек:',
         'checks-issue-result-pass': 'Пароль:',
-        'checks-issue-result-link': 'Ссылка на обналичивание.',
+        'checks-issue-result-link': 'Ссылка на обналичивание:',
         'checks-issue-result-link-warning': 'Внимание! Пароль содержится в ссылке. Отправляйте ссылку только непосредственно получателю.',
         'checks-issue-button': 'Создать',
 

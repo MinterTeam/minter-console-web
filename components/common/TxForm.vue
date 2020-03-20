@@ -59,7 +59,8 @@
                 required: true,
             },
             beforeConfirmModalShow: {
-                type: Function,
+                type: [Function, null],
+                default: null,
             },
         },
         data() {

@@ -7,7 +7,7 @@
             MultisigCreateForm,
         },
         fetch({ app, store }) {
-            store.commit('SET_SECTION_NAME', app.$td('Multisignature', 'common.page-multisignature'));
+            store.commit('SET_SECTION_NAME', app.$td('Multisig address', 'common.page-multisig'));
             return Promise.resolve();
         },
         head() {

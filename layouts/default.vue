@@ -147,9 +147,9 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisig')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation">
-                                    {{ $td('Multisignature', 'common.page-multisignature') }}
+                                    {{ $td('Multisig address', 'common.page-multisig') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
@@ -205,13 +205,13 @@
                                 <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank">API</a>
+                                <a class="services__link link--hover" href="https://docs.minter.network/#tag/Node-API" target="_blank">API</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#section/Minter-SDKs" target="_blank">SDK</a>
+                                <a class="services__link link--hover" href="https://docs.minter.network/#section/Minter-SDKs" target="_blank">SDK</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">Calculator</a>
+                                <a class="services__link link--hover" href="https://calculator.minter.network/" target="_blank">Calculator</a>
                             </li>
                             <li class="u-cell services__item--next-row">
                                 <a class="services__link link--hover" href="https://help.minter.network" target="_blank">Help/FAQ</a>

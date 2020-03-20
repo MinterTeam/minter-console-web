@@ -56,7 +56,7 @@ module.exports = {
         'vue/v-on-style': 0,
         'vue/no-unused-vars': 0,
         // allow `$value`
-        'vue/prop-name-casing': 0,
+        'vue/prop-name-casing': ["warn"],
 
         // VUE RECOMMENDED
         'vue/no-v-html': 0,
