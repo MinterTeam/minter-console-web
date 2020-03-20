@@ -331,11 +331,12 @@ export default {
         'multisig-create-weight-error-min': 'Минимальный вес:',
         'multisig-create-weight-error-integer': 'Вес должен быть целым числом',
         'multisig-create-remove-participant': 'Удалить адрес',
-        'multisig-create-add-participant': 'Добавить адрес',
+        'multisig-create-add-participant': '+ Добавить адрес',
         'multisig-create-threshold': 'Порог',
         'multisig-create-threshold-error-required': 'Укажите порог',
         'multisig-create-threshold-error-max': 'Порог не должен превышать сумму всех весов',
         'multisig-create-threshold-error-min': 'Порог не должен быть меньше каждого из весов',
+        'multisig-create-weight-sum': 'Сумма весов',
         'multisig-create-submit': 'Создать',
 
         'coiner-create-name': 'Название монеты',

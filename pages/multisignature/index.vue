@@ -30,13 +30,6 @@
 
 <template>
     <section class="u-section u-container">
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-                    {{ $td('Create Multisig Address', 'multisig.create-title') }}
-                </h1>
-            </div>
-            <MultisigCreateForm/>
-        </div>
+        <MultisigCreateForm/>
     </section>
 </template>
