@@ -263,7 +263,7 @@
                     <dd class="u-select-all">{{ password }}</dd>
 
                     <dt>
-                        {{ $td('Link to redeem.', 'form.checks-issue-result-link') }} <br>
+                        {{ $td('Link to redeem:', 'form.checks-issue-result-link') }} <br>
                         <span class="u-emoji">⚠️</span> {{ $td('Warning! Password included in the link. Send the link only directly to the recipient.' , 'form.checks-issue-result-link-warning') }}
                     </dt>
                     <dd class="u-icon-wrap">
