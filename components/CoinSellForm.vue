@@ -160,15 +160,25 @@
                     </label>
                 </div>
                 <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinTo + ' ' + $options.pretty(estimation)"
-                        >
-                        <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive') }}</span>
-                    </label>
-                    <div class="form-field__help u-text-left">
-                        {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
-                    </div>
+                    <template v-if="estimation">
+                        <label class="form-field form-field--dashed">
+                            <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
+                                   :value="form.coinTo + ' ' + $options.pretty(estimation)"
+                            >
+                            <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive-estimation') }}</span>
+                        </label>
+                        <div class="form-field__help u-text-left">
+                            {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
+                        </div>
+                    </template>
+                    <template v-else>
+                        <label class="form-field form-field--dashed">
+                            <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
+                                   :value="form.coinTo"
+                            >
+                            <span class="form-field__label">{{ $td('You will get', 'form.convert-sell-confirm-receive') }}</span>
+                        </label>
+                    </template>
                 </div>
             </div>
         </template>

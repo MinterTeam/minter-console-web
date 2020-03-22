@@ -202,7 +202,7 @@ export default {
 
         'generate-button': 'Сгенерировать',
         'generate-nonce-error-min': 'Минимум 1',
-        'generate-nonce-help': 'Уникальный номер транзакции: текущее кол-во транзакций пользователя + 1',
+        'generate-nonce-help': 'Уникальный номер транзакции: кол‑во транзакций пользователя + 1',
         'generate-result-tx': 'Подписанная транзакция',
 
         'submit-confirm-button': 'Подтвердить',
@@ -269,7 +269,8 @@ export default {
         'convert-sell-error': 'Нет монет для продажи',
 
         'convert-sell-confirm-send': 'Вы отправляете',
-        'convert-sell-confirm-receive': 'Вы получите приблизительно *',
+        'convert-sell-confirm-receive': 'Вы получите',
+        'convert-sell-confirm-receive-estimation': 'Вы получите примерно *',
 
         'convert-buy-amount': 'Сколько покупаем',
         'convert-buy-coin-buy': 'Что покупаем',
@@ -279,7 +280,8 @@ export default {
         'convert-buy-error': 'Нет монет для траты',
 
         'convert-buy-confirm-get': 'Вы покупаете',
-        'convert-buy-confirm-pay': 'Вы заплатите примерно *',
+        'convert-buy-confirm-pay': 'Вы заплатите',
+        'convert-buy-confirm-pay-estimation': 'Вы заплатите примерно *',
 
         'convert-confirm-note': '* Итоговая сумма зависит от текущего курса непосредственно в момент обмена и может отличаться от представленной выше.',
 
