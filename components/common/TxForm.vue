@@ -8,7 +8,7 @@
     import autosize from 'v-autosize';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
-    import prepareSignedTx, {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
+    import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
@@ -194,13 +194,6 @@
         methods: {
             pretty,
             prettyExact,
-            submit() {
-                if (this.$store.getters.isOfflineMode) {
-                    this.generateTx();
-                } else {
-                    this.submitConfirm();
-                }
-            },
             submitConfirm() {
                 if (this.isFormSending) {
                     return;
@@ -223,44 +216,43 @@
                     this.isConfirmModalVisible = true;
                 });
             },
-            generateTx() {
-                if (this.$v.$invalid) {
-                    this.$v.$touch();
-                    this.$txData.$touch();
-                    return;
-                }
-
+            submit() {
+                this.isConfirmModalVisible = false;
                 this.signature = null;
                 this.signedTx = null;
                 this.serverError = '';
                 this.serverSuccess = '';
 
-                this.signedTx = prepareSignedTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
+                if (this.$store.getters.isOfflineMode) {
+                    this.generateTx();
+                } else {
+                    this.postTx();
+                }
+            },
+            generateTx() {
+                let tx;
+                if (!this.form.multisigAddress) {
+                    // private key to sign
+                    tx = prepareTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
+                } else {
+                    tx = prepareTx(this.getTxParamsMultisigData());
+                }
+                this.signedTx = tx.serialize().toString('hex');
                 this.clearForm();
             },
             postTx() {
-                this.isConfirmModalVisible = false;
                 this.isFormSending = true;
-                this.signature = null;
-                this.signedTx = null;
-                this.serverError = '';
-                this.serverSuccess = '';
 
                 let postTxPromise;
                 if (!this.form.multisigAddress) {
                     postTxPromise = this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
                         .then(() => {
+                            // private key to sign
                             return postTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
                         });
                 } else {
-                    postTxPromise = postTx({
-                        ...this.getTxParams(),
-                        signatureType: 2,
-                        signatureData: {
-                            multisig: this.form.multisigAddress,
-                            signatures: this.form.signatureList,
-                        },
-                    }, {address: this.form.multisigAddress});
+                    // address to get nonce
+                    postTxPromise = postTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
                 }
 
                 postTxPromise
@@ -290,10 +282,7 @@
                 this.isSigning = true;
                 this.signature = null;
 
-                let txParams = {
-                    ...this.getTxParams(),
-                    signatureType: 2,
-                };
+                let txParams = this.getTxParams();
 
                 Promise.all([
                         ensureNonce(txParams, {address: this.form.multisigAddress}),
@@ -319,6 +308,16 @@
                     data: clearEmptyFields(this.txData),
                     type: this.txType,
                     gasCoin: this.fee.coinSymbol,
+                    signatureType: this.form.multisigAddress ? 2 : 1,
+                };
+            },
+            getTxParamsMultisigData() {
+                return {
+                    ...this.getTxParams(),
+                    signatureData: {
+                        multisig: this.form.multisigAddress,
+                        signatures: this.form.signatureList,
+                    },
                 };
             },
             switchToAdvanced() {
@@ -344,7 +343,7 @@
                 this.formAdvanced.gasCoin = '';
                 this.formAdvanced.payload = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
-                    this.form.nonce += 1;
+                    this.form.nonce = Number(this.form.nonce) + 1;
                 } else {
                     this.form.nonce = '';
                 }
@@ -387,7 +386,7 @@
         <slot name="extra-panel"></slot>
 
         <!-- Form -->
-        <form class="panel__section" novalidate @submit.prevent="submit">
+        <form class="panel__section" novalidate @submit.prevent="submitConfirm">
             <div class="u-grid u-grid--small u-grid--vertical-margin">
                 <!-- Tx Data Fields -->
                 <slot :fee="fee" :address-balance="balance"></slot>
@@ -420,7 +419,7 @@
                     <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
                     <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced && !$store.getters.isOfflineMode">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <FieldDomain
                             v-model.trim="form.multisigAddress"
                             :$value="$v.form.multisigAddress"
@@ -455,11 +454,7 @@
                     </label>
                     <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
-                        {{ $td('Generate', 'form.generate-button') }}
-                    </button>
-                </div>
+
 
                 <!-- Controls -->
                 <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
@@ -470,7 +465,8 @@
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="$store.getters.isOfflineMode"><!--placeholder--></div>
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2">
                     <button
                             class="button button--ghost-main button--full"
                             type="button"
@@ -480,6 +476,11 @@
                     >
                         <span class="button__content">{{ $td('Sign', 'form.multisig-sign') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>
+                    </button>
+                </div>
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                        {{ $td('Generate', 'form.generate-button') }}
                     </button>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
@@ -556,7 +557,7 @@
                 <div class="panel__section">
                     <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
                             :class="{'is-loading': isFormSending}"
-                            @click="postTx"
+                            @click="submit"
                     >
                         <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>
