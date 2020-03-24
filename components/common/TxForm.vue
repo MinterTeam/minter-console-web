@@ -235,7 +235,8 @@
                     // private key to sign
                     tx = prepareTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
                 } else {
-                    tx = prepareTx(this.getTxParamsMultisigData());
+                    // address to make proof for RedeemCheck
+                    tx = prepareTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
                 }
                 this.signedTx = tx.serialize().toString('hex');
                 this.clearForm();
@@ -251,7 +252,7 @@
                             return postTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
                         });
                 } else {
-                    // address to get nonce
+                    // address to get nonce or make proof for RedeemCheck
                     postTxPromise = postTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
                 }
 
@@ -289,7 +290,8 @@
                         this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
                     ])
                     .then(([nonce]) => {
-                        const tx = prepareTx({...txParams, nonce});
+                        // address to make proof for RedeemCheck
+                        const tx = prepareTx({...txParams, nonce}, {address: this.form.multisigAddress});
                         const signature = makeSignature(tx, this.$store.getters.privateKey).toString('hex');
 
                         this.signature = `0x${signature}`;
