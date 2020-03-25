@@ -214,6 +214,8 @@
                 }
                 beforeShowPromise.then(() => {
                     this.isConfirmModalVisible = true;
+                }).catch((e) => {
+                    console.log(e);
                 });
             },
             submit() {
@@ -488,7 +490,7 @@
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button
                             class="button button--main button--full"
-                            data-test-id="walletSendSubmitButton"
+                            data-test-id="txSubmitButton"
                             :class="{
                             'is-loading': isFormSending,
                             'is-disabled': $v.$invalid
@@ -501,11 +503,11 @@
                         </span>
                         <Loader class="button__loader" :isLoading="true"/>
                     </button>
-                    <div class="form-field__error" data-test-id="walletSendErrorMessage" v-if="serverError">{{ serverError }}</div>
+                    <div class="form-field__error" data-test-id="txErrorMessage" v-if="serverError">{{ serverError }}</div>
                 </div>
 
 
-                <div class="u-cell u-cell--order-2" data-test-id="walletSendSuccessMessage" v-if="serverSuccess">
+                <div class="u-cell u-cell--order-2" data-test-id="txSuccessMessage" v-if="serverSuccess">
                     <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
                     <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
                 </div>
@@ -557,7 +559,7 @@
                     <SignatureList v-model="form.signatureList"/>
                 </div>
                 <div class="panel__section">
-                    <button class="button button--main button--full" type="button" data-test-id="walletSendModalSubmitButton" data-focus-on-open
+                    <button class="button button--main button--full" type="button" data-test-id="txModalSubmitButton" data-focus-on-open
                             :class="{'is-loading': isFormSending}"
                             @click="submit"
                     >
