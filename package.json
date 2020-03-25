@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -17,6 +17,15 @@
     "test": "gulp once && NODE_ENV=test APP_BRANCH_ENV=testnet jest --bail --runInBand --verbose",
     "test:debug": "DEBUG=true npm run test",
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
+    "postinstall": "electron-builder install-app-deps",
+    "electron:build": "npm run production && npm run electron:build-x64 && npm run electron:build-x86",
+    "electron:build-x64": "electron-builder -mwl --config=./desktop/electron-builder.config.js",
+    "electron:build-x86": "electron-builder -w --ia32  --config=./desktop/electron-builder-x86.config.js",
+    "electron:build-dir": "electron-builder --config=./desktop/electron-builder.config.js --dir",
+    "electron:dev": "electron ./desktop/electron.dev.js",
+    "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
+    "pkg:pkg": "pkg . --out-path=tmp/pkg",
+    "pkg:zip": "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
   },
   "pre-commit": [
@@ -71,6 +80,9 @@
     "cross-env": "^7.0.2",
     "del": "^5.1.0",
     "dotenv": "^8.2.0",
+    "electron": "^8.0.3",
+    "electron-builder": "^22.4.0",
+    "electron-debug": "^3.0.1",
     "eslint": "^6.8.0",
     "eslint-friendly-formatter": "^4.0.1",
     "eslint-loader": "^3.0.3",
@@ -94,5 +106,12 @@
     "pre-commit": "^1.2.2",
     "puppeteer": "^2.1.1",
     "rimraf": "^3.0.2"
-  }
+  },
+  "main": "desktop/electron.js",
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "Firefox ESR",
+    "not dead"
+  ]
 }
