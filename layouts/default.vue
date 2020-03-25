@@ -2,12 +2,14 @@
     import {shortHashFilter, support} from "~/assets/utils";
     import {NETWORK, TESTNET} from '~/assets/variables';
     import Snackbar from '~/components/common/Snackbar';
+    import ConnectionNotice from '~/components/ConnectionNotice.vue';
     import Language from '~/layouts/_language';
     import Footer from '~/layouts/_footer';
 
     export default {
         components: {
             Snackbar,
+            ConnectionNotice,
             Language,
             Footer,
         },
@@ -113,6 +115,12 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
+                                    {{ $td('Coiner', 'common.page-coiner') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
                                     {{ $td('Checks', 'common.page-checks') }}
@@ -139,15 +147,9 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisignature')" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('multisig')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation">
-                                    {{ $td('Multisignature', 'common.page-multisignature') }}
-                                </nuxt-link>
-                            </li>
-                            <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
-                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
-                                    {{ $td('Coiner', 'common.page-coiner') }}
+                                    {{ $td('Multisig address', 'common.page-multisig') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
@@ -203,13 +205,13 @@
                                 <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#tag/Node-API" target="_blank">API</a>
+                                <a class="services__link link--hover" href="https://docs.minter.network/#tag/Node-API" target="_blank">API</a>
                             </li>
                             <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://minterteam.github.io/minter-go-node-docs/#section/Minter-SDKs" target="_blank">SDK</a>
+                                <a class="services__link link--hover" href="https://docs.minter.network/#section/Minter-SDKs" target="_blank">SDK</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://calculator.beta.minter.network" target="_blank">Calculator</a>
+                                <a class="services__link link--hover" href="https://calculator.minter.network/" target="_blank">Calculator</a>
                             </li>
                             <li class="u-cell services__item--next-row">
                                 <a class="services__link link--hover" href="https://help.minter.network" target="_blank">Help/FAQ</a>
@@ -225,6 +227,7 @@
 
         <Footer/>
 
+        <ConnectionNotice/>
         <Snackbar/>
     </div>
 </template>

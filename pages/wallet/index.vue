@@ -2,7 +2,7 @@
     import {mapGetters} from 'vuex';
     import {getAddressTransactionList} from "~/api";
     import getTitle from '~/assets/get-title';
-    import {pretty} from '~/assets/utils';
+    import {pretty, getTimeDistance} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';
     import QrcodeVue from 'qrcode.vue';
     import InlineSvg from 'vue-inline-svg';
@@ -11,6 +11,8 @@
     import CoinSendForm from '~/components/CoinSendForm';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';
+
+    let timeInterval = null;
 
     function getAddressLatestTransactionList(addres) {
         return getAddressTransactionList(addres, {limit: 5});
@@ -65,6 +67,7 @@
                 /** @type Array<Transaction> */
                 txList: [],
                 isAddressQrModalVisible: false,
+                lastUpdateTimeDistance: this.getLastUpdateTimeDistance(),
             };
         },
         computed: {
@@ -84,6 +87,21 @@
                     .then((txListInfo) => {
                         this.txList = txListInfo.data;
                     });
+            },
+        },
+        beforeMount() {
+            // update timestamps if no new data from server
+            timeInterval = setInterval(() => {
+                this.lastUpdateTimeDistance = this.getLastUpdateTimeDistance();
+            }, 1000);
+        },
+        destroyed() {
+            clearInterval(timeInterval);
+        },
+        methods: {
+            getLastUpdateTimeDistance() {
+                // pass this.now to update computed property
+                return getTimeDistance(this.$store.state.lastUpdateTime);
             },
         },
     };
@@ -109,6 +127,10 @@
                 <div>{{ $td('Your balance:', 'wallet.balance') }}</div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
+                </div>
+                <div class="wallet__time" v-if="lastUpdateTimeDistance">
+                    <img class="wallet__time-icon" src="/img/icon-time.svg" width="14" height="14" alt="" role="presentation">
+                    <span class="wallet__time-text">Last updated <strong>{{ lastUpdateTimeDistance }}</strong> ago</span>
                 </div>
             </div>
         </div>

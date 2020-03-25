@@ -1,5 +1,5 @@
 import {ROUTES} from '~/test/variables';
-import {login, logout} from '~/test/utils';
+import {login, logout, txSubmit} from '~/test/utils';
 
 /** @type Browser */
 let browser;
@@ -46,27 +46,15 @@ describe('wallet page', () => {
 
     test('send coins', async () => {
         await page.type('[data-test-id="walletSendInputAddress"]', address);
+        await page.type('[data-test-id="walletSendInputCoin"]', 'MNT');
         await page.type('[data-test-id="walletSendInputAmount"]', '10');
-        // submit (opens modal)
-        await page.click('[data-test-id="walletSendSubmitButton"]');
-        // wait for modal
-        await page.waitForSelector('[data-test-id="walletSendModalSubmitButton"]');
-        // submit
-        await page.click('[data-test-id="walletSendModalSubmitButton"]');
-        // wait for success
-        await page.waitForSelector('[data-test-id="walletSendSuccessMessage"]');
+        await txSubmit(page, 'walletSend');
     }, 30000);
 
     test('fail send not enough coins', async () => {
         await page.type('[data-test-id="walletSendInputAddress"]', address);
-        await page.type('[data-test-id="walletSendInputAmount"]', '9999999999999999999999999');
-        // submit (opens modal)
-        await page.click('[data-test-id="walletSendSubmitButton"]');
-        // wait for modal
-        await page.waitForSelector('[data-test-id="walletSendModalSubmitButton"]');
-        // submit
-        await page.click('[data-test-id="walletSendModalSubmitButton"]');
-        // wait for success
-        await page.waitForSelector('[data-test-id="walletSendErrorMessage"]');
+        await page.type('[data-test-id="walletSendInputCoin"]', 'MNT');
+        await page.type('[data-test-id="walletSendInputAmount"]', '9999999999999999');
+        await txSubmit(page, 'walletSend', {shouldFailPost: true});
     }, 30000);
 });

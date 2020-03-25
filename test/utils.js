@@ -30,3 +30,44 @@ export async function login(page) {
         throw e;
     }
 }
+
+/**
+ *
+ * @param {Page} page
+ * @param {string} formTestId
+ * @param {boolean} [shouldFail]
+ * @param {boolean} [shouldFailModal]
+ * @return {Promise<void>}
+ */
+export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModal} = {}) {
+    await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
+    await wait();
+
+    // submit (opens modal)
+    await page.click(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]`);
+
+    if (!shouldFailModal) {
+        // wait for modal
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`);
+        // post tx
+        await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`);
+    }
+
+    if (!shouldFailPost) {
+        // wait for success
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSuccessMessage"]`);
+    } else {
+        // wait for error
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txErrorMessage"]`);
+    }
+}
+
+/**
+ * @param {number} [time=100]
+ * @return {Promise<unknown>}
+ */
+export function wait(time = 100) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, time);
+    });
+}

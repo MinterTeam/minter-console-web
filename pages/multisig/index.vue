@@ -7,7 +7,7 @@
             MultisigCreateForm,
         },
         fetch({ app, store }) {
-            store.commit('SET_SECTION_NAME', app.$td('Multisignature', 'common.page-multisignature'));
+            store.commit('SET_SECTION_NAME', app.$td('Multisig address', 'common.page-multisig'));
             return Promise.resolve();
         },
         head() {
@@ -30,13 +30,6 @@
 
 <template>
     <section class="u-section u-container">
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-                    {{ $td('Create Multisig Address', 'multisig.create-title') }}
-                </h1>
-            </div>
-            <MultisigCreateForm/>
-        </div>
+        <MultisigCreateForm/>
     </section>
 </template>

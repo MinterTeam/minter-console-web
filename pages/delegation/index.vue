@@ -63,28 +63,10 @@
         </section>
 
 
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-                    {{ $td('Delegate', 'delegation.delegate-title') }}
-                </h1>
-                <p class="panel__header-description">
-                    {{ $td('You can delegate your tokens to validators and receive related payments in accordance with the terms of participation.', 'delegation.delegate-description') }}
-                </p>
-            </div>
-            <ValidatorDelegateForm/>
-        </div>
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-                    {{ $td('Unbond', 'delegation.unbond-title') }}
-                </h1>
-                <p class="panel__header-description">
-                    {{ $td('In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 30 days after the request has been sent.', 'delegation.unbond-description') }}
-                </p>
-            </div>
-            <ValidatorUnbondForm/>
-        </div>
+        <ValidatorDelegateForm/>
+
+        <ValidatorUnbondForm/>
+
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">

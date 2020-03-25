@@ -32,17 +32,8 @@
 
 <template>
     <section class="u-section u-container">
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-                    {{ $td('Redeem check', 'checks.redeem-title') }}
-                </h1>
-                <p class="panel__header-description">
-                    {{ $td('Claim a check someone has written out to you.', 'checks.redeem-description') }}
-                </p>
-            </div>
-            <CheckRedeemForm/>
-        </div>
+        <CheckRedeemForm/>
+
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">
