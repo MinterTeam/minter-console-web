@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -102,29 +102,12 @@
     "jest": "^25.1.0",
     "jest-environment-node": "^25.1.0",
     "mkdirp": "^1.0.3",
-    "pkg": "^4.4.0",
     "postcss-normalize": "^8.0.1",
     "pre-commit": "^1.2.2",
     "puppeteer": "^2.1.1",
     "rimraf": "^3.0.2"
   },
   "main": "desktop/electron.js",
-  "bin": "desktop/pkg.js",
-  "pkg": {
-    "assets": [
-      "static",
-      "dist/**/*",
-      ".nuxt/**/*",
-      "node_modules/@nuxtjs/youch/src/resources/**/*"
-    ],
-    "scripts": [],
-    "targets": [
-      "macos-x64",
-      "linux-x64",
-      "win-x64",
-      "win-x86"
-    ]
-  },
   "browserslist": [
     "> 0.5%",
     "last 2 versions",
