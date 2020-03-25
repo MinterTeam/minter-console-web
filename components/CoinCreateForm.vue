@@ -1,6 +1,4 @@
 <script>
-    import {mapGetters} from 'vuex';
-    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
@@ -9,23 +7,14 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
-    import CreateCoinTxParams from "minter-js-sdk/src/tx-params/create-coin";
     import {MIN_MAX_SUPPLY, MAX_MAX_SUPPLY} from "minter-js-sdk/src/tx-data/create-coin";
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
-    import {postTx} from '~/api/gate';
-    import FeeBus from '~/assets/fee';
     import checkEmpty from '~/assets/v-check-empty';
-    import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty, prettyCeil, prettyPreciseFloor, prettyExact, prettyExactDecrease, prettyRound} from "~/assets/utils";
-    import FieldQr from '~/components/common/FieldQr';
+    import {prettyCeil, prettyPreciseFloor, prettyExact, prettyExactDecrease, prettyRound} from "~/assets/utils";
+    import TxForm from '~/components/common/TxForm.vue';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
-    import InputMaskedInteger from '~/components/common/InputMaskedInteger';
-    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
-    import Loader from '~/components/common/Loader';
-    import Modal from '~/components/common/Modal';
 
     const MIN_CRR = 10;
     const MAX_CRR = 100;
@@ -67,11 +56,10 @@
         };
     }
 
-    let feeBus;
-
     export default {
         // first key not handled by webstorm intelliSense
         ideFix: true,
+        TX_TYPE,
         // MIN_DESTROY_RESERVE,
         MIN_CREATE_RESERVE,
         MIN_PRICE,
@@ -92,58 +80,29 @@
             wheelStep: 1,
         },
         prettyRound,
-        getExplorerTxUrl,
-        pretty,
         prettyPreciseFloor,
         prettyExact,
         prettyExactDecrease,
         components: {
             VueAutonumeric,
-            QrcodeVue,
-            FieldQr,
+            TxForm,
             InputUppercase,
             InputMaskedAmount,
-            InputMaskedInteger,
-            ButtonCopyIcon,
-            Loader,
-            Modal,
         },
         directives: {
             checkEmpty,
         },
-        filters: {
-            pretty,
-            prettyCeil,
-            uppercase: (value) => value ? value.toUpperCase() : value,
-        },
         mixins: [validationMixin],
         data() {
-            const coinList = this.$store.getters.balance;
             return {
-                isFormSending: false,
-                serverError: '',
-                serverSuccess: '',
                 form: {
-                    nonce: '',
                     name: '',
                     symbol: '',
-                    initialAmount: null,
+                    initialAmount: '',
                     constantReserveRatio: null,
-                    initialReserve: null,
-                    maxSupply: null,
-                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
-                    message: '',
-                    gasPrice: '',
+                    initialReserve: '',
+                    maxSupply: '',
                 },
-                formAdvanced: {
-                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
-                    message: '',
-                },
-                isModeAdvanced: false,
-                /** @type FeeData */
-                fee: {},
-                isConfirmModalVisible: false,
-                signedTx: null,
             };
         },
         validations() {
@@ -175,37 +134,16 @@
                     minValue: this.form.maxSupply ? minValue(MIN_MAX_SUPPLY) : () => true,
                     maxValue: this.form.maxSupply ? maxValue(MAX_MAX_SUPPLY) : () => true,
                 },
-                feeCoinSymbol: {
-                    required,
-                    minLength: minLength(3),
-                    maxLength: maxLength(10),
-                },
-                message: {
-                    maxLength: maxLength(1024),
-                },
             };
-
-            if (this.$store.getters.isOfflineMode) {
-                form.nonce = {
-                    required,
-                    minValue: minValue(1),
-                };
-                form.gasPrice = {
-                    minValue: minValue(1),
-                };
-            }
 
             return {
                 form,
                 coinPrice: {
-                    minValue: minValue(this.$options.MIN_PRICE),
+                    // minValue: minValue(this.$options.MIN_PRICE),
                 },
             };
         },
         computed: {
-            ...mapGetters({
-                balance: 'balance',
-            }),
             coinPrice() {
                 return calculatePrice(this.form);
             },
@@ -227,137 +165,15 @@
                 return this.sellToLiquidateBySupply / this.form.initialAmount * 100;
             },
 */
-            showAdvanced() {
-                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
-            },
-            feeBusParams() {
-                return {
-                    txType: TX_TYPE.CREATE_COIN,
-                    txFeeOptions: {
-                        payload: this.form.message,
-                        coinSymbol: this.form.symbol,
-                    },
-                    selectedFeeCoinSymbol: this.form.feeCoinSymbol,
-                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
-                    isOffline: this.$store.getters.isOfflineMode,
-                };
-            },
-        },
-        watch: {
-            feeBusParams: {
-                handler(newVal) {
-                    if (feeBus && typeof feeBus.$emit === 'function') {
-                        feeBus.$emit('updateParams', newVal);
-                    }
-                },
-                deep: true,
-            },
-        },
-        created() {
-            feeBus = new FeeBus(this.feeBusParams);
-            this.fee = feeBus.fee;
-            feeBus.$on('updateFee', (newVal) => {
-                this.fee = newVal;
-            });
         },
         methods: {
-            submit() {
-                if (this.$store.getters.isOfflineMode) {
-                    this.generateTx();
-                } else {
-                    this.submitConfirm();
-                }
-            },
-            submitConfirm() {
-                if (this.isFormSending) {
-                    return;
-                }
-                if (this.$v.$invalid) {
-                    this.$v.$touch();
-                    return;
-                }
-                this.isConfirmModalVisible = true;
-            },
-            generateTx() {
-                if (this.$v.$invalid) {
-                    this.$v.$touch();
-                    return;
-                }
-
-                this.signedTx = null;
-                this.serverError = '';
-                this.serverSuccess = '';
-
-                this.signedTx = prepareSignedTx(new CreateCoinTxParams({
-                    chainId: this.$store.getters.CHAIN_ID,
-                    ...this.form,
-                    maxSupply: this.form.maxSupply || undefined,
-                    feeCoinSymbol: this.fee.coinSymbol,
-                    gasPrice: this.form.gasPrice || undefined,
-                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
-                this.clearForm();
-            },
-            postTx() {
-                this.isConfirmModalVisible = false;
-                this.isFormSending = true;
-                this.signedTx = null;
-                this.serverError = '';
-                this.serverSuccess = '';
-                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                    .then(() => {
-                        postTx(new CreateCoinTxParams({
-                            privateKey: this.$store.getters.privateKey,
-                            ...this.form,
-                            maxSupply: this.form.maxSupply || undefined,
-                            feeCoinSymbol: this.fee.coinSymbol,
-                            gasPrice: this.form.gasPrice || undefined,
-                        })).then((txHash) => {
-                            this.isFormSending = false;
-                            this.serverSuccess = txHash;
-                            this.clearForm();
-                        }).catch((error) => {
-                            console.log(error);
-                            this.isFormSending = false;
-                            this.serverError = getErrorText(error);
-                        });
-                    })
-                    .catch((error) => {
-                        this.isFormSending = false;
-                        this.serverError = getErrorText(error);
-                    });
-            },
-            switchToAdvanced() {
-                this.isModeAdvanced = true;
-                // restore advanced data
-                this.form.feeCoinSymbol = this.formAdvanced.feeCoinSymbol;
-                this.form.message = this.formAdvanced.message;
-            },
-            switchToSimple() {
-                this.isModeAdvanced = false;
-                // save advanced data
-                this.formAdvanced.feeCoinSymbol = this.form.feeCoinSymbol;
-                this.formAdvanced.message = this.form.message;
-                // clear advanced form
-                this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
-                this.form.message = '';
-            },
             clearForm() {
                 this.form.name = '';
                 this.form.symbol = '';
-                this.form.initialAmount = null;
+                this.form.initialAmount = '';
                 this.form.constantReserveRatio = null;
-                this.form.initialReserve = null;
-                this.form.maxSupply = null;
-                this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
-                this.form.message = '';
-                this.formAdvanced.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
-                this.formAdvanced.message = '';
-                if (this.form.nonce && this.$store.getters.isOfflineMode) {
-                    this.form.nonce += 1;
-                } else {
-                    this.form.nonce = '';
-                }
-                this.form.gasPrice = '';
+                this.form.initialReserve = '';
+                this.form.maxSupply = '';
                 this.$v.$reset();
             },
         },
@@ -365,205 +181,102 @@
 </script>
 
 <template>
-    <div class="panel">
-        <div class="panel__header">
-            <h1 class="panel__header-title">
-</h1>
-            <p class="panel__header-description"></p>
+    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_COIN" @clear-form="clearForm()">
+        <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Create Coin', 'coiner.create-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('Create your own coin from scratch. It is completely up to you to decide what role it will play&nbsp;— that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
             </p>
-        </div>
-        <form class="panel__section" novalidate @submit.prevent="submit">
-            <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                <div class="u-cell u-cell--medium--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.name.$error}">
-                        <input class="form-field__input" type="text" v-check-empty
-                               v-model.trim="form.name"
-                               @blur="$v.form.name.$touch()"
-                        >
-                        <span class="form-field__label">{{ $td('Coin name', 'form.coiner-create-name') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.required">{{ $td('Enter coin name', 'form.coiner-create-name-error-required') }}</span>
-                    <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.maxLength">{{ $td('Max 64 letters', 'form.coiner-create-name-error-max') }}</span>
-                    <div class="form-field__help" v-html="$td('The full name of your coin (for example, <strong>Bitcoin</strong>). Arbitrary string up to 64 letters long.', 'form.coiner-create-name-help')"></div>
-                </div>
-                <div class="u-cell u-cell--medium--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.symbol.$error}">
-                        <InputUppercase class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
-                                        v-model.trim="form.symbol"
-                                        @blur="$v.form.symbol.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Coin symbol', 'form.coiner-create-symbol') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.required">{{ $td('Enter coin symbol', 'form.coiner-create-symbol-error-required') }}</span>
-                    <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                    <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.name">{{ $td('Invalid coin ticker', 'form.coin-error-name') }}</span>
-                    <div class="form-field__help" v-html="$td('Ticker symbol (for example, <strong>BTC</strong>). Must be unique, alphabetic, uppercase, and 3 to 10 symbols long.', 'form.coiner-create-symbol-help')"></div>
-                </div>
-                <div class="u-cell u-cell--medium--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.initialAmount.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                           v-model="form.initialAmount"
-                                           @blur="$v.form.initialAmount.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Initial amount', 'form.coiner-create-amount') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.minValue">{{ $td(`Min amount is 1`, 'form.coiner-create-amount-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.maxValue">
+        </template>
+
+        <template v-slot:default="{fee, addressBalance}">
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.name.$error}">
+                    <input class="form-field__input" type="text" v-check-empty
+                           v-model.trim="form.name"
+                           @blur="$v.form.name.$touch()"
+                    >
+                    <span class="form-field__label">{{ $td('Coin name', 'form.coiner-create-name') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.required">{{ $td('Enter coin name', 'form.coiner-create-name-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.maxLength">{{ $td('Max 64 letters', 'form.coiner-create-name-error-max') }}</span>
+                <div class="form-field__help" v-html="$td('The full name of your coin (for example, <strong>Bitcoin</strong>). Arbitrary string up to 64 letters long.', 'form.coiner-create-name-help')"></div>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.symbol.$error}">
+                    <InputUppercase class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
+                                    v-model.trim="form.symbol"
+                                    @blur="$v.form.symbol.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Coin symbol', 'form.coiner-create-symbol') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.required">{{ $td('Enter coin symbol', 'form.coiner-create-symbol-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.name">{{ $td('Invalid coin ticker', 'form.coin-error-name') }}</span>
+                <div class="form-field__help" v-html="$td('Ticker symbol (for example, <strong>BTC</strong>). Must be unique, alphabetic, uppercase, and 3 to 10 symbols long.', 'form.coiner-create-symbol-help')"></div>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.initialAmount.$error}">
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                                       v-model="form.initialAmount"
+                                       @blur="$v.form.initialAmount.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Initial amount', 'form.coiner-create-amount') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.minValue">{{ $td(`Min amount is 1`, 'form.coiner-create-amount-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.initialAmount.$dirty && !$v.form.initialAmount.maxValue">
                         {{ $td(`Initial amount should be less or equal of Max supply`, 'form.coiner-create-amount-error-max') }}:
                         <span v-if="form.maxSupply">{{ $options.prettyExactDecrease(form.maxSupply) }}</span>
                         <span v-else>10<sup>15</sup></span>
                     </span>
-                </div>
-                <div class="u-cell u-cell--medium--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                           v-model="form.initialReserve"
-                                           @blur="$v.form.initialReserve.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Initial reserve', 'form.coiner-create-reserve') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.required">{{ $td('Enter reserve', 'form.coiner-create-reserve-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.minValue">{{ $td(`Min reserve is ${$store.getters.COIN_NAME} ${$options.prettyRound($options.MIN_CREATE_RESERVE)}`, 'form.coiner-create-reserve-error-min', {coin: $store.getters.COIN_NAME, min: $options.MIN_CREATE_RESERVE}) }}</span>
-                </div>
-                <div class="u-cell u-cell--medium--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.constantReserveRatio.$error}">
-                        <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
-                                        v-model="form.constantReserveRatio"
-                                        @blur.native="$v.form.constantReserveRatio.$touch()"
-                                        :options="$options.maskCrr"
-                        />
-                        <span class="form-field__label">{{ $td('Constant reserve ratio', 'form.coiner-create-crr') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.required">{{ $td('Enter CRR', 'form.coiner-create-crr-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.between">{{ $td('CRR should be between 10 and 100', 'form.coiner-create-crr-error-between') }}</span>
-                    <div class="form-field__help">{{ $td('CRR (Constant Reserve Ratio) reflects the volume of BIP reserves backing a newly issued coin. The higher the coefficient, the higher the reserves and thus the lower the volatility. And vice versa. The value should be integer and fall in the range from 10 to 100.', 'form.coiner-create-crr-help') }}</div>
-                </div>
-                <div class="u-cell u-cell--medium--1-2">
-                    <label class="form-field" :class="{'is-error': $v.form.maxSupply.$error}">
-                        <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                        v-model="form.maxSupply"
-                                        @blur.native="$v.form.maxSupply.$touch()"
-                        />
-                        <span class="form-field__label">{{ $td('Max supply', 'form.coiner-create-max-supply') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.minValue">{{ $td(`Min value is ${$options.MIN_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-min', {value: $options.MIN_MAX_SUPPLY}) }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.maxValue">{{ $td(`Max value is ${$options.MAX_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-max', {value: $options.MAX_MAX_SUPPLY}) }}</span>
-                    <div class="form-field__help">{{ $td('Coin purchase will not be possible if the limit is exceeded', 'form.coiner-create-max-supply-help') }}</div>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced">
-                    <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
-                        <select class="form-field__input form-field__input--select" v-check-empty
-                                v-model="form.feeCoinSymbol"
-                                @blur="$v.form.feeCoinSymbol.$touch()"
-                                v-if="balance && balance.length"
-                        >
-                            <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
-                                {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
-                            </option>
-                        </select>
-                        <InputUppercase class="form-field__input" type="text" v-check-empty
-                                        v-model.trim="form.feeCoinSymbol"
-                                        @blur="$v.form.feeCoinSymbol.$touch()"
-                                        v-else
-                        />
-                        <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                    <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${$options.pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: $options.pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
-                    <div class="form-field__help" v-else>
-                        {{ fee.coinSymbol }} {{ fee.value | pretty }}
-                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
-                    </div>
-                </div>
-                <div class="u-cell u-cell--xlarge--3-4" v-show="showAdvanced">
-                    <label class="form-field" :class="{'is-error': $v.form.message.$error}">
-                        <input class="form-field__input" type="text" v-check-empty
-                               v-model.trim="form.message"
-                               @blur="$v.form.message.$touch()"
-                        >
-                        <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.message.$dirty && !$v.form.message.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
-                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
-                </div>
-
-                <!-- Generation -->
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <FieldQr v-model="form.nonce"
-                             :$value="$v.form.nonce"
-                             :label="$td('Nonce', 'form.checks-issue-nonce')"
-                             :isInteger="true"
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                                       v-model="form.initialReserve"
+                                       @blur="$v.form.initialReserve.$touch()"
                     />
-                    <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
-                    <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                        <InputMaskedInteger class="form-field__input" v-check-empty
-                                            v-model="form.gasPrice"
-                                            @blur="$v.form.gasPrice.$touch()"
-                        />
-                        <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
-                        <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
-                    </label>
-                    <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
-                        {{ $td('Generate', 'form.generate-button') }}
-                    </button>
-                </div>
-
-                <!-- Controls -->
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
-                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
-                        {{ $td('Simple mode', 'form.toggle-simple-mode') }}
-                    </button>
-                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced">
-                        {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
-                    </button>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                        <span class="button__content">{{ $td('Create', 'form.coiner-create-button') }}</span>
-                        <Loader class="button__loader" :isLoading="true"/>
-                    </button>
-                    <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
-                    <div class="form-field__error" v-else-if="$v.coinPrice.$invalid && $v.form.initialAmount.$dirty && $v.form.initialReserve.$dirty && $v.form.constantReserveRatio.$dirty">
-                        {{ $td(`Minimum price is ${$options.MIN_PRICE}, current price is ${$options.prettyPreciseFloor(coinPrice)}`, 'form.coiner-create-form-price-error-min', {min: $options.MIN_PRICE, price: $options.prettyPreciseFloor(coinPrice)}) }}
-                    </div>
-                </div>
-                <div class="u-cell u-cell--order-2" v-if="serverSuccess">
-                    <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="$options.getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
-                </div>
-
-                <div class="u-cell u-cell--order-2" v-if="signedTx">
-                    <dl>
-                        <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
-                        <dd class="u-icon-wrap">
-                            <span class="u-select-all u-icon-text">
-                                {{ signedTx }}
-                            </span>
-                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
-                        </dd>
-                    </dl>
+                    <span class="form-field__label">{{ $td('Initial reserve', 'form.coiner-create-reserve') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.required">{{ $td('Enter reserve', 'form.coiner-create-reserve-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.minValue">{{ $td(`Min reserve is ${$store.getters.COIN_NAME} ${$options.prettyRound($options.MIN_CREATE_RESERVE)}`, 'form.coiner-create-reserve-error-min', {coin: $store.getters.COIN_NAME, min: $options.MIN_CREATE_RESERVE}) }}</span>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.constantReserveRatio.$error}">
+                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
+                                    v-model="form.constantReserveRatio"
+                                    @blur.native="$v.form.constantReserveRatio.$touch()"
+                                    :options="$options.maskCrr"
+                    />
+                    <span class="form-field__label">{{ $td('Constant reserve ratio', 'form.coiner-create-crr') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.required">{{ $td('Enter CRR', 'form.coiner-create-crr-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.between">{{ $td('CRR should be between 10 and 100', 'form.coiner-create-crr-error-between') }}</span>
+                <div class="form-field__help">{{ $td('CRR reflects the volume of BIP reserves backing a newly issued coin. The higher the coefficient, the higher the reserves and thus the lower the volatility. And vice versa. The value should be integer and fall in the range from 10 to 100.', 'form.coiner-create-crr-help') }}</div>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.maxSupply.$error}">
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                                       v-model="form.maxSupply"
+                                       @blur.native="$v.form.maxSupply.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Max supply', 'form.coiner-create-max-supply') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.minValue">{{ $td(`Min value is ${$options.MIN_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-min', {value: $options.MIN_MAX_SUPPLY}) }}</span>
+                <span class="form-field__error" v-else-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.maxValue">{{ $td(`Max value is ${$options.MAX_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-max', {value: $options.MAX_MAX_SUPPLY}) }}</span>
+                <div class="form-field__help">
+                    {{ $td('Coin purchase will not be possible if the limit is exceeded.', 'form.coiner-create-max-supply-help') }}
                     <br>
-                    <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
+                    {{ $td('Default:', 'form.help-default') }} 10^15
                 </div>
             </div>
-        </form>
+        </template>
 
-        <div class="panel__section panel__section--tint">
+        <template v-slot:panel-footer>
             <div class="u-grid">
                 <div class="u-cell u-cell--large--1-2">
                     <label class="form-field form-field--dashed" :class="{'is-error': $v.coinPrice.$error}">
@@ -572,16 +285,16 @@
                         >
                         <span class="form-field__label">{{ $td('Initial Price', 'form.coiner-create-price') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && $v.form.initialAmount.$dirty && $v.form.initialReserve.$dirty && !$v.coinPrice.minValue">{{ $td(`Min price is ${$options.MIN_PRICE}`, 'form.coiner-create-price-error-min', {min: $options.MIN_PRICE}) }}</span>
+<!--                    <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && $v.form.initialAmount.$dirty && $v.form.initialReserve.$dirty && !$v.coinPrice.minValue">{{ $td(`Min price is ${$options.MIN_PRICE}`, 'form.coiner-create-price-error-min', {min: $options.MIN_PRICE}) }}</span>-->
                 </div>
             </div>
             <br>
 
             <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
             <template v-if="$i18n.locale === 'en'">
-<!--
-                <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
--->
+                <!--
+                                <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
+                -->
                 <p><span class="u-emoji">⚠️</span> Warning! Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
@@ -594,9 +307,9 @@
                 </p>
             </template>
             <template v-if="$i18n.locale === 'ru'">
-<!--
-                <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
--->
+                <!--
+                                <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
+                -->
                 <p><span class="u-emoji">⚠️</span> Внимание! Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
                 <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
@@ -608,90 +321,78 @@
                     7-10 букв — {{ $store.getters.COIN_NAME }} 100<br>
                 </p>
             </template>
-        </div>
+        </template>
 
+        <template v-slot:submit-title>
+            {{ $td('Create', 'form.coiner-create-button') }}
+        </template>
 
-        <!-- Modal -->
-        <Modal v-bind:isOpen.sync="isConfirmModalVisible">
-            <div class="panel">
-                <div class="panel__header">
-                    <h1 class="panel__header-title">
-                        <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation" width="40" height="40">
-                        {{ $td('Create Coin', 'coiner.create-title') }}
-                    </h1>
+        <template v-slot:confirm-modal-header>
+            <h1 class="panel__header-title">
+                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation" width="40" height="40">
+                {{ $td('Create Coin', 'coiner.create-title') }}
+            </h1>
+        </template>
+
+        <template v-slot:confirm-modal-body>
+            <div class="u-grid u-grid--small u-grid--vertical-margin">
+                <!--
+                                        <div class="u-cell u-text-left" v-if="sellToLiquidateBySupplyPercent <= 30 || sellToLiquidateBySupply <= 1">
+                                            <p><strong>{{ $td('Warning', 'form.coiner-create-confirm-warning') }}</strong></p>
+                                            <p v-if="$i18n.locale === 'en'">
+                                                Selling <strong class="u-display-ib">{{ sellToLiquidateBySupplyPercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateBySupply | prettyCeil }})</strong> of initial supply will lead to <strong class="u-display-ib">coin liquidation</strong> by low supply. Do&nbsp;you want to&nbsp;continue?
+                                            </p>
+                                            <p v-if="$i18n.locale === 'ru'">
+                                                Продажа <strong class="u-display-ib">{{ sellToLiquidateBySupplyPercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateBySupply | prettyCeil }})</strong> от начальной эмиссии приведет к <strong class="u-display-ib">ликвидации монеты</strong> по причине низкой эмиссии. Вы&nbsp;уверены, что хотите&nbsp;продолжить?
+                                            </p>
+                                        </div>
+                                        <div class="u-cell u-text-left" v-else-if="sellToLiquidateByReservePercent <= 30">
+                                            <p><strong>{{ $td('Warning', 'form.coiner-create-confirm-warning') }}</strong></p>
+                                            <p v-if="$i18n.locale === 'en'">
+                                                Selling <strong class="u-display-ib">{{ sellToLiquidateByReservePercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateByReserve | prettyCeil }})</strong> of initial supply will lead to <strong class="u-display-ib">coin liquidation</strong> by low reserve. Do&nbsp;you want to&nbsp;continue?
+                                            </p>
+                                            <p v-if="$i18n.locale === 'ru'">
+                                                Продажа <strong class="u-display-ib">{{ sellToLiquidateByReservePercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateByReserve | prettyCeil }})</strong> от начальной эмиссии приведет к <strong class="u-display-ib">ликвидации монеты</strong> по причине низкого резерва. Вы&nbsp;уверены, что хотите&nbsp;продолжить?
+                                            </p>
+                                        </div>
+                -->
+                <div class="u-cell">
+                    <label class="form-field form-field--dashed">
+                        <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly tabindex="-1"
+                               :value="form.symbol + ' ' + $options.prettyExact(form.initialAmount)"
+                        />
+                        <span class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</span>
+                    </label>
                 </div>
-                <div class="panel__section">
-                    <div class="u-grid u-grid--small u-grid--vertical-margin">
-<!--
-                        <div class="u-cell u-text-left" v-if="sellToLiquidateBySupplyPercent <= 30 || sellToLiquidateBySupply <= 1">
-                            <p><strong>{{ $td('Warning', 'form.coiner-create-confirm-warning') }}</strong></p>
-                            <p v-if="$i18n.locale === 'en'">
-                                Selling <strong class="u-display-ib">{{ sellToLiquidateBySupplyPercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateBySupply | prettyCeil }})</strong> of initial supply will lead to <strong class="u-display-ib">coin liquidation</strong> by low supply. Do&nbsp;you want to&nbsp;continue?
-                            </p>
-                            <p v-if="$i18n.locale === 'ru'">
-                                Продажа <strong class="u-display-ib">{{ sellToLiquidateBySupplyPercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateBySupply | prettyCeil }})</strong> от начальной эмиссии приведет к <strong class="u-display-ib">ликвидации монеты</strong> по причине низкой эмиссии. Вы&nbsp;уверены, что хотите&nbsp;продолжить?
-                            </p>
-                        </div>
-                        <div class="u-cell u-text-left" v-else-if="sellToLiquidateByReservePercent <= 30">
-                            <p><strong>{{ $td('Warning', 'form.coiner-create-confirm-warning') }}</strong></p>
-                            <p v-if="$i18n.locale === 'en'">
-                                Selling <strong class="u-display-ib">{{ sellToLiquidateByReservePercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateByReserve | prettyCeil }})</strong> of initial supply will lead to <strong class="u-display-ib">coin liquidation</strong> by low reserve. Do&nbsp;you want to&nbsp;continue?
-                            </p>
-                            <p v-if="$i18n.locale === 'ru'">
-                                Продажа <strong class="u-display-ib">{{ sellToLiquidateByReservePercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateByReserve | prettyCeil }})</strong> от начальной эмиссии приведет к <strong class="u-display-ib">ликвидации монеты</strong> по причине низкого резерва. Вы&nbsp;уверены, что хотите&nbsp;продолжить?
-                            </p>
-                        </div>
--->
-                        <template>
-                            <div class="u-cell">
-                                <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly tabindex="-1"
-                                           :value="form.symbol + ' ' + $options.prettyExact(form.initialAmount)"
-                                    />
-                                    <span class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</span>
-                                </label>
-                            </div>
-                            <div class="u-cell">
-                                <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
-                                           :value="form.constantReserveRatio + '%'"
-                                    />
-                                    <span class="form-field__label">{{ $td('With CRR', 'form.coiner-create-confirm-crr') }}</span>
-                                </label>
-                            </div>
-                            <div class="u-cell">
-                                <label class="form-field form-field--dashed">
-                                    <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
-                                           :value="$store.getters.COIN_NAME + ' ' + $options.prettyExact(form.initialReserve)"
-                                    />
-                                    <span class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</span>
-                                </label>
-                            </div>
-                        </template>
-                        <div class="u-cell">
-                            <button class="button button--main button--full" data-test-id="walletSendModalSubmitButton" data-focus-on-open
-                                    :class="{'is-loading': isFormSending}"
-                                    @click="postTx"
-                            >
-                                <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
-                                <Loader class="button__loader" :isLoading="true"/>
-                            </button>
-                            <button class="button button--ghost-main button--full" v-if="!isFormSending" @click="isConfirmModalVisible = false">
-                                {{ $td('Cancel', 'form.submit-cancel-button') }}
-                            </button>
-                        </div>
-                        <div class="u-cell u-text-left">
-                            <p><strong>{{ $td('Warning!', 'form.coiner-create-confirm-warning') }}</strong></p>
-                            <p v-if="$i18n.locale === 'en'">
-                                Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
-                            </p>
-                            <p v-if="$i18n.locale === 'ru'">
-                                Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
-                            </p>
-                        </div>
-                    </div>
+                <div class="u-cell">
+                    <label class="form-field form-field--dashed">
+                        <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
+                               :value="form.constantReserveRatio + '%'"
+                        />
+                        <span class="form-field__label">{{ $td('With CRR', 'form.coiner-create-confirm-crr') }}</span>
+                    </label>
+                </div>
+                <div class="u-cell">
+                    <label class="form-field form-field--dashed">
+                        <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
+                               :value="$store.getters.COIN_NAME + ' ' + $options.prettyExact(form.initialReserve)"
+                        />
+                        <span class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</span>
+                    </label>
                 </div>
             </div>
-        </Modal>
-    </div>
+        </template>
+
+        <template v-slot:confirm-modal-footer>
+            <div class="u-text-left">
+                <strong>{{ $td('Warning!', 'form.coiner-create-confirm-warning') }}</strong>
+                <p v-if="$i18n.locale === 'en'">
+                    Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
+                </p>
+                <p v-if="$i18n.locale === 'ru'">
+                    Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
+                </p>
+            </div>
+        </template>
+    </TxForm>
 </template>

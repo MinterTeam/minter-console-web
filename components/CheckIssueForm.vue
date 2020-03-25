@@ -15,7 +15,7 @@
     import {pretty} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';
     import Modal from '~/components/common/Modal';
-    import InputUppercase from '~/components/common/InputUppercase';
+    import FieldCoin from '~/components/common/FieldCoin.vue';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
@@ -25,7 +25,7 @@
             QrcodeVue,
             InlineSvg,
             Modal,
-            InputUppercase,
+            FieldCoin,
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
@@ -185,23 +185,12 @@
                 <div class="form-field__help">{{ $td('Check\'s unique ID. Used for issuing several identical checks.', 'form.checks-issue-nonce-help') }}</div>
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.coinSymbol.$error}">
-                    <select class="form-field__input form-field__input--select" v-check-empty
-                            v-model="form.coinSymbol"
-                            @blur="$v.form.coinSymbol.$touch()"
-                            v-if="balance && balance.length"
-                    >
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
-                            {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
-                        </option>
-                    </select>
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
-                                    v-model.trim="form.coinSymbol"
-                                    @blur="$v.form.coinSymbol.$touch()"
-                                    v-else
-                    />
-                    <span class="form-field__label">{{ $td('Coin', 'form.coin') }}</span>
-                </label>
+                <FieldCoin
+                        v-model="form.coinSymbol"
+                        :$value="$v.form.coinSymbol"
+                        :label="$td('Coin', 'form.coin')"
+                        :coin-list="balance"
+                />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
@@ -227,25 +216,12 @@
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'form.checks-issue-pass-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.feeCoinSymbol.$error}">
-                    <select class="form-field__input form-field__input--select is-not-empty"
-                            v-model="form.feeCoinSymbol"
-                            v-if="balance && balance.length"
-                    >
-<!--
-                        <option :value="''">{{ fee.isBaseCoinEnough ? $td('Base coin', 'form.wallet-send-fee-base') : $td('Same as coin to send', 'form.wallet-send-fee-same') }}</option>
--->
-                        <option v-for="coin in balance" :key="coin.coin" :value="coin.coin">
-                            {{ coin.coin | uppercase }} ({{ coin.amount | pretty }})
-                        </option>
-                    </select>
-                    <InputUppercase class="form-field__input" type="text" v-check-empty
-                                    v-model.trim="form.feeCoinSymbol"
-                                    @blur="$v.form.feeCoinSymbol.$touch()"
-                                    v-else
-                    />
-                    <span class="form-field__label">{{ $td('Coin to pay fee', 'form.fee') }}</span>
-                </label>
+                <FieldCoin
+                        v-model="form.feeCoinSymbol"
+                        :$value="$v.form.feeCoinSymbol"
+                        :label="$td('Coin to pay fee', 'form.fee')"
+                        :coin-list="balance"
+                />
                 <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
 <!--
@@ -287,7 +263,7 @@
                     <dd class="u-select-all">{{ password }}</dd>
 
                     <dt>
-                        {{ $td('Link to redeem.', 'form.checks-issue-result-link') }} <br>
+                        {{ $td('Link to redeem:', 'form.checks-issue-result-link') }} <br>
                         <span class="u-emoji">⚠️</span> {{ $td('Warning! Password included in the link. Send the link only directly to the recipient.' , 'form.checks-issue-result-link-warning') }}
                     </dt>
                     <dd class="u-icon-wrap">

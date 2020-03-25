@@ -141,7 +141,7 @@
             @input="handleInput"
             :$value="$value"
             :label="label"
-            :suggestionList="suggestionDisabled ? false : (suggestionList || validatorList)"
+            :suggestionList="suggestionDisabled ? [] : (suggestionList || validatorList)"
             :suggestionMinInputLength="suggestionMinInputLength"
             :suggestionContent="$options.suggestionValidatorContent"
             :suggestionFilter="$options.suggestionValidatorFilter"

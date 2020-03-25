@@ -1,5 +1,5 @@
 <script>
-    const NOTICE_DELAY = 5; // time to reconnect after switching back to the tab
+    const NOTICE_DELAY = 20; // time to reconnect after switching back to the tab
     const NOTICE_TIME = 25 - NOTICE_DELAY;
 
     let timeInterval = null;
@@ -35,6 +35,14 @@
         },
         methods: {
             checkTime() {
+                // Do nothing in offline mode. Should lead to the following behavior:
+                // All time offline device:
+                // - no notice
+                // Online device which goes offline:
+                // - notice can be shown if enough time has passed before switched to offline
+                if (this.$store.getters.isOfflineMode) {
+                    return;
+                }
                 const shouldOpenNotice = Date.now() - this.$store.state.lastUpdateTime > NOTICE_TIME * 1000;
                 if (shouldOpenNotice && !this.isNoticeOpen && !openingDelay) {
                     openingDelay = setTimeout(() => {

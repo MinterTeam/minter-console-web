@@ -242,7 +242,7 @@
                     <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                     <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                 </label>
-                <div class="form-field__help">{{ $td('By default: 1', 'form.gas-price-help') }}</div>
+                <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
             </div>
 
             <!-- Generation -->

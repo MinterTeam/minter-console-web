@@ -1,44 +1,28 @@
 <script>
-    import QrcodeVue from 'qrcode.vue';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
-    import minValue from 'vuelidate/lib/validators/minValue';
-    import {RedeemCheckTxParams} from "minter-js-sdk/src";
     import {isValidCheck} from "minterjs-util";
-    import prepareSignedTx from 'minter-js-sdk/src/tx';
-    import {postTx} from '~/api/gate';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import checkEmpty from '~/assets/v-check-empty';
-    import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl} from "~/assets/utils";
+    import TxForm from '~/components/common/TxForm.vue';
     import FieldQr from '~/components/common/FieldQr';
-    import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
-    import Loader from '~/components/common/Loader';
 
     export default {
+        TX_TYPE,
         components: {
-            QrcodeVue,
+            TxForm,
             FieldQr,
-            ButtonCopyIcon,
-            Loader,
         },
         directives: {
             checkEmpty,
         },
-        filters: {
-            uppercase: (value) => value ? value.toUpperCase() : value,
-        },
         mixins: [validationMixin],
         data() {
             return {
-                isFormSending: false,
-                serverError: '',
-                serverSuccess: '',
                 form: {
                     check: '',
                     password: '',
-                    nonce: '',
                 },
-                signedTx: null,
             };
         },
         validations() {
@@ -52,90 +36,30 @@
                 },
             };
 
-            if (this.$store.getters.isOfflineMode) {
-                form.nonce = {
-                    required,
-                    minValue: minValue(1),
-                };
-            }
-
             return {form};
         },
         methods: {
-            submit() {
-                if (this.$store.getters.isOfflineMode) {
-                    this.generateTx();
-                } else {
-                    this.postTx();
-                }
-            },
-            generateTx() {
-                if (this.$v.$invalid) {
-                    this.$v.$touch();
-                    return;
-                }
-
-                this.signedTx = null;
-                this.serverError = '';
-                this.serverSuccess = '';
-
-                this.signedTx = prepareSignedTx(new RedeemCheckTxParams({
-                    privateKey: this.$store.getters.privateKey,
-                    chainId: this.$store.getters.CHAIN_ID,
-                    ...this.form,
-                }), {privateKey: this.$store.getters.privateKey}).serialize().toString('hex');
-                this.clearForm();
-            },
-            postTx() {
-                if (this.isFormSending) {
-                    return;
-                }
-                if (this.$v.$invalid) {
-                    this.$v.$touch();
-                    return;
-                }
-                this.isFormSending = true;
-                this.signedTx = null;
-                this.serverError = '';
-                this.serverSuccess = '';
-                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                    .then(() => {
-                        postTx(new RedeemCheckTxParams({
-                            privateKey: this.$store.getters.privateKey,
-                            ...this.form,
-                        })).then((txHash) => {
-                            this.isFormSending = false;
-                            this.serverSuccess = txHash;
-                            this.clearForm();
-                        }).catch((error) => {
-                            console.log(error);
-                            this.isFormSending = false;
-                            this.serverError = getErrorText(error);
-                        });
-                    })
-                    .catch((error) => {
-                        this.isFormSending = false;
-                        this.serverError = getErrorText(error);
-                    });
-            },
             clearForm() {
                 this.form.check = '';
                 this.form.password = '';
-                if (this.form.nonce && this.$store.getters.isOfflineMode) {
-                    this.form.nonce += 1;
-                } else {
-                    this.form.nonce = '';
-                }
                 this.$v.$reset();
             },
-            getExplorerTxUrl,
         },
     };
 </script>
 
 <template>
-    <form class="panel__section" novalidate @submit.prevent="submit">
-        <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.REDEEM_CHECK" @clear-form="clearForm()">
+        <template v-slot:panel-header>
+            <h1 class="panel__header-title">
+                {{ $td('Redeem check', 'checks.redeem-title') }}
+            </h1>
+            <p class="panel__header-description">
+                {{ $td('Claim a check someone has written out to you.', 'checks.redeem-description') }}
+            </p>
+        </template>
+
+        <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell">
                 <FieldQr v-model.trim="form.check" :$value="$v.form.check" :label="$td('Check', 'form.checks-redeem-check')"/>
                 <span class="form-field__error" v-if="$v.form.check.$dirty && !$v.form.check.required">{{ $td('Check', 'form.checks-redeem-check-error-required') }}</span>
@@ -152,49 +76,17 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'form.checks-redeem-password-error-required') }}</span>
             </div>
+        </template>
 
-            <!-- Generation -->
-            <div class="u-cell u-cell--small--1-2" v-if="$store.getters.isOfflineMode">
-                <FieldQr v-model="form.nonce"
-                         :$value="$v.form.nonce"
-                         :label="$td('Nonce', 'form.checks-issue-nonce')"
-                         :isInteger="true"
-                />
-                <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
-                <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
-            </div>
-            <div class="u-cell u-cell--xlarge--1-2" v-if="$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
-                    {{ $td('Generate', 'form.generate-button') }}
-                </button>
-            </div>
+        <template v-slot:submit-title>
+            {{ $td('Redeem', 'form.checks-redeem-button') }}
+        </template>
 
-            <!-- Controls -->
-            <div class="u-cell" v-if="!$store.getters.isOfflineMode">
-                <button class="button button--main button--full" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
-                    <span class="button__content">{{ $td('Redeem', 'form.checks-redeem-button') }}</span>
-                    <Loader class="button__loader" :isLoading="true"/>
-                </button>
-                <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
-            </div>
-            <div class="u-cell" v-if="serverSuccess">
-                <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
-            </div>
-
-            <div class="u-cell u-cell--order-2" v-if="signedTx">
-                <dl>
-                    <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
-                    <dd class="u-icon-wrap">
-                            <span class="u-select-all u-icon-text">
-                                {{ signedTx }}
-                            </span>
-                        <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
-                    </dd>
-                </dl>
-                <br>
-                <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
-            </div>
-        </div>
-    </form>
+        <template v-slot:confirm-modal-header>
+            <h1 class="panel__header-title">
+                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation" width="40" height="40">
+                {{ $td('Redeem check', 'checks.redeem-title') }}
+            </h1>
+        </template>
+    </TxForm>
 </template>

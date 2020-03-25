@@ -28,6 +28,18 @@
                 type: [String, Number],
                 default: undefined,
             },
+            addressBalance: {
+                type: Array,
+                default: () => [],
+            },
+            selectedCoinSymbol: {
+                type: String,
+                default: '',
+            },
+            fee: {
+                type: [Object, null],
+                default: null,
+            },
         },
         data() {
             return {
@@ -35,8 +47,28 @@
             };
         },
         computed: {
+            maxValueComputed() {
+                 if (typeof this.maxValue !== 'undefined') {
+                     return this.maxValue;
+                 }
+
+                const selectedCoin = this.addressBalance.find((coin) => {
+                    return coin.coin === this.selectedCoinSymbol;
+                });
+                // coin not selected
+                if (!selectedCoin) {
+                    return undefined;
+                }
+                // fee not in selected coins
+                if (selectedCoin.coin !== this.fee?.coinSymbol) {
+                    return selectedCoin.amount;
+                }
+                // fee in selected coin, subtract fee
+                const amount = new Big(selectedCoin.amount).minus(this.fee?.value).toFixed();
+                return amount > 0 ? amount : '0';
+            },
             isMaxValueDefined() {
-                return typeof this.maxValue !== 'undefined';
+                return typeof this.maxValueComputed !== 'undefined';
             },
         },
         watch: {
@@ -49,11 +81,11 @@
                     this.isUseMax = false;
                     return;
                 }
-                if (new Big(newVal).toFixed() !== new Big(this.maxValue).toFixed()) {
+                if (new Big(newVal).toFixed() !== new Big(this.maxValueComputed).toFixed()) {
                     this.isUseMax = false;
                 }
             },
-            maxValue(newVal) {
+            maxValueComputed(newVal) {
                 if (this.isMaxValueDefined && this.isUseMax) {
                     this.useMax();
                 }
@@ -65,7 +97,7 @@
                     return false;
                 }
                 this.isUseMax = true;
-                this.$emit('input', this.maxValue);
+                this.$emit('input', this.maxValueComputed);
                 this.$value.$touch();
             },
         },

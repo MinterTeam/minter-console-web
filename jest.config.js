@@ -7,6 +7,9 @@ module.exports = {
     transform: {
         '^.+\\.jsx?$': '<rootDir>/jest-babel.config.js',
     },
+    testPathIgnorePatterns: [
+        '<rootDir>/tmp/',
+    ],
     'globalSetup': '<rootDir>/test/jest-setup.js',
     'globalTeardown': '<rootDir>/test/jest-teardown.js',
     "testEnvironment": "<rootDir>/test/jest-environment.js",
