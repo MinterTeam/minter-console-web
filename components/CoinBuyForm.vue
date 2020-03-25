@@ -71,9 +71,9 @@
                         txFormContext.isFormSending = false;
                     })
                     .catch((error) => {
-                        console.log(error);
                         txFormContext.isFormSending = false;
                         txFormContext.serverError = getErrorText(error);
+                        throw error;
                     });
             },
             clearForm() {
@@ -88,7 +88,7 @@
 
 <template>
     <!-- @TODO maximumValueToSell -->
-    <TxForm :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToBuy: form.buyAmount}" :$txData="$v.form" :txType="$options.TX_TYPE.BUY" :before-confirm-modal-show="getEstimation" @clear-form="clearForm()">
+    <TxForm data-test-id="convertBuy" :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToBuy: form.buyAmount}" :$txData="$v.form" :txType="$options.TX_TYPE.BUY" :before-confirm-modal-show="getEstimation" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Buy Coins', 'convert.buy-title') }}
@@ -122,6 +122,7 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-3">
                 <FieldCoin
+                        data-test-id="convertBuyInputSellCoin"
                         v-model="form.coinFrom"
                         :$value="$v.form.coinFrom"
                         :label="$td('Coin to spend', 'form.convert-buy-coin-spend')"

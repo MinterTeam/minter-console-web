@@ -71,9 +71,9 @@
                         txFormContext.isFormSending = false;
                     })
                     .catch((error) => {
-                        console.log(error);
                         txFormContext.isFormSending = false;
                         txFormContext.serverError = getErrorText(error);
+                        throw error;
                     });
             },
             clearForm() {
@@ -87,7 +87,7 @@
 
 <template>
     <!-- @TODO minimumValueToBuy -->
-    <TxForm :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo}" :$txData="$v.form" :txType="$options.TX_TYPE.SELL_ALL" :before-confirm-modal-show="getEstimation" @update:addressBalance="addressBalance = $event" @clear-form="clearForm()">
+    <TxForm data-test-id="convertSellAll" :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo}" :$txData="$v.form" :txType="$options.TX_TYPE.SELL_ALL" :before-confirm-modal-show="getEstimation" @update:addressBalance="addressBalance = $event" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Sell All Coins', 'convert.sell-all-title') }}
@@ -100,6 +100,7 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--small--1-2">
                 <FieldCoin
+                        data-test-id="convertSellAllInputSellCoin"
                         v-model="form.coinFrom"
                         :$value="$v.form.coinFrom"
                         :label="$td('Coin to sell', 'form.convert-sell-coin-sell')"
