@@ -70,7 +70,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                     if (coinEstimation) {
                         return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue).toFixed();
                     } else {
-                        return 0;
+                        return '';
                     }
                 }
             },
