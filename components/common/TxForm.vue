@@ -13,7 +13,7 @@
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
-    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils.js";
+    import {getExplorerTxUrl, pretty} from "~/assets/utils.js";
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
     import FieldQr from '~/components/common/FieldQr.vue';
@@ -39,9 +39,6 @@
         directives: {
             autosize,
             checkEmpty,
-        },
-        filters: {
-            pretty,
         },
         mixins: [validationMixin],
         props: {
@@ -192,8 +189,7 @@
             });
         },
         methods: {
-            pretty,
-            prettyExact,
+            pretty: (val) => pretty(val, undefined, true),
             submitConfirm() {
                 if (this.isFormSending) {
                     return;
@@ -406,8 +402,8 @@
                     <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                     <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                     <div class="form-field__help" v-else>
-                        {{ fee.coinSymbol }} {{ fee.value | pretty }}
-                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                        {{ fee.coinSymbol }} {{ pretty(fee.value) }}
+                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
                         <br>
                         {{ $td('Default:', 'form.help-default') }} {{ fee.isBaseCoinEnough ? $store.getters.COIN_NAME : $td('same as coin to send', 'form.wallet-send-fee-same') }}
                     </div>

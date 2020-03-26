@@ -91,9 +91,16 @@ export function getExplorerValidatorUrl(pubKey) {
 /**
  * @param {string|number} value
  * @param {ROUNDING_MODE} [roundingMode]
+ * @param {boolean} skipFalsy
  * @return {string}
  */
-export function pretty(value, roundingMode) {
+export function pretty(value, roundingMode, skipFalsy) {
+    if (!skipFalsy && !value) {
+        value = 0;
+    }
+    if (skipFalsy && !value && value !== 0) {
+        return '';
+    }
     const PRECISION = 2;
     if (value >= 1 || value <= -1 || Number(value) === 0) {
         return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
