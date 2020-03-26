@@ -22,9 +22,9 @@
     import Loader from '~/components/common/Loader.vue';
     import Modal from '~/components/common/Modal.vue';
     import SignatureList from '~/components/common/SignatureList.vue';
-    let feeBus;
 
     export default {
+        feeBus: null,
         components: {
             QrcodeVue,
             FieldCoin,
@@ -170,8 +170,8 @@
         watch: {
             feeBusParams: {
                 handler(newVal) {
-                    if (feeBus && typeof feeBus.$emit === 'function') {
-                        feeBus.$emit('updateParams', newVal);
+                    if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
+                        this.$options.feeBus.$emit('updateParams', newVal);
                     }
                 },
                 deep: true,
@@ -185,9 +185,9 @@
             },
         },
         created() {
-            feeBus = new FeeBus(this.feeBusParams);
-            this.fee = feeBus.fee;
-            feeBus.$on('updateFee', (newVal) => {
+            this.$options.feeBus = new FeeBus(this.feeBusParams);
+            this.fee = this.$options.feeBus.fee;
+            this.$options.feeBus.$on('updateFee', (newVal) => {
                 this.fee = newVal;
             });
         },
