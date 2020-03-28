@@ -3,6 +3,8 @@
 */
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
+const createMenu = require('./utils/menu.js');
+const deleteLogs = require('./utils/delete-logs.js');
 
 const HOST_NAME = argv.hostname || 'localhost';
 const PORT = argv.port || 4000;
@@ -41,7 +43,6 @@ const _NUXT_URL_ = `http://${HOST_NAME}:${PORT}/`;
 ** Electron
 */
 
-const fs = require('fs');
 const { app, BrowserWindow, Menu } = require('electron'); // eslint-disable-line
 
 /**
@@ -53,6 +54,8 @@ const { app, BrowserWindow, Menu } = require('electron'); // eslint-disable-line
 // }
 
 let mainWindow;
+let isReadyToClose;
+let isQuitting;
 
 app.on('ready', async () => {
     try {
@@ -62,16 +65,30 @@ app.on('ready', async () => {
     }
     // setTimeout(createWindow, 3000)
     createWindow();
-    createMenu();
+    createMenu(Menu);
 });
 
 app.on('window-all-closed', () => {
+    // console.log('window-all-closed');
+    // macOS style (not quit)
     if (process.platform !== 'darwin') {
         app.quit();
     }
 });
 
+app.on('before-quit', () => {
+    // console.log('before-quit');
+    isQuitting = true;
+});
+// app.on('will-quit', () => {
+//     console.log('will-quit');
+// });
+// app.on('quit', () => {
+//     console.log('quit');
+// });
+
 app.on('activate', () => {
+    // macOS style
     if (mainWindow === null) {
         createWindow();
     }
@@ -96,66 +113,52 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     }
 
-    // clear leveldb log if localStorage is empty
-    mainWindow.on('close', async () => {
-        let vuex = await mainWindow.webContents.executeJavaScript(`window.localStorage.getItem('vuex')`);
-        vuex = vuex && JSON.parse(vuex);
-        if (!vuex.auth.advanced && !vuex.auth.password) {
-            const dbPath = path.join(app.getPath('userData'), 'Local Storage/leveldb');
-            const logs = findInDir(dbPath, '.log');
-            logs.forEach((filePath) => {
-                fs.unlinkSync(filePath);
-            });
+    mainWindow.on('close',  async (e) => {
+        // console.log('close');
+        // prevent first close to give time for `checkStorage` to run, otherwise `closed` event fires too early and set `mainWindow` to null
+        if (isReadyToClose) {
+            return;
         }
+        e.preventDefault();
+
+        checkStorage(mainWindow)
+            .then(() => {
+                // set flag and restart quit/close process
+                isReadyToClose = true;
+                if (isQuitting) {
+                    app.quit();
+                } else {
+                    mainWindow.close();
+                }
+            });
+
+        // clear leveldb log if localStorage is empty
+        async function checkStorage(mainWindow) {
+            let vuex = await mainWindow.webContents.executeJavaScript(`window.localStorage.getItem('vuex')`);
+            vuex = vuex && JSON.parse(vuex);
+            // await mainWindow.webContents.session.flushStorageData()
+            if (vuex && !vuex.auth.advanced && !vuex.auth.password) {
+                await mainWindow.webContents.session.clearStorageData();
+
+                // looks like `clearStorageData` works well and no need to delete files
+                // deleteLogs(app);
+            }
+        }
+
+        // console.log('close end');
     });
 
-    mainWindow.on('closed', () => {
+    mainWindow.on('closed', async () => {
+        // console.log('closed');
         mainWindow = null;
     });
 }
 
-function createMenu() {
-    const template = [{
-        label: "Minter Console",
-        submenu: [
-            { label: "About", selector: "orderFrontStandardAboutPanel:" },
-            { type: "separator" },
-            { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); }},
-        ]}, {
-        label: "Edit",
-        submenu: [
-            { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
-            { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
-            { type: "separator" },
-            { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
-            { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
-            { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
-            { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" },
-        ]},
-    ];
 
-    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-}
-
-function findInDir(startPath, filter) {
-    let result = [];
-
-    if (!fs.existsSync(startPath)) {
-        return result;
-    }
-
-    const files = fs.readdirSync(startPath);
-    for (let i = 0; i < files.length; i++) {
-        const filename = path.join(startPath, files[i]);
-        const stat = fs.lstatSync(filename);
-        if (stat.isDirectory()) {
-            result = result.concat(findInDir(filename, filter)); //recurse
-        } else if (filename.indexOf(filter) >= 0) {
-            result.push(filename);
-        }
-    }
-
-    return result;
+function wait(time) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, time);
+    });
 }
 
 /**
