@@ -23,9 +23,6 @@
     "electron:build-x86": "electron-builder -w --ia32  --config=./desktop/electron-builder-x86.config.js",
     "electron:build-dir": "electron-builder --config=./desktop/electron-builder.config.js --dir",
     "electron:dev": "electron ./desktop/electron.dev.js",
-    "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
-    "pkg:pkg": "pkg . --out-path=tmp/pkg",
-    "pkg:zip": "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
   },
   "pre-commit": [
