@@ -8,6 +8,7 @@
     import autosize from 'v-autosize';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util/src/prefix";
+    import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
@@ -96,6 +97,7 @@
                 },
                 payload: {
                     maxLength: maxLength(1024),
+                    isNotMnemonic: (value) => !isValidMnemonic(value),
                 },
                 multisigAddress: {
                     required: () => true,
@@ -411,12 +413,14 @@
                 <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
                     <label class="form-field" :class="{'is-error': $v.form.payload.$error}">
                         <input class="form-field__input" type="text" v-check-empty
+                               data-test-id="walletTxFormInputPayload"
                                v-model.trim="form.payload"
                                @blur="$v.form.payload.$touch()"
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
                     <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
+                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
                     <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
@@ -458,10 +462,10 @@
 
                 <!-- Controls -->
                 <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
-                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced" data-test-id="walletTxFormHideAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
-                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced">
+                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced" data-test-id="walletTxFormShowAdvanced">
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
