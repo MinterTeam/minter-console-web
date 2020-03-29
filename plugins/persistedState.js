@@ -1,4 +1,4 @@
-import createPersistedState from 'vuex-persistedstate/index.js';
+import createPersistedState from 'vuex-persistedstate';
 
 let isCreated = false;
 

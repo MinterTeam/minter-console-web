@@ -23,7 +23,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-checks${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-checks${localeSuffix}.png` },
                 ],
             };
         },
@@ -32,17 +32,8 @@
 
 <template>
     <section class="u-section u-container">
-        <div class="panel">
-            <div class="panel__header">
-                <h1 class="panel__header-title">
-                    {{ $td('Redeem check', 'checks.redeem-title') }}
-                </h1>
-                <p class="panel__header-description">
-                    {{ $td('Claim a check someone has written out to you.', 'checks.redeem-description') }}
-                </p>
-            </div>
-            <CheckRedeemForm/>
-        </div>
+        <CheckRedeemForm/>
+
         <div class="panel">
             <div class="panel__header">
                 <h1 class="panel__header-title">

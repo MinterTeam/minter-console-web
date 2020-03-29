@@ -22,6 +22,38 @@
                 default: false,
             },
         },
+        data() {
+            return {
+                elFocusedBeforeOpen: null,
+            };
+        },
+        watch: {
+            isOpen(newVal) {
+                if (newVal) {
+                    // on open
+                    this.elFocusedBeforeOpen = document.activeElement;
+                    setTimeout(() => {
+                        if (typeof this.$el.querySelector !== 'function') {
+                            return;
+                        }
+                        const focusEl = this.$el.querySelector('[data-focus-on-open]');
+                        if (focusEl) {
+                            focusEl.focus();
+                        }
+                    }, 0);
+                } else {
+                    // on close
+                    setTimeout(() => {
+                        if (this.elFocusedBeforeOpen) {
+                            setTimeout(() => {
+                                this.elFocusedBeforeOpen.focus();
+                                this.elFocusedBeforeOpen = null;
+                            }, 0);
+                        }
+                    }, 0);
+                }
+            },
+        },
         methods: {
             closeModal() {
                 this.$emit('update:isOpen', false);

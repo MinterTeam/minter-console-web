@@ -23,7 +23,7 @@
                     { hid: 'og-title', name: 'og:title', content: title },
                     { hid: 'description', name: 'description', content: description },
                     { hid: 'og-description', name: 'og:description', content: description },
-                    { hid: 'og-image', name: 'og:image', content: `/img/social-share-broadcast${localeSuffix}.png` },
+                    { hid: 'og-image', name: 'og:image', content: `${this.BASE_URL_PREFIX}/img/social-share-broadcast${localeSuffix}.png` },
                 ],
             };
         },
@@ -38,7 +38,7 @@
                     {{ $td('Get nonce', 'broadcast.nonce-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Get nonce needed to generate a new tx on an off-line device.', 'broadcast.nonce-description') }}
+                    {{ $td('Get nonce needed to generate a new tx on an offline device.', 'broadcast.nonce-description') }}
                 </p>
             </div>
             <BroadcastNonceForm/>
@@ -49,7 +49,7 @@
                     {{ $td('Send signed tx', 'broadcast.tx-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Send a tx generated on an off-line device.', 'broadcast.tx-description') }}
+                    {{ $td('Send a tx generated on an offline device.', 'broadcast.tx-description') }}
                 </p>
             </div>
             <BroadcastSendForm/>

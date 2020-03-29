@@ -61,14 +61,14 @@ module.exports = async function() {
     const nuxt = await initNuxt();
 
     // init puppeteer
-    browser = await puppeteer.launch(
-        process.env.DEBUG
-            ? {
-                headless: false,
-                slowMo: 150,
-            }
-            : {},
-    );
+    browser = await puppeteer.launch(Object.assign({
+        args: ['--disable-dev-shm-usage'],
+    }, process.env.DEBUG
+        ? {
+            headless: false,
+            slowMo: 150,
+        }
+        : {}));
     // page = await browser.newPage();
 
     // console.log(process.env);

@@ -1,5 +1,6 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
+import formatDistanceStrict from "date-fns/esm/formatDistanceStrict";
 import decode from 'entity-decode';
 import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
@@ -57,6 +58,20 @@ export function getTimeZone(timestamp) {
     return time && time !== 'Invalid Date' ? time : false;
 }
 
+export function getTimeDistance(timestamp, allowFuture) {
+    if (typeof timestamp === 'string') {
+        timestamp = parseISO(timestamp);
+    }
+    const now = new Date();
+    // if timestamp from future
+    if (timestamp > now && !allowFuture) {
+        timestamp = now;
+    }
+    const distance = formatDistanceStrict(timestamp, now, {roundingMethod: 'floor'});
+
+    return distance && distance !== 'Invalid Date' ? distance : false;
+}
+
 export function getExplorerBlockUrl(block) {
     return EXPLORER_HOST + '/blocks/' + block;
 }
@@ -76,9 +91,16 @@ export function getExplorerValidatorUrl(pubKey) {
 /**
  * @param {string|number} value
  * @param {ROUNDING_MODE} [roundingMode]
+ * @param {boolean} skipFalsy
  * @return {string}
  */
-export function pretty(value, roundingMode) {
+export function pretty(value, roundingMode, skipFalsy) {
+    if (!skipFalsy && !value) {
+        value = 0;
+    }
+    if (skipFalsy && !value && value !== 0) {
+        return '';
+    }
     const PRECISION = 2;
     if (value >= 1 || value <= -1 || Number(value) === 0) {
         return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
@@ -90,6 +112,14 @@ export function pretty(value, roundingMode) {
         }
         return value;
     }
+}
+
+/**
+ * @param {string|number} value
+ * @return {string}
+ */
+export function prettyRound(value) {
+    return decode(prettyNum(value, {precision: 0, thousandsSeparator: '&#x202F;'}));
 }
 
 /**
@@ -133,6 +163,15 @@ export function prettyPreciseFloor(value) {
  */
 export function prettyExact(value) {
     return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&#x202F;'}));
+}
+
+/**
+ * Only format spaces for the whole part
+ * @param {string|number} value
+ * @return {string}
+ */
+export function prettyExactDecrease(value) {
+    return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&#x202F;'}));
 }
 
 /**

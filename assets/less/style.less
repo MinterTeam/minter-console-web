@@ -37,7 +37,7 @@
 .qr-scan__notice {color: @c-main; font-weight: 700; font-size: 24px; width: 100%; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);}
 .qr-scan__video {max-width: 100%;}
 .qr-scan__overlay {
-    position: absolute; animation: qr-overlay-animation 400ms infinite alternate ease-in-out;
+    position: absolute; animation: qr-overlay-animation 500ms infinite alternate ease-in-out;
     svg {width: 100%; height: 100%; stroke: @c-main;}
 }
 @keyframes qr-overlay-animation {
@@ -99,6 +99,10 @@
     padding: 20px;
     &+& {border-top: 1px solid @c-border;}
 }
+.panel__section--wrap {padding: 0;}
+.panel__section--medium {padding-top: 16px; padding-bottom: 16px;}
+.panel__section--tint {background: #f6f6f6;}
+.panel__section--injected {}
 .panel-title() {font: inherit; font-weight: 700; text-transform: uppercase; margin: 0;}
 .panel__header {padding-top: 18px; padding-bottom: 18px; /*display: flex; justify-content: space-between; align-items: center;*/}
 .panel__header-title {.panel-title(); display: flex; align-items: center;}
@@ -106,6 +110,8 @@
 .panel__header-description {margin-top: 4px;}
 @media (min-width: @breakpoint-small-up) {
     .panel__section, .panel__header {padding-left: 24px; padding-right: 24px;}
+    .panel__section--wrap {padding: 0;}
+    .panel__section--medium {padding-top: 16px; padding-bottom: 16px;}
 }
 
 
@@ -126,6 +132,18 @@
 }
 
 
+.is-connection-notice-open {padding-bottom: 46px;}
+.connection-notice {position: fixed; background: @c-black; color: #fff; left: 0; bottom: 0; right: 0; font-weight: 700; font-size: 16px; line-height: 22px; text-align: center; padding: 12px 0; z-index: 3; /* more than aside */}
+.connection-notice__icon {margin-right: 4px;}
+
+.v-transition-toast-enter-active, .v-transition-toast-leave-active {
+    transition: .25s;
+}
+.v-transition-toast-enter, .v-transition-toast-leave-to {
+    opacity: 0;
+    transform: translateY(100%);
+}
+
 // table
 @table-cell-padding: 10px;
 @table-cell-vertical-padding-large: 14px;
@@ -136,9 +154,10 @@
 table {width: 100%; border-collapse: collapse;}
 th {background: #f6f6f6;}
 td, th {
-    border: none; border-top: 1px solid @c-border; padding: 10px; text-align: left;
+    border: none; border-top: 1px solid @c-border; padding: @table-cell-padding; text-align: left;
     //&:first-child {border-left: none;}
     //&:last-child {border-right: none;}
+    tr:last-child & {border-bottom: 1px solid @c-border;}
 }
 .table__inner {margin-top: -10px;}
 .table__inner-item {margin-top: 10px; max-width: calc(100vw - @container-padding * 2 - 10px * 2); overflow-wrap: break-word;}
@@ -187,7 +206,7 @@ td, th {
     .table__controls-cell--copy {
         & + td, & + th {padding-right: 0;}
     }
-    //.table-stake-list {
+    //.table--stake-list {
     //    display: grid;
     //    thead, tbody, tr {display: contents;}
     //}
@@ -294,6 +313,9 @@ td, th {
 .wallet__balance {flex-grow: 2;}
 .wallet__coin-icon {margin-right: 10px; margin-top: -6px; margin-bottom: -5px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); vertical-align: middle;}
 .wallet__coin-name {font-weight: 700; vertical-align: middle;}
+.wallet__time {margin-top: 4px; line-height: 0;}
+.wallet__time-icon {vertical-align: middle; margin-right: 6px;}
+.wallet__time-text {vertical-align: middle; font-size: 12px; min-width: 160px; display: inline-block;}
 
 @media (min-width: @breakpoint-xlarge-up) {
     .wallet__info {display: flex; justify-content: space-between;}
@@ -304,10 +326,23 @@ td, th {
 }
 
 
+.multisig-participant {}
+.multisig-participant__number-cell {width: (30px + 16px); flex-shrink: 0;}
+.multisig-participant__address-cell {width: calc(100% - 30px - 16px);}
+.multisig-participant__weight-cell {width: calc(100% - 24px - 16px);}
+.multisig-participant__remove-cell {width: (24px + 16px); flex-shrink: 0;}
+.multisig-participant__remove {margin-top: 14px;}
 
-.multisig__address-wrap {display: flex;}
-.multisig__address-number {width: 42px; flex-shrink: 0; margin-right: 16px;}
-.multisig__address {flex-grow: 2;}
+@media (min-width: @breakpoint-xlarge-up) {
+    .multisig-participant__number-cell {width: (42px + 16px);}
+    .multisig-participant__address-cell {width: calc(75% - 42px - 16px);}
+    .multisig-participant__weight-cell {width: calc(25% - 24px - 16px);}
+}
+
+
+.multisig-signature__cell {display: flex; flex-wrap: wrap;}
+.multisig-signature__field {width: calc(100% - 24px - 10px);}
+.multisig-signature__remove {margin-left: 10px; flex-shrink: 0; margin-top: 14px;}
 
 
 .reinvest__textarea {width: 100%; padding: 4px 8px; border: 1px solid @c-border; border-radius: 10px;}
