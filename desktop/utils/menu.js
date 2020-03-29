@@ -1,4 +1,4 @@
-module.exports = function createMenu(Menu) {
+module.exports = function createMenu(app, Menu) {
     const template = [{
         label: "Minter Console",
         submenu: [
