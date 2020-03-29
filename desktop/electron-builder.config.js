@@ -10,6 +10,7 @@ module.exports = {
     "files": [
         "dist/**/*",
         "desktop/electron.js",
+        "desktop/utils/**/*",
         // "desktop/electron.dev.js",
         // "nuxt.config.js",
         ".nuxt/**/*",

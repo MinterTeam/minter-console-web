@@ -65,7 +65,7 @@ app.on('ready', async () => {
     }
     // setTimeout(createWindow, 3000)
     createWindow();
-    createMenu(Menu);
+    createMenu(app, Menu);
 });
 
 app.on('window-all-closed', () => {
@@ -113,7 +113,7 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     }
 
-    mainWindow.on('close',  async (e) => {
+    mainWindow.on('close', (e) => {
         // console.log('close');
         // prevent first close to give time for `checkStorage` to run, otherwise `closed` event fires too early and set `mainWindow` to null
         if (isReadyToClose) {
@@ -148,7 +148,7 @@ function createWindow() {
         // console.log('close end');
     });
 
-    mainWindow.on('closed', async () => {
+    mainWindow.on('closed',  () => {
         // console.log('closed');
         mainWindow = null;
     });
