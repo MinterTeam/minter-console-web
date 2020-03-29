@@ -1,4 +1,4 @@
-import {ROUTES} from '~/test/variables';
+import {ROUTES, USER_MNEMONIC} from '~/test/variables';
 import {login, logout, txSubmit} from '~/test/utils';
 
 /** @type Browser */
@@ -56,5 +56,15 @@ describe('wallet page', () => {
         await page.type('[data-test-id="walletSendInputCoin"]', 'MNT');
         await page.type('[data-test-id="walletSendInputAmount"]', '9999999999999999');
         await txSubmit(page, 'walletSend', {shouldFailPost: true});
+    }, 30000);
+
+    test('fail send, seed phrase in payload', async () => {
+        await page.type('[data-test-id="walletSendInputAddress"]', address);
+        await page.type('[data-test-id="walletSendInputCoin"]', 'MNT');
+        await page.type('[data-test-id="walletSendInputAmount"]', '0');
+        await page.click('[data-test-id="walletTxFormShowAdvanced"]');
+        await page.type('[data-test-id="walletTxFormInputPayload"]', USER_MNEMONIC);
+        await page.$eval('[data-test-id="walletTxFormInputPayload"]', (e) => e.blur());
+        await page.waitForSelector('[data-test-id="payloadIsMnemonicErrorMessage"]');
     }, 30000);
 });
