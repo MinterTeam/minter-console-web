@@ -62,7 +62,10 @@ module.exports = async function() {
 
     // init puppeteer
     browser = await puppeteer.launch(Object.assign({
-        args: ['--disable-dev-shm-usage'],
+        args: [
+            '--disable-dev-shm-usage',
+            '--shm-size=1gb',
+        ],
     }, process.env.DEBUG
         ? {
             headless: false,

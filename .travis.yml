@@ -1,4 +1,4 @@
 language: node_js
-before_script: cp .env.example .env
+before_script: cp .env.test .env
 node_js:
   - lts/*

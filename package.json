@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -15,6 +15,7 @@
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "lint:fix": "eslint --ext .js,.vue --ignore-path .gitignore --fix .",
     "test": "gulp once && NODE_ENV=test APP_BRANCH_ENV=testnet jest --bail --runInBand --verbose",
+    "test:skip-build": "NUXT_SKIP_SELF_BUILD=true npm run test",
     "test:debug": "DEBUG=true npm run test",
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",
     "postinstall": "electron-builder install-app-deps",
@@ -23,9 +24,6 @@
     "electron:build-x86": "electron-builder -w --ia32  --config=./desktop/electron-builder-x86.config.js",
     "electron:build-dir": "electron-builder --config=./desktop/electron-builder.config.js --dir",
     "electron:dev": "electron ./desktop/electron.dev.js",
-    "pkg": "npm run prod && npm run pkg:pkg && npm run pkg:zip",
-    "pkg:pkg": "pkg . --out-path=tmp/pkg",
-    "pkg:zip": "mkdir -p tmp/pkg-zip && cd tmp/pkg && find . -type f -exec zip -D '../pkg-zip/{}.zip' '{}' \\; && cd ../..",
     "precommit": "echo 'Pre-commit checks...' && npm run lint"
   },
   "pre-commit": [
@@ -45,7 +43,7 @@
     "cookie": "^0.4.0",
     "core-js": "^3.6.4",
     "custom-event-polyfill": "^1.0.7",
-    "date-fns": "^2.11.0",
+    "date-fns": "^2.11.1",
     "entity-decode": "^2.0.2",
     "ethereumjs-util": "^6.2.0",
     "js-cookie": "^2.2.1",
@@ -69,13 +67,13 @@
     "vue-inline-svg": "^1.3.0",
     "vue-simple-suggest": "github:shrpne/vue-simple-suggest#fix-focus-stuck",
     "vuelidate": "^0.7.5",
-    "vuex-persistedstate": "^3.0.0"
+    "vuex-persistedstate": "^3.0.1"
   },
   "devDependencies": {
     "@babel/runtime-corejs3": "^7.9.2",
     "autoprefixer": "^9.7.5",
     "babel-eslint": "^10.1.0",
-    "babel-jest": "^25.2.1",
+    "babel-jest": "^25.2.3",
     "beeper": "^2.0.0",
     "cross-env": "^7.0.2",
     "del": "^5.1.0",
@@ -99,8 +97,8 @@
     "gulp-rename": "^2.0.0",
     "imagemin-jpegtran": "^6.0.0",
     "imagemin-mozjpeg": "^8.0.0",
-    "jest": "^25.2.1",
-    "jest-environment-node": "^25.2.1",
+    "jest": "^25.2.3",
+    "jest-environment-node": "^25.2.3",
     "mkdirp": "^1.0.3",
     "postcss-normalize": "^8.0.1",
     "pre-commit": "^1.2.2",
