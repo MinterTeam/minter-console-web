@@ -63,8 +63,10 @@
                 if (selectedCoin.coin !== this.fee?.coinSymbol) {
                     return selectedCoin.amount;
                 }
-                // fee in selected coin, subtract fee
-                const amount = new Big(selectedCoin.amount).minus(this.fee?.value).toFixed();
+                // fee in selected coin (handle non-number values)
+                const feeValue = this.fee?.value || 0;
+                // subtract fee
+                const amount = new Big(selectedCoin.amount).minus(feeValue).toFixed();
                 return amount > 0 ? amount : '0';
             },
             isMaxValueDefined() {

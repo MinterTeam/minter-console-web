@@ -1,3 +1,6 @@
+branches:
+  only:
+    - master
 language: node_js
 before_script: cp .env.test .env
 node_js:

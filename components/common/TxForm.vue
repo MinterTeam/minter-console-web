@@ -482,12 +482,10 @@
                         <Loader class="button__loader" :isLoading="true"/>
                     </button>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">
+                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
+                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}" v-if="$store.getters.isOfflineMode">
                         {{ $td('Generate', 'form.generate-button') }}
                     </button>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2" v-if="!$store.getters.isOfflineMode">
                     <button
                             class="button button--main button--full"
                             data-test-id="txSubmitButton"
@@ -495,6 +493,7 @@
                             'is-loading': isFormSending,
                             'is-disabled': $v.$invalid
                         }"
+                            v-if="!$store.getters.isOfflineMode"
                     >
                         <span class="button__content">
                             <slot name="submit-title">
