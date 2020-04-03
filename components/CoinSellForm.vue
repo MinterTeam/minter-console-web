@@ -60,6 +60,9 @@
         },
         methods: {
             getEstimation(txFormContext) {
+                if (this.$store.getters.isOfflineMode) {
+                    return;
+                }
                 txFormContext.isFormSending = true;
                 txFormContext.serverError = '';
                 txFormContext.serverSuccess = '';
