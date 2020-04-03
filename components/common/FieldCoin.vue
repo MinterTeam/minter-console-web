@@ -52,6 +52,12 @@
                 return this.coinList && this.coinList.length ? this.coinList : this.coinListAll;
             },
         },
+        watch: {
+            // @TODO workaround for https://github.com/KazanExpress/vue-simple-suggest/issues/301 and https://github.com/KazanExpress/vue-simple-suggest/issues/302
+            currentCoinList() {
+                this.$refs.vss.research();
+            },
+        },
         mounted() {
             this.$store.dispatch('FETCH_COIN_LIST')
                 .then((coinListAll) => {
@@ -104,6 +110,7 @@
 <template>
     <label class="form-field" :class="{'is-error': $value.$error}">
         <VueSimpleSuggest
+                ref="vss"
                 :value="value"
                 :list="suggestionOrder"
                 :max-suggestions="$options.MAX_ITEM_COUNT"

@@ -83,6 +83,7 @@ export default {
         });
     },
     isOfflineMode(state, getters) {
+        // keep users with profile in online mode to workaround lack of mnemonic
         return !state.onLine && getters.isUserAdvanced;
     },
 };

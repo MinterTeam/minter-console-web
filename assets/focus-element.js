@@ -1,6 +1,6 @@
 /**
  *
- * @param {HTMLElement} inputEl
+ * @param {HTMLElement|Element} inputEl
  */
 export default function focusElement(inputEl) {
     // calculate scroll

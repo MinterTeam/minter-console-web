@@ -65,7 +65,7 @@
             eventBus.$on('activate-delegate', ({hash}) => {
                 this.form.publicKey = hash;
 
-                const inputEl = this.$refs.fieldCoin.querySelector('select, input');
+                const inputEl = this.$refs.fieldCoin.$el.querySelector('select, input');
                 focusElement(inputEl);
             });
         },
@@ -107,6 +107,7 @@
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldCoin
+                        ref="fieldCoin"
                         v-model="form.coinSymbol"
                         :$value="$v.form.coinSymbol"
                         :label="$td('Coin', 'form.coin')"
