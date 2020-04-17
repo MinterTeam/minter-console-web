@@ -21,6 +21,7 @@
         },
         mounted() {
             this.mdcMenu = new MDCMenu(this.$el.querySelector('.mdc-menu'));
+            this.mdcMenu.setAnchorMargin({top: -20, left: -16, right: -16});
         },
         beforeDestroy() {
             if (this.mdcMenu.destroy) {
