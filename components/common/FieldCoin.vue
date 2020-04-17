@@ -48,8 +48,14 @@
                 const { input, ...listeners } = this.$listeners;
                 return listeners;
             },
+            isConListSpecified() {
+                return this.coinList && this.coinList.length;
+            },
             currentCoinList() {
-                return this.coinList && this.coinList.length ? this.coinList : this.coinListAll;
+                return this.isConListSpecified ? this.coinList : this.coinListAll;
+            },
+            maxSuggestions() {
+                return this.isConListSpecified ? 0 : MAX_ITEM_COUNT;
             },
         },
         watch: {
@@ -113,7 +119,7 @@
                 ref="vss"
                 :value="value"
                 :list="suggestionOrder"
-                :max-suggestions="$options.MAX_ITEM_COUNT"
+                :max-suggestions="maxSuggestions"
                 :min-length="0"
                 :filter-by-query="true"
                 :filter="suggestionFilter"
