@@ -8,8 +8,8 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import issueCheck from 'minter-js-sdk/src/check';
     import {prepareLink} from 'minter-js-sdk/src/link';
-    import RedeemCheckTxParams from 'minter-js-sdk/src/tx-params/redeem-check';
-    import TxDataRedeemCheck from 'minterjs-tx/src/tx-data/redeem-check';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
     import {pretty} from '~/assets/utils';
@@ -21,6 +21,7 @@
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
 
     export default {
+        feeBus: null,
         components: {
             QrcodeVue,
             InlineSvg,
@@ -33,13 +34,8 @@
         directives: {
             checkEmpty,
         },
-        filters: {
-            pretty,
-            uppercase: (value) => value ? value.toUpperCase() : value,
-        },
         mixins: [validationMixin],
         data() {
-            const coinList = this.$store.getters.balance;
             return {
                 isFormSending: false,
                 serverError: '',
@@ -47,12 +43,14 @@
                 password: '',
                 form: {
                     nonce: null,
-                    dueBlock: 999999999,
+                    dueBlock: '',
                     value: null,
-                    coinSymbol: coinList && coinList.length ? coinList[0].coin : '',
+                    coinSymbol: '',
                     password: '',
-                    feeCoinSymbol: coinList && coinList.length ? coinList[0].coin : '',
+                    gasCoin: '',
                 },
+                /** @type FeeData */
+                fee: {},
                 deeplink: '',
                 isCheckQrModalVisible: false,
                 isLinkQrModalVisible: false,
@@ -64,7 +62,6 @@
                     required,
                 },
                 dueBlock: {
-                    required,
                 },
                 value: {
                     required,
@@ -77,7 +74,7 @@
                 password: {
                     required,
                 },
-                feeCoinSymbol: {
+                gasCoin: {
                     minLength: minLength(3),
                     maxLength: maxLength(10),
                 },
@@ -87,11 +84,39 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            feeBusParams() {
+                return {
+                    txType: TX_TYPE.REDEEM_CHECK,
+                    txFeeOptions: {},
+                    selectedCoinSymbol: this.form.coinSymbol,
+                    selectedFeeCoinSymbol: this.form.gasCoin,
+                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    isOffline: this.$store.getters.isOfflineMode,
+                };
+            },
             deeplinkPretty() {
                 return this.deeplink.replace('https://', '');
             },
         },
+        watch: {
+            feeBusParams: {
+                handler(newVal) {
+                    if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
+                        this.$options.feeBus.$emit('updateParams', newVal);
+                    }
+                },
+                deep: true,
+            },
+        },
+        created() {
+            this.$options.feeBus = new FeeBus(this.feeBusParams);
+            this.fee = this.$options.feeBus.fee;
+            this.$options.feeBus.$on('updateFee', (newVal) => {
+                this.fee = newVal;
+            });
+        },
         methods: {
+            pretty: (val) => pretty(val, undefined, true),
             submit() {
                 if (this.isFormSending) {
                     return;
@@ -111,23 +136,18 @@
                             this.check = issueCheck({
                                 privateKey: this.$store.getters.privateKey,
                                 chainId: this.$store.getters.CHAIN_ID,
-                                ...this.form,
-                                gasCoin: this.form.feeCoinSymbol,
+                                ...clearEmptyFields(this.form),
+                                gasCoin: this.fee.coinSymbol,
                             });
                             this.password = this.form.password;
                             // deeplink
-                            const redeemCheckTxParams = new RedeemCheckTxParams({
-                                // any valid private key acceptable here, proof will be erased later
-                                privateKey: this.$store.getters.privateKey,
-                                check: this.check,
-                                password: this.form.password,
-                            });
-                            const redeemCheckTxParamsWithoutProof = removeProofFromData(redeemCheckTxParams);
-                            delete redeemCheckTxParamsWithoutProof.privateKey;
-                            delete redeemCheckTxParamsWithoutProof.gasPrice;
                             const linkHost = NETWORK === TESTNET ? 'https://testnet.bip.to' : undefined;
                             this.deeplink = prepareLink({
-                                ...redeemCheckTxParamsWithoutProof,
+                                // ...redeemCheckTxParamsWithoutProof,
+                                data: {
+                                    check: this.check,
+                                },
+                                type: TX_TYPE.REDEEM_CHECK,
                                 password: this.form.password,
                             }, linkHost);
                             this.clearForm();
@@ -148,25 +168,30 @@
                 } else {
                     this.form.nonce = '';
                 }
-                this.form.dueBlock = 999999999;
+                this.form.dueBlock = '';
                 this.form.value = null;
-                this.form.coinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
+                this.form.coinSymbol = '';
                 this.form.password = '';
-                this.form.feeCoinSymbol = this.balance && this.balance.length ? this.balance[0].coin : '';
+                this.form.gasCoin = '';
                 this.$v.$reset();
             },
         },
     };
 
-    function removeProofFromData(txParams) {
-        const redeemCheckTxData = new TxDataRedeemCheck(txParams.txData);
-        // delete proof from data
-        redeemCheckTxData.proof = Buffer.from([]);
+    /**
+     * Ensure empty fields to be undefined
+     * @param {Object} obj
+     * @return {Object}
+     */
+    function clearEmptyFields(obj) {
+        let result = {};
+        Object.keys(obj).forEach((key) => {
+            if (obj[key] || obj[key] === 0 || obj[key] === false) {
+                result[key] = obj[key];
+            }
+        });
 
-        return {
-            ...txParams,
-            txData: redeemCheckTxData.serialize(),
-        };
+        return result;
     }
 </script>
 
@@ -217,20 +242,20 @@
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <FieldCoin
-                        v-model="form.feeCoinSymbol"
-                        :$value="$v.form.feeCoinSymbol"
+                        v-model="form.gasCoin"
+                        :$value="$v.form.gasCoin"
                         :label="$td('Coin to pay fee', 'form.fee')"
                         :coin-list="balance"
                 />
-                <span class="form-field__error" v-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.feeCoinSymbol.$dirty && !$v.form.feeCoinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-<!--
+                <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
                 <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
-                    {{ fee.coinSymbol }} {{ fee.value | pretty }}
-                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ fee.baseCoinValue | pretty }})</span>
+                    {{ fee.coinSymbol }} {{ pretty(fee.value) }}
+                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
+                    <br>
+                    {{ $td('Default:', 'form.help-default') }} {{ fee.isBaseCoinEnough ? $store.getters.COIN_NAME : $td('same as coin to transfer', 'form.wallet-send-fee-same') }}
                 </div>
--->
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
@@ -240,7 +265,9 @@
                     />
                     <span class="form-field__label">{{ $td('Due block', 'form.checks-issue-due') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.dueBlock.$dirty && !$v.form.dueBlock.required">{{ $td('Enter block number', 'form.checks-issue-due-error-required') }}</span>
+                <div class="form-field__help">
+                    {{ $td('Default:', 'form.help-default') }} 999999999
+                </div>
             </div>
             <div class="u-cell">
                 <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}">{{ $td('Issue', 'form.checks-issue-button') }}</button>
