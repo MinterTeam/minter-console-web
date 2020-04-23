@@ -93,6 +93,11 @@
                 ]));
             },
 */
+            totalStake() {
+                return this.stakeList.reduce((accumulator, item) => {
+                    return accumulator + Number(item.bip_value);
+                }, 0);
+            },
         },
         mounted() {
             if (process.client) {
@@ -418,6 +423,12 @@
                 </template>
             </template>
             </tbody>
+            <tfoot v-if="stakeListGrouped.length > 1">
+            <tr>
+                <td colspan="3">Total</td>
+                <td colspan="2">{{ $options.pretty(totalStake) }} {{ $store.getters.COIN_NAME }}</td>
+            </tr>
+            </tfoot>
         </table>
         <div class="panel__content panel__section u-text-center" v-else>No Stakes</div>
     </div>
