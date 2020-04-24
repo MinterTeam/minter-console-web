@@ -152,7 +152,8 @@
 .table-wrap {overflow: auto;}
 .table__cell-overflow--middle {}
 table {width: 100%; border-collapse: collapse;}
-th {background: #f6f6f6;}
+th, tfoot td {background: #f6f6f6;}
+tfoot td {font-weight: 700;}
 td, th {
     border: none; border-top: 1px solid @c-border; padding: @table-cell-padding; text-align: left;
     //&:first-child {border-left: none;}
