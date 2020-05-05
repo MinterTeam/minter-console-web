@@ -19,7 +19,7 @@ export default function() {
         stakeList: [],
         /** @type Array<Validator> */
         validatorList: [],
-        lastUpdateTime: 0,
+        lastUpdateTime: 9999999999999,
         // transactionListInfo: {
         //     data: [],
         //     meta: {},
