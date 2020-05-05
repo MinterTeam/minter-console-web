@@ -1,14 +1,17 @@
 <script>
+    import {support} from '~/assets/utils-support.js';
+
     const NOTICE_DELAY = 20; // time to reconnect after switching back to the tab
-    const NOTICE_TIME = 25 - NOTICE_DELAY;
+    const NOTICE_TIME = 25;
 
     let timeInterval = null;
-    let openingDelay = null;
+    let operatingDelay = null;
 
     export default {
         data() {
             return {
                 isNoticeOpen: false,
+                isOperatingNormally: false,
             };
         },
         watch: {
@@ -24,14 +27,22 @@
             },
         },
         beforeMount() {
+            this.setStartupDelay();
             // update timestamps if no new data from server
             timeInterval = setInterval(() => {
                 this.checkTime();
             }, 2000);
+            if (support.visibilityChange) {
+                document.addEventListener(support.visibilityChange, this.handleVisibilityChange);
+            }
         },
         destroyed() {
             clearInterval(timeInterval);
+            clearTimeout(operatingDelay);
             this.$root.$el.classList.remove('is-connection-notice-open');
+            if (support.visibilityChange) {
+                document.removeEventListener(support.visibilityChange, this.handleVisibilityChange);
+            }
         },
         methods: {
             checkTime() {
@@ -44,17 +55,27 @@
                     return;
                 }
                 const shouldOpenNotice = Date.now() - this.$store.state.lastUpdateTime > NOTICE_TIME * 1000;
-                if (shouldOpenNotice && !this.isNoticeOpen && !openingDelay) {
-                    openingDelay = setTimeout(() => {
-                        this.isNoticeOpen = true;
-                        openingDelay = null;
-                    }, NOTICE_DELAY * 1000);
+                // show notice only if operating normally
+                if (shouldOpenNotice && this.isOperatingNormally) {
+                    this.isNoticeOpen = true;
                 }
-                if (!shouldOpenNotice && (this.isNoticeOpen || openingDelay)) {
+                if (!shouldOpenNotice) {
                     this.isNoticeOpen = false;
-                    clearTimeout(openingDelay);
-                    openingDelay = null;
                 }
+            },
+            handleVisibilityChange() {
+                if (document[support.hidden]) {
+                    this.isOperatingNormally = false;
+                } else {
+                    this.setStartupDelay();
+                }
+            },
+            // during startup delay notice will not be opened
+            setStartupDelay() {
+                operatingDelay = setTimeout(() => {
+                    this.isOperatingNormally = true;
+                    operatingDelay = null;
+                }, NOTICE_DELAY * 1000);
             },
         },
     };

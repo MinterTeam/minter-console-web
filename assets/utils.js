@@ -254,21 +254,3 @@ function boldenSuggestion(text, query) {
     const queries = query.split(/[\s-_/\\|.]/gm).filter((t) => !!t) || [''];
     return text.replace(new RegExp('(.*?)(' + queries.join('|') + ')(.*?)', 'gi'), '$1<b>$2</b>$3');
 }
-
-
-
-// support
-export let support = {};
-support.passiveListener = (function() {
-    let supportsPassive = false;
-    try {
-        let opts = Object.defineProperty({}, 'passive', {
-            /* eslint-disable-next-line getter-return */
-            get: function() {
-                supportsPassive = true;
-            },
-        });
-        window.addEventListener('testPassiveListener', null, opts);
-    } catch (e) {}
-    return supportsPassive;
-})();
