@@ -1,5 +1,6 @@
 <script>
-    import {shortHashFilter, support} from "~/assets/utils";
+    import {shortHashFilter} from "~/assets/utils";
+    import {support} from '~/assets/utils-support.js';
     import {NETWORK, TESTNET} from '~/assets/variables';
     import Snackbar from '~/components/common/Snackbar';
     import ConnectionNotice from '~/components/ConnectionNotice.vue';
