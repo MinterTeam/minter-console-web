@@ -70,7 +70,7 @@
                     nonce: '',
                     gasCoin: '',
                     payload: '',
-                    signatureList: null,
+                    signatureList: ['', ''],
                     multisigAddress: '',
                     gasPrice: '',
                 },
@@ -295,11 +295,13 @@
                         const signature = makeSignature(tx, this.$store.getters.privateKey).toString('hex');
 
                         this.signature = `0x${signature}`;
+                        // set first signature item
+                        this.form.signatureList[0] = this.signature;
                         this.isSigning = false;
                     })
                     .catch((e) => {
                         console.log(e);
-                        this.signature = e.message;
+                        this.serverError = e.message;
                         this.isSigning = false;
                     });
             },
@@ -318,7 +320,7 @@
                     ...this.getTxParams(),
                     signatureData: {
                         multisig: this.form.multisigAddress,
-                        signatures: this.form.signatureList,
+                        signatures: this.form.signatureList?.filter((item) => !!item),
                     },
                 };
             },
