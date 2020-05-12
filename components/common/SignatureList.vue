@@ -16,7 +16,7 @@
         props: {
             value: {
                 type: Array,
-                default: null,
+                required: true,
             },
             // $signatureList: {
             //     type: Object,
@@ -52,10 +52,7 @@
         },
         watch: {
             value(newVal) {
-                // clear list on clearForm()
-                if (newVal === null) {
-                    this.list = getListValueFromProp(newVal);
-                }
+                this.list = getListValueFromProp(newVal);
             },
             listHash() {
                 this.updateModel();
@@ -81,14 +78,7 @@
     };
 
     function getListValueFromProp(modelValue) {
-        if (modelValue) {
-            return modelValue.map((item) => ({signature: item}));
-        } else {
-            return [
-                {signature: ''},
-                {signature: ''},
-            ];
-        }
+        return modelValue.map((item) => ({signature: item}));
     }
 </script>
 
