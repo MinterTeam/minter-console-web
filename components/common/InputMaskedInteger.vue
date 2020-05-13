@@ -1,4 +1,5 @@
 <script>
+    import 'core-js/features/global-this.js';
     import {IMaskDirective} from 'vue-imask';
 
     export default {
