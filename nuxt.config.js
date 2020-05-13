@@ -151,7 +151,7 @@ export default {
             detectBrowserLanguage: false,
         }],
     ],
-    modern: false,
+    modern: 'client',
     /*
     ** Build configuration
     */
