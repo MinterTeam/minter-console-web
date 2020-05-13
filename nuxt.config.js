@@ -151,7 +151,7 @@ export default {
             detectBrowserLanguage: false,
         }],
     ],
-    modern: 'client',
+    modern: false,
     /*
     ** Build configuration
     */
@@ -203,16 +203,19 @@ export default {
             sourceType: 'unambiguous',
         },
         transpile: [
-            /es6-promise|\.(?!(?:js|json)$).{1,5}$/i,
-            '/base-x/',
             '@material/',
             'date-fns/esm',
             'lodash-es',
             'centrifuge/src',
             'autonumeric/src',
             'vue-autonumeric/src',
+            'vue-simple-suggest/lib',
             'nuxt-i18n/src',
             'qr-scanner',
+            'camelcase-keys/',
+            'camelcase/', // camelcase-keys
+            'map-obj/', // camelcase-keys
+            'quick-lru/', // camelcase-keys
             'v-autosize/src',
             'v-file-input/src',
             'vue-inline-svg/src/',
@@ -221,9 +224,10 @@ export default {
             'from-exponential/src',
             'minterjs-util',
             'minterjs-tx',
-            'minterjs-wallet',
-            'minter-js-sdk',
-            'minter-js-org',
+            'minterjs-wallet/src',
+            'bip39/src', // minterjs-wallet
+            'minter-js-sdk/src',
+            'minter-js-org/stc',
         ],
     },
 };
