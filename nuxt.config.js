@@ -224,10 +224,10 @@ export default {
             'from-exponential/src',
             'minterjs-util',
             'minterjs-tx',
-            'minterjs-wallet/src',
+            'minterjs-wallet',
             'bip39/src', // minterjs-wallet
-            'minter-js-sdk/src',
-            'minter-js-org/stc',
+            'minter-js-sdk',
+            'minter-js-org',
         ],
     },
 };
