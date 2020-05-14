@@ -81,13 +81,13 @@
                 let validatorList = {};
                 const stakeList = this.isMultisigAddress ? [] : this.$store.state.stakeList;
                 stakeList.forEach((item) => {
-                    if (!validatorList[item.pub_key]) {
-                        validatorList[item.pub_key] = Object.assign({stakeList: []}, item);
-                        delete validatorList[item.pub_key].coin;
-                        delete validatorList[item.pub_key].value;
-                        delete validatorList[item.pub_key].bip_value;
+                    if (!validatorList[item.pubKey]) {
+                        validatorList[item.pubKey] = Object.assign({stakeList: []}, item);
+                        delete validatorList[item.pubKey].coin;
+                        delete validatorList[item.pubKey].value;
+                        delete validatorList[item.pubKey].bipValue;
                     }
-                    validatorList[item.pub_key].stakeList.push({
+                    validatorList[item.pubKey].stakeList.push({
                         coin: item.coin,
                         value: item.value,
                     });
@@ -100,8 +100,8 @@
             suggestionValidatorList() {
                 return Object.values(this.validatorData).map((item) => {
                     let name = '';
-                    if (item.validator_meta && item.validator_meta.name) {
-                        name = item.validator_meta.name;
+                    if (item.validatorMeta && item.validatorMeta.name) {
+                        name = item.validatorMeta.name;
                     }
 
                     const delegatedAmount = item.stakeList.reduce((accumulator, stakeItem) => {
@@ -112,7 +112,7 @@
                             return accumulator + ', ' + stakeItemValue;
                         }
                     }, '');
-                    return {name, value: item.pub_key, delegatedAmount};
+                    return {name, value: item.pubKey, delegatedAmount};
                 });
             },
             stakeList() {

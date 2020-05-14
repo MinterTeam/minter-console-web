@@ -11,6 +11,7 @@
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce} from '~/api/gate.js';
+    import {getTransaction} from '~/api';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
@@ -65,7 +66,7 @@
             return {
                 isFormSending: false,
                 serverError: '',
-                serverSuccess: '',
+                serverSuccess: null,
                 form: {
                     nonce: '',
                     gasCoin: '',
@@ -82,6 +83,7 @@
                 /** @type FeeData */
                 fee: {},
                 isConfirmModalVisible: false,
+                isSuccessModalVisible: false,
                 isSigning: false,
                 signature: null,
                 signedTx: null,
@@ -218,10 +220,12 @@
             },
             submit() {
                 this.isConfirmModalVisible = false;
+                this.isSuccessModalVisible = false;
                 this.signature = null;
                 this.signedTx = null;
                 this.serverError = '';
-                this.serverSuccess = '';
+                this.serverSuccess = null;
+                this.$emit('success-tx', null);
 
                 if (this.$store.getters.isOfflineMode) {
                     this.generateTx();
@@ -256,11 +260,26 @@
                     postTxPromise = postTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
                 }
 
+                function wait(time) {
+                    return new Promise((resolve) => {
+                        setTimeout(resolve, time);
+                    });
+                }
+
                 postTxPromise
                     .then((txHash) => {
                         this.isFormSending = false;
-                        this.serverSuccess = txHash;
+                        this.serverSuccess = {hash: txHash};
+                        this.isSuccessModalVisible = true;
                         this.clearForm();
+                        wait(1000).then(() => {
+                            getTransaction(txHash)
+                                .then((tx) => {
+                                    this.serverSuccess = tx;
+                                    this.$emit('success-tx', this.serverSuccess);
+                                })
+                                .catch((e) => console.log(e));
+                        });
                     })
                     .catch((error) => {
                         console.log(error);
@@ -508,11 +527,6 @@
                 </div>
 
 
-                <div class="u-cell u-cell--order-2" data-test-id="txSuccessMessage" v-if="serverSuccess">
-                    <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
-                    <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
-                </div>
-
                 <div class="u-cell u-cell--order-2" v-if="signature">
                     <dl>
                         <dt>{{ $td('Signature', 'form.multisig-result-signature') }}</dt>
@@ -547,11 +561,15 @@
             <slot name="panel-footer"></slot>
         </div>
 
-        <!-- Modal -->
+        <!-- Confirm Modal -->
         <Modal v-bind:isOpen.sync="isConfirmModalVisible">
             <div class="panel">
                 <div class="panel__header">
-                    <slot name="confirm-modal-header"></slot>
+                    <slot name="confirm-modal-header">
+                        <h1 class="panel__header-title">
+                            {{ $td('Send transaction', 'form.confirm-title') }}
+                        </h1>
+                    </slot>
                 </div>
                 <div class="panel__section" v-if="$slots['confirm-modal-body']">
                     <slot name="confirm-modal-body"></slot>
@@ -573,6 +591,35 @@
                 </div>
                 <div class="panel__section" v-if="$slots['confirm-modal-footer']">
                     <slot name="confirm-modal-footer"></slot>
+                </div>
+            </div>
+        </Modal>
+
+        <!-- Success Modal -->
+        <Modal v-bind:isOpen.sync="isSuccessModalVisible">
+            <div class="panel">
+                <div class="panel__header">
+                    <slot name="success-modal-header">
+                        <h1 class="panel__header-title">
+                            {{ $td('Success!', 'form.success-title') }}
+                        </h1>
+</slot>
+                </div>
+                <div class="panel__section u-text-left">
+                    <slot name="success-modal-body">
+                        <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
+                        <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess.hash)" target="_blank" v-if="serverSuccess">{{ serverSuccess.hash }}</a>
+                    </slot>
+                </div>
+                <div class="panel__section">
+                    <slot name="success-modal-button">
+                        <a class="button button--main button--full" :href="getExplorerTxUrl(serverSuccess.hash)" v-if="serverSuccess">
+                            {{ $td('View transaction', 'form.success-view-button') }}
+                        </a>
+                    </slot>
+                    <button class="button button--ghost-main button--full" type="button" @click="isSuccessModalVisible = false" data-test-id="txModalSuccessClose">
+                        {{ $td('Close', 'form.success-close-button') }}
+                    </button>
                 </div>
             </div>
         </Modal>

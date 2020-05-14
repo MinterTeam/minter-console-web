@@ -9,11 +9,13 @@
     import integer from 'vuelidate/lib/validators/integer.js';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidAddress} from "minterjs-util";
+    import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {prettyRound} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
     import FieldDomain from '~/components/common/FieldDomain';
+    import ButtonCopy from '~/components/common/ButtonCopy.vue';
 
     const MULTISIG_WEIGHT_MIN = 0;
     const MULTISIG_WEIGHT_MAX = 1023;
@@ -26,8 +28,10 @@
         components: {
             TxForm,
             FieldDomain,
+            ButtonCopy,
         },
         directives: {
+            autosize,
             checkEmpty,
         },
         mixins: [validationMixin],
@@ -47,6 +51,7 @@
                     threshold: '',
                 },
                 isAddressDomainResolving: false,
+                successTx: null,
             };
         },
         validations() {
@@ -138,7 +143,7 @@
 </script>
 
 <template>
-    <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_MULTISIG" @clear-form="clearForm()">
+    <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_MULTISIG" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Create Multisig Address', 'multisig.create-title') }}
@@ -228,6 +233,35 @@
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Create Multisig Address', 'multisig.create-title') }}
             </h1>
+        </template>
+
+        <template v-slot:success-modal-header>
+            <h1 class="panel__header-title">
+                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
+                {{ $td('Multisig address created', 'multisig.success-title') }}
+            </h1>
+        </template>
+
+        <template v-slot:success-modal-body v-if="successTx">
+            <div class="u-grid u-grid--small u-grid--vertical-margin">
+                <div class="u-cell">
+                    <label class="form-field form-field--dashed">
+                                <textarea
+                                        class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                                        v-autosize
+                                        :value="successTx.data.multisigAddress"
+                                ></textarea>
+                        <span class="form-field__label">{{ $td('Your multisig address', 'multisig.success-address') }}</span>
+                    </label>
+                </div>
+            </div>
+        </template>
+
+        <template v-slot:success-modal-button v-if="successTx">
+            <ButtonCopy class="button button--main button--full" :copy-text="successTx.data.multisigAddress">
+                <img class="button__icon" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
+                {{ $td('Copy', 'common.copy') }}
+            </ButtonCopy>
         </template>
 </TxForm>
 </template>
