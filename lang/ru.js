@@ -13,6 +13,7 @@ export default {
         'page-support': 'Поддержка',
         'page-account': 'Аккаунт',
         'logout': 'Выйти',
+        'copy': 'Копировать',
     },
     error: {
         'title-error': 'Ошибка',
@@ -146,6 +147,8 @@ export default {
         'seo-description': 'Сойдайте Multisig адрес.',
         'create-title': 'Создание Multisig',
         'create-description': 'Создайте свою собственную монету. Определение роли новой монеты лежит полностью на вас&nbsp;— валюта, права, голос, токен безопасности, утилитарный токен или что-то&nbsp;еще.',
+        'success-title': 'Multisig адрес успешно создан',
+        'success-address': 'Ваш multisig адрес',
     },
     wallet: {
         'seo-description': 'Проводите транзакции в MNT и других монетах, выпущенных в сети Minter. Практически мгновенно и практически без комиссий.',
@@ -205,8 +208,12 @@ export default {
         'generate-nonce-help': 'Уникальный номер транзакции: кол‑во транзакций пользователя + 1',
         'generate-result-tx': 'Подписанная транзакция',
 
+        'confirm-title': 'Отправить транзакцию',
         'submit-confirm-button': 'Подтвердить',
         'submit-cancel-button': 'Отменить',
+        'success-title': 'Успех!',
+        'success-view-button': 'Смотреть транзакцию',
+        'success-close-button': 'Закрыть',
 
         'coin': 'Монета',
         'coin-error-required': 'Укажите монету',

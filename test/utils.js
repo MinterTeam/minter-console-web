@@ -54,8 +54,10 @@ export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModa
     }
 
     if (!shouldFailPost) {
-        // wait for success
-        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSuccessMessage"]`);
+        // wait for success modal
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
+        // close modal
+        await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
     } else {
         // wait for error
         await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txErrorMessage"]`);

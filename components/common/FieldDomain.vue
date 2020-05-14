@@ -83,7 +83,7 @@
                     if (item.meta && item.meta.name) {
                         name = item.meta.name;
                     }
-                    return {name, value: item.public_key};
+                    return {name, value: item.publicKey};
                 });
             },
         },
