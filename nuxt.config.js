@@ -203,16 +203,19 @@ export default {
             sourceType: 'unambiguous',
         },
         transpile: [
-            /es6-promise|\.(?!(?:js|json)$).{1,5}$/i,
-            '/base-x/',
             '@material/',
             'date-fns/esm',
             'lodash-es',
             'centrifuge/src',
             'autonumeric/src',
             'vue-autonumeric/src',
+            'vue-simple-suggest/lib',
             'nuxt-i18n/src',
             'qr-scanner',
+            'camelcase-keys/',
+            'camelcase/', // camelcase-keys
+            'map-obj/', // camelcase-keys
+            'quick-lru/', // camelcase-keys
             'v-autosize/src',
             'v-file-input/src',
             'vue-inline-svg/src/',
@@ -222,6 +225,7 @@ export default {
             'minterjs-util',
             'minterjs-tx',
             'minterjs-wallet',
+            'bip39/src', // minterjs-wallet
             'minter-js-sdk',
             'minter-js-org',
         ],
