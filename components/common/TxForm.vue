@@ -102,6 +102,7 @@
                     isNotMnemonic: (value) => !isValidMnemonic(value),
                 },
                 multisigAddress: {
+                    // @TODO
                     required: () => true,
                     validAddress: this.isMultisigDomainResolving ? () => new Promise(() => 0) : (this.form.multisigAddress ? isValidAddress : () => true),
                 },
@@ -260,26 +261,13 @@
                     postTxPromise = postTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
                 }
 
-                function wait(time) {
-                    return new Promise((resolve) => {
-                        setTimeout(resolve, time);
-                    });
-                }
-
                 postTxPromise
-                    .then((txHash) => {
+                    .then((tx) => {
                         this.isFormSending = false;
-                        this.serverSuccess = {hash: txHash};
+                        this.serverSuccess = tx;
+                        this.$emit('success-tx', this.serverSuccess);
                         this.isSuccessModalVisible = true;
                         this.clearForm();
-                        wait(1000).then(() => {
-                            getTransaction(txHash)
-                                .then((tx) => {
-                                    this.serverSuccess = tx;
-                                    this.$emit('success-tx', this.serverSuccess);
-                                })
-                                .catch((e) => console.log(e));
-                        });
                     })
                     .catch((error) => {
                         console.log(error);
@@ -475,7 +463,6 @@
                         />
                         <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                         <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
-                        <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
                     </label>
                     <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
                 </div>
@@ -613,7 +600,7 @@
                 </div>
                 <div class="panel__section">
                     <slot name="success-modal-button">
-                        <a class="button button--main button--full" :href="getExplorerTxUrl(serverSuccess.hash)" v-if="serverSuccess">
+                        <a class="button button--main button--full" :href="getExplorerTxUrl(serverSuccess.hash)" target="_blank" v-if="serverSuccess">
                             {{ $td('View transaction', 'form.success-view-button') }}
                         </a>
                     </slot>
