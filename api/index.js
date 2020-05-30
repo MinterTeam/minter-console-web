@@ -115,13 +115,25 @@ export function getAddressTransactionList(address, params = {}) {
 
 /**
  * @param addressHash
- * @return {Promise<Array<CoinItem>>}
+ * @return {Promise<Array<BalanceItem>>}
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
         .then((response) => prepareBalance(response.data.data.balances));
 }
 
+/**
+ * @typedef {Object} BalanceItem
+ * @property {number|string} amount
+ * @property {string} coin
+ */
+
+
+/**
+ *
+ * @param {Array<BalanceItem>} balanceList
+ * @return {Array<BalanceItem>}
+ */
 export function prepareBalance(balanceList) {
     return balanceList.sort((a, b) => {
             // set base coin first
@@ -162,11 +174,11 @@ export function getCoinList() {
 
 /**
  * @typedef {Object} CoinItem
- * @param {number} crr
- * @param {number|string} volume
- * @param {number|string} reserve_balance
- * @param {string} name
- * @param {string} symbol
+ * @property {number} crr
+ * @property {number|string} volume
+ * @property {number|string} reserve_balance
+ * @property {string} name
+ * @property {string} symbol
  */
 
 

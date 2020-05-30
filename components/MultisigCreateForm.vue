@@ -12,7 +12,7 @@
     import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {prettyRound} from "~/assets/utils";
+    import {prettyRound, getExplorerTxUrl} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
     import FieldDomain from '~/components/common/FieldDomain';
     import ButtonCopy from '~/components/common/ButtonCopy.vue';
@@ -115,6 +115,7 @@
             },
         },
         methods: {
+            getExplorerTxUrl,
             addParticipant() {
                 this.form.addressList.push({
                     address: '',
@@ -249,7 +250,7 @@
                                 <textarea
                                         class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
                                         v-autosize
-                                        :value="successTx.data.multisigAddress"
+                                        :value="`Mx${successTx.tags['tx.created_multisig']}`"
                                 ></textarea>
                         <span class="form-field__label">{{ $td('Your multisig address', 'multisig.success-address') }}</span>
                     </label>
@@ -262,6 +263,9 @@
                 <img class="button__icon" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
                 {{ $td('Copy', 'common.copy') }}
             </ButtonCopy>
+            <a class="button button--ghost-main button--full" :href="getExplorerTxUrl(successTx.hash)" target="_blank">
+                {{ $td('View transaction', 'form.success-view-button') }}
+            </a>
         </template>
 </TxForm>
 </template>
