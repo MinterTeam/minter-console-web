@@ -157,11 +157,12 @@ export default {
     */
     build: {
         extractCSS: true,
-        // optimization: {
-        //     splitChunks: {
-        //         name: true
-        //     }
-        // },
+        optimization: {
+            // minimize: false,
+            // splitChunks: {
+            //     name: true
+            // }
+        },
         watch: [
             './api/',
             // `./lang/`, // this watcher dont-work yet
