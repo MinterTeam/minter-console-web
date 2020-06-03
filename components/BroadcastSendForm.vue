@@ -55,9 +55,9 @@
                 this.isFormSending = true;
                 this.serverError = '';
                 this.serverSuccess = '';
-                postSignedTx(this.form.signedTx).then((txHash) => {
+                postSignedTx(this.form.signedTx).then((tx) => {
                     this.isFormSending = false;
-                    this.serverSuccess = txHash;
+                    this.serverSuccess = tx.hash;
                     this.clearForm();
                 }).catch((error) => {
                     console.log(error);
