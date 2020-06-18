@@ -86,7 +86,7 @@
     <div class="u-grid u-grid--small u-grid--vertical-margin">
         <div class="multisig-signature__cell u-cell" v-for="(v, index) in $v.list.$each.$iter" :key="index">
             <label class="form-field multisig-signature__field" :class="{'is-error': v.signature.$error}">
-                <textarea class="form-field__input" type="text" autocapitalize="off" spellcheck="false" rows="1" v-check-empty v-autosize
+                <textarea class="form-field__input" autocapitalize="off" spellcheck="false" rows="1" v-check-empty v-autosize
                           v-model.trim="v.signature.$model"
                           @blur="v.signature.$touch()"
                 ></textarea>
