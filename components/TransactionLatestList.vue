@@ -338,7 +338,7 @@
                                 <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
                                     <strong>{{ $td('Check Issuer', 'wallet.tx-table-check-issuer') }}</strong> <br>
                                     <TableLink :link-text="tx.data.check.sender"
-                                               :link-path="'/address/' + tx.data.check.sender"
+                                               :link-path="getExplorerAddressUrl(tx.data.check.sender)"
                                                :should-not-shorten="true"
                                     />
                                 </div>
