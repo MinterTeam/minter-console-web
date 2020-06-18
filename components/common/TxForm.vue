@@ -11,7 +11,6 @@
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce} from '~/api/gate.js';
-    import {getTransaction} from '~/api';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
