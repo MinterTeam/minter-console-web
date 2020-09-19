@@ -9,6 +9,7 @@
     import issueCheck from 'minter-js-sdk/src/check';
     import {prepareLink} from 'minter-js-sdk/src/link';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {replaceCoinSymbolByPath} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
@@ -130,15 +131,21 @@
                 this.deeplink = '';
                 this.isFormSending = true;
                 this.serverError = '';
-                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
+
+                let params = {
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...clearEmptyFields(this.form),
+                    coin: this.form.coinSymbol,
+                    gasCoin: this.fee.coinSymbol,
+                };
+                Promise.all([
+                        replaceCoinSymbolByPath(params, ['gasCoin', 'coin']),
+                        this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                    ])
                     .then(() => {
                         try {
-                            this.check = issueCheck({
-                                privateKey: this.$store.getters.privateKey,
-                                chainId: this.$store.getters.CHAIN_ID,
-                                ...clearEmptyFields(this.form),
-                                gasCoin: this.fee.coinSymbol,
-                            });
+                            this.check = issueCheck(params);
                             this.password = this.form.password;
                             // deeplink
                             const linkHost = NETWORK === TESTNET ? 'https://testnet.bip.to' : undefined;

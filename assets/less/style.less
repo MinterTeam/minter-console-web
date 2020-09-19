@@ -45,7 +45,10 @@
     to {transform: scale(1.01);}
 }
 // qr-modal
-.qr-modal {padding-left: 0; padding-right: 0; width: auto;}
+.qr-modal {
+    padding-left: 0; padding-right: 0; width: auto;
+    .modal__container {max-width: 320px;}
+}
 .qr-modal__layer {
     padding: 20px; background: #fff;
     canvas {vertical-align: top;}

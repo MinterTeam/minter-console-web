@@ -10,7 +10,7 @@
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
-    import {postTx, ensureNonce} from '~/api/gate.js';
+    import {postTx, ensureNonce, replaceCoinSymbol} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
@@ -250,14 +250,26 @@
 
                 let postTxPromise;
                 if (!this.form.multisigAddress) {
-                    postTxPromise = this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                        .then(() => {
+                    let txParams = this.getTxParams();
+                    postTxPromise = Promise.all([
+                            ensureNonce(txParams, {address: this.$store.getters.address}),
+                            replaceCoinSymbol(txParams),
+                            this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                        ])
+                        .then(([nonce]) => {
                             // private key to sign
-                            return postTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
+                            return postTx({...txParams, nonce}, {privateKey: this.$store.getters.privateKey});
                         });
                 } else {
-                    // address to get nonce or make proof for RedeemCheck
-                    postTxPromise = postTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
+                    let txParams = this.getTxParamsMultisigData();
+                    postTxPromise = Promise.all([
+                            ensureNonce(txParams, {address: this.form.multisigAddress}),
+                            replaceCoinSymbol(txParams),
+                        ])
+                        .then(([nonce]) => {
+                            // address to get nonce or make proof for RedeemCheck
+                            return postTx({...txParams, nonce}, {address: this.form.multisigAddress});
+                        });
                 }
 
                 postTxPromise
@@ -293,6 +305,7 @@
 
                 Promise.all([
                         ensureNonce(txParams, {address: this.form.multisigAddress}),
+                        replaceCoinSymbol(txParams),
                         this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
                     ])
                     .then(([nonce]) => {
@@ -359,12 +372,12 @@
                 }
                 this.form.gasPrice = '';
                 this.$v.$reset();
-                this.$emit('clear-form');
                 // clear txData
                 Object.keys(this.txData).forEach((key) => {
                     this.txData[key] = null;
                 });
                 this.$txData.$reset();
+                this.$emit('clear-form');
             },
             getExplorerTxUrl,
         },

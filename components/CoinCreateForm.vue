@@ -7,7 +7,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
     import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
-    import {MIN_MAX_SUPPLY, MAX_MAX_SUPPLY} from "minter-js-sdk/src/tx-data/create-coin";
+    import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
     import checkEmpty from '~/assets/v-check-empty';
@@ -64,8 +64,8 @@
         MIN_CREATE_RESERVE,
         MIN_PRICE,
         MIN_SUPPLY,
-        MIN_MAX_SUPPLY,
-        MAX_MAX_SUPPLY,
+        COIN_MIN_MAX_SUPPLY,
+        COIN_MAX_MAX_SUPPLY,
         maskCrr: {
             allowDecimalPadding: false,
             decimalPlaces: 0,
@@ -120,7 +120,7 @@
                 initialAmount: {
                     required,
                     minValue: minValue(1),
-                    maxValue: maxValue(this.form.maxSupply || MAX_MAX_SUPPLY),
+                    maxValue: maxValue(this.form.maxSupply || COIN_MAX_MAX_SUPPLY),
                 },
                 constantReserveRatio: {
                     required,
@@ -131,8 +131,8 @@
                     minValue: minValue(MIN_CREATE_RESERVE),
                 },
                 maxSupply: {
-                    minValue: this.form.maxSupply ? minValue(MIN_MAX_SUPPLY) : () => true,
-                    maxValue: this.form.maxSupply ? maxValue(MAX_MAX_SUPPLY) : () => true,
+                    minValue: this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY) : () => true,
+                    maxValue: this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY) : () => true,
                 },
             };
 
@@ -266,8 +266,8 @@
                     />
                     <span class="form-field__label">{{ $td('Max supply', 'form.coiner-create-max-supply') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.minValue">{{ $td(`Min value is ${$options.MIN_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-min', {value: $options.MIN_MAX_SUPPLY}) }}</span>
-                <span class="form-field__error" v-else-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.maxValue">{{ $td(`Max value is ${$options.MAX_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-max', {value: $options.MAX_MAX_SUPPLY}) }}</span>
+                <span class="form-field__error" v-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.minValue">{{ $td(`Min value is ${$options.COIN_MIN_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
+                <span class="form-field__error" v-else-if="$v.form.maxSupply.$dirty && !$v.form.maxSupply.maxValue">{{ $td(`Max value is ${$options.COIN_MAX_MAX_SUPPLY}`, 'form.coiner-create-max-supply-error-max', {value: $options.COIN_MAX_MAX_SUPPLY}) }}</span>
                 <div class="form-field__help">
                     {{ $td('Coin purchase will not be possible if the limit is exceeded.', 'form.coiner-create-max-supply-help') }}
                     <br>

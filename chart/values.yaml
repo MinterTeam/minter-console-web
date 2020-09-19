@@ -1,0 +1,30 @@
+replicaCount: 1
+
+image:
+  repository: minterteam/explorer-console
+  pullPolicy: Always
+  tag: latest
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  port: 80
+
+ingress:
+  domain: console.chilinet.minter.network
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

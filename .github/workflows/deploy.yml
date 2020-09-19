@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ chilinet ]
+
+jobs:
+  ci:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: set branch prefix env to be used during docker build, .e.g. "refs/heads/testnet" => ".testnet"
+        if: github.ref != 'refs/heads/master'
+        run: echo ::set-env name=BUILD_BRANCH_ENV_PREFIX::$(echo "$GITHUB_REF" | sed "s\refs/heads/\.\g")
+
+      - uses: actions/checkout@v2
+      - name: build and push to registry
+        uses: opspresso/action-docker@master
+        env:
+          USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+          PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          IMAGE_NAME: "minterteam/explorer-web"
+          LATEST: "true"
+          TAG_NAME: ${{ github.sha }}
+          DOCKERFILE: ".docker/Dockerfile"
+          DOCKER_BUILD_ARGS: --build-arg BUILD_BRANCH_ENV_PREFIX
+      
+      - name: deploy to cluster
+        uses: wahyd4/kubectl-helm-action@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_PROD_CONFIG_DATA }}
+        with:
+          args: helm upgrade -i web chart/ --atomic --reuse-values --timeout 100s --set image.tag=$GITHUB_SHA
+      
+      - name: notification
+        if: cancelled() == false
+        uses: xinthink/action-telegram@v1.1
+        with:
+          botToken: ${{ secrets.TELEGRAM_CI_TOKEN }}
+          chatId: ${{ secrets.TELEGRAM_CI_TO }}
+          jobStatus: ${{ job.status }}
+          skipSuccess: false
