@@ -19,7 +19,7 @@ service:
   port: 80
 
 ingress:
-  domain: console.chilinet.minter.network
+  domain: console.testnet.minter.network
 
 resources: {}
 
