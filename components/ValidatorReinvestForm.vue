@@ -4,7 +4,7 @@
     import minValue from 'vuelidate/lib/validators/minValue';
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
-    import {privateToAddressString} from 'minterjs-util';
+    import {privateToAddressString, toBuffer, TX_TYPE} from 'minterjs-util';
     import {postAutoDelegationTxList} from '~/api';
     import {getNonce} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
@@ -104,16 +104,7 @@
                 this.signedTxList = null;
                 this.serverError = '';
                 this.serverSuccess = false;
-                generateBatchTx({
-                    chainId: this.$store.getters.CHAIN_ID,
-                    ...this.form,
-                    data: {
-                        ...this.form.data,
-                        coin: this.$store.getters.COIN_NAME,
-                    },
-                    gasPrice: this.form.gasPrice || undefined,
-                    feeCoinSymbol: this.$store.getters.COIN_NAME,
-                }, this.$store.getters.privateKey, this.formTxCount)
+                this.generateBatchTx()
                     .then(([signedTxList, nonce]) => {
                         this.signedTxList = signedTxList.join('\n');
                         this.setDownload(this.signedTxList, `${this.form.data.publicKey}-${nonce}-${nonce + this.formTxCount}`);
@@ -133,16 +124,7 @@
                 this.serverError = '';
                 this.serverSuccess = false;
                 this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                    .then(() => generateBatchTx({
-                        chainId: this.$store.getters.CHAIN_ID,
-                        ...this.form,
-                        data: {
-                            ...this.form.data,
-                            coin: this.$store.getters.COIN_NAME,
-                        },
-                        gasPrice: this.form.gasPrice || undefined,
-                        feeCoinSymbol: this.$store.getters.COIN_NAME,
-                    }, this.$store.getters.privateKey, this.formTxCount))
+                    .then(() => this.generateBatchTx())
                     .then(([signedTxList]) => postAutoDelegationTxList(signedTxList))
                     .then(() => {
                         this.isFormSending = false;
@@ -153,6 +135,41 @@
                         this.isFormSending = false;
                         this.serverError = getErrorText(error);
                     });
+            },
+            generateBatchTx() {
+                const privateKey = this.$store.getters.privateKey;
+                const txCount = this.formTxCount;
+                const txParams = {
+                    ...this.form,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    type: TX_TYPE.DELEGATE,
+                    data: {
+                        ...this.form.data,
+                        coin: 0,
+                    },
+                    gasPrice: this.form.gasPrice || undefined,
+                    gasCoin: 0,
+                };
+                const nonce = txParams.nonce;
+
+                // ensure nonce
+                const privateKeyBuffer = toBuffer(privateKey);
+                const address = privateToAddressString(privateKeyBuffer);
+
+                const noncePromise = nonce ? Promise.resolve(nonce) : getNonce(address);
+                return noncePromise.then((nonce) => {
+                    let result = [];
+                    for(let i = 1; i <= txCount; i++) {
+                        const signedTx = prepareSignedTx({
+                            ...txParams,
+                            nonce,
+                        }, {privateKey}).serialize().toString('hex');
+                        result.push(signedTx);
+                        nonce++;
+                    }
+
+                    return [result, nonce];
+                });
             },
             clearForm() {
                 this.form.data.publicKey = '';
@@ -182,30 +199,6 @@
             getExplorerTxUrl,
         },
     };
-
-    function generateBatchTx(txParams, privateKey, txCount) {
-        const nonce = txParams.nonce;
-
-        // ensure nonce
-        const privateKeyBuffer = typeof privateKey === 'string' ? Buffer.from(privateKey, 'hex') : privateKey;
-        const address = privateToAddressString(privateKeyBuffer);
-
-        const noncePromise = nonce ? Promise.resolve(nonce) : getNonce(address);
-        return noncePromise.then((nonce) => {
-            let result = [];
-            for(let i = 1; i <= txCount; i++) {
-                const signedTx = prepareSignedTx({
-                    ...txParams,
-                    nonce,
-                }, {privateKey}).serialize().toString('hex');
-                result.push(signedTx);
-                nonce++;
-            }
-
-            return [result, nonce];
-        });
-
-    }
 </script>
 
 <template>
