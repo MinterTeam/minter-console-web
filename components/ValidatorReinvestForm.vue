@@ -2,7 +2,6 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minValue from 'vuelidate/lib/validators/minValue';
-    import DelegateTxParams from "minter-js-sdk/src/tx-params/stake-delegate";
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {privateToAddressString} from 'minterjs-util';
@@ -43,8 +42,10 @@
                 formTxCount: '',
                 form: {
                     nonce: '',
-                    publicKey: '',
-                    stake: null,
+                    data: {
+                        publicKey: '',
+                        stake: null,
+                    },
                     gasPrice: '',
                 },
                 signedTxList: null,
@@ -58,12 +59,14 @@
                 required,
             };
             const form = {
-                publicKey: {
-                    required,
-                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
-                },
-                stake: {
-                    required,
+                data: {
+                    publicKey: {
+                        required,
+                        validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
+                    },
+                    stake: {
+                        required,
+                    },
                 },
                 gasPrice: {
                     minValue: minValue(1),
@@ -104,13 +107,16 @@
                 generateBatchTx({
                     chainId: this.$store.getters.CHAIN_ID,
                     ...this.form,
+                    data: {
+                        ...this.form.data,
+                        coin: this.$store.getters.COIN_NAME,
+                    },
                     gasPrice: this.form.gasPrice || undefined,
-                    coinSymbol: this.$store.getters.COIN_NAME,
                     feeCoinSymbol: this.$store.getters.COIN_NAME,
                 }, this.$store.getters.privateKey, this.formTxCount)
                     .then(([signedTxList, nonce]) => {
                         this.signedTxList = signedTxList.join('\n');
-                        this.setDownload(this.signedTxList, `${this.form.publicKey}-${nonce}-${nonce + this.formTxCount}`);
+                        this.setDownload(this.signedTxList, `${this.form.data.publicKey}-${nonce}-${nonce + this.formTxCount}`);
                         this.clearForm();
                     });
             },
@@ -130,8 +136,11 @@
                     .then(() => generateBatchTx({
                         chainId: this.$store.getters.CHAIN_ID,
                         ...this.form,
+                        data: {
+                            ...this.form.data,
+                            coin: this.$store.getters.COIN_NAME,
+                        },
                         gasPrice: this.form.gasPrice || undefined,
-                        coinSymbol: this.$store.getters.COIN_NAME,
                         feeCoinSymbol: this.$store.getters.COIN_NAME,
                     }, this.$store.getters.privateKey, this.formTxCount))
                     .then(([signedTxList]) => postAutoDelegationTxList(signedTxList))
@@ -146,8 +155,8 @@
                     });
             },
             clearForm() {
-                this.form.publicKey = '';
-                this.form.stake = null;
+                this.form.data.publicKey = '';
+                this.form.data.stake = null;
                 this.form.gasPrice = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
                     this.form.nonce += this.formTxCount;
@@ -185,10 +194,10 @@
         return noncePromise.then((nonce) => {
             let result = [];
             for(let i = 1; i <= txCount; i++) {
-                const signedTx = prepareSignedTx(new DelegateTxParams({
+                const signedTx = prepareSignedTx({
                     ...txParams,
                     nonce,
-                }), {privateKey}).serialize().toString('hex');
+                }, {privateKey}).serialize().toString('hex');
                 result.push(signedTx);
                 nonce++;
             }
@@ -204,8 +213,8 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                    v-model.trim="form.publicKey"
-                    :$value="$v.form.publicKey"
+                    v-model.trim="form.data.publicKey"
+                    :$value="$v.form.data.publicKey"
                     valueType="publicKey"
                     :label="$td('Public key or domain', 'form.masternode-public')"
                     @update:domain="domain = $event"
@@ -213,14 +222,14 @@
                 />
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.stake.$error}">
+                <label class="form-field" :class="{'is-error': $v.form.data.stake.$error}">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                           v-model="form.stake"
-                           @blur="$v.form.stake.$touch()"
+                           v-model="form.data.stake"
+                           @blur="$v.form.data.stake.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.data.stake.$dirty && !$v.form.data.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.formTxCount.$error}">

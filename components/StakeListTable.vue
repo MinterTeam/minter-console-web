@@ -116,7 +116,7 @@
             prettyPrecise,
             getGroupCoinList(stakeGroup) {
                 // keep unique coins
-                return stakeGroup.stakeList.map((item) => item.coin).filter(function(item, index, self) {
+                return stakeGroup.stakeList.map((item) => item.coin.symbol).filter(function(item, index, self) {
                     return self.indexOf(item) === index;
                 });
             },
@@ -146,7 +146,7 @@
             },
             getLabel(stakeItem) {
                 if (this.stakeItemType === 'validator') {
-                    return stakeItem.pubKey.toString();
+                    return stakeItem.validator.publicKey.toString();
                 }
                 if (this.stakeItemType === 'delegator') {
                     return stakeItem.address.toString();
@@ -154,7 +154,7 @@
             },
             getUrl(stakeItem) {
                 if (this.stakeItemType === 'validator') {
-                    return getExplorerValidatorUrl(stakeItem.pubKey);
+                    return getExplorerValidatorUrl(stakeItem.validator.publicKey);
                 }
                 if (this.stakeItemType === 'delegator') {
                     return getExplorerAddressUrl(stakeItem.address);
@@ -230,7 +230,7 @@
      * Default ascending: A -> B
      */
     function coinSortFn(a, b) {
-        return ('' + a.coin).localeCompare(b.coin);
+        return ('' + a.coin.symbol).localeCompare(b.coin.symbol);
     }
 
     /**
@@ -342,7 +342,7 @@
                         <span v-if="isGroupCanExpand(stakeGroup)" class="u-text-normal" :class="{'u-visually-hidden': expandedList[stakeGroup.hash]}">
                             {{ getGroupCoinListLabel(stakeGroup) }}
                         </span>
-                        <span v-else>{{ stakeGroup.stakeList[0].coin }}</span>
+                        <span v-else>{{ stakeGroup.stakeList[0].coin.symbol }}</span>
                     </td>
                     <!-- amount total -->
                     <td class="table__cell-stake-amount u-hidden-medium-down">
@@ -351,7 +351,7 @@
                         </span>
                         <template v-else>
                             <span :title="$options.prettyPrecise(stakeGroup.stakeList[0].value)">{{ $options.pretty(stakeGroup.stakeList[0].value) }}</span>
-                            <div class="u-text-muted" :title="$options.prettyPrecise(stakeGroup.stakeList[0].bipValue)" v-if="stakeGroup.stakeList[0].coin !== $store.getters.COIN_NAME">
+                            <div class="u-text-muted" :title="$options.prettyPrecise(stakeGroup.stakeList[0].bipValue)" v-if="stakeGroup.stakeList[0].coin.symbol !== $store.getters.COIN_NAME">
                                 {{ $store.getters.COIN_NAME }} {{ $options.pretty(stakeGroup.stakeList[0].bipValue) }}
                             </div>
                         </template>
@@ -364,7 +364,7 @@
                             <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Delegate to validator">
                         </button>
                         <button class="table__controls-button u-semantic-button link--opacity"
-                                @click="activateUnbond({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin})"
+                                @click="activateUnbond({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
                                 v-if="!isGroupCanExpand(stakeGroup)"
                         >
                             <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
@@ -391,30 +391,30 @@
                                 {{ $options.pretty(getGroupBipValue(stakeGroup)) }}
                             </div>
                         </div>
-                        <div v-else>{{ stakeGroup.stakeList[0].coin }} {{ $options.pretty(stakeGroup.stakeList[0].value) }}</div>
+                        <div v-else>{{ stakeGroup.stakeList[0].coin.symbol }} {{ $options.pretty(stakeGroup.stakeList[0].value) }}</div>
                     </td>
                 </tr>
                 <template v-if="isGroupCanExpand(stakeGroup) && expandedList[stakeGroup.hash]">
-                    <tr v-for="stakeItem in stakeGroup.stakeList" :key="stakeGroup.hash + stakeItem.coin" class="is-expanded">
+                    <tr v-for="stakeItem in stakeGroup.stakeList" :key="stakeGroup.hash + stakeItem.coin.id" class="is-expanded">
                         <!-- copy -->
                         <td class="table__controls-cell table__controls-cell--copy"></td>
                         <!-- hash -->
                         <td class="u-hidden-medium-down"></td>
                         <!-- coin -->
-                        <td class="u-hidden-medium-down">{{ stakeItem.coin }}</td>
+                        <td class="u-hidden-medium-down">{{ stakeItem.coin.symbol }}</td>
                         <!-- amount -->
                         <td class="table__cell-stake-amount">
-                            <span class="u-hidden-medium-up">{{ stakeItem.coin }}</span>
+                            <span class="u-hidden-medium-up">{{ stakeItem.coin.symbol }}</span>
 
                             <span :title="$options.prettyPrecise(stakeItem.value)">{{ $options.pretty(stakeItem.value) }}</span>
-                            <div class="u-text-muted" :title="$options.prettyPrecise(stakeItem.bipValue)" v-if="stakeItem.coin !== $store.getters.COIN_NAME">
+                            <div class="u-text-muted" :title="$options.prettyPrecise(stakeItem.bipValue)" v-if="stakeItem.coin.symbol !== $store.getters.COIN_NAME">
                                 {{ $store.getters.COIN_NAME }} {{ $options.pretty(stakeItem.bipValue) }}
                             </div>
                         </td>
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
                             <button class="table__controls-button u-semantic-button link--opacity"
-                                    @click="activateUnbond({hash: stakeGroup.hash, coin: stakeItem.coin})"
+                                    @click="activateUnbond({hash: stakeGroup.hash, coin: stakeItem.coin.symbol})"
                             >
                                 <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
                             </button>

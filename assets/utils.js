@@ -91,7 +91,7 @@ export function getExplorerValidatorUrl(pubKey) {
 /**
  * @param {string|number} value
  * @param {ROUNDING_MODE} [roundingMode]
- * @param {boolean} skipFalsy
+ * @param {boolean} [skipFalsy]
  * @return {string}
  */
 export function pretty(value, roundingMode, skipFalsy) {

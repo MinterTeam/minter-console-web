@@ -22,12 +22,15 @@
                 form: {
                     publicKey: '',
                     ownerAddress: this.$store.getters.address,
-                    rewardAddress: this.$store.getters.address,
+                    rewardAddress: '',
+                    controlAddress: '',
                 },
                 rewardAddressDomain: '',
                 isRewardAddressDomainResolving: false,
                 ownerAddressDomain: '',
                 isOwnerAddressDomainResolving: false,
+                controlAddressDomain: '',
+                isControlAddressDomainResolving: false,
                 publicKeyDomain: '',
                 isPublicKeyDomainResolving: false,
             };
@@ -46,6 +49,10 @@
                     required,
                     validAddress: this.isOwnerAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
+                controlAddress: {
+                    required,
+                    validAddress: this.isControlAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
+                },
             };
 
             return {form};
@@ -57,8 +64,9 @@
         methods: {
             clearForm() {
                 this.form.publicKey = '';
-                this.form.rewardAddress = this.$store.getters.address;
                 this.form.ownerAddress = this.$store.getters.address;
+                this.form.rewardAddress = '';
+                this.form.controlAddress = '';
                 this.$v.$reset();
             },
         },
@@ -89,17 +97,6 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                        v-model.trim="form.rewardAddress"
-                        :$value="$v.form.rewardAddress"
-                        valueType="address"
-                        :label="$td('Reward Address or Domain', 'form.masternode-reward-address')"
-                        :help="$td('Address where the reward will be accrued', 'form.masternode-reward-address-help')"
-                        @update:domain="rewardAddressDomain = $event"
-                        @update:resolving="isRewardAddressDomainResolving = $event"
-                />
-            </div>
-            <div class="u-cell u-cell--xlarge--1-2">
-                <FieldDomain
                         v-model.trim="form.ownerAddress"
                         :$value="$v.form.ownerAddress"
                         valueType="address"
@@ -109,6 +106,29 @@
                         @update:resolving="isOwnerAddressDomainResolving = $event"
                 />
             </div>
+            <div class="u-cell u-cell--xlarge--1-2">
+                <FieldDomain
+                    v-model.trim="form.rewardAddress"
+                    :$value="$v.form.rewardAddress"
+                    valueType="address"
+                    :label="$td('Reward Address or Domain', 'form.masternode-reward-address')"
+                    :help="$td('Address where the reward will be accrued', 'form.masternode-reward-address-help')"
+                    @update:domain="rewardAddressDomain = $event"
+                    @update:resolving="isRewardAddressDomainResolving = $event"
+                />
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2">
+                <FieldDomain
+                    v-model.trim="form.controlAddress"
+                    :$value="$v.form.controlAddress"
+                    valueType="address"
+                    :label="$td('Control Address or Domain', 'form.masternode-control-address')"
+                    :help="$td('Address able to set candidate on/off ', 'form.masternode-control-address-help')"
+                    @update:domain="controlAddressDomain = $event"
+                    @update:resolving="isControlAddressDomainResolving = $event"
+                />
+            </div>
+            <div class="u-cell u-cell--xlarge--1-2 u-hidden-xlarge-down"></div>
         </template>
 
         <template v-slot:submit-title>

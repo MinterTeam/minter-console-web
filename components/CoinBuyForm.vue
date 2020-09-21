@@ -41,12 +41,10 @@
                 coinFrom: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
                 coinTo: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             };
 

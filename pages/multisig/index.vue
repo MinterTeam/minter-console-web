@@ -1,10 +1,12 @@
 <script>
     import getTitle from '~/assets/get-title';
     import MultisigCreateForm from '~/components/MultisigCreateForm.vue';
+    import MultisigEditForm from '~/components/MultisigEditForm.vue';
 
     export default {
         components: {
             MultisigCreateForm,
+            MultisigEditForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Multisig address', 'common.page-multisig'));
@@ -31,5 +33,7 @@
 <template>
     <section class="u-section u-container">
         <MultisigCreateForm/>
+
+        <MultisigEditForm/>
     </section>
 </template>

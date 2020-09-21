@@ -7,9 +7,6 @@
         components: {
             Loader,
         },
-        filters: {
-            pretty,
-        },
         props: {
             isLoading: {
                 type: Boolean,
@@ -23,13 +20,14 @@
         },
         computed: {
             hasCustomCoins() {
-                return this.$store.state.balance.filter((coinItem) => coinItem.coin !== this.$store.getters.COIN_NAME).length;
+                return this.$store.state.balance.filter((coinItem) => coinItem.coin.symbol !== this.$store.getters.COIN_NAME).length;
             },
             coinList() {
                 return this.isFullListActive ? this.$store.state.balance : this.$store.state.balance.slice(0, 5);
             },
         },
         methods: {
+            pretty,
             getCoinIconUrl,
         },
     };
@@ -46,16 +44,16 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr class="u-text-nowrap" :key="coinItem.coin" v-for="coinItem in coinList">
+                <tr class="u-text-nowrap" :key="coinItem.coin.id" v-for="coinItem in coinList">
                     <!-- name -->
                     <!-- @TODO coin.name -->
                     <td>
-                        <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin)" width="28" height="28" alt="" role="presentation">
-                        <span class="wallet__coin-name">{{ coinItem.coin }}</span>
+                        <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin.symbol)" width="28" height="28" alt="" role="presentation">
+                        <span class="wallet__coin-name">{{ coinItem.coin.symbol }}</span>
                     </td>
                     <!-- balance -->
                     <td>
-                        {{ coinItem.amount | pretty }}
+                        {{ pretty(coinItem.amount) }}
                     </td>
                 </tr>
                 </tbody>

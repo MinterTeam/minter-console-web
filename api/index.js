@@ -137,13 +137,13 @@ export function getBalance(addressHash) {
 export function prepareBalance(balanceList) {
     return balanceList.sort((a, b) => {
             // set base coin first
-            if (a.coin === COIN_NAME) {
+            if (a.coin.symbol === COIN_NAME) {
                 return -1;
-            } else if (b.coin === COIN_NAME) {
+            } else if (b.coin.symbol === COIN_NAME) {
                 return 1;
             } else {
                 // sort coins by name, instead of reserve
-                return a.coin.localeCompare(b.coin);
+                return a.coin.symbol.localeCompare(b.coin);
             }
         })
         .map((coinItem) => {
@@ -193,7 +193,7 @@ export function getAddressStakeList(address) {
 
 /**
  * @typedef {Object} StakeItem
- * @property {string} [pubKey]
+ * @property {string} [publicKey]
  * @property {ValidatorMeta} [validatorMeta]
  * @property {string} [address]
  * @property {string|number} value
@@ -350,7 +350,7 @@ function markSecured(address) {
  * @property {string} hash
  * @property {string} status
  * @property {number} nonce
- * @property {number} block
+ * @property {number} height
  * @property {string} from
  * @property {string} timestamp
  * @property {string} gasCoin

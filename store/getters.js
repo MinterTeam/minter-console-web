@@ -30,7 +30,7 @@ export default {
     wallet(state, getters) {
         if (getters.isUserAdvanced) {
             return walletFromMnemonic(state.auth.advanced);
-        } else if (getters.isUserWithProfile && state.user.mainAddress && state.user.mainAddress.encrypted) {
+        } else if (getters.isUserWithProfile && state.user.mainAddress?.encrypted) {
             const profileMnemonic = decryptMnemonic(state.user.mainAddress.encrypted, state.auth.password);
             return walletFromMnemonic(profileMnemonic);
         }
@@ -40,7 +40,7 @@ export default {
         if (getters.isUserAdvanced) {
             return getters.wallet.getAddressString();
         } else {
-            return state.user.mainAddress ? state.user.mainAddress.address : '';
+            return state.user.mainAddress?.address;
         }
     },
     addressUrl(state, getters) {
@@ -79,7 +79,7 @@ export default {
     },
     baseCoin(state) {
         return state.balance.find((coinItem) => {
-            return coinItem.coin === COIN_NAME;
+            return coinItem.coin.symbol === COIN_NAME;
         });
     },
     isOfflineMode(state, getters) {

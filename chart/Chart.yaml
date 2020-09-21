@@ -1,0 +1,16 @@
+version: 1.0.0
+apiVersion: v2
+name: console-web
+icon: https://explorer.minter.network/img/minter-logo-circle.svg
+description: A Helm chart for Minter Console Web
+
+appVersion: v1.0.0
+
+home: https://github.com/MinterTeam/minter-console-web
+keywords:
+  - minter
+  - console
+maintainers:
+  - name: shrpne
+    email: shrpne@gmail.com
+

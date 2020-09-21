@@ -52,7 +52,6 @@
                 coinSymbol: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             };
 
