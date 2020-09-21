@@ -105,8 +105,7 @@
                     @update:resolving="isDomainResolving = $event"
                 />
             </div>
-
-        </template>
+</template>
 
         <template v-slot:submit-title>
             {{ $td('Edit owner', 'form.coiner-edit-coin-owner-button') }}
