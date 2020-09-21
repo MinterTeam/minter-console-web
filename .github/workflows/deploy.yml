@@ -19,7 +19,7 @@ jobs:
         env:
           USERNAME: ${{ secrets.DOCKER_HUB_USER }}
           PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          IMAGE_NAME: "minterteam/explorer-web"
+          IMAGE_NAME: "minterteam/console-web"
           LATEST: "true"
           TAG_NAME: ${{ github.sha }}
           DOCKERFILE: ".docker/Dockerfile"
