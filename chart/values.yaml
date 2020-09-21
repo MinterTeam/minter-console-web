@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: minterteam/explorer-console
+  repository: minterteam/console-web
   pullPolicy: Always
   tag: latest
 
