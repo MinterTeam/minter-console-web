@@ -2,6 +2,7 @@
     import {shortHashFilter} from "~/assets/utils";
     import {support} from '~/assets/utils-support.js';
     import {NETWORK, TESTNET} from '~/assets/variables';
+    import TestnetNotice from '~/components/common/TestnetNotice.vue';
     import Snackbar from '~/components/common/Snackbar';
     import ConnectionNotice from '~/components/ConnectionNotice.vue';
     import Language from '~/layouts/_language';
@@ -9,6 +10,7 @@
 
     export default {
         components: {
+            TestnetNotice,
             Snackbar,
             ConnectionNotice,
             Language,
@@ -70,6 +72,8 @@
 
 <template>
     <div class="main-wrap">
+        <TestnetNotice/>
+
         <header class="header">
             <div class="header__container u-container u-container--large">
                 <nuxt-link class="header__logo no-link" :to="$i18nGetPreferredPath('index')">
