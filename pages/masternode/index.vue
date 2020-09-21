@@ -2,13 +2,19 @@
     import getTitle from '~/assets/get-title';
     import ValidatorDeclareCandidacyForm from '~/components/ValidatorDeclareCandidacyForm';
     import ValidatorEditCandidateForm from '~/components/ValidatorEditCandidateForm';
+    import ValidatorEditCandidatePublicKeyForm from '~/components/ValidatorEditCandidatePublicKeyForm.vue';
     import ValidatorSetCandidateOnOffForm from '~/components/ValidatorSetCandidateOnOffForm';
+    import ValidatorSetHaltBlockForm from '~/components/ValidatorSetHaltBlockForm.vue';
+    import ValidatorPriceVoteForm from '~/components/ValidatorPriceVoteForm.vue';
 
     export default {
         components: {
             ValidatorDeclareCandidacyForm,
             ValidatorEditCandidateForm,
+            ValidatorEditCandidatePublicKeyForm,
             ValidatorSetCandidateOnOffForm,
+            ValidatorSetHaltBlockForm,
+            ValidatorPriceVoteForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Masternode', 'common.page-masternode'));
@@ -41,5 +47,11 @@
         <ValidatorSetCandidateOnOffForm form-type="off"/>
 
         <ValidatorEditCandidateForm/>
+
+        <ValidatorEditCandidatePublicKeyForm/>
+
+        <ValidatorSetHaltBlockForm/>
+
+        <ValidatorPriceVoteForm/>
     </section>
 </template>

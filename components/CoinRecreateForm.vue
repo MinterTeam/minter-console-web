@@ -181,13 +181,13 @@
 </script>
 
 <template>
-    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_COIN" @clear-form="clearForm()">
+    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.RECREATE_COIN" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Create coin', 'coiner.create-title') }}
+                {{ $td('Recreate coin', 'coiner.recreate-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Create your own coin from scratch. It is completely up to you to decide what role it will play&nbsp;— that of a currency, a security, a utility token, a right, a vote, or something else.', 'coiner.create-description') }}
+                {{ $td('', 'coiner.recreate-description') }}
             </p>
         </template>
 
@@ -285,77 +285,24 @@
                         >
                         <span class="form-field__label">{{ $td('Initial Price', 'form.coiner-create-price') }}</span>
                     </label>
-<!--                    <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && $v.form.initialAmount.$dirty && $v.form.initialReserve.$dirty && !$v.coinPrice.minValue">{{ $td(`Min price is ${$options.MIN_PRICE}`, 'form.coiner-create-price-error-min', {min: $options.MIN_PRICE}) }}</span>-->
                 </div>
             </div>
             <br>
-
-            <!--@see https://github.com/MinterTeam/minter-go-node/blob/master/core/transaction/create_coin.go#L93-->
-            <template v-if="$i18n.locale === 'en'">
-                <!--
-                                <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
-                -->
-                <p><span class="u-emoji">⚠️</span> Warning! Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
-                <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
-                <p>Ticker Symbol Fees:</p>
-                <p>
-                    3 letters — {{ $store.getters.COIN_NAME }} 1 000 000<br>
-                    4 letters — {{ $store.getters.COIN_NAME }} 100 000<br>
-                    5 letters — {{ $store.getters.COIN_NAME }} 10 000<br>
-                    6 letters — {{ $store.getters.COIN_NAME }} 1 000<br>
-                    7-10 letters — {{ $store.getters.COIN_NAME }} 100<br>
-                </p>
-            </template>
-            <template v-if="$i18n.locale === 'ru'">
-                <!--
-                                <p>Внимание: монета будет удалена, если ее резерв меньше {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }} ИЛИ её цена ниже {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }} ИЛИ её объем выпуска меньше {{ $options.MIN_SUPPLY }}</p>
-                -->
-                <p><span class="u-emoji">⚠️</span> Внимание! Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
-                <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
-                <p class="u-text-muted">Комиссии на длину тикера:</p>
-                <p class="u-text-muted">
-                    3 буквы — {{ $store.getters.COIN_NAME }} 1 000 000<br>
-                    4 буквы — {{ $store.getters.COIN_NAME }} 100 000<br>
-                    5 букв — {{ $store.getters.COIN_NAME }} 10 000<br>
-                    6 букв — {{ $store.getters.COIN_NAME }} 1 000<br>
-                    7-10 букв — {{ $store.getters.COIN_NAME }} 100<br>
-                </p>
-            </template>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Create', 'form.coiner-create-button') }}
+            {{ $td('Recreate', 'form.coiner-recreate-button') }}
         </template>
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Create Coin', 'coiner.create-title') }}
+                {{ $td('Recreate coin', 'coiner.recreate-title') }}
             </h1>
         </template>
 
         <template v-slot:confirm-modal-body>
             <div class="u-grid u-grid--small u-grid--vertical-margin">
-                <!--
-                                        <div class="u-cell u-text-left" v-if="sellToLiquidateBySupplyPercent <= 30 || sellToLiquidateBySupply <= 1">
-                                            <p><strong>{{ $td('Warning', 'form.coiner-create-confirm-warning') }}</strong></p>
-                                            <p v-if="$i18n.locale === 'en'">
-                                                Selling <strong class="u-display-ib">{{ sellToLiquidateBySupplyPercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateBySupply | prettyCeil }})</strong> of initial supply will lead to <strong class="u-display-ib">coin liquidation</strong> by low supply. Do&nbsp;you want to&nbsp;continue?
-                                            </p>
-                                            <p v-if="$i18n.locale === 'ru'">
-                                                Продажа <strong class="u-display-ib">{{ sellToLiquidateBySupplyPercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateBySupply | prettyCeil }})</strong> от начальной эмиссии приведет к <strong class="u-display-ib">ликвидации монеты</strong> по причине низкой эмиссии. Вы&nbsp;уверены, что хотите&nbsp;продолжить?
-                                            </p>
-                                        </div>
-                                        <div class="u-cell u-text-left" v-else-if="sellToLiquidateByReservePercent <= 30">
-                                            <p><strong>{{ $td('Warning', 'form.coiner-create-confirm-warning') }}</strong></p>
-                                            <p v-if="$i18n.locale === 'en'">
-                                                Selling <strong class="u-display-ib">{{ sellToLiquidateByReservePercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateByReserve | prettyCeil }})</strong> of initial supply will lead to <strong class="u-display-ib">coin liquidation</strong> by low reserve. Do&nbsp;you want to&nbsp;continue?
-                                            </p>
-                                            <p v-if="$i18n.locale === 'ru'">
-                                                Продажа <strong class="u-display-ib">{{ sellToLiquidateByReservePercent | prettyCeil }}% ({{ form.symbol }} {{ sellToLiquidateByReserve | prettyCeil }})</strong> от начальной эмиссии приведет к <strong class="u-display-ib">ликвидации монеты</strong> по причине низкого резерва. Вы&nbsp;уверены, что хотите&nbsp;продолжить?
-                                            </p>
-                                        </div>
-                -->
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly tabindex="-1"
@@ -380,18 +327,6 @@
                         <span class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</span>
                     </label>
                 </div>
-            </div>
-        </template>
-
-        <template v-slot:confirm-modal-footer>
-            <div class="u-text-left">
-                <strong>{{ $td('Warning!', 'form.coiner-create-confirm-warning') }}</strong>
-                <p v-if="$i18n.locale === 'en'">
-                    Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
-                </p>
-                <p v-if="$i18n.locale === 'ru'">
-                    Ликвидация монеты будет невозможна. <br> Нельзя продать монету, если это понизит её резерв ниже <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
-                </p>
             </div>
         </template>
     </TxForm>

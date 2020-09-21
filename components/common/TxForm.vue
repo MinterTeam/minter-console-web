@@ -94,7 +94,6 @@
             const form = {
                 gasCoin: {
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
                 payload: {
                     maxLength: maxLength(1024),

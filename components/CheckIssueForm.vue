@@ -70,14 +70,12 @@
                 coinSymbol: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
                 password: {
                     required,
                 },
                 gasCoin: {
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             },
         },

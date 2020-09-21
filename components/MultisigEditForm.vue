@@ -11,11 +11,9 @@
     import {isValidAddress} from "minterjs-util";
     import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';
-    import {getErrorText} from "~/assets/server-error";
     import {prettyRound, getExplorerTxUrl} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
     import FieldDomain from '~/components/common/FieldDomain';
-    import ButtonCopy from '~/components/common/ButtonCopy.vue';
 
     const MULTISIG_WEIGHT_MIN = 0;
     const MULTISIG_WEIGHT_MAX = 1023;
@@ -28,7 +26,6 @@
         components: {
             TxForm,
             FieldDomain,
-            ButtonCopy,
         },
         directives: {
             autosize,
@@ -147,7 +144,7 @@
     <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_MULTISIG" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Create multisig address', 'multisig.create-title') }}
+                {{ $td('Edit multisig', 'multisig.edit-title') }}
             </h1>
         </template>
 
@@ -226,13 +223,13 @@
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Create multisig', 'form.multisig-create-submit') }}
+            {{ $td('Edit multisig', 'form.multisig-edit-submit') }}
         </template>
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Create multisig address', 'multisig.create-title') }}
+                {{ $td('Edit multisig address', 'multisig.edit-title') }}
             </h1>
         </template>
 
@@ -241,31 +238,6 @@
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Multisig address created', 'multisig.success-title') }}
             </h1>
-        </template>
-
-        <template v-slot:success-modal-body v-if="successTx">
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
-                <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                                <textarea
-                                        class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
-                                        v-autosize
-                                        :value="`Mx${successTx.tags['tx.created_multisig']}`"
-                                ></textarea>
-                        <span class="form-field__label">{{ $td('Your multisig address', 'multisig.success-address') }}</span>
-                    </label>
-                </div>
-            </div>
-        </template>
-
-        <template v-slot:success-modal-button v-if="successTx">
-            <ButtonCopy class="button button--main button--full" :copy-text="successTx.tags['tx.created_multisig']">
-                <img class="button__icon" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
-                {{ $td('Copy', 'common.copy') }}
-            </ButtonCopy>
-            <a class="button button--ghost-main button--full" :href="getExplorerTxUrl(successTx.hash)" target="_blank">
-                {{ $td('View transaction', 'form.success-view-button') }}
-            </a>
         </template>
 </TxForm>
 </template>
