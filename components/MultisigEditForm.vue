@@ -141,7 +141,7 @@
 </script>
 
 <template>
-    <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_MULTISIG" @clear-form="clearForm()" @success-tx="successTx = $event">
+    <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_MULTISIG" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Edit multisig', 'multisig.edit-title') }}
