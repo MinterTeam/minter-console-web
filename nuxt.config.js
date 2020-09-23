@@ -13,7 +13,7 @@ import {BASE_TITLE, BASE_DESCRIPTION, APP_BASE_URL, I18N_ROUTE_NAME_SEPARATOR, L
 
 const NUXT_LOADING_INLINE_SCRIPT_SHA = [
         // loader (minified)
-        'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=',
+        'yX/iyX7D+2AX+qF0YUk4EXLqu5fIbl/NS5QXjj9BX4M=',
         // loader (not minified)
         '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
         // module (minified)
