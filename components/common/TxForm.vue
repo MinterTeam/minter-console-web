@@ -60,6 +60,10 @@
                 type: [Function, null],
                 default: null,
             },
+            alwaysAdvanced: {
+                type: Boolean,
+                default: false,
+            },
         },
         data() {
             return {
@@ -142,7 +146,10 @@
                 return this.txType !== TX_TYPE.REDEEM_CHECK && this.txType !== TX_TYPE.SELL_ALL;
             },
             showAdvanced() {
-                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
+                return this.alwaysAdvanced || this.isModeAdvanced || this.$store.getters.isOfflineMode;
+            },
+            showSwitcherAdvanced() {
+                return this.alwaysAdvanced || this.$store.getters.isOfflineMode;
             },
             feeBusParams() {
                 let selectedCoinSymbol = this.txData.value;
@@ -480,7 +487,7 @@
 
 
                 <!-- Controls -->
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!showSwitcherAdvanced">
                     <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced" data-test-id="walletTxFormHideAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
@@ -488,7 +495,7 @@
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="$store.getters.isOfflineMode"><!--placeholder--></div>
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="showSwitcherAdvanced"><!--placeholder--></div>
                 <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2">
                     <button
                             class="button button--ghost-main button--full"

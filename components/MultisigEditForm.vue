@@ -141,7 +141,7 @@
 </script>
 
 <template>
-    <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_MULTISIG" @clear-form="clearForm()" @success-tx="successTx = $event">
+    <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_MULTISIG" :alwaysAdvanced="true" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Edit multisig', 'multisig.edit-title') }}
@@ -230,13 +230,6 @@
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Edit multisig address', 'multisig.edit-title') }}
-            </h1>
-        </template>
-
-        <template v-slot:success-modal-header>
-            <h1 class="panel__header-title">
-                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Multisig address created', 'multisig.success-title') }}
             </h1>
         </template>
 </TxForm>

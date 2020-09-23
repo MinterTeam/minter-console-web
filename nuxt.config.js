@@ -11,14 +11,15 @@ import langEn from './lang/en';
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, APP_BASE_URL, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
-const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production'
-    ? [
+const NUXT_LOADING_INLINE_SCRIPT_SHA = [
+        // loader (minified)
         'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=',
-        'G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=',
-    ]
-    : [
+        // loader (not minified)
         '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
-        'G5gTuBIY0B0A928ho6zDtB8xjEJUVQzb8RILYuCebLE=',
+        // module (minified)
+        'neJJRT9ngKMnTX+uFtBNIwqppbcLV8fQlLvXZM64z04=',
+        // window.___NUXT___
+        'R59bp/dPfAyMYicBFE0YOoSN8jtdBogwonKzttkEnm0=',
     ];
 
 
@@ -63,6 +64,7 @@ const scriptCSP = NUXT_LOADING_INLINE_SCRIPT_SHA.map((item) => {
 }).join(' ');
 
 export default {
+    ssr: false,
     /*
     ** Headers of the page
     */
@@ -99,7 +101,7 @@ export default {
     */
     loading: { color: '#cf5c2c' },
     router: {
-        base: process.env.APP_BASE_URL || '/',
+        base: process.env.APP_BASE_URL || undefined,
         linkActiveClass: '',
         linkExactActiveClass: 'is-active',
         middleware: [
