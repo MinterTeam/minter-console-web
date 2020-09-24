@@ -113,6 +113,9 @@
                     return Number(prev) < Number(current) ? Number(prev) : Number(current);
                 }) || 0;
             },
+            createdMultisig() {
+                return this.successTx ? `Mx${this.successTx.tags['tx.created_multisig']}` : '';
+            },
         },
         methods: {
             getExplorerTxUrl,
@@ -250,7 +253,7 @@
                                 <textarea
                                         class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
                                         v-autosize
-                                        :value="`Mx${successTx.tags['tx.created_multisig']}`"
+                                        :value="createdMultisig"
                                 ></textarea>
                         <span class="form-field__label">{{ $td('Your multisig address', 'multisig.success-address') }}</span>
                     </label>
@@ -259,7 +262,7 @@
         </template>
 
         <template v-slot:success-modal-button v-if="successTx">
-            <ButtonCopy class="button button--main button--full" :copy-text="successTx.tags['tx.created_multisig']">
+            <ButtonCopy class="button button--main button--full" :copy-text="createdMultisig">
                 <img class="button__icon" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
                 {{ $td('Copy', 'common.copy') }}
             </ButtonCopy>
