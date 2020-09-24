@@ -49,7 +49,7 @@
     "js-cookie": "^2.2.1",
     "lodash-es": "^4.17.15",
     "minter-js-org": "^0.3.3",
-    "minter-js-sdk": "^0.34.1",
+    "minter-js-sdk": "^0.34.3",
     "minterjs-tx": "^9.0.1",
     "minterjs-util": "^0.18.1",
     "minterjs-wallet": "^6.0.0",
