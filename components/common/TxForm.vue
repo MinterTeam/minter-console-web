@@ -368,7 +368,7 @@
                 this.form.gasCoin = '';
                 this.form.payload = '';
                 this.form.multisigAddress = '';
-                this.form.signatureList = null;
+                this.form.signatureList = ['', ''];
                 this.formAdvanced.gasCoin = '';
                 this.formAdvanced.payload = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
