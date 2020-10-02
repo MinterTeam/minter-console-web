@@ -53,14 +53,14 @@
                  }
 
                 const selectedCoin = this.addressBalance.find((coin) => {
-                    return coin.coin === this.selectedCoinSymbol;
+                    return coin.coin.symbol === this.selectedCoinSymbol;
                 });
                 // coin not selected
                 if (!selectedCoin) {
                     return undefined;
                 }
                 // fee not in selected coins
-                if (selectedCoin.coin !== this.fee?.coinSymbol) {
+                if (selectedCoin.coin.symbol !== this.fee?.coinSymbol) {
                     return selectedCoin.amount;
                 }
                 // fee in selected coin (handle non-number values)
