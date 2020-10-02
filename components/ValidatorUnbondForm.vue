@@ -68,7 +68,7 @@
                     return;
                 }
                 const selectedCoin = this.stakeList.find((coin) => {
-                    return coin.coin === this.form.coinSymbol;
+                    return coin.coin.symbol === this.form.coinSymbol;
                 });
                 // coin not selected
                 if (!selectedCoin) {
@@ -80,13 +80,13 @@
                 let validatorList = {};
                 const stakeList = this.isMultisigAddress ? [] : this.$store.state.stakeList;
                 stakeList.forEach((item) => {
-                    if (!validatorList[item.pubKey]) {
-                        validatorList[item.pubKey] = Object.assign({stakeList: []}, item);
-                        delete validatorList[item.pubKey].coin;
-                        delete validatorList[item.pubKey].value;
-                        delete validatorList[item.pubKey].bipValue;
+                    if (!validatorList[item.validator.publicKey]) {
+                        validatorList[item.validator.publicKey] = {
+                            ...item.validator,
+                            stakeList: [],
+                        };
                     }
-                    validatorList[item.pubKey].stakeList.push({
+                    validatorList[item.validator.publicKey].stakeList.push({
                         coin: item.coin,
                         value: item.value,
                     });
@@ -97,21 +97,21 @@
              * @return {Array<SuggestionValidatorListItem>|undefined}
              */
             suggestionValidatorList() {
-                return Object.values(this.validatorData).map((item) => {
+                return Object.values(this.validatorData).map((validatorItem) => {
                     let name = '';
-                    if (item.validatorMeta && item.validatorMeta.name) {
-                        name = item.validatorMeta.name;
+                    if (validatorItem.name) {
+                        name = validatorItem.name;
                     }
 
-                    const delegatedAmount = item.stakeList.reduce((accumulator, stakeItem) => {
-                        const stakeItemValue = stakeItem.coin + '&nbsp;' + pretty(stakeItem.value);
+                    const delegatedAmount = validatorItem.stakeList.reduce((accumulator, stakeItem) => {
+                        const stakeItemValue = stakeItem.coin.symbol + '&nbsp;' + pretty(stakeItem.value);
                         if (!accumulator) {
                             return stakeItemValue;
                         } else {
                             return accumulator + ', ' + stakeItemValue;
                         }
                     }, '');
-                    return {name, value: item.pubKey, delegatedAmount};
+                    return {name, value: validatorItem.publicKey, delegatedAmount};
                 });
             },
             stakeList() {
@@ -126,7 +126,7 @@
         watch: {
             'form.publicKey': function(newVal) {
                 if (this.stakeList.length === 1) {
-                    this.form.coinSymbol = this.stakeList[0].coin;
+                    this.form.coinSymbol = this.stakeList[0].coin.symbol;
                 }
             },
         },

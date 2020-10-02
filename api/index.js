@@ -193,12 +193,12 @@ export function getAddressStakeList(address) {
 
 /**
  * @typedef {Object} StakeItem
- * @property {string} [publicKey]
- * @property {ValidatorMeta} [validatorMeta]
+ * @property {Validator} [validator]
  * @property {string} [address]
  * @property {string|number} value
  * @property {string|number} bipValue
  * @property {string} coin
+ * @property {boolean} isWaitlisted
  */
 
 /**
@@ -216,22 +216,18 @@ export function getValidatorList() {
 
 /**
  * @typedef {Object} Validator
- * @property {string} [publicKey]
- * @property {ValidatorMeta} meta
- * @property {number} status
- * @property {string|number} stake
- * @property {string|number} part
- * @property {number} delegatorCount
- * @property {Array<{coin: string, value: string, address: string}>} delegatorList
- */
-
-/**
- * @typedef {Object} ValidatorMeta
+ * @property {string} publicKey
  * @property {string} name
  * @property {string} description
- * @property {string} icon_url
- * @property {string} site_url
+ * @property {string} iconUrl
+ * @property {string} siteUrl
+ * @property {number} status
+ * @property {string|number} [stake]
+ * @property {string|number} [part]
+ * @property {number} [delegatorCount]
+ * @property {Array<{coin: string, value: string, address: string}>} [delegatorList]
  */
+
 
 /**
  * @param {string} hash
