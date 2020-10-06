@@ -101,7 +101,7 @@
             feeBusParams: {
                 handler(newVal) {
                     if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
-                        this.$options.feeBus.$emit('updateParams', newVal);
+                        this.$options.feeBus.$emit('update-params', newVal);
                     }
                 },
                 deep: true,
@@ -110,7 +110,7 @@
         created() {
             this.$options.feeBus = new FeeBus(this.feeBusParams);
             this.fee = this.$options.feeBus.fee;
-            this.$options.feeBus.$on('updateFee', (newVal) => {
+            this.$options.feeBus.$on('update-fee', (newVal) => {
                 this.fee = newVal;
             });
         },

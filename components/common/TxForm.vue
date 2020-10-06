@@ -151,6 +151,9 @@
             showSwitcherAdvanced() {
                 return this.alwaysAdvanced || this.$store.getters.isOfflineMode;
             },
+            whatAffectsTxHash() {
+                return [this.form.gasCoin, this.form.gasPrice, this.form.nonce, this.form.payload, this.txData];
+            },
             feeBusParams() {
                 let selectedCoinSymbol = this.txData.value;
                 if (this.txType === TX_TYPE.SEND || this.txType === TX_TYPE.DECLARE_CANDIDACY || this.txType === TX_TYPE.DELEGATE) {
@@ -178,7 +181,7 @@
             feeBusParams: {
                 handler(newVal) {
                     if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
-                        this.$options.feeBus.$emit('updateParams', newVal);
+                        this.$options.feeBus.$emit('update-params', newVal);
                     }
                 },
                 deep: true,
@@ -188,13 +191,22 @@
                     if (!!newVal !== !!oldVal) {
                         this.$emit('update:isMultisigAddress', !!newVal);
                     }
+                    if (oldVal) {
+                        this.clearSignatureData();
+                    }
                 },
+            },
+            whatAffectsTxHash: {
+                handler() {
+                    this.clearSignatureData();
+                },
+                deep: true,
             },
         },
         created() {
             this.$options.feeBus = new FeeBus(this.feeBusParams);
             this.fee = this.$options.feeBus.fee;
-            this.$options.feeBus.$on('updateFee', (newVal) => {
+            this.$options.feeBus.$on('update-fee', (newVal) => {
                 this.fee = newVal;
             });
         },
@@ -364,6 +376,11 @@
                 this.form.gasCoin = '';
                 this.form.payload = '';
             },
+            // executed when data changed and signatures are not valid anymore for new data
+            clearSignatureData() {
+                this.form.signatureList = this.form.signatureList.map(() => '');
+                this.signature = null;
+            },
             clearForm() {
                 this.form.gasCoin = '';
                 this.form.payload = '';
@@ -379,9 +396,11 @@
                 this.form.gasPrice = '';
                 this.$v.$reset();
                 // clear txData
-                Object.keys(this.txData).forEach((key) => {
-                    this.txData[key] = null;
-                });
+                // const cleanTxData = {};
+                // Object.keys(this.txData).forEach((key) => {
+                //     cleanTxData[key] = null;
+                // });
+                // this.$emit('update:txData', cleanTxData);
                 this.$txData.$reset();
                 this.$emit('clear-form');
             },

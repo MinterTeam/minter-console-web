@@ -34,7 +34,7 @@
                     this.qrScanner = new QrScanner(this.$refs.qrVideo, (result) => {
                         this.stopScanQr();
                         this.isModalVisible = false;
-                        this.$emit('qrScanned', result);
+                        this.$emit('qr-scanned', result);
                     });
                 })
                 .catch(() => {
@@ -101,7 +101,7 @@
                modal-container-class="qr-scan__modal-container"
                v-bind:isOpen.sync="isModalVisible"
                :keepMarkup="true"
-               @modalClose="stopScanQr"
+               @modal-close="stopScanQr"
         >
             <div class="qr-scan__wrap">
                 <div class="qr-scan__notice">

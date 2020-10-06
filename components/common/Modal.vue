@@ -57,7 +57,7 @@
         methods: {
             closeModal() {
                 this.$emit('update:isOpen', false);
-                this.$emit('modalClose');
+                this.$emit('modal-close');
             },
             handleModalClick(e) {
                 if (this.$refs.modalContainer && e.target !== this.$refs.modalContainer && !this.$refs.modalContainer.contains(e.target)) {
