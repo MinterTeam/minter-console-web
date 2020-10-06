@@ -99,13 +99,13 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
         watch: {
             fee: {
                 handler(newVal) {
-                    this.$emit('updateFee', newVal);
+                    this.$emit('update-fee', newVal);
                 },
                 deep: true,
             },
         },
         created() {
-            this.$on('updateParams', function(params) {
+            this.$on('update-params', function(params) {
                 Object.keys(params).forEach((key) => {
                     this[key] = params[key];
                 });

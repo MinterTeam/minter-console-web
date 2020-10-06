@@ -352,7 +352,8 @@ function makeSortQueue(fnArray) {
                         <span class="u-emoji u-hidden-medium-down"
                               :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
                               title="Stake is dropped to wait list, top up or unbond it"
-                              v-if="isGroupHasWaitlisted(stakeGroup)">⚠️</span>
+                              v-if="isGroupHasWaitlisted(stakeGroup)"
+                        >⚠️</span>
                     </td>
                     <!-- coin list -->
                     <td class="u-hidden-medium-down">
@@ -415,7 +416,8 @@ function makeSortQueue(fnArray) {
                         <span class="u-emoji"
                               :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
                               title="Stake is dropped to wait list, top up or unbond it"
-                              v-if="isGroupHasWaitlisted(stakeGroup)">⚠️</span>
+                              v-if="isGroupHasWaitlisted(stakeGroup)"
+                        >⚠️</span>
                     </td>
                     <!-- controls placeholder -->
                     <td></td>
