@@ -11,6 +11,9 @@ const MIN_OFFSET_COUNT = 3;
 // maximum offsets count to store
 const MAX_OFFSET_COUNT = 100;
 
+/**
+ * @return {number} - milliseconds
+ */
 export function getTimeOffset() {
     return averageOffset;
 }

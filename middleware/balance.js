@@ -15,7 +15,7 @@ export default function({app, store, redirect}) {
         if (centrifuge) {
             return Promise.resolve();
         }
-        store.commit('SET_LAST_UPDATE_TIME', Date.now());
+        // store.commit('SET_LAST_UPDATE_TIME', Date.now());
         // wait for balance, bc its data need for all pages
         return store.dispatch('FETCH_BALANCE')
             .then(() => {

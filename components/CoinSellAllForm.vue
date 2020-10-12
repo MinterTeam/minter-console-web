@@ -50,7 +50,7 @@
         },
         computed: {
             sellAmount() {
-                const coinSellItem = this.addressBalance.find((item) => item.coin === this.form.coinFrom);
+                const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
                 return coinSellItem && coinSellItem.amount;
             },
         },
