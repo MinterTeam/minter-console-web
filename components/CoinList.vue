@@ -45,8 +45,6 @@
                 </thead>
                 <tbody>
                 <tr class="u-text-nowrap" :key="coinItem.coin.id" v-for="coinItem in coinList">
-                    <!-- name -->
-                    <!-- @TODO coin.name -->
                     <td>
                         <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin.symbol)" width="28" height="28" alt="" role="presentation">
                         <span class="wallet__coin-name">{{ coinItem.coin.symbol }}</span>

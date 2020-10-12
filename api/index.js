@@ -119,13 +119,16 @@ export function getAddressTransactionList(address, params = {}) {
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
-        .then((response) => prepareBalance(response.data.data.balances));
+        .then((response) => {
+            response.data.data.balances = prepareBalance(response.data.data.balances);
+            return response.data;
+        });
 }
 
 /**
  * @typedef {Object} BalanceItem
  * @property {number|string} amount
- * @property {string} coin
+ * @property {CoinItem} coin
  */
 
 
@@ -143,7 +146,7 @@ export function prepareBalance(balanceList) {
                 return 1;
             } else {
                 // sort coins by name, instead of reserve
-                return a.coin.symbol.localeCompare(b.coin);
+                return a.coin.symbol.localeCompare(b.coin.symbol);
             }
         })
         .map((coinItem) => {
@@ -174,6 +177,7 @@ export function getCoinList() {
 
 /**
  * @typedef {Object} CoinItem
+ * @property {number} id
  * @property {number} crr
  * @property {number|string} volume
  * @property {number|string} reserve_balance
