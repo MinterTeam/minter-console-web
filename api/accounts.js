@@ -1,7 +1,7 @@
-import axios from 'axios';
+import MinterOrg from 'minter-js-org';
 import {ACCOUNTS_API_URL} from "~/assets/variables";
 
-const instance = axios.create({
+const minterOrg = new MinterOrg({
     baseURL: ACCOUNTS_API_URL,
 });
 
@@ -14,23 +14,23 @@ if (initialToken) {
 }
 
 
-export default instance;
+export default minterOrg;
 
 /**
  * @param {TokenData} tokenData
  */
 export function setAuthToken(tokenData) {
-    instance.defaults.headers.common['Authorization'] = tokenData.tokenType + ' ' + tokenData.accessToken;
+    minterOrg.setAuthToken(tokenData);
     localStorage.setItem(TOKEN_KEY, JSON.stringify(tokenData));
 }
 
 export function resetAuthToken() {
-    delete instance.defaults.headers.common['Authorization'];
+    minterOrg.resetAuthToken();
     localStorage.removeItem(TOKEN_KEY);
 }
 
 export function hasAuthToken() {
-    return 'Authorization' in instance.defaults.headers.common;
+    return minterOrg.hasAuthToken();
 }
 
 

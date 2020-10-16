@@ -155,17 +155,19 @@
                 return [this.form.gasCoin, this.form.gasPrice, this.form.nonce, this.form.payload, this.txData];
             },
             feeBusParams() {
-                let selectedCoinSymbol = this.txData.value;
-                if (this.txType === TX_TYPE.SEND || this.txType === TX_TYPE.DECLARE_CANDIDACY || this.txType === TX_TYPE.DELEGATE) {
-                    selectedCoinSymbol = this.txData.coin;
+                const txType = this.txType;
+                const txData = this.txData;
+                let selectedCoinSymbol;
+                if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
+                    selectedCoinSymbol = txData.coin;
                 }
-                if (this.txType === TX_TYPE.BUY || this.txType === TX_TYPE.SELL || this.txType === TX_TYPE.SELL_ALL) {
-                    selectedCoinSymbol = this.txData.coinToSell;
+                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL) {
+                    selectedCoinSymbol = txData.coinToSell;
                 }
-                let createCoinSymbol = this.txType === TX_TYPE.CREATE_COIN ? this.txData.symbol : undefined;
+                let createCoinSymbol = txType === TX_TYPE.CREATE_COIN ? txData.symbol : undefined;
 
                 return {
-                    txType: this.txType,
+                    txType: txType,
                     txFeeOptions: {
                         payload: this.form.payload,
                         coinSymbol: createCoinSymbol,

@@ -10,55 +10,22 @@ import {COIN_NAME} from '~/assets/variables';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
+/**
+ * @param data
+ * @return {Promise<User|{confirmations: Array}>}
+ */
 export function register(data) {
-    const passwordToStore = getPasswordToStore(data.password);
-    const passwordToSend = getPasswordToSend(passwordToStore);
-    let userData = {
-        ...data,
-        password: passwordToSend,
-    };
-    delete userData.passwordConfirm;
-
-    const mnemonic = generateMnemonic();
-
-    return new Promise((resolve, reject) => {
-        accounts.post('register', {
-            ...userData,
-            mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true),
-        })
-            .then(() => {
-                login(data)
-                    .then((authData) => {
-                        resolve({
-                            ...authData,
-                            password: passwordToStore,
-                        });
-                    })
-                    .catch(reject);
-            })
-            .catch(reject);
-    });
+    return accounts.register(data, true);
 }
 
 /**
- * @param username
- * @param password
+ * @param {Object} data
+ * @param {string} data.username
+ * @param {string} data.password
  * @return {Promise<User>}
  */
-export function login({username, password}) {
-    const passwordToStore = getPasswordToStore(password);
-    const passwordToSend = getPasswordToSend(passwordToStore);
-
-    return accounts.post('login', {
-        username,
-        password: passwordToSend,
-    })
-        .then((response) => {
-            return {
-                ...response.data.data,
-                password: passwordToStore,
-            };
-        });
+export function login(data) {
+    return accounts.login(data);
 }
 
 /**
@@ -66,29 +33,6 @@ export function login({username, password}) {
  */
 export function getProfile() {
     return accounts.get('profile')
-        .then((response) => response.data.data);
-}
-
-export function putProfile(profile) {
-    let dataToSend = Object.assign({}, profile);
-    if (dataToSend.password) {
-        dataToSend.password = getPasswordToSend(getPasswordToStore(dataToSend.password));
-    }
-    if (dataToSend.passwordConfirm) {
-        delete dataToSend.passwordConfirm;
-    }
-    return accounts.put('profile', dataToSend);
-}
-
-/**
- * @param avatar
- * @return {Promise<UserAvatar>}
- */
-export function putProfileAvatar(avatar) {
-    return accounts
-        .post('profile/avatar', makeFormData({avatar}), {
-            headers: formDataHeaders,
-        })
         .then((response) => response.data.data);
 }
 
@@ -101,7 +45,6 @@ export function putProfileAvatar(avatar) {
  */
 
 /**
- *
  * @param {string} address
  * @param {Object} [params]
  * @param {number} [params.page]
