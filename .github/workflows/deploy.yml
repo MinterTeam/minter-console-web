@@ -2,19 +2,41 @@ name: CI
 
 on:
   push:
-    branches: [ testnet ]
-
+    branches: [ rc, testnet ]
+env:
+  INGRESS_DOMAIN_mainnet: "console.minter.network"
+  INGRESS_DOMAIN_rc: "console.rc.minter.network"
+  INGRESS_DOMAIN_testnet: "console.testnet.minter.network"
+  KUBE_NAMESPACE_mainnet: "mainnet"
+  KUBE_NAMESPACE_rc: "mainnet"
+  KUBE_NAMESPACE_testnet: "default"
 jobs:
   ci:
     name: build
     runs-on: ubuntu-latest
     steps:
+      - name: set env BUILD_BRANCH
+        run: echo "BUILD_BRANCH=$(echo $GITHUB_REF | sed 's:refs/heads/::')" >> $GITHUB_ENV
+      
       - name: set branch prefix env to be used during docker build, .e.g. "refs/heads/testnet" => ".testnet"
-        if: github.ref != 'refs/heads/master'
-        run: echo ::set-env name=BUILD_BRANCH_ENV_PREFIX::$(echo "$GITHUB_REF" | sed "s\refs/heads/\.\g")
-
+        if: env.BUILD_BRANCH != 'master'
+        run: echo "BUILD_BRANCH_ENV_PREFIX=$(echo .$BUILD_BRANCH)" >> $GITHUB_ENV
+      
+      - name: set env PROJECT_NAME
+        run: echo "PROJECT_NAME=$(echo $GITHUB_REPOSITORY | sed "s:MinterTeam/::")" >> $GITHUB_ENV
+      
+      - name: set env INGRESS_DOMAIN
+        env:
+          INGRESS_DOMAIN_KEY: INGRESS_DOMAIN_${{ env.BUILD_BRANCH }}
+        run: echo "INGRESS_DOMAIN=$(echo ${!INGRESS_DOMAIN_KEY})" >> $GITHUB_ENV
+      
+      - name: set env KUBE_NAMESPACE
+        env:
+          KUBE_NAMESPACE_KEY: KUBE_NAMESPACE_${{ env.BUILD_BRANCH }}
+        run: echo "KUBE_NAMESPACE=$(echo ${!KUBE_NAMESPACE_KEY})" >> $GITHUB_ENV
+      
       - uses: actions/checkout@v2
-      - name: build and push to registry
+      - name: build and push docker image
         uses: opspresso/action-docker@master
         env:
           USERNAME: ${{ secrets.DOCKER_HUB_USER }}
@@ -25,12 +47,13 @@ jobs:
           DOCKERFILE: ".docker/Dockerfile"
           DOCKER_BUILD_ARGS: --build-arg BUILD_BRANCH_ENV_PREFIX
       
-      - name: deploy to cluster
+      - name: deploy to production cluster
         uses: wahyd4/kubectl-helm-action@master
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_PROD_CONFIG_DATA }}
+          TAG_NAME: ${{ github.sha }}
         with:
-          args: helm upgrade -i console chart/ --atomic --reuse-values --timeout 100s --set image.tag=$GITHUB_SHA
+          args: helm upgrade -n $KUBE_NAMESPACE -i $PROJECT_NAME chart/ --atomic --timeout 100s --set image.tag=$TAG_NAME --set ingress.domain=$INGRESS_DOMAIN --set ingress.tlsname=$INGRESS_DOMAIN
       
       - name: notification
         if: cancelled() == false

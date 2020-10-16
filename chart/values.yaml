@@ -19,7 +19,8 @@ service:
   port: 80
 
 ingress:
-  domain: console.testnet.minter.network
+  domain: ""
+  tlsname: ""
 
 resources: {}
 
