@@ -9,6 +9,7 @@
     import issueCheck from 'minter-js-sdk/src/check';
     import {prepareLink} from 'minter-js-sdk/src/link';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {replaceCoinSymbolByPath} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
@@ -69,14 +70,12 @@
                 coinSymbol: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
                 password: {
                     required,
                 },
                 gasCoin: {
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             },
         },
@@ -102,7 +101,7 @@
             feeBusParams: {
                 handler(newVal) {
                     if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
-                        this.$options.feeBus.$emit('updateParams', newVal);
+                        this.$options.feeBus.$emit('update-params', newVal);
                     }
                 },
                 deep: true,
@@ -111,7 +110,7 @@
         created() {
             this.$options.feeBus = new FeeBus(this.feeBusParams);
             this.fee = this.$options.feeBus.fee;
-            this.$options.feeBus.$on('updateFee', (newVal) => {
+            this.$options.feeBus.$on('update-fee', (newVal) => {
                 this.fee = newVal;
             });
         },
@@ -130,15 +129,21 @@
                 this.deeplink = '';
                 this.isFormSending = true;
                 this.serverError = '';
-                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
+
+                let params = {
+                    privateKey: this.$store.getters.privateKey,
+                    chainId: this.$store.getters.CHAIN_ID,
+                    ...clearEmptyFields(this.form),
+                    coin: this.form.coinSymbol,
+                    gasCoin: this.fee.coinSymbol,
+                };
+                Promise.all([
+                        replaceCoinSymbolByPath(params, ['gasCoin', 'coin']),
+                        this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                    ])
                     .then(() => {
                         try {
-                            this.check = issueCheck({
-                                privateKey: this.$store.getters.privateKey,
-                                chainId: this.$store.getters.CHAIN_ID,
-                                ...clearEmptyFields(this.form),
-                                gasCoin: this.fee.coinSymbol,
-                            });
+                            this.check = issueCheck(params);
                             this.password = this.form.password;
                             // deeplink
                             const linkHost = NETWORK === TESTNET ? 'https://testnet.bip.to' : undefined;
@@ -218,7 +223,7 @@
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.value.$error}">
@@ -248,7 +253,7 @@
                         :coin-list="balance"
                 />
                 <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
                 <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
                     {{ fee.coinSymbol }} {{ pretty(fee.value) }}

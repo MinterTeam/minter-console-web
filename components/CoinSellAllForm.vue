@@ -39,12 +39,10 @@
                 coinFrom: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
                 coinTo: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             };
 
@@ -52,7 +50,7 @@
         },
         computed: {
             sellAmount() {
-                const coinSellItem = this.addressBalance.find((item) => item.coin === this.form.coinFrom);
+                const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
                 return coinSellItem && coinSellItem.amount;
             },
         },
@@ -111,7 +109,7 @@
                 />
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--small--1-2">
                 <FieldCoin
@@ -122,7 +120,7 @@
                 />
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
         </template>
 

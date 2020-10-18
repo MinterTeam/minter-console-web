@@ -122,7 +122,7 @@
             <span class="form-field__label">{{ label }}</span>
         </template>
         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$value.$pending"/>
-        <QrScan @qrScanned="handleQrScanned" :qrVisible.sync="hasCamera"/>
+        <QrScan @qr-scanned="handleQrScanned" :qrVisible.sync="hasCamera"/>
     </label>
 </template>
 

@@ -1,10 +1,14 @@
 <script>
     import getTitle from '~/assets/get-title';
     import CoinCreateForm from '~/components/CoinCreateForm';
+    import CoinRecreateForm from '~/components/CoinRecreateForm.vue';
+    import CoinEditOwnerForm from '~/components/CoinEditOwnerForm.vue';
 
     export default {
         components: {
             CoinCreateForm,
+            CoinRecreateForm,
+            CoinEditOwnerForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Coiner', 'common.page-coiner'));
@@ -31,5 +35,9 @@
 <template>
     <section class="u-section u-container">
         <CoinCreateForm/>
+
+        <CoinRecreateForm/>
+
+        <CoinEditOwnerForm/>
     </section>
 </template>

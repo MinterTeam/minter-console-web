@@ -14,7 +14,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: '10.x'
+          node-version: '12.x'
       
 #      - name: Cache dependencies
 #        uses: actions/cache@v1
@@ -26,7 +26,7 @@ jobs:
       
       - run: npm ci
 
-      - run: cp .env.example .env
+      - run: cp .env.mainnet.example .env
       - name: Build
         run: npm run production
         env:

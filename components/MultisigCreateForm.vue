@@ -113,6 +113,9 @@
                     return Number(prev) < Number(current) ? Number(prev) : Number(current);
                 }) || 0;
             },
+            createdMultisig() {
+                return this.successTx ? `Mx${this.successTx.tags['tx.created_multisig']}` : '';
+            },
         },
         methods: {
             getExplorerTxUrl,
@@ -147,7 +150,7 @@
     <TxForm :txData="multisigData" :$txData="$v.form" :txType="$options.TX_TYPE.CREATE_MULTISIG" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Create Multisig Address', 'multisig.create-title') }}
+                {{ $td('Create multisig address', 'multisig.create-title') }}
             </h1>
         </template>
 
@@ -226,13 +229,13 @@
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Create Multisig', 'form.multisig-create-submit') }}
+            {{ $td('Create multisig', 'form.multisig-create-submit') }}
         </template>
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-multisignature.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Create Multisig Address', 'multisig.create-title') }}
+                {{ $td('Create multisig address', 'multisig.create-title') }}
             </h1>
         </template>
 
@@ -250,7 +253,7 @@
                                 <textarea
                                         class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
                                         v-autosize
-                                        :value="`Mx${successTx.tags['tx.created_multisig']}`"
+                                        :value="createdMultisig"
                                 ></textarea>
                         <span class="form-field__label">{{ $td('Your multisig address', 'multisig.success-address') }}</span>
                     </label>
@@ -259,7 +262,7 @@
         </template>
 
         <template v-slot:success-modal-button v-if="successTx">
-            <ButtonCopy class="button button--main button--full" :copy-text="successTx.data.multisigAddress">
+            <ButtonCopy class="button button--main button--full" :copy-text="createdMultisig">
                 <img class="button__icon" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
                 {{ $td('Copy', 'common.copy') }}
             </ButtonCopy>

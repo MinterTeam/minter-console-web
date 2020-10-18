@@ -59,9 +59,10 @@ export default {
         }
         // profile address fetched in the middleware
         return getBalance(getters.address)
-            .then((balance) => {
-                commit('SET_BALANCE', balance);
-                return balance;
+            .then((balanceResponse) => {
+                commit('SET_BALANCE', balanceResponse.data.balances);
+                commit('SET_LAST_UPDATE_TIME', new Date(balanceResponse.latestBlockTime).getTime());
+                return balanceResponse.data.balances;
             });
     },
     FETCH_STAKE_LIST: ({ commit, getters }) => {

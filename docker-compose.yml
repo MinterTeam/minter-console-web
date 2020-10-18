@@ -1,0 +1,11 @@
+version: '3.6'
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: .docker/Dockerfile
+      args:
+      
+    ports:
+      -  ${WEB_PORT_FOR_DOCKER_COMPOSE}:80

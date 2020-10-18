@@ -45,7 +45,10 @@
     to {transform: scale(1.01);}
 }
 // qr-modal
-.qr-modal {padding-left: 0; padding-right: 0; width: auto;}
+.qr-modal {
+    padding-left: 0; padding-right: 0; width: auto;
+    .modal__container {max-width: 320px;}
+}
 .qr-modal__layer {
     padding: 20px; background: #fff;
     canvas {vertical-align: top;}
@@ -165,7 +168,12 @@ td, th {
 .table__cell-title {font-weight: 700;}
 .table__cell-sub {font-size: 12px;}
 .table__cell-stake-amount {padding-right: 0;}
+.table__cell-waitlist {
+    width: 0; padding-left: 0; font-size: 20px; line-height: 1; text-align: right;
+    &:not(:last-child) {padding-right: 0;}
+}
 .is-expanded > td {background: #f6f6f6;}
+.is-waitlisted > td {background: #fff9e6;}
 .table__row-expanded-data {
     td {background: #f6f6f6;/* border-left: none; border-right: none;*/}
 }

@@ -1,0 +1,9 @@
+# dependencies
+node_modules/
+
+*.log
+
+# Nuxt build
+.nuxt
+
+tmp

@@ -10,7 +10,7 @@
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
-    import {postTx, ensureNonce} from '~/api/gate.js';
+    import {postTx, ensureNonce, replaceCoinSymbol} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
@@ -60,6 +60,10 @@
                 type: [Function, null],
                 default: null,
             },
+            alwaysAdvanced: {
+                type: Boolean,
+                default: false,
+            },
         },
         data() {
             return {
@@ -94,7 +98,6 @@
             const form = {
                 gasCoin: {
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
                 payload: {
                     maxLength: maxLength(1024),
@@ -143,20 +146,28 @@
                 return this.txType !== TX_TYPE.REDEEM_CHECK && this.txType !== TX_TYPE.SELL_ALL;
             },
             showAdvanced() {
-                return this.isModeAdvanced || this.$store.getters.isOfflineMode;
+                return this.alwaysAdvanced || this.isModeAdvanced || this.$store.getters.isOfflineMode;
+            },
+            showSwitcherAdvanced() {
+                return this.alwaysAdvanced || this.$store.getters.isOfflineMode;
+            },
+            whatAffectsTxHash() {
+                return [this.form.gasCoin, this.form.gasPrice, this.form.nonce, this.form.payload, this.txData];
             },
             feeBusParams() {
-                let selectedCoinSymbol = this.txData.value;
-                if (this.txType === TX_TYPE.SEND || this.txType === TX_TYPE.DECLARE_CANDIDACY || this.txType === TX_TYPE.DELEGATE) {
-                    selectedCoinSymbol = this.txData.coin;
+                const txType = this.txType;
+                const txData = this.txData;
+                let selectedCoinSymbol;
+                if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
+                    selectedCoinSymbol = txData.coin;
                 }
-                if (this.txType === TX_TYPE.BUY || this.txType === TX_TYPE.SELL || this.txType === TX_TYPE.SELL_ALL) {
-                    selectedCoinSymbol = this.txData.coinToSell;
+                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL) {
+                    selectedCoinSymbol = txData.coinToSell;
                 }
-                let createCoinSymbol = this.txType === TX_TYPE.CREATE_COIN ? this.txData.symbol : undefined;
+                let createCoinSymbol = txType === TX_TYPE.CREATE_COIN ? txData.symbol : undefined;
 
                 return {
-                    txType: this.txType,
+                    txType: txType,
                     txFeeOptions: {
                         payload: this.form.payload,
                         coinSymbol: createCoinSymbol,
@@ -172,7 +183,7 @@
             feeBusParams: {
                 handler(newVal) {
                     if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
-                        this.$options.feeBus.$emit('updateParams', newVal);
+                        this.$options.feeBus.$emit('update-params', newVal);
                     }
                 },
                 deep: true,
@@ -182,13 +193,22 @@
                     if (!!newVal !== !!oldVal) {
                         this.$emit('update:isMultisigAddress', !!newVal);
                     }
+                    if (oldVal) {
+                        this.clearSignatureData();
+                    }
                 },
+            },
+            whatAffectsTxHash: {
+                handler() {
+                    this.clearSignatureData();
+                },
+                deep: true,
             },
         },
         created() {
             this.$options.feeBus = new FeeBus(this.feeBusParams);
             this.fee = this.$options.feeBus.fee;
-            this.$options.feeBus.$on('updateFee', (newVal) => {
+            this.$options.feeBus.$on('update-fee', (newVal) => {
                 this.fee = newVal;
             });
         },
@@ -250,14 +270,26 @@
 
                 let postTxPromise;
                 if (!this.form.multisigAddress) {
-                    postTxPromise = this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                        .then(() => {
+                    let txParams = this.getTxParams();
+                    postTxPromise = Promise.all([
+                            ensureNonce(txParams, {address: this.$store.getters.address}),
+                            replaceCoinSymbol(txParams),
+                            this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                        ])
+                        .then(([nonce]) => {
                             // private key to sign
-                            return postTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
+                            return postTx({...txParams, nonce}, {privateKey: this.$store.getters.privateKey});
                         });
                 } else {
-                    // address to get nonce or make proof for RedeemCheck
-                    postTxPromise = postTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
+                    let txParams = this.getTxParamsMultisigData();
+                    postTxPromise = Promise.all([
+                            ensureNonce(txParams, {address: this.form.multisigAddress}),
+                            replaceCoinSymbol(txParams),
+                        ])
+                        .then(([nonce]) => {
+                            // address to get nonce or make proof for RedeemCheck
+                            return postTx({...txParams, nonce}, {address: this.form.multisigAddress});
+                        });
                 }
 
                 postTxPromise
@@ -293,6 +325,7 @@
 
                 Promise.all([
                         ensureNonce(txParams, {address: this.form.multisigAddress}),
+                        replaceCoinSymbol(txParams),
                         this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
                     ])
                     .then(([nonce]) => {
@@ -345,11 +378,16 @@
                 this.form.gasCoin = '';
                 this.form.payload = '';
             },
+            // executed when data changed and signatures are not valid anymore for new data
+            clearSignatureData() {
+                this.form.signatureList = this.form.signatureList.map(() => '');
+                this.signature = null;
+            },
             clearForm() {
                 this.form.gasCoin = '';
                 this.form.payload = '';
                 this.form.multisigAddress = '';
-                this.form.signatureList = null;
+                this.form.signatureList = ['', ''];
                 this.formAdvanced.gasCoin = '';
                 this.formAdvanced.payload = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
@@ -359,12 +397,14 @@
                 }
                 this.form.gasPrice = '';
                 this.$v.$reset();
-                this.$emit('clear-form');
                 // clear txData
-                Object.keys(this.txData).forEach((key) => {
-                    this.txData[key] = null;
-                });
+                // const cleanTxData = {};
+                // Object.keys(this.txData).forEach((key) => {
+                //     cleanTxData[key] = null;
+                // });
+                // this.$emit('update:txData', cleanTxData);
                 this.$txData.$reset();
+                this.$emit('clear-form');
             },
             getExplorerTxUrl,
         },
@@ -409,7 +449,7 @@
                             :coin-list="balance"
                     />
                     <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                    <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
                     <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                     <div class="form-field__help" v-else>
                         {{ fee.coinSymbol }} {{ pretty(fee.value) }}
@@ -468,7 +508,7 @@
 
 
                 <!-- Controls -->
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!$store.getters.isOfflineMode">
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!showSwitcherAdvanced">
                     <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced" data-test-id="walletTxFormHideAdvanced">
                         {{ $td('Simple mode', 'form.toggle-simple-mode') }}
                     </button>
@@ -476,7 +516,7 @@
                         {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
                     </button>
                 </div>
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="$store.getters.isOfflineMode"><!--placeholder--></div>
+                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="showSwitcherAdvanced"><!--placeholder--></div>
                 <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2">
                     <button
                             class="button button--ghost-main button--full"
@@ -596,6 +636,7 @@
                         <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
                         <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess.hash)" target="_blank" v-if="serverSuccess">{{ serverSuccess.hash }}</a>
                     </slot>
+                    <slot name="success-modal-body-extra"></slot>
                 </div>
                 <div class="panel__section">
                     <slot name="success-modal-button">

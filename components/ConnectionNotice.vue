@@ -1,7 +1,8 @@
 <script>
     import {support} from '~/assets/utils-support.js';
 
-    const NOTICE_DELAY = 20; // time to reconnect after switching back to the tab
+    const NOTICE_DELAY_STARTUP = 5; // time to app startup
+    const NOTICE_DELAY_RECONNECT = 20; // time to reconnect after switching back to the tab
     const NOTICE_TIME = 25;
 
     let timeInterval = null;
@@ -12,6 +13,7 @@
             return {
                 isNoticeOpen: false,
                 isOperatingNormally: false,
+                noticeDelay: NOTICE_DELAY_STARTUP,
             };
         },
         watch: {
@@ -66,6 +68,7 @@
             handleVisibilityChange() {
                 if (document[support.hidden]) {
                     this.isOperatingNormally = false;
+                    this.noticeDelay = NOTICE_DELAY_RECONNECT;
                 } else {
                     this.setStartupDelay();
                 }
@@ -75,7 +78,7 @@
                 operatingDelay = setTimeout(() => {
                     this.isOperatingNormally = true;
                     operatingDelay = null;
-                }, NOTICE_DELAY * 1000);
+                }, this.noticeDelay * 1000);
             },
         },
     };

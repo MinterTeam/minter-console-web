@@ -101,7 +101,7 @@
                 e.preventDefault();
             },
             getSuggestionCoin(suggestion) {
-                return suggestion.coin || suggestion;
+                return suggestion.coin?.symbol || suggestion;
             },
             getSuggestionAmount(suggestion) {
                 const amount = suggestion.value || suggestion.amount;
@@ -123,8 +123,8 @@
                 :min-length="0"
                 :filter-by-query="true"
                 :filter="suggestionFilter"
-                :display-attribute="'coin'"
-                :value-attribute="'coin'"
+                :display-attribute="'coin.symbol'"
+                :value-attribute="'coin.symbol'"
                 :destyled="true"
                 :controls="{showList: [38, 40]}"
                 @input="$emit('input', $event)"

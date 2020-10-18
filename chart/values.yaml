@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: minterteam/console-web
+  pullPolicy: Always
+  tag: latest
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  port: 80
+
+ingress:
+  domain: ""
+  tlsname: ""
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

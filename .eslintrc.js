@@ -54,6 +54,7 @@ module.exports = {
         'vue/singleline-html-element-content-newline': 0,
         'vue/v-bind-style': 0,
         'vue/v-on-style': 0,
+        'vue/v-slot-style': 0,
         'vue/no-unused-vars': 0,
         // allow `$value`
         'vue/prop-name-casing': ["warn"],

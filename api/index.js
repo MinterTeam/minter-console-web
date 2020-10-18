@@ -10,55 +10,22 @@ import {COIN_NAME} from '~/assets/variables';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
+/**
+ * @param data
+ * @return {Promise<User|{confirmations: Array}>}
+ */
 export function register(data) {
-    const passwordToStore = getPasswordToStore(data.password);
-    const passwordToSend = getPasswordToSend(passwordToStore);
-    let userData = {
-        ...data,
-        password: passwordToSend,
-    };
-    delete userData.passwordConfirm;
-
-    const mnemonic = generateMnemonic();
-
-    return new Promise((resolve, reject) => {
-        accounts.post('register', {
-            ...userData,
-            mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true),
-        })
-            .then(() => {
-                login(data)
-                    .then((authData) => {
-                        resolve({
-                            ...authData,
-                            password: passwordToStore,
-                        });
-                    })
-                    .catch(reject);
-            })
-            .catch(reject);
-    });
+    return accounts.register(data, true);
 }
 
 /**
- * @param username
- * @param password
+ * @param {Object} data
+ * @param {string} data.username
+ * @param {string} data.password
  * @return {Promise<User>}
  */
-export function login({username, password}) {
-    const passwordToStore = getPasswordToStore(password);
-    const passwordToSend = getPasswordToSend(passwordToStore);
-
-    return accounts.post('login', {
-        username,
-        password: passwordToSend,
-    })
-        .then((response) => {
-            return {
-                ...response.data.data,
-                password: passwordToStore,
-            };
-        });
+export function login(data) {
+    return accounts.login(data);
 }
 
 /**
@@ -66,29 +33,6 @@ export function login({username, password}) {
  */
 export function getProfile() {
     return accounts.get('profile')
-        .then((response) => response.data.data);
-}
-
-export function putProfile(profile) {
-    let dataToSend = Object.assign({}, profile);
-    if (dataToSend.password) {
-        dataToSend.password = getPasswordToSend(getPasswordToStore(dataToSend.password));
-    }
-    if (dataToSend.passwordConfirm) {
-        delete dataToSend.passwordConfirm;
-    }
-    return accounts.put('profile', dataToSend);
-}
-
-/**
- * @param avatar
- * @return {Promise<UserAvatar>}
- */
-export function putProfileAvatar(avatar) {
-    return accounts
-        .post('profile/avatar', makeFormData({avatar}), {
-            headers: formDataHeaders,
-        })
         .then((response) => response.data.data);
 }
 
@@ -101,7 +45,6 @@ export function putProfileAvatar(avatar) {
  */
 
 /**
- *
  * @param {string} address
  * @param {Object} [params]
  * @param {number} [params.page]
@@ -119,13 +62,16 @@ export function getAddressTransactionList(address, params = {}) {
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
-        .then((response) => prepareBalance(response.data.data.balances));
+        .then((response) => {
+            response.data.data.balances = prepareBalance(response.data.data.balances);
+            return response.data;
+        });
 }
 
 /**
  * @typedef {Object} BalanceItem
  * @property {number|string} amount
- * @property {string} coin
+ * @property {CoinItem} coin
  */
 
 
@@ -137,13 +83,13 @@ export function getBalance(addressHash) {
 export function prepareBalance(balanceList) {
     return balanceList.sort((a, b) => {
             // set base coin first
-            if (a.coin === COIN_NAME) {
+            if (a.coin.symbol === COIN_NAME) {
                 return -1;
-            } else if (b.coin === COIN_NAME) {
+            } else if (b.coin.symbol === COIN_NAME) {
                 return 1;
             } else {
                 // sort coins by name, instead of reserve
-                return a.coin.localeCompare(b.coin);
+                return a.coin.symbol.localeCompare(b.coin.symbol);
             }
         })
         .map((coinItem) => {
@@ -174,6 +120,7 @@ export function getCoinList() {
 
 /**
  * @typedef {Object} CoinItem
+ * @property {number} id
  * @property {number} crr
  * @property {number|string} volume
  * @property {number|string} reserve_balance
@@ -193,12 +140,12 @@ export function getAddressStakeList(address) {
 
 /**
  * @typedef {Object} StakeItem
- * @property {string} [pubKey]
- * @property {ValidatorMeta} [validatorMeta]
+ * @property {Validator} [validator]
  * @property {string} [address]
  * @property {string|number} value
  * @property {string|number} bipValue
  * @property {string} coin
+ * @property {boolean} isWaitlisted
  */
 
 /**
@@ -216,22 +163,18 @@ export function getValidatorList() {
 
 /**
  * @typedef {Object} Validator
- * @property {string} [publicKey]
- * @property {ValidatorMeta} meta
- * @property {number} status
- * @property {string|number} stake
- * @property {string|number} part
- * @property {number} delegatorCount
- * @property {Array<{coin: string, value: string, address: string}>} delegatorList
- */
-
-/**
- * @typedef {Object} ValidatorMeta
+ * @property {string} publicKey
  * @property {string} name
  * @property {string} description
- * @property {string} icon_url
- * @property {string} site_url
+ * @property {string} iconUrl
+ * @property {string} siteUrl
+ * @property {number} status
+ * @property {string|number} [stake]
+ * @property {string|number} [part]
+ * @property {number} [delegatorCount]
+ * @property {Array<{coin: string, value: string, address: string}>} [delegatorList]
  */
+
 
 /**
  * @param {string} hash
@@ -350,7 +293,7 @@ function markSecured(address) {
  * @property {string} hash
  * @property {string} status
  * @property {number} nonce
- * @property {number} block
+ * @property {number} height
  * @property {string} from
  * @property {string} timestamp
  * @property {string} gasCoin

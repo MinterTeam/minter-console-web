@@ -39,6 +39,7 @@
                 },
                 domain: '',
                 isDomainResolving: false,
+                successTx: null,
             };
         },
         validations() {
@@ -53,13 +54,47 @@
                 coinSymbol: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             };
 
             return {form};
         },
         computed: {
+            selectedValidatorName() {
+                if (this.$v.form.publicKey.$invalid) {
+                    return null;
+                }
+                const validator = this.$store.state.validatorList.find((item) => item.publicKey === this.form.publicKey);
+                return validator?.name;
+            },
+            validatorFullName() {
+                let result = '';
+                if (this.selectedValidatorName) {
+                    result += this.selectedValidatorName + '\n';
+                }
+                result += this.form.publicKey;
+                if (this.domain) {
+                    result += '\n' + this.domain;
+                }
+
+                return result;
+            },
+            blocksToUpdate() {
+                if (!this.successTx) {
+                    return 0;
+                }
+                return this.successTx.height % 120;
+            },
+            timeToUpdate() {
+                if (!this.blocksToUpdate) {
+                    return;
+                }
+                const time = this.blocksToUpdate * 5;
+                const minutes = Math.floor(time / 60);
+                const seconds = (time % 60).toString().padStart(2, '0');
+
+                return `${minutes}:${seconds}`;
+            },
         },
         mounted() {
             eventBus.$on('activate-delegate', ({hash}) => {
@@ -84,7 +119,7 @@
 </script>
 
 <template>
-    <TxForm :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.DELEGATE" @clear-form="clearForm()">
+    <TxForm :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.DELEGATE" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Delegate', 'delegation.delegate-title') }}
@@ -115,7 +150,7 @@
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldUseMax
@@ -156,7 +191,7 @@
                                 <textarea
                                         class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
                                         v-autosize
-                                        :value="form.publicKey + (domain ? `\n(${domain})` : '')"
+                                        :value="validatorFullName"
                                 ></textarea>
                         <span class="form-field__label">{{ $td('To the masternode', 'form.delegation-delegate-confirm-address') }}</span>
                     </label>
@@ -166,6 +201,12 @@
 
         <template v-slot:confirm-modal-footer>
             <div class="u-text-left" v-html="$td('', 'form.delegation-delegate-confirm-note')"></div>
+        </template>
+
+        <template v-slot:success-modal-body-extra v-if="successTx">
+            <div class="u-mt-10">
+                You stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes)
+            </div>
         </template>
     </TxForm>
 </template>

@@ -38,6 +38,7 @@
                 domain: '',
                 isDomainResolving: false,
                 isMultisigAddress: false,
+                successTx: null,
             };
         },
         validations() {
@@ -52,7 +53,6 @@
                 coinSymbol: {
                     required,
                     minLength: minLength(3),
-                    maxLength: maxLength(10),
                 },
             };
 
@@ -69,7 +69,7 @@
                     return;
                 }
                 const selectedCoin = this.stakeList.find((coin) => {
-                    return coin.coin === this.form.coinSymbol;
+                    return coin.coin.symbol === this.form.coinSymbol;
                 });
                 // coin not selected
                 if (!selectedCoin) {
@@ -81,13 +81,13 @@
                 let validatorList = {};
                 const stakeList = this.isMultisigAddress ? [] : this.$store.state.stakeList;
                 stakeList.forEach((item) => {
-                    if (!validatorList[item.pubKey]) {
-                        validatorList[item.pubKey] = Object.assign({stakeList: []}, item);
-                        delete validatorList[item.pubKey].coin;
-                        delete validatorList[item.pubKey].value;
-                        delete validatorList[item.pubKey].bipValue;
+                    if (!validatorList[item.validator.publicKey]) {
+                        validatorList[item.validator.publicKey] = {
+                            ...item.validator,
+                            stakeList: [],
+                        };
                     }
-                    validatorList[item.pubKey].stakeList.push({
+                    validatorList[item.validator.publicKey].stakeList.push({
                         coin: item.coin,
                         value: item.value,
                     });
@@ -98,21 +98,21 @@
              * @return {Array<SuggestionValidatorListItem>|undefined}
              */
             suggestionValidatorList() {
-                return Object.values(this.validatorData).map((item) => {
+                return Object.values(this.validatorData).map((validatorItem) => {
                     let name = '';
-                    if (item.validatorMeta && item.validatorMeta.name) {
-                        name = item.validatorMeta.name;
+                    if (validatorItem.name) {
+                        name = validatorItem.name;
                     }
 
-                    const delegatedAmount = item.stakeList.reduce((accumulator, stakeItem) => {
-                        const stakeItemValue = stakeItem.coin + '&nbsp;' + pretty(stakeItem.value);
+                    const delegatedAmount = validatorItem.stakeList.reduce((accumulator, stakeItem) => {
+                        const stakeItemValue = stakeItem.coin.symbol + '&nbsp;' + pretty(stakeItem.value);
                         if (!accumulator) {
                             return stakeItemValue;
                         } else {
                             return accumulator + ', ' + stakeItemValue;
                         }
                     }, '');
-                    return {name, value: item.pubKey, delegatedAmount};
+                    return {name, value: validatorItem.publicKey, delegatedAmount};
                 });
             },
             stakeList() {
@@ -123,11 +123,27 @@
                     return [];
                 }
             },
+            blocksToUpdate() {
+                if (!this.successTx) {
+                    return 0;
+                }
+                return this.successTx.height % 120;
+            },
+            timeToUpdate() {
+                if (!this.blocksToUpdate) {
+                    return;
+                }
+                const time = this.blocksToUpdate * 5;
+                const minutes = Math.floor(time / 60);
+                const seconds = (time % 60).toString().padStart(2, '0');
+
+                return `${minutes}:${seconds}`;
+            },
         },
         watch: {
             'form.publicKey': function(newVal) {
                 if (this.stakeList.length === 1) {
-                    this.form.coinSymbol = this.stakeList[0].coin;
+                    this.form.coinSymbol = this.stakeList[0].coin.symbol;
                 }
             },
         },
@@ -156,7 +172,7 @@
 </script>
 
 <template>
-    <TxForm :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.UNBOND" @update:isMultisigAddress="isMultisigAddress = $event" @clear-form="clearForm()">
+    <TxForm :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.UNBOND" @update:isMultisigAddress="isMultisigAddress = $event" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Unbond', 'delegation.unbond-title') }}
@@ -188,7 +204,7 @@
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <!--<span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldUseMax
@@ -234,6 +250,14 @@
                         <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
                     </label>
                 </div>
+            </div>
+        </template>
+
+        <template v-slot:success-modal-body-extra v-if="successTx">
+            <div class="u-mt-10">
+                You stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes).
+                <br>
+                Coins will return to your address in 518&#x202F;400 blocks.
             </div>
         </template>
     </TxForm>
