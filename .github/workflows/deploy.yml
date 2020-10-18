@@ -2,13 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ rc, testnet ]
+    branches: [ mainnet, testnet ]
 env:
   INGRESS_DOMAIN_mainnet: "console.minter.network"
-  INGRESS_DOMAIN_rc: "console.rc.minter.network"
   INGRESS_DOMAIN_testnet: "console.testnet.minter.network"
   KUBE_NAMESPACE_mainnet: "mainnet"
-  KUBE_NAMESPACE_rc: "mainnet"
   KUBE_NAMESPACE_testnet: "default"
 jobs:
   ci:
