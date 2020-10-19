@@ -65,6 +65,9 @@
             },
         },
         mounted() {
+            if (this.$store.getters.isOfflineMode) {
+                return;
+            }
             this.$store.dispatch('FETCH_COIN_LIST')
                 .then((coinListAll) => {
                     this.coinListAll = Object.freeze(coinListAll.map((item) => item.symbol));

@@ -33,8 +33,10 @@
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
+            if (store.getters.isOfflineMode) {
+                return;
+            }
             store.dispatch('FETCH_VALIDATOR_LIST');
-            return Promise.resolve();
         },
         asyncData({ store }) {
             if (store.getters.isOfflineMode) {

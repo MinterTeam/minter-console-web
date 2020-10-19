@@ -69,13 +69,13 @@
                 },
                 coinSymbol: {
                     required,
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
                 password: {
                     required,
                 },
                 gasCoin: {
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
             },
         },
