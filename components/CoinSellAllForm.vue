@@ -38,11 +38,11 @@
             const form = {
                 coinFrom: {
                     required,
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
                 coinTo: {
                     required,
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
             };
 

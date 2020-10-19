@@ -97,7 +97,7 @@
         validations() {
             const form = {
                 gasCoin: {
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
                 payload: {
                     maxLength: maxLength(1024),
