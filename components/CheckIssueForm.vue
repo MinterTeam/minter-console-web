@@ -57,27 +57,29 @@
                 isLinkQrModalVisible: false,
             };
         },
-        validations: {
-            form: {
-                nonce: {
-                    required,
+        validations() {
+            return {
+                form: {
+                    nonce: {
+                        required,
+                    },
+                    dueBlock: {
+                    },
+                    value: {
+                        required,
+                    },
+                    coinSymbol: {
+                        required,
+                        minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+                    },
+                    password: {
+                        required,
+                    },
+                    gasCoin: {
+                        minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+                    },
                 },
-                dueBlock: {
-                },
-                value: {
-                    required,
-                },
-                coinSymbol: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-                password: {
-                    required,
-                },
-                gasCoin: {
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-            },
+            };
         },
         computed: {
             ...mapGetters({
