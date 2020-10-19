@@ -11,7 +11,7 @@ object-assign
 */
 
 /*!
-  * vue-router v3.3.2
+  * vue-router v3.4.3
   * (c) 2020 Evan You
   * @license MIT
   */
@@ -39,8 +39,8 @@ object-assign
  */
 
 /*!
- * Vue.js v2.6.11
- * (c) 2014-2019 Evan You
+ * Vue.js v2.6.12
+ * (c) 2014-2020 Evan You
  * Released under the MIT License.
  */
 
@@ -65,7 +65,7 @@ object-assign
  */
 
 /*!
- * vue-i18n v8.18.1 
+ * vue-i18n v8.21.1 
  * (c) 2020 kazuya kawaguchi
  * Released under the MIT License.
  */
@@ -77,7 +77,7 @@ object-assign
  */
 
 /*!
- * vuex v3.4.0
+ * vuex v3.5.1
  * (c) 2020 Evan You
  * @license MIT
  */
@@ -192,4 +192,13 @@ PERFORMANCE OF THIS SOFTWARE.
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ */
+
+/**
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ *
+ * @typedef {Object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
  */
