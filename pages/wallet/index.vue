@@ -1,6 +1,6 @@
 <script>
     import {mapGetters} from 'vuex';
-    import {getAddressTransactionList} from "~/api";
+    import {getAddressTransactionList} from "~/api/explorer.js";
     import getTitle from '~/assets/get-title';
     import {pretty, getTimeDistance} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';

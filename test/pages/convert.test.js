@@ -37,7 +37,7 @@ describe('convert page', () => {
 
     test('fail sell not enough coins', async () => {
         await page.type('[data-test-id="convertSellInputSellCoin"]', 'MNT');
-        await page.type('[data-test-id="convertSellInputSellAmount"]', '9999999999999999');
+        await page.type('[data-test-id="convertSellInputSellAmount"]', '99999999999999');
         await page.type('[data-test-id="convertSellInputBuyCoin"]', 'TESTCOIN01');
         await txSubmit(page, 'convertSell', {shouldFailPost: true});
     }, 30000);

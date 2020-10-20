@@ -1,5 +1,5 @@
 import Centrifuge from 'centrifuge/src';
-import {prepareBalance} from '~/api';
+import {prepareBalance} from '~/api/explorer.js';
 import {EXPLORER_RTM_URL} from "~/assets/variables";
 import {toCamel} from '~/assets/to-camel.js';
 
