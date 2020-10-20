@@ -185,7 +185,7 @@
                                 v-if="index > 0"
                                 @click="removeParticipant(index)"
                         >
-                            <img src="/img/icon-remove.svg" alt="Remove address">
+                            <img :src="`${BASE_URL_PREFIX}/img/icon-remove.svg`" alt="Remove address">
                         </button>
                     </div>
                 </div>

@@ -131,7 +131,7 @@
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
                 </div>
                 <div class="wallet__time" v-if="lastUpdateTimeDistance">
-                    <img class="wallet__time-icon" src="/img/icon-time.svg" width="14" height="14" alt="" role="presentation">
+                    <img class="wallet__time-icon" :src="`${BASE_URL_PREFIX}/img/icon-time.svg`" width="14" height="14" alt="" role="presentation">
                     <span class="wallet__time-text">Last updated <strong>{{ lastUpdateTimeDistance }}</strong> ago</span>
                 </div>
             </div>
