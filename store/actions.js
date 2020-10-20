@@ -1,5 +1,5 @@
-import {getBalance, getProfile, getProfileAddressEncrypted, getCoinList, getAddressStakeList, getValidatorList} from "~/api";
-// import explorer from "~/api/explorer";
+import {getProfile, getProfileAddressEncrypted} from "~/api";
+import {getBalance, getCoinList, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
 
 let activeCoinListPromise;
 let coinListTime = 0;

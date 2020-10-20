@@ -31,7 +31,9 @@ describe('wallet page', () => {
     });
 
     test('has address, has balance', async () => {
-        const balance = await page.$eval('[data-test-id="walletBalanceValue"]', (el) => el.textContent);
+        let balance = await page.$eval('[data-test-id="walletBalanceValue"]', (el) => el.textContent);
+        balance = balance.replace(/[^0-9.]/g, '');
+        console.log({address, balance});
         expect(address.substring(0, 2)).toBe('Mx');
         expect(address).toHaveLength(42);
         expect(parseFloat(balance)).toBeGreaterThan(0);

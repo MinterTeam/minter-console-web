@@ -30,7 +30,7 @@ const initNuxt = async () => {
         delete config.build.analyze;
     }
     config.dev = false;
-    config.mode = 'spa';
+    config.ssr = false;
     nuxt = new Nuxt(config);
     await nuxt.ready();
     if (!process.env.NUXT_SKIP_SELF_BUILD) {
