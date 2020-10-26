@@ -14,3 +14,4 @@ export const ROUTES = {
 };
 
 export const USER_MNEMONIC = 'exercise fantasy smooth enough arrive steak demise donkey true employ jealous decide blossom bind someone';
+// address: Mx7633980c000139dd3bd24a3f54e06474fa941e16

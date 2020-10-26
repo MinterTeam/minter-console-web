@@ -97,7 +97,7 @@
                     v-if="index > 0"
                     @click="removeParticipant(index)"
             >
-                <img src="/img/icon-remove.svg" alt="Remove signature">
+                <img :src="`${BASE_URL_PREFIX}/img/icon-remove.svg`" alt="Remove signature">
             </button>
 
             <span class="form-field__error" v-if="v.signature.$dirty && !v.signature.required">{{ $td('Enter signature', 'form.multisig-signature-list-item-error-required') }}</span>

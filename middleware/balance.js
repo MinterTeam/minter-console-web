@@ -27,7 +27,7 @@ export default function({app, store, redirect}) {
                 });
 
                 centrifuge.subscribe(store.getters.address, (response) => {
-                    const balance = response.data;
+                    const balance = toCamel(response.data);
                     store.commit('SET_BALANCE', prepareBalance(balance));
                 });
 

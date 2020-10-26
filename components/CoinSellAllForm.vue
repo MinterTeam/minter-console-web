@@ -59,6 +59,10 @@
                 if (this.$store.getters.isOfflineMode) {
                     return;
                 }
+                if (!this.sellAmount) {
+                    txFormContext.serverError = `There are no ${this.form.coinFrom} on your balance`;
+                    return Promise.reject(txFormContext.serverError);
+                }
                 txFormContext.isFormSending = true;
                 txFormContext.serverError = '';
                 txFormContext.serverSuccess = '';
