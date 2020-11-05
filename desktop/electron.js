@@ -20,7 +20,8 @@ async function initNuxt() {
     }
     config.rootDir = path.resolve(__dirname, '..');
     config.dev = false;
-    config.mode = 'spa';
+    config.ssr = false;
+    config.telemetry = false;
     config.dir = {
         static: 'dist',
     };
@@ -88,8 +89,10 @@ app.on('before-quit', () => {
 // });
 
 app.on('activate', () => {
+    // console.log('activate');
     // macOS style
     if (mainWindow === null) {
+        isReadyToClose = false;
         createWindow();
     }
 });
@@ -139,6 +142,7 @@ function createWindow() {
             // await mainWindow.webContents.session.flushStorageData()
             if (vuex && !vuex.auth.advanced && !vuex.auth.password) {
                 await mainWindow.webContents.session.clearStorageData();
+                // console.log('clear')
 
                 // looks like `clearStorageData` works well and no need to delete files
                 // deleteLogs(app);

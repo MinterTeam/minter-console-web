@@ -163,7 +163,7 @@
                         const signedTx = prepareSignedTx({
                             ...txParams,
                             nonce,
-                        }, {privateKey}).serialize().toString('hex');
+                        }, {privateKey}).serializeToString();
                         result.push(signedTx);
                         nonce++;
                     }
@@ -176,7 +176,7 @@
                 this.form.data.stake = null;
                 this.form.gasPrice = '';
                 if (this.form.nonce && this.$store.getters.isOfflineMode) {
-                    this.form.nonce += this.formTxCount;
+                    this.form.nonce = Number(this.form.nonce) + Number(this.formTxCount);
                 } else {
                     this.form.nonce = '';
                 }

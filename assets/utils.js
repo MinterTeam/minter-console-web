@@ -215,7 +215,7 @@ export function suggestionValidatorFilter(suggestion, query) {
     if (!query) {
         return true;
     }
-    return [suggestion.value, suggestion.name].some((item) => ~item.toLowerCase().indexOf(query.toLowerCase()));
+    return [suggestion.value, suggestion.name].some((item) => item?.toLowerCase().includes(query.toLowerCase()));
 }
 
 /**
