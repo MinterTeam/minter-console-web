@@ -4,255 +4,54 @@ import stripZeros from 'pretty-num/src/strip-zeros';
 import {generateMnemonic} from 'minterjs-wallet';
 import {addressEncryptedFromMnemonic, getPasswordToSend, getPasswordToStore} from 'minter-js-org';
 import accounts from '~/api/accounts';
-import explorer from '~/api/explorer';
 import autoDelegation from '~/api/auto-delegation';
 import {COIN_NAME} from '~/assets/variables';
 
 const formDataHeaders = {'Content-Type': 'multipart/form-data'};
 
+/**
+ * @param data
+ * @return {Promise<User|{confirmations: Array}>}
+ */
 export function register(data) {
-    const passwordToStore = getPasswordToStore(data.password);
-    const passwordToSend = getPasswordToSend(passwordToStore);
-    let userData = {
-        ...data,
-        password: passwordToSend,
-    };
-    delete userData.passwordConfirm;
-
-    const mnemonic = generateMnemonic();
-
-    return new Promise((resolve, reject) => {
-        accounts.post('register', {
-            ...userData,
-            mainAddress: addressEncryptedFromMnemonic(mnemonic, passwordToStore, true),
-        })
-            .then(() => {
-                login(data)
-                    .then((authData) => {
-                        resolve({
-                            ...authData,
-                            password: passwordToStore,
-                        });
-                    })
-                    .catch(reject);
-            })
-            .catch(reject);
-    });
+    return accounts.register(data, true);
 }
 
 /**
- * @param username
- * @param password
+ * @param {Object} data
+ * @param {string} data.username
+ * @param {string} data.password
  * @return {Promise<User>}
  */
-export function login({username, password}) {
-    const passwordToStore = getPasswordToStore(password);
-    const passwordToSend = getPasswordToSend(passwordToStore);
-
-    return accounts.post('login', {
-        username,
-        password: passwordToSend,
-    })
-        .then((response) => {
-            return {
-                ...response.data.data,
-                password: passwordToStore,
-            };
-        });
+export function login(data) {
+    return accounts.login(data);
 }
 
 /**
  * @return {Promise<User>}
  */
 export function getProfile() {
-    return accounts.get('profile')
-        .then((response) => response.data.data);
+    return accounts.getProfile();
 }
 
-export function putProfile(profile) {
-    let dataToSend = Object.assign({}, profile);
-    if (dataToSend.password) {
-        dataToSend.password = getPasswordToSend(getPasswordToStore(dataToSend.password));
-    }
-    if (dataToSend.passwordConfirm) {
-        delete dataToSend.passwordConfirm;
-    }
-    return accounts.put('profile', dataToSend);
+
+export function updateProfile(profile) {
+    return accounts.updateProfile(profile);
+}
+
+export function updateProfilePassword(oldPasswordToStore, newPasswordToStore) {
+    return accounts.updateProfilePassword(oldPasswordToStore, newPasswordToStore);
 }
 
 /**
- * @param avatar
+ * @param {Blob|File} avatar
  * @return {Promise<UserAvatar>}
  */
-export function putProfileAvatar(avatar) {
-    return accounts
-        .post('profile/avatar', makeFormData({avatar}), {
-            headers: formDataHeaders,
-        })
-        .then((response) => response.data.data);
+export function updateProfileAvatar(avatar) {
+    return accounts.updateProfileAvatar(avatar);
 }
 
 
-
-/**
- * @typedef {Object} TransactionListInfo
- * @property {Array<Transaction>} data
- * @property {Object} meta - pagination
- */
-
-/**
- *
- * @param {string} address
- * @param {Object} [params]
- * @param {number} [params.page]
- * @param {number} [params.limit]
- * @return {Promise<TransactionListInfo>}
- */
-export function getAddressTransactionList(address, params = {}) {
-    return explorer.get(`addresses/${address}/transactions`, {params})
-        .then((response) => response.data);
-}
-
-/**
- * @param addressHash
- * @return {Promise<Array<BalanceItem>>}
- */
-export function getBalance(addressHash) {
-    return explorer.get('addresses/' + addressHash)
-        .then((response) => {
-            response.data.data.balances = prepareBalance(response.data.data.balances);
-            return response.data;
-        });
-}
-
-/**
- * @typedef {Object} BalanceItem
- * @property {number|string} amount
- * @property {CoinItem} coin
- */
-
-
-/**
- *
- * @param {Array<BalanceItem>} balanceList
- * @return {Array<BalanceItem>}
- */
-export function prepareBalance(balanceList) {
-    return balanceList.sort((a, b) => {
-            // set base coin first
-            if (a.coin.symbol === COIN_NAME) {
-                return -1;
-            } else if (b.coin.symbol === COIN_NAME) {
-                return 1;
-            } else {
-                // sort coins by name, instead of reserve
-                return a.coin.symbol.localeCompare(b.coin.symbol);
-            }
-        })
-        .map((coinItem) => {
-            return {
-                ...coinItem,
-                amount: stripZeros(coinItem.amount),
-            };
-        });
-}
-
-/**
- * @return {Promise<Array<CoinItem>>}
- */
-export function getCoinList() {
-    return explorer.get('coins')
-        .then((response) => response.data.data);
-        // don't sort, coins already sorted by reserve
-        // .then((response) => response.data.data.sort((a, b) => {
-        //     if (a.symbol === COIN_NAME) {
-        //         return -1;
-        //     } else if (b.symbol === COIN_NAME) {
-        //         return 1;
-        //     } else {
-        //         return a.symbol.localeCompare(b.symbol);
-        //     }
-        // }));
-}
-
-/**
- * @typedef {Object} CoinItem
- * @property {number} id
- * @property {number} crr
- * @property {number|string} volume
- * @property {number|string} reserve_balance
- * @property {string} name
- * @property {string} symbol
- */
-
-
-/**
- * @param {string} address
- * @return {Promise<Array<StakeItem>>}
- */
-export function getAddressStakeList(address) {
-    return explorer.get(`addresses/${address}/delegations`, {params: {limit: 999}})
-        .then((response) => response.data.data);
-}
-
-/**
- * @typedef {Object} StakeItem
- * @property {Validator} [validator]
- * @property {string} [address]
- * @property {string|number} value
- * @property {string|number} bipValue
- * @property {string} coin
- * @property {boolean} isWaitlisted
- */
-
-/**
- * @return {Promise<Array<Validator>>}
- */
-export function getValidatorList() {
-    return explorer.get(`validators`)
-        .then((response) => {
-            return response.data.data.sort((a, b) => {
-                // Sort by stake descending
-                return b.stake - a.stake;
-            });
-        });
-}
-
-/**
- * @typedef {Object} Validator
- * @property {string} publicKey
- * @property {string} name
- * @property {string} description
- * @property {string} iconUrl
- * @property {string} siteUrl
- * @property {number} status
- * @property {string|number} [stake]
- * @property {string|number} [part]
- * @property {number} [delegatorCount]
- * @property {Array<{coin: string, value: string, address: string}>} [delegatorList]
- */
-
-
-/**
- * @param {string} hash
- * @return {Promise<Transaction>}
- */
-export function getTransaction(hash) {
-    return explorer.get('transactions/' + hash)
-        .then((response) => {
-            const tx = response.data.data;
-            if (!tx.data) {
-                tx.data = {};
-            }
-            if (response.status === 200) {
-                tx.status = true;
-            }
-            if (response.status === 206) {
-                tx.status = false;
-            }
-            return tx;
-        });
-}
 
 
 /**
@@ -260,25 +59,23 @@ export function getTransaction(hash) {
  * @return {Promise<[Address]>}
  */
 export function getProfileAddressList() {
-    return accounts.get('addresses')
-        .then((response) => response.data.data.map(markSecured));
+    return accounts.getProfileAddressList();
 }
 
 export function getProfileAddressEncrypted(id) {
-    return accounts.get('addresses/' + id + '/encrypted')
-        .then((response) => markSecured(response.data.data));
+    return accounts.getProfileAddressEncrypted(id);
 }
 
 export function addProfileAddress(address) {
-    return accounts.post('addresses', address);
+    return accounts.addProfileAddress(address);
 }
 
 export function setMainProfileAddress(id) {
-    return accounts.put('addresses/' + id, {isMain: true});
+    return accounts.updateProfileAddress(id, {isMain: true});
 }
 
 export function deleteProfileAddress(id) {
-    return accounts.delete('addresses/' + id);
+    return accounts.deleteProfileAddress(id);
 }
 
 /**
@@ -289,12 +86,15 @@ export function deleteProfileAddress(id) {
  * @return {Promise<Object>}
  */
 export function getAddressInfo(params, cancelToken) {
-    return accounts
-        .get('info/address/by/contact', {
-            params,
-            cancelToken,
-        })
-        .then((response) => response.data.data);
+    return accounts.getAddressInfoByContact(params, {cancelToken});
+}
+
+/**
+ * @param {Array<string>} addressList
+ * @return {Promise<Array<UserInfo>>}
+ */
+export function getAddressListInfo(addressList) {
+    return accounts.getAddressListInfo(addressList);
 }
 
 /**

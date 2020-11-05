@@ -53,7 +53,7 @@
                 },
                 coinSymbol: {
                     required,
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
             };
 
@@ -83,7 +83,8 @@
                 if (!this.successTx) {
                     return 0;
                 }
-                return this.successTx.height % 120;
+                const currentBlockAfterPreviousUpdate = this.successTx.height % 120;
+                return (120 - currentBlockAfterPreviousUpdate) % 120;
             },
             timeToUpdate() {
                 if (!this.blocksToUpdate) {

@@ -7,11 +7,11 @@ This is the repository containing the code for the official Minter Console websi
 
 ## Install
 
-- ensure latest stable Node.js and NPM are installed
 - clone the repo
-- copy .env.example `cp .env.example .env`
-- set correct .env variables
+- ensure latest stable Node.js and NPM are installed
 - install node_modules `npm ci`
+- copy .env.mainnet.example `cp .env.mainnet.example .env`
+- set correct .env variables
 - build `npm run production`
 - now you have static assets in the `./dist/` folder, you have to distribute them with some web server like Nginx (or run `npm run start`, but it's not recommended for production)
 

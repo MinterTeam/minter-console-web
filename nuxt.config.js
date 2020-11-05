@@ -65,6 +65,7 @@ const scriptCSP = NUXT_LOADING_INLINE_SCRIPT_SHA.map((item) => {
 
 export default {
     ssr: false,
+    telemetry: false,
     /*
     ** Headers of the page
     */
@@ -200,7 +201,8 @@ export default {
                 ],
             ],
             plugins: [
-                // "@babel/plugin-proposal-optional-chaining",
+                //@TODO remove when https://github.com/nuxt/nuxt.js/issues/7722 will be fixed
+                "@babel/plugin-proposal-optional-chaining",
             ],
             // prevent @babel/plugin-transform-runtime from inserting `import` statement into commonjs files (bc. it breaks webpack)
             sourceType: 'unambiguous',

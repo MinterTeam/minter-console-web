@@ -1,5 +1,5 @@
 import Centrifuge from 'centrifuge/src';
-import {prepareBalance} from '~/api';
+import {prepareBalance} from '~/api/explorer.js';
 import {EXPLORER_RTM_URL} from "~/assets/variables";
 import {toCamel} from '~/assets/to-camel.js';
 
@@ -27,7 +27,7 @@ export default function({app, store, redirect}) {
                 });
 
                 centrifuge.subscribe(store.getters.address, (response) => {
-                    const balance = response.data;
+                    const balance = toCamel(response.data);
                     store.commit('SET_BALANCE', prepareBalance(balance));
                 });
 

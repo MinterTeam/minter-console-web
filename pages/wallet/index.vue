@@ -1,6 +1,6 @@
 <script>
     import {mapGetters} from 'vuex';
-    import {getAddressTransactionList} from "~/api";
+    import {getAddressTransactionList} from "~/api/explorer.js";
     import getTitle from '~/assets/get-title';
     import {pretty, getTimeDistance} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';
@@ -33,8 +33,10 @@
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
+            if (store.getters.isOfflineMode) {
+                return;
+            }
             store.dispatch('FETCH_VALIDATOR_LIST');
-            return Promise.resolve();
         },
         asyncData({ store }) {
             if (store.getters.isOfflineMode) {
@@ -129,7 +131,7 @@
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
                 </div>
                 <div class="wallet__time" v-if="lastUpdateTimeDistance">
-                    <img class="wallet__time-icon" src="/img/icon-time.svg" width="14" height="14" alt="" role="presentation">
+                    <img class="wallet__time-icon" :src="`${BASE_URL_PREFIX}/img/icon-time.svg`" width="14" height="14" alt="" role="presentation">
                     <span class="wallet__time-text">Last updated <strong>{{ lastUpdateTimeDistance }}</strong> ago</span>
                 </div>
             </div>

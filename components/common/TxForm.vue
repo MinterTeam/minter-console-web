@@ -97,7 +97,7 @@
         validations() {
             const form = {
                 gasCoin: {
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
                 payload: {
                     maxLength: maxLength(1024),
@@ -155,17 +155,19 @@
                 return [this.form.gasCoin, this.form.gasPrice, this.form.nonce, this.form.payload, this.txData];
             },
             feeBusParams() {
-                let selectedCoinSymbol = this.txData.value;
-                if (this.txType === TX_TYPE.SEND || this.txType === TX_TYPE.DECLARE_CANDIDACY || this.txType === TX_TYPE.DELEGATE) {
-                    selectedCoinSymbol = this.txData.coin;
+                const txType = this.txType;
+                const txData = this.txData;
+                let selectedCoinSymbol;
+                if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
+                    selectedCoinSymbol = txData.coin;
                 }
-                if (this.txType === TX_TYPE.BUY || this.txType === TX_TYPE.SELL || this.txType === TX_TYPE.SELL_ALL) {
-                    selectedCoinSymbol = this.txData.coinToSell;
+                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL) {
+                    selectedCoinSymbol = txData.coinToSell;
                 }
-                let createCoinSymbol = this.txType === TX_TYPE.CREATE_COIN ? this.txData.symbol : undefined;
+                let createCoinSymbol = txType === TX_TYPE.CREATE_COIN ? txData.symbol : undefined;
 
                 return {
-                    txType: this.txType,
+                    txType: txType,
                     txFeeOptions: {
                         payload: this.form.payload,
                         coinSymbol: createCoinSymbol,
@@ -231,7 +233,11 @@
                     beforeShowPromise = Promise.resolve();
                 }
                 beforeShowPromise.then(() => {
-                    this.isConfirmModalVisible = true;
+                    if (this.$store.getters.isOfflineMode) {
+                        this.submit();
+                    } else {
+                        this.isConfirmModalVisible = true;
+                    }
                 }).catch((e) => {
                     console.log(e);
                 });
@@ -253,14 +259,20 @@
             },
             generateTx() {
                 let tx;
-                if (!this.form.multisigAddress) {
-                    // private key to sign
-                    tx = prepareTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
-                } else {
-                    // address to make proof for RedeemCheck
-                    tx = prepareTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
+                try {
+                    if (!this.form.multisigAddress) {
+                        // private key to sign
+                        tx = prepareTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
+                    } else {
+                        // address to make proof for RedeemCheck
+                        tx = prepareTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
+                    }
+                } catch (error) {
+                    console.log(error);
+                    this.serverError = error.message;
+                    return;
                 }
-                this.signedTx = tx.serialize().toString('hex');
+                this.signedTx = tx.serializeToString();
                 this.clearForm();
             },
             postTx() {

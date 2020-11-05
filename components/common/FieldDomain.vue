@@ -79,11 +79,7 @@
                 }
 
                 return this.$store.state.validatorList.map((item) => {
-                    let name = '';
-                    if (item.meta && item.meta.name) {
-                        name = item.meta.name;
-                    }
-                    return {name, value: item.publicKey};
+                    return {name: item.name || '', value: item.publicKey};
                 });
             },
         },

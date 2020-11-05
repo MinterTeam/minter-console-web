@@ -38,11 +38,11 @@
             const form = {
                 coinFrom: {
                     required,
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
                 coinTo: {
                     required,
-                    minLength: minLength(3),
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
             };
 
@@ -58,6 +58,10 @@
             getEstimation(txFormContext) {
                 if (this.$store.getters.isOfflineMode) {
                     return;
+                }
+                if (!this.sellAmount) {
+                    txFormContext.serverError = `There are no ${this.form.coinFrom} on your balance`;
+                    return Promise.reject(txFormContext.serverError);
                 }
                 txFormContext.isFormSending = true;
                 txFormContext.serverError = '';
