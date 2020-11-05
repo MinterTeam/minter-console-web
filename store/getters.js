@@ -39,9 +39,9 @@ export default {
     address(state, getters) {
         if (getters.isUserAdvanced) {
             return getters.wallet.getAddressString();
-        } else {
-            return state.user.mainAddress?.address;
         }
+
+        return state.user.mainAddress?.address || '';
     },
     addressUrl(state, getters) {
         return getExplorerAddressUrl(getters.address);

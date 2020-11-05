@@ -77,7 +77,7 @@
         <VueSimpleSuggest
                 v-bind="$attrs"
                 :value="value"
-                :list="suggestionList"
+                :list="suggestionList.slice(0)"
                 :max-suggestions="$options.MAX_ITEM_COUNT"
                 :min-length="suggestionMinInputLength"
                 :filter-by-query="true"

@@ -233,7 +233,11 @@
                     beforeShowPromise = Promise.resolve();
                 }
                 beforeShowPromise.then(() => {
-                    this.isConfirmModalVisible = true;
+                    if (this.$store.getters.isOfflineMode) {
+                        this.submit();
+                    } else {
+                        this.isConfirmModalVisible = true;
+                    }
                 }).catch((e) => {
                     console.log(e);
                 });
@@ -255,14 +259,20 @@
             },
             generateTx() {
                 let tx;
-                if (!this.form.multisigAddress) {
-                    // private key to sign
-                    tx = prepareTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
-                } else {
-                    // address to make proof for RedeemCheck
-                    tx = prepareTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
+                try {
+                    if (!this.form.multisigAddress) {
+                        // private key to sign
+                        tx = prepareTx(this.getTxParams(), {privateKey: this.$store.getters.privateKey});
+                    } else {
+                        // address to make proof for RedeemCheck
+                        tx = prepareTx(this.getTxParamsMultisigData(), {address: this.form.multisigAddress});
+                    }
+                } catch (error) {
+                    console.log(error);
+                    this.serverError = error.message;
+                    return;
                 }
-                this.signedTx = tx.serialize().toString('hex');
+                this.signedTx = tx.serializeToString();
                 this.clearForm();
             },
             postTx() {

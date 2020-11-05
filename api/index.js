@@ -31,11 +31,25 @@ export function login(data) {
  * @return {Promise<User>}
  */
 export function getProfile() {
-    return accounts.get('profile')
-        .then((response) => response.data.data);
+    return accounts.getProfile();
 }
 
 
+export function updateProfile(profile) {
+    return accounts.updateProfile(profile);
+}
+
+export function updateProfilePassword(oldPasswordToStore, newPasswordToStore) {
+    return accounts.updateProfilePassword(oldPasswordToStore, newPasswordToStore);
+}
+
+/**
+ * @param {Blob|File} avatar
+ * @return {Promise<UserAvatar>}
+ */
+export function updateProfileAvatar(avatar) {
+    return accounts.updateProfileAvatar(avatar);
+}
 
 
 
@@ -45,25 +59,23 @@ export function getProfile() {
  * @return {Promise<[Address]>}
  */
 export function getProfileAddressList() {
-    return accounts.get('addresses')
-        .then((response) => response.data.data.map(markSecured));
+    return accounts.getProfileAddressList();
 }
 
 export function getProfileAddressEncrypted(id) {
-    return accounts.get('addresses/' + id + '/encrypted')
-        .then((response) => markSecured(response.data.data));
+    return accounts.getProfileAddressEncrypted(id);
 }
 
 export function addProfileAddress(address) {
-    return accounts.post('addresses', address);
+    return accounts.addProfileAddress(address);
 }
 
 export function setMainProfileAddress(id) {
-    return accounts.put('addresses/' + id, {isMain: true});
+    return accounts.updateProfileAddress(id, {isMain: true});
 }
 
 export function deleteProfileAddress(id) {
-    return accounts.delete('addresses/' + id);
+    return accounts.deleteProfileAddress(id);
 }
 
 /**
@@ -74,12 +86,15 @@ export function deleteProfileAddress(id) {
  * @return {Promise<Object>}
  */
 export function getAddressInfo(params, cancelToken) {
-    return accounts
-        .get('info/address/by/contact', {
-            params,
-            cancelToken,
-        })
-        .then((response) => response.data.data);
+    return accounts.getAddressInfoByContact(params, {cancelToken});
+}
+
+/**
+ * @param {Array<string>} addressList
+ * @return {Promise<Array<UserInfo>>}
+ */
+export function getAddressListInfo(addressList) {
+    return accounts.getAddressListInfo(addressList);
 }
 
 /**

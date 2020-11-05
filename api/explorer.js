@@ -46,7 +46,7 @@ export function getBalance(addressHash) {
 /**
  * @typedef {Object} BalanceItem
  * @property {number|string} amount
- * @property {CoinItem} coin
+ * @property {Coin} coin
  */
 
 
@@ -94,6 +94,13 @@ export function getCoinList() {
         }));
 }
 
+
+/**
+ * @typedef {Object} Coin
+ * @property {number} id
+ * @property {string} symbol
+ */
+
 /**
  * @typedef {Object} CoinItem
  * @property {number} id
@@ -120,7 +127,7 @@ export function getAddressStakeList(address) {
  * @property {string} [address]
  * @property {string|number} value
  * @property {string|number} bipValue
- * @property {string} coin
+ * @property {Coin} coin
  * @property {boolean} isWaitlisted
  */
 
@@ -148,7 +155,7 @@ export function getValidatorList() {
  * @property {string|number} [stake]
  * @property {string|number} [part]
  * @property {number} [delegatorCount]
- * @property {Array<{coin: string, value: string, address: string}>} [delegatorList]
+ * @property {Array<{coin: Coin, value: string, address: string}>} [delegatorList]
  */
 
 
