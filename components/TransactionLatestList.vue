@@ -168,170 +168,170 @@
         <div class="table-wrap">
             <table v-if="txList.length">
                 <thead>
-                <tr class="u-text-nowrap">
-                    <th class="u-hidden-small-down">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
-                    <th class="u-hidden-small-up" colspan="3">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
-                    <th class="u-hidden-small-down">{{ $td('Block', 'wallet.tx-table-block') }}</th>
-                    <th class="u-hidden-xlarge-down">{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone }})</th>
-                    <th class="u-hidden-xlarge-down">{{ $td('From', 'wallet.tx-table-from') }}</th>
-                    <th class="u-hidden-large-down">{{ $td('Type', 'wallet.tx-table-type') }}</th>
-                    <th class="u-hidden-large-down">{{ $td('Amount', 'wallet.tx-table-amount') }}</th>
-                    <th class="u-hidden-large-up u-hidden-small-down">{{ $td('Value', 'wallet.tx-table-value') }}</th>
-                    <th class="table__controls-cell u-hidden-small-down"></th>
-                </tr>
+                    <tr class="u-text-nowrap">
+                        <th class="u-hidden-small-down">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
+                        <th class="u-hidden-small-up" colspan="3">{{ $td('Latest Transactions', 'wallet.tx-title') }}</th>
+                        <th class="u-hidden-small-down">{{ $td('Block', 'wallet.tx-table-block') }}</th>
+                        <th class="u-hidden-xlarge-down">{{ $td('TimeStamp', 'wallet.tx-table-time') }} ({{ timeZone }})</th>
+                        <th class="u-hidden-xlarge-down">{{ $td('From', 'wallet.tx-table-from') }}</th>
+                        <th class="u-hidden-large-down">{{ $td('Type', 'wallet.tx-table-type') }}</th>
+                        <th class="u-hidden-large-down">{{ $td('Amount', 'wallet.tx-table-amount') }}</th>
+                        <th class="u-hidden-large-up u-hidden-small-down">{{ $td('Value', 'wallet.tx-table-value') }}</th>
+                        <th class="table__controls-cell u-hidden-small-down"></th>
+                    </tr>
                 </thead>
                 <tbody>
-                <template v-for="tx in txList">
-                    <tr class="u-text-nowrap" :class="{'is-expanded': isTxExpanded[tx.txn]}" :key="tx.txn">
-                        <!-- hash -->
-                        <td>
-                            <TableLink data-test-id="walletTxHash" :link-text="tx.hash" :link-path="getExplorerTxUrl(tx.hash)"/>
-                        </td>
-                        <!-- block -->
-                        <td class="u-hidden-small-down">
-                            <TableLink :link-text="tx.height" :link-path="getExplorerBlockUrl(tx.height)" :should-not-shorten="true"/>
-                        </td>
-                        <!-- time -->
-                        <td class="u-hidden-xlarge-down">{{ tx.timestamp | time }}</td>
-                        <!-- from -->
-                        <td class="u-hidden-xlarge-down">
-                            <TableLink :link-text="tx.from"
-                                       :link-path="getExplorerAddressUrl(tx.from)"
-                            />
-                        </td>
-                        <!-- type -->
-                        <td class="u-hidden-large-down">
-                            <span v-if="isReceive(tx)">Receive</span>
-                            <span v-else>{{ tx.type | txType }}</span>
-                        </td>
-                        <!-- amount -->
-                        <td class="u-hidden-large-down">
-                            <div v-if="hasAmount(tx)">
-                                {{ getAmountWithCoin(tx) }}
-                            </div>
-                        </td>
-                        <!-- value -->
-                        <td class="u-hidden-large-up">
-                            <span v-if="isReceive(tx)">Receive</span>
-                            <span v-else>{{ tx.type | txType }}</span>
-                            <span v-if="hasAmount(tx)">
-                                {{ getAmountWithCoin(tx) }}
-                            </span>
-                        </td>
-                        <!--expand button -->
-                        <td class="table__controls-cell">
-                            <button class="table__controls-button table__controls-button--expand u-semantic-button link--opacity" :class="{'is-expanded': isTxExpanded[tx.txn]}" @click="toggleTx(tx.txn)">Show Tx Data</button>
-                        </td>
-                    </tr>
-                    <tr class="table__row-expanded-data" :key="'exp' + tx.txn" v-if="isTxExpanded[tx.txn]">
-                        <td colspan="7">
-                            <div class="table__inner">
-                                <!-- from -->
-                                <div class="table__inner-item u-hidden-xlarge-up">
-                                    <strong>{{ $td('From', 'wallet.tx-table-from') }}</strong> <br>
-                                    <TableLink :link-text="tx.from"
-                                               :link-path="getExplorerAddressUrl(tx.from)"
-                                               :should-not-shorten="true"
-                                    />
+                    <template v-for="tx in txList">
+                        <tr class="u-text-nowrap" :class="{'is-expanded': isTxExpanded[tx.txn]}" :key="tx.txn">
+                            <!-- hash -->
+                            <td>
+                                <TableLink data-test-id="walletTxHash" :link-text="tx.hash" :link-path="getExplorerTxUrl(tx.hash)"/>
+                            </td>
+                            <!-- block -->
+                            <td class="u-hidden-small-down">
+                                <TableLink :link-text="tx.height" :link-path="getExplorerBlockUrl(tx.height)" :should-not-shorten="true"/>
+                            </td>
+                            <!-- time -->
+                            <td class="u-hidden-xlarge-down">{{ tx.timestamp | time }}</td>
+                            <!-- from -->
+                            <td class="u-hidden-xlarge-down">
+                                <TableLink :link-text="tx.from"
+                                           :link-path="getExplorerAddressUrl(tx.from)"
+                                />
+                            </td>
+                            <!-- type -->
+                            <td class="u-hidden-large-down">
+                                <span v-if="isReceive(tx)">Receive</span>
+                                <span v-else>{{ tx.type | txType }}</span>
+                            </td>
+                            <!-- amount -->
+                            <td class="u-hidden-large-down">
+                                <div v-if="hasAmount(tx)">
+                                    {{ getAmountWithCoin(tx) }}
                                 </div>
+                            </td>
+                            <!-- value -->
+                            <td class="u-hidden-large-up">
+                                <span v-if="isReceive(tx)">Receive</span>
+                                <span v-else>{{ tx.type | txType }}</span>
+                                <span v-if="hasAmount(tx)">
+                                    {{ getAmountWithCoin(tx) }}
+                                </span>
+                            </td>
+                            <!--expand button -->
+                            <td class="table__controls-cell">
+                                <button class="table__controls-button table__controls-button--expand u-semantic-button link--opacity" :class="{'is-expanded': isTxExpanded[tx.txn]}" @click="toggleTx(tx.txn)">Show Tx Data</button>
+                            </td>
+                        </tr>
+                        <tr class="table__row-expanded-data" :key="'exp' + tx.txn" v-if="isTxExpanded[tx.txn]">
+                            <td colspan="7">
+                                <div class="table__inner">
+                                    <!-- from -->
+                                    <div class="table__inner-item u-hidden-xlarge-up">
+                                        <strong>{{ $td('From', 'wallet.tx-table-from') }}</strong> <br>
+                                        <TableLink :link-text="tx.from"
+                                                   :link-path="getExplorerAddressUrl(tx.from)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
 
-                                <!-- type SEND -->
-                                <div class="table__inner-item" v-if="tx.data.to">
-                                    <strong>{{ $td('To', 'wallet.tx-table-to') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.to"
-                                               :link-path="getExplorerAddressUrl(tx.data.to)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
+                                    <!-- type SEND -->
+                                    <div class="table__inner-item" v-if="tx.data.to">
+                                        <strong>{{ $td('To', 'wallet.tx-table-to') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.to"
+                                                   :link-path="getExplorerAddressUrl(tx.data.to)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
 
-                                <!-- SELL -->
-                                <div class="table__inner-item" v-if="isSell(tx)">
-                                    <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
-                                    {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
-                                </div>
-                                <div class="table__inner-item" v-if="isSell(tx)">
-                                    <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
-                                    {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
-                                </div>
-                                <!-- BUY -->
-                                <div class="table__inner-item" v-if="isBuy(tx)">
-                                    <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
-                                    {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
-                                </div>
-                                <div class="table__inner-item" v-if="isBuy(tx)">
-                                    <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
-                                    {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
-                                </div>
+                                    <!-- SELL -->
+                                    <div class="table__inner-item" v-if="isSell(tx)">
+                                        <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
+                                        {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="isSell(tx)">
+                                        <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
+                                        {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
+                                    </div>
+                                    <!-- BUY -->
+                                    <div class="table__inner-item" v-if="isBuy(tx)">
+                                        <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
+                                        {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="isBuy(tx)">
+                                        <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
+                                        {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
+                                    </div>
 
-                                <!-- type CREATE_COIN -->
-                                <div class="table__inner-item" v-if="tx.data.name">
-                                    <strong>{{ $td('Name', 'wallet.tx-table-name') }}</strong> <br>
-                                    {{ tx.data.name }}
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.symbol">
-                                    <strong>{{ $td('Symbol', 'wallet.tx-table-symbol') }}</strong> <br>
-                                    {{ tx.data.symbol }}
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.initialAmount">
-                                    <strong>{{ $td('Initial amount', 'wallet.tx-table-initial-amount') }}</strong> <br>
-                                    {{ tx.data.initialAmount | pretty }}
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.initialReserve">
-                                    <strong>{{ $td('Initial reserve', 'wallet.tx-table-reserve') }}</strong> <br>
-                                    {{ tx.data.initialReserve | pretty }}
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.constantReserveRatio">
-                                    <strong>{{ $td('CRR', 'wallet.tx-table-crr') }}</strong> <br>
-                                    {{ tx.data.constantReserveRatio }}&thinsp;%
-                                </div>
+                                    <!-- type CREATE_COIN -->
+                                    <div class="table__inner-item" v-if="tx.data.name">
+                                        <strong>{{ $td('Name', 'wallet.tx-table-name') }}</strong> <br>
+                                        {{ tx.data.name }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.symbol">
+                                        <strong>{{ $td('Symbol', 'wallet.tx-table-symbol') }}</strong> <br>
+                                        {{ tx.data.symbol }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.initialAmount">
+                                        <strong>{{ $td('Initial amount', 'wallet.tx-table-initial-amount') }}</strong> <br>
+                                        {{ tx.data.initialAmount | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.initialReserve">
+                                        <strong>{{ $td('Initial reserve', 'wallet.tx-table-reserve') }}</strong> <br>
+                                        {{ tx.data.initialReserve | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.constantReserveRatio">
+                                        <strong>{{ $td('CRR', 'wallet.tx-table-crr') }}</strong> <br>
+                                        {{ tx.data.constantReserveRatio }}&thinsp;%
+                                    </div>
 
-                                <!-- type DECLARE_CANDIDACY, DELEGATE, UNBOND, SET_CANDIDATE_ONLINE, SET_CANDIDATE_OFFLINE -->
-                                <div class="table__inner-item" v-if="getValidatorName(tx)">
-                                    <strong>Validator</strong> <br>
-                                    <TableLink :link-text="getValidatorName(tx)"
-                                               :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.pubKey">
-                                    <strong>{{ $td('Public key', 'wallet.tx-table-public') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.pubKey"
-                                               :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
-                                <div class="table__inner-item" v-if="isDefined(tx.data.stake)">
-                                    <strong>{{ $td('Stake', 'wallet.tx-table-stake') }}</strong> <br>
-                                    {{ tx.data.coin.symbol }} {{ tx.data.stake | pretty }}
-                                </div>
-                                <div class="table__inner-item" v-if="isDefined(tx.data.commission)">
-                                    <strong>{{ $td('Commission', 'wallet.tx-table-commission') }}</strong> <br>
-                                    {{ tx.data.commission }}&thinsp;%
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.ownerAddress">
-                                    <strong>{{ $td('Owner address', 'wallet.tx-table-owner-address') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.ownerAddress"
-                                               :link-path="getExplorerAddressUrl(tx.data.ownerAddress)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.rewardAddress">
-                                    <strong>{{ $td('Reward address', 'wallet.tx-table-reward-address') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.rewardAddress"
-                                               :link-path="getExplorerAddressUrl(tx.data.rewardAddress)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.controlAddress">
-                                    <strong>{{ $td('Control address', 'wallet.tx-table-control-address') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.controlAddress"
-                                               :link-path="getExplorerAddressUrl(tx.data.controlAddress)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
+                                    <!-- type DECLARE_CANDIDACY, DELEGATE, UNBOND, SET_CANDIDATE_ONLINE, SET_CANDIDATE_OFFLINE -->
+                                    <div class="table__inner-item" v-if="getValidatorName(tx)">
+                                        <strong>Validator</strong> <br>
+                                        <TableLink :link-text="getValidatorName(tx)"
+                                                   :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.pubKey">
+                                        <strong>{{ $td('Public key', 'wallet.tx-table-public') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.pubKey"
+                                                   :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
+                                    <div class="table__inner-item" v-if="isDefined(tx.data.stake)">
+                                        <strong>{{ $td('Stake', 'wallet.tx-table-stake') }}</strong> <br>
+                                        {{ tx.data.coin.symbol }} {{ tx.data.stake | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="isDefined(tx.data.commission)">
+                                        <strong>{{ $td('Commission', 'wallet.tx-table-commission') }}</strong> <br>
+                                        {{ tx.data.commission }}&thinsp;%
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.ownerAddress">
+                                        <strong>{{ $td('Owner address', 'wallet.tx-table-owner-address') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.ownerAddress"
+                                                   :link-path="getExplorerAddressUrl(tx.data.ownerAddress)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.rewardAddress">
+                                        <strong>{{ $td('Reward address', 'wallet.tx-table-reward-address') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.rewardAddress"
+                                                   :link-path="getExplorerAddressUrl(tx.data.rewardAddress)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.controlAddress">
+                                        <strong>{{ $td('Control address', 'wallet.tx-table-control-address') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.controlAddress"
+                                                   :link-path="getExplorerAddressUrl(tx.data.controlAddress)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
 
-                                <!-- type REDEEM_CHECK -->
-<!--
+                                    <!-- type REDEEM_CHECK -->
+                                    <!--
                                 <div class="table__inner-item" v-if="tx.data.rawCheck">
                                     <strong>{{ $td('Check', 'wallet.tx-table-check') }}</strong> <br>
                                     &lt;!&ndash;<TableLink :link-text="tx.data.rawCheck" :is-not-link="true"/>&ndash;&gt;
@@ -342,58 +342,58 @@
                                     {{ tx.data.proof | short}}
                                 </div>
 -->
-                                <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
-                                    <strong>{{ $td('Check issuer', 'wallet.tx-table-check-issuer') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.check.sender"
-                                               :link-path="getExplorerAddressUrl(tx.data.check.sender)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
-                                    <strong>{{ $td('Check nonce', 'wallet.tx-table-check-nonce') }}</strong> <br>
-                                    {{ fromBase64(tx.data.check.nonce) }}
-                                </div>
-                                <div class="table__inner-item" v-if="tx.data.check && tx.data.check.dueBlock">
-                                    <strong>{{ $td('Due block', 'wallet.tx-table-due-block') }}</strong> <br>
-                                    {{ tx.data.check.dueBlock }}
-                                </div>
+                                    <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
+                                        <strong>{{ $td('Check issuer', 'wallet.tx-table-check-issuer') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.check.sender"
+                                                   :link-path="getExplorerAddressUrl(tx.data.check.sender)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
+                                        <strong>{{ $td('Check nonce', 'wallet.tx-table-check-nonce') }}</strong> <br>
+                                        {{ fromBase64(tx.data.check.nonce) }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="tx.data.check && tx.data.check.dueBlock">
+                                        <strong>{{ $td('Due block', 'wallet.tx-table-due-block') }}</strong> <br>
+                                        {{ tx.data.check.dueBlock }}
+                                    </div>
 
-                                <!-- type CREATE_MULTISIG -->
-                                <div class="table__inner-item" v-if="tx.data.multisigAddress">
-                                    <strong>{{ $td('Created multisig address', 'wallet.tx-table-multisig-address') }}</strong> <br>
-                                    <TableLink :link-text="tx.data.multisigAddress"
-                                               :link-path="getExplorerAddressUrl(tx.data.multisigAddress)"
-                                               :should-not-shorten="true"
-                                    />
-                                </div>
+                                    <!-- type CREATE_MULTISIG -->
+                                    <div class="table__inner-item" v-if="tx.data.multisigAddress">
+                                        <strong>{{ $td('Created multisig address', 'wallet.tx-table-multisig-address') }}</strong> <br>
+                                        <TableLink :link-text="tx.data.multisigAddress"
+                                                   :link-path="getExplorerAddressUrl(tx.data.multisigAddress)"
+                                                   :should-not-shorten="true"
+                                        />
+                                    </div>
 
-                                <!-- block -->
-                                <div class="table__inner-item u-hidden-small-up">
-                                    <strong>{{ $td('Block', 'wallet.tx-table-block') }}</strong> <br>
-                                    <TableLink :link-text="tx.height" :link-path="getExplorerBlockUrl(tx.height)"/>
-                                </div>
+                                    <!-- block -->
+                                    <div class="table__inner-item u-hidden-small-up">
+                                        <strong>{{ $td('Block', 'wallet.tx-table-block') }}</strong> <br>
+                                        <TableLink :link-text="tx.height" :link-path="getExplorerBlockUrl(tx.height)"/>
+                                    </div>
 
-                                <!-- time -->
-                                <div class="table__inner-item u-hidden-xlarge-up">
-                                    <strong>{{ $td('Timestamp', 'wallet.tx-table-time') }} ({{ timeZone }})</strong> <br>
-                                    {{ tx.timestamp | time }}
-                                </div>
+                                    <!-- time -->
+                                    <div class="table__inner-item u-hidden-xlarge-up">
+                                        <strong>{{ $td('Timestamp', 'wallet.tx-table-time') }} ({{ timeZone }})</strong> <br>
+                                        {{ tx.timestamp | time }}
+                                    </div>
 
-                                <!-- fee -->
-                                <div class="table__inner-item">
-                                    <strong>{{ $td('Fee', 'wallet.tx-table-fee') }}</strong> <br>
-                                    {{ $store.getters.COIN_NAME }} {{ tx.fee | pretty }}
-                                </div>
+                                    <!-- fee -->
+                                    <div class="table__inner-item">
+                                        <strong>{{ $td('Fee', 'wallet.tx-table-fee') }}</strong> <br>
+                                        {{ $store.getters.COIN_NAME }} {{ tx.fee | pretty }}
+                                    </div>
 
-                                <!-- message -->
-                                <div class="table__inner-item" v-if="tx.payload">
-                                    <strong>Message</strong> <br>
-                                    {{ fromBase64(tx.payload) }}
+                                    <!-- message -->
+                                    <div class="table__inner-item" v-if="tx.payload">
+                                        <strong>Message</strong> <br>
+                                        {{ fromBase64(tx.payload) }}
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                </template>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
             <div class="panel__content panel__section u-text-center" v-else-if="isLoading">

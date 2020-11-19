@@ -87,23 +87,23 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell">
                 <FieldDomain
-                        v-model.trim="form.publicKey"
-                        :$value="$v.form.publicKey"
-                        valueType="publicKey"
-                        :label="$td('Public key or domain', 'form.masternode-public')"
-                        @update:domain="publicKeyDomain = $event"
-                        @update:resolving="isPublicKeyDomainResolving = $event"
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="publicKeyDomain = $event"
+                    @update:resolving="isPublicKeyDomainResolving = $event"
                 />
             </div>
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                        v-model.trim="form.ownerAddress"
-                        :$value="$v.form.ownerAddress"
-                        valueType="address"
-                        :label="$td('Owner Address or Domain', 'form.masternode-owner-address')"
-                        :help="$td('Masternode owner\'s address', 'form.masternode-owner-address-help')"
-                        @update:domain="ownerAddressDomain = $event"
-                        @update:resolving="isOwnerAddressDomainResolving = $event"
+                    v-model.trim="form.ownerAddress"
+                    :$value="$v.form.ownerAddress"
+                    valueType="address"
+                    :label="$td('Owner Address or Domain', 'form.masternode-owner-address')"
+                    :help="$td('Masternode owner\'s address', 'form.masternode-owner-address-help')"
+                    @update:domain="ownerAddressDomain = $event"
+                    @update:resolving="isOwnerAddressDomainResolving = $event"
                 />
             </div>
             <div class="u-cell u-cell--xlarge--1-2">

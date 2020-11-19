@@ -32,14 +32,14 @@ module.exports = {
 
         // VUE STRONGLY-RECOMMENDED
         'vue/html-closing-bracket-spacing': 0,
-        'vue/html-indent': 0,
-        // 'vue/html-indent': ["warn", 4, {
-        //     "attribute": 1,
-        //     "baseIndent": 1,
-        //     "closeBracket": 0,
-        //     "alignAttributesVertically": true,
-        //     "ignores": []
-        // }],
+        // 'vue/html-indent': 0,
+        'vue/html-indent': ["warn", 4, {
+            "attribute": 1,
+            "baseIndent": 1,
+            "closeBracket": 0,
+            "alignAttributesVertically": true,
+            "ignores": [],
+        }],
         'vue/html-self-closing': 0,
         // 'vue/html-self-closing': ["warn", {
         //     "html": {

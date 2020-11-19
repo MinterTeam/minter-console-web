@@ -38,22 +38,22 @@
         <div class="table-wrap">
             <table v-if="coinList.length">
                 <thead>
-                <tr class="u-text-nowrap">
-                    <th>{{ $td('My Coins', 'wallet.coin-table-name') }}</th>
-                    <th width="30%">{{ $td('Balance', 'wallet.coin-table-balance') }}</th>
-                </tr>
+                    <tr class="u-text-nowrap">
+                        <th>{{ $td('My Coins', 'wallet.coin-table-name') }}</th>
+                        <th width="30%">{{ $td('Balance', 'wallet.coin-table-balance') }}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr class="u-text-nowrap" :key="coinItem.coin.id" v-for="coinItem in coinList">
-                    <td>
-                        <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin.symbol)" width="28" height="28" alt="" role="presentation">
-                        <span class="wallet__coin-name">{{ coinItem.coin.symbol }}</span>
-                    </td>
-                    <!-- balance -->
-                    <td>
-                        {{ pretty(coinItem.amount) }}
-                    </td>
-                </tr>
+                    <tr class="u-text-nowrap" :key="coinItem.coin.id" v-for="coinItem in coinList">
+                        <td>
+                            <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin.symbol)" width="28" height="28" alt="" role="presentation">
+                            <span class="wallet__coin-name">{{ coinItem.coin.symbol }}</span>
+                        </td>
+                        <!-- balance -->
+                        <td>
+                            {{ pretty(coinItem.amount) }}
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <div class="panel__content panel__section u-text-center" v-else-if="isLoading">

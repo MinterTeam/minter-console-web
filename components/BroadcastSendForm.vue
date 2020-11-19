@@ -93,6 +93,6 @@
             <div class="u-cell" v-if="serverSuccess">
                 <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong> <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess)" target="_blank">{{ serverSuccess }}</a>
             </div>
-</div>
+        </div>
     </form>
 </template>

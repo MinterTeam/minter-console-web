@@ -82,12 +82,12 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell">
                 <FieldDomain
-                        v-model.trim="form.publicKey"
-                        :$value="$v.form.publicKey"
-                        valueType="publicKey"
-                        :label="$td('Public key or domain', 'form.masternode-public')"
-                        @update:domain="domain = $event"
-                        @update:resolving="isDomainResolving = $event"
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
                 />
             </div>
         </template>
@@ -103,5 +103,5 @@
                 <span v-else>{{ $td('Set candidate off', 'masternode.off-title') }}</span>
             </h1>
         </template>
-</TxForm>
+    </TxForm>
 </template>

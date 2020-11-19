@@ -82,7 +82,7 @@
                     </button>
                 </dd>
 
-<!--
+                <!--
                 <dt>{{ $td('Private key:', 'account.private-key') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visiblePrivate">
@@ -95,7 +95,7 @@
                 </dd>
 -->
 
-<!--
+                <!--
                 <dt>{{ $td('Mnemonic:', 'account.mnemonic') }}</dt>
                 <dd>
                     <div class="u-icon-wrap" v-if="visibleMnemonic">
@@ -115,5 +115,5 @@
         >
             <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
         </Modal>
-</section>
+    </section>
 </template>

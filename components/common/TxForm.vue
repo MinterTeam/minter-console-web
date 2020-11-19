@@ -453,10 +453,10 @@
 
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced && isShowGasCoin">
                     <FieldCoin
-                            v-model="form.gasCoin"
-                            :$value="$v.form.gasCoin"
-                            :label="$td('Coin to pay fee', 'form.fee')"
-                            :coin-list="balance"
+                        v-model="form.gasCoin"
+                        :$value="$v.form.gasCoin"
+                        :label="$td('Coin to pay fee', 'form.fee')"
+                        :coin-list="balance"
                     />
                     <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
@@ -483,12 +483,12 @@
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <FieldDomain
-                            v-model.trim="form.multisigAddress"
-                            :$value="$v.form.multisigAddress"
-                            valueType="address"
-                            :label="$td('Multisig address', 'form.multisig-address')"
-                            @update:domain="multisigDomain = $event"
-                            @update:resolving="isMultisigDomainResolving = $event"
+                        v-model.trim="form.multisigAddress"
+                        :$value="$v.form.multisigAddress"
+                        valueType="address"
+                        :label="$td('Multisig address', 'form.multisig-address')"
+                        @update:domain="multisigDomain = $event"
+                        @update:resolving="isMultisigDomainResolving = $event"
                     />
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2 u-hidden-xlarge-down" v-show="showAdvanced && !$store.getters.isOfflineMode"></div>
@@ -529,11 +529,11 @@
                 <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="showSwitcherAdvanced"><!--placeholder--></div>
                 <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2">
                     <button
-                            class="button button--ghost-main button--full"
-                            type="button"
-                            v-show="showAdvanced"
-                            :class="{'is-disabled': $v.form.multisigAddress.$invalid, 'is-loading': isSigning}"
-                            @click="signTx"
+                        class="button button--ghost-main button--full"
+                        type="button"
+                        v-show="showAdvanced"
+                        :class="{'is-disabled': $v.form.multisigAddress.$invalid, 'is-loading': isSigning}"
+                        @click="signTx"
                     >
                         <span class="button__content">{{ $td('Sign', 'form.multisig-sign') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>
@@ -544,13 +544,13 @@
                         {{ $td('Generate', 'form.generate-button') }}
                     </button>
                     <button
-                            class="button button--main button--full"
-                            data-test-id="txSubmitButton"
-                            :class="{
+                        class="button button--main button--full"
+                        data-test-id="txSubmitButton"
+                        :class="{
                             'is-loading': isFormSending,
                             'is-disabled': $v.$invalid
                         }"
-                            v-if="!$store.getters.isOfflineMode"
+                        v-if="!$store.getters.isOfflineMode"
                     >
                         <span class="button__content">
                             <slot name="submit-title">
@@ -639,7 +639,7 @@
                         <h1 class="panel__header-title">
                             {{ $td('Success!', 'form.success-title') }}
                         </h1>
-</slot>
+                    </slot>
                 </div>
                 <div class="panel__section u-text-left">
                     <slot name="success-modal-body">

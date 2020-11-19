@@ -94,8 +94,8 @@
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.formSignedTxList.$error}">
                     <textarea class="reinvest__upload-textarea form-field__input" rows="1" autocapitalize="off" v-autosize v-check-empty
-                           v-model="formSignedTxList"
-                           @blur="$v.formSignedTxList.$touch()"
+                              v-model="formSignedTxList"
+                              @blur="$v.formSignedTxList.$touch()"
                     ></textarea>
                     <span class="form-field__label">{{ $td('Signed tx list', 'form.delegation-reinvest-start-list') }}</span>
                 </label>

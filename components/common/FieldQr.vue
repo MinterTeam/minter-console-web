@@ -75,27 +75,27 @@
 <template>
     <label class="form-field form-field--qr" :class="{'is-error': $value.$error, 'form-field--with-icon': hasCamera}">
         <VueSimpleSuggest
-                v-bind="$attrs"
-                :value="value"
-                :list="suggestionList.slice(0)"
-                :max-suggestions="$options.MAX_ITEM_COUNT"
-                :min-length="suggestionMinInputLength"
-                :filter-by-query="true"
-                :filter="suggestionFilter"
-                :destyled="true"
-                :controls="{showList: [38, 40]}"
-                :value-attribute="'value'"
-                :display-attribute="'value'"
-                @input="$emit('input', $event)"
-                @blur="$value.$touch(); $emit('blur', $event)"
-                @suggestion-click="handleSuggestionClick"
-                v-if="suggestionList && suggestionList.length"
+            v-bind="$attrs"
+            :value="value"
+            :list="suggestionList.slice(0)"
+            :max-suggestions="$options.MAX_ITEM_COUNT"
+            :min-length="suggestionMinInputLength"
+            :filter-by-query="true"
+            :filter="suggestionFilter"
+            :destyled="true"
+            :controls="{showList: [38, 40]}"
+            :value-attribute="'value'"
+            :display-attribute="'value'"
+            @input="$emit('input', $event)"
+            @blur="$value.$touch(); $emit('blur', $event)"
+            @suggestion-click="handleSuggestionClick"
+            v-if="suggestionList && suggestionList.length"
         >
             <!--@select="(item) => $emit('input', item.value)"-->
             <input
-                    class="form-field__input" type="text" spellcheck="false" v-check-empty
-                    v-bind="$attrs"
-                    :value="value"
+                class="form-field__input" type="text" spellcheck="false" v-check-empty
+                v-bind="$attrs"
+                :value="value"
             >
             <span class="form-field__label">{{ label }}</span>
 
@@ -105,12 +105,12 @@
         </VueSimpleSuggest>
         <template v-else>
             <InputMaskedInteger
-                    class="form-field__input" v-check-empty
-                    v-bind="$attrs"
-                    :value="value"
-                    @input="$emit('input', $event)"
-                    @blur="$value.$touch(); $emit('blur', $event)"
-                    v-if="isInteger"
+                class="form-field__input" v-check-empty
+                v-bind="$attrs"
+                :value="value"
+                @input="$emit('input', $event)"
+                @blur="$value.$touch(); $emit('blur', $event)"
+                v-if="isInteger"
             />
             <input class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
                    v-bind="$attrs"

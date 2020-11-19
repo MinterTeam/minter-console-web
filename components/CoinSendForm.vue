@@ -80,22 +80,22 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                        data-test-id="walletSendInputAddress"
-                        v-model.trim="form.address"
-                        :$value="$v.form.address"
-                        valueType="address"
-                        :label="$td('Address or domain', 'form.wallet-send-address')"
-                        @update:domain="domain = $event"
-                        @update:resolving="isDomainResolving = $event"
+                    data-test-id="walletSendInputAddress"
+                    v-model.trim="form.address"
+                    :$value="$v.form.address"
+                    valueType="address"
+                    :label="$td('Address or domain', 'form.wallet-send-address')"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
                 />
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                 <FieldCoin
-                        data-test-id="walletSendInputCoin"
-                        v-model="form.coinSymbol"
-                        :$value="$v.form.coinSymbol"
-                        :label="$td('Coin', 'form.coin')"
-                        :coin-list="addressBalance"
+                    data-test-id="walletSendInputCoin"
+                    v-model="form.coinSymbol"
+                    :$value="$v.form.coinSymbol"
+                    :label="$td('Coin', 'form.coin')"
+                    :coin-list="addressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -103,13 +103,13 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                 <FieldUseMax
-                        data-test-id="walletSendInputAmount"
-                        v-model="form.amount"
-                        :$value="$v.form.amount"
-                        :label="$td('Amount', 'form.wallet-send-amount')"
-                        :selected-coin-symbol="form.coinSymbol"
-                        :fee="fee"
-                        :address-balance="addressBalance"
+                    data-test-id="walletSendInputAmount"
+                    v-model="form.amount"
+                    :$value="$v.form.amount"
+                    :label="$td('Amount', 'form.wallet-send-amount')"
+                    :selected-coin-symbol="form.coinSymbol"
+                    :fee="fee"
+                    :address-balance="addressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
             </div>
@@ -134,11 +134,11 @@
                 </div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
-                                <textarea
-                                        class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
-                                        v-autosize
-                                        :value="form.address + (domain ? `\n(${domain})` : '')"
-                                ></textarea>
+                        <textarea
+                            class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                            v-autosize
+                            :value="form.address + (domain ? `\n(${domain})` : '')"
+                        ></textarea>
                         <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
                     </label>
                 </div>

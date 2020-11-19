@@ -133,7 +133,7 @@
                                     {{ $td('Delegation', 'common.page-delegation') }}
                                 </nuxt-link>
                             </li>
-<!--
+                            <!--
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('reinvest')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-mining-automation.svg`" alt="" role="presentation">
