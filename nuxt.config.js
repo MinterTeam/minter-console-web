@@ -208,6 +208,7 @@ export default {
             sourceType: 'unambiguous',
         },
         transpile: [
+            'secp256k1',
             '@material/',
             'date-fns/esm',
             'lodash-es',
