@@ -160,11 +160,11 @@
                     </div>
                     <div class="multisig-participant__address-cell u-cell u-cell--small--3-4">
                         <FieldDomain
-                                v-model.trim="v.address.$model"
-                                :$value="v.address"
-                                valueType="address"
-                                :label="$td('Address or domain', 'form.multisig-create-address')"
-                                @update:resolving="isAddressDomainResolving = $event"
+                            v-model.trim="v.address.$model"
+                            :$value="v.address"
+                            valueType="address"
+                            :label="$td('Address or domain', 'form.multisig-create-address')"
+                            @update:resolving="isAddressDomainResolving = $event"
                         />
                     </div>
                     <div class="multisig-participant__weight-cell u-cell u-cell--small--1-4">
@@ -232,5 +232,5 @@
                 {{ $td('Edit multisig address', 'multisig.edit-title') }}
             </h1>
         </template>
-</TxForm>
+    </TxForm>
 </template>

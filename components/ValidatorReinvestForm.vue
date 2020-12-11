@@ -217,8 +217,8 @@
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.data.stake.$error}">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                           v-model="form.data.stake"
-                           @blur="$v.form.data.stake.$touch()"
+                                       v-model="form.data.stake"
+                                       @blur="$v.form.data.stake.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
                 </label>
@@ -227,13 +227,13 @@
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.formTxCount.$error}">
                     <InputMaskedInteger class="form-field__input" type="text" v-check-empty
-                           v-model="formTxCount"
-                           @blur="$v.formTxCount.$touch()"
+                                        v-model="formTxCount"
+                                        @blur="$v.formTxCount.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Tx count', 'form.delegation-reinvest-tx-count') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.formTxCount.$dirty && !$v.formTxCount.required">{{ $td('Enter tx count', 'form.delegation-reinvest-tx-count-error-required') }}</span>
-<!--                <div class="form-field__help">{{ $td('', 'form.delegation-reinvest-tx-count-help') }}</div>-->
+                <!--                <div class="form-field__help">{{ $td('', 'form.delegation-reinvest-tx-count-help') }}</div>-->
             </div>
             <div class="u-cell u-cell--order-2" :class="$store.getters.isOfflineMode ? 'u-cell--small--1-2 u-cell--xlarge--1-4' : 'u-cell--large--1-2'">
                 <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
@@ -284,9 +284,9 @@
                     <dt>{{ $td('Signed tx list:', 'form.delegation-reinvest-result') }}</dt>
                     <dd class="u-icon-wrap">
                         <textarea class="u-icon-text reinvest__textarea" rows="6" autocapitalize="off" spellcheck="false" v-model="signedTxList"></textarea>
-<!--                            <span class="u-select-all u-icon-text">-->
-<!--                                {{ signedTxList }}-->
-<!--                            </span>-->
+                        <!--                            <span class="u-select-all u-icon-text">-->
+                        <!--                                {{ signedTxList }}-->
+                        <!--                            </span>-->
                         <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTxList"/>
                     </dd>
                     <dd>

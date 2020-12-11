@@ -186,22 +186,22 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                        v-model.trim="form.publicKey"
-                        :$value="$v.form.publicKey"
-                        valueType="publicKey"
-                        :label="$td('Public key or domain', 'form.masternode-public')"
-                        :suggestionList="suggestionValidatorList"
-                        :suggestionMinInputLength="0"
-                        @update:domain="domain = $event"
-                        @update:resolving="isDomainResolving = $event"
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :suggestionList="suggestionValidatorList"
+                    :suggestionMinInputLength="0"
+                    @update:domain="domain = $event"
+                    @update:resolving="isDomainResolving = $event"
                 />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldCoin
-                        v-model="form.coinSymbol"
-                        :$value="$v.form.coinSymbol"
-                        :label="$td('Coin', 'form.coin')"
-                        :coinList="stakeList"
+                    v-model="form.coinSymbol"
+                    :$value="$v.form.coinSymbol"
+                    :label="$td('Coin', 'form.coin')"
+                    :coinList="stakeList"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -209,11 +209,11 @@
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldUseMax
-                        ref="fieldStake"
-                        v-model="form.stake"
-                        :$value="$v.form.stake"
-                        :label="$td('Stake', 'form.masternode-stake')"
-                        :max-value="maxAmount"
+                    ref="fieldStake"
+                    v-model="form.stake"
+                    :$value="$v.form.stake"
+                    :label="$td('Stake', 'form.masternode-stake')"
+                    :max-value="maxAmount"
                 />
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
@@ -243,11 +243,11 @@
                 </div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
-                                <textarea
-                                        class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
-                                        v-autosize
-                                        :value="form.publicKey + (domain ? `\n(${domain})` : '')"
-                                ></textarea>
+                        <textarea
+                            class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                            v-autosize
+                            :value="form.publicKey + (domain ? `\n(${domain})` : '')"
+                        ></textarea>
                         <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
                     </label>
                 </div>

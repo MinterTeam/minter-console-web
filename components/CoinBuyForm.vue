@@ -102,10 +102,10 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                 <FieldCoin
-                        data-test-id="convertBuyInputBuyCoin"
-                        v-model="form.coinTo"
-                        :$value="$v.form.coinTo"
-                        :label="$td('Coin to buy', 'form.convert-buy-coin-buy')"
+                    data-test-id="convertBuyInputBuyCoin"
+                    v-model="form.coinTo"
+                    :$value="$v.form.coinTo"
+                    :label="$td('Coin to buy', 'form.convert-buy-coin-buy')"
                 />
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -123,11 +123,11 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-3">
                 <FieldCoin
-                        data-test-id="convertBuyInputSellCoin"
-                        v-model="form.coinFrom"
-                        :$value="$v.form.coinFrom"
-                        :label="$td('Coin to spend', 'form.convert-buy-coin-spend')"
-                        :coin-list="addressBalance"
+                    data-test-id="convertBuyInputSellCoin"
+                    v-model="form.coinFrom"
+                    :$value="$v.form.coinFrom"
+                    :label="$td('Coin to spend', 'form.convert-buy-coin-spend')"
+                    :coin-list="addressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

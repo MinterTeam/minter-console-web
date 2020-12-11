@@ -218,10 +218,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <FieldCoin
-                        v-model="form.coinSymbol"
-                        :$value="$v.form.coinSymbol"
-                        :label="$td('Coin', 'form.coin')"
-                        :coin-list="balance"
+                    v-model="form.coinSymbol"
+                    :$value="$v.form.coinSymbol"
+                    :label="$td('Coin', 'form.coin')"
+                    :coin-list="balance"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -249,10 +249,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <FieldCoin
-                        v-model="form.gasCoin"
-                        :$value="$v.form.gasCoin"
-                        :label="$td('Coin to pay fee', 'form.fee')"
-                        :coin-list="balance"
+                    v-model="form.gasCoin"
+                    :$value="$v.form.gasCoin"
+                    :label="$td('Coin to pay fee', 'form.fee')"
+                    :coin-list="balance"
                 />
                 <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
@@ -267,8 +267,8 @@
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
                     <InputMaskedInteger class="form-field__input" v-check-empty
-                           v-model="form.dueBlock"
-                           @blur="$v.form.dueBlock.$touch()"
+                                        v-model="form.dueBlock"
+                                        @blur="$v.form.dueBlock.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Due block', 'form.checks-issue-due') }}</span>
                 </label>

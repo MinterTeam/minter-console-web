@@ -166,11 +166,11 @@
                     </div>
                     <div class="multisig-participant__address-cell u-cell u-cell--small--3-4">
                         <FieldDomain
-                                v-model.trim="v.address.$model"
-                                :$value="v.address"
-                                valueType="address"
-                                :label="$td('Address or domain', 'form.multisig-create-address')"
-                                @update:resolving="isAddressDomainResolving = $event"
+                            v-model.trim="v.address.$model"
+                            :$value="v.address"
+                            valueType="address"
+                            :label="$td('Address or domain', 'form.multisig-create-address')"
+                            @update:resolving="isAddressDomainResolving = $event"
                         />
                     </div>
                     <div class="multisig-participant__weight-cell u-cell u-cell--small--1-4">
@@ -250,11 +250,11 @@
             <div class="u-grid u-grid--small u-grid--vertical-margin">
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
-                                <textarea
-                                        class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
-                                        v-autosize
-                                        :value="createdMultisig"
-                                ></textarea>
+                        <textarea
+                            class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                            v-autosize
+                            :value="createdMultisig"
+                        ></textarea>
                         <span class="form-field__label">{{ $td('Your multisig address', 'multisig.success-address') }}</span>
                     </label>
                 </div>
@@ -270,5 +270,5 @@
                 {{ $td('View transaction', 'form.success-view-button') }}
             </a>
         </template>
-</TxForm>
+    </TxForm>
 </template>

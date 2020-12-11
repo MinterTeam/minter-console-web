@@ -119,31 +119,31 @@
 <template>
     <label class="form-field" :class="{'is-error': $value.$error}">
         <VueSimpleSuggest
-                ref="vss"
-                :value="value"
-                :list="suggestionOrder"
-                :max-suggestions="maxSuggestions"
-                :min-length="0"
-                :filter-by-query="true"
-                :filter="suggestionFilter"
-                :display-attribute="'coin.symbol'"
-                :value-attribute="'coin.symbol'"
-                :destyled="true"
-                :controls="{showList: [38, 40]}"
-                @input="$emit('input', $event)"
-                @blur="$value.$touch(); $emit('blur', $event)"
-                @suggestion-click="handleSuggestionClick"
+            ref="vss"
+            :value="value"
+            :list="suggestionOrder"
+            :max-suggestions="maxSuggestions"
+            :min-length="0"
+            :filter-by-query="true"
+            :filter="suggestionFilter"
+            :display-attribute="'coin.symbol'"
+            :value-attribute="'coin.symbol'"
+            :destyled="true"
+            :controls="{showList: [38, 40]}"
+            @input="$emit('input', $event)"
+            @blur="$value.$touch(); $emit('blur', $event)"
+            @suggestion-click="handleSuggestionClick"
         >
             <InputUppercase
-                    class="form-field__input" type="text" v-check-empty
-                    v-bind="$attrs"
-                    :value="value"
+                class="form-field__input" type="text" v-check-empty
+                v-bind="$attrs"
+                :value="value"
             />
             <span class="form-field__label">{{ label }}</span>
 
             <span slot="suggestion-item" slot-scope="{ suggestion }">
                 {{ getSuggestionCoin(suggestion) }}<span v-if="getSuggestionAmount(suggestion)">
-                <!--space here --> {{ getSuggestionAmount(suggestion) }}</span>
+                    <!--space here --> {{ getSuggestionAmount(suggestion) }}</span>
             </span>
         </VueSimpleSuggest>
     </label>

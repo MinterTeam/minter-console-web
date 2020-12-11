@@ -105,21 +105,21 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                        v-model.trim="form.address"
-                        :$value="$v.form.address"
-                        valueType="address"
-                        :label="$td('Address or domain', 'form.masternode-address')"
-                        :help="$td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help')"
-                        @update:domain="addressDomain = $event"
-                        @update:resolving="isAddressDomainResolving = $event"
+                    v-model.trim="form.address"
+                    :$value="$v.form.address"
+                    valueType="address"
+                    :label="$td('Address or domain', 'form.masternode-address')"
+                    :help="$td('Masternode owner\'s address, where the reward will be accrued', 'form.masternode-address-help')"
+                    @update:domain="addressDomain = $event"
+                    @update:resolving="isAddressDomainResolving = $event"
                 />
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldCoin
-                        v-model="form.coinSymbol"
-                        :$value="$v.form.coinSymbol"
-                        :label="$td('Coin', 'form.coin')"
-                        :coin-list="addressBalance"
+                    v-model="form.coinSymbol"
+                    :$value="$v.form.coinSymbol"
+                    :label="$td('Coin', 'form.coin')"
+                    :coin-list="addressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -127,24 +127,24 @@
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
                 <FieldUseMax
-                        v-model="form.stake"
-                        :$value="$v.form.stake"
-                        :label="$td('Stake', 'form.masternode-stake')"
-                        :selected-coin-symbol="form.coinSymbol"
-                        :fee="fee"
-                        :address-balance="addressBalance"
+                    v-model="form.stake"
+                    :$value="$v.form.stake"
+                    :label="$td('Stake', 'form.masternode-stake')"
+                    :selected-coin-symbol="form.coinSymbol"
+                    :fee="fee"
+                    :address-balance="addressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.stake.$dirty && !$v.form.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--xlarge--3-4">
                 <FieldDomain
-                        v-model.trim="form.publicKey"
-                        :$value="$v.form.publicKey"
-                        valueType="publicKey"
-                        :label="$td('Public key or domain', 'form.masternode-public')"
-                        :suggestion-disabled="true"
-                        @update:domain="publicKeyDomain = $event"
-                        @update:resolving="isPublicKeyDomainResolving = $event"
+                    v-model.trim="form.publicKey"
+                    :$value="$v.form.publicKey"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :suggestion-disabled="true"
+                    @update:domain="publicKeyDomain = $event"
+                    @update:resolving="isPublicKeyDomainResolving = $event"
                 />
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
