@@ -209,6 +209,8 @@ export default {
         },
         transpile: [
             'secp256k1',
+            'asn1.js',
+            'keccak/lib',
             '@material/',
             'date-fns/esm',
             'lodash-es',
