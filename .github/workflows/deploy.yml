@@ -35,7 +35,7 @@ jobs:
  
       - uses: actions/checkout@v2
       - name: build and push docker image
-        uses: opspresso/action-docker@0.2.13
+        uses: opspresso/action-docker@v0.2.13
         env:
           USERNAME: ${{ secrets.DOCKER_HUB_USER }}
           PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -60,7 +60,7 @@ jobs:
         run: ./linux-amd64/helm upgrade -n $KUBE_NAMESPACE_RESERVED -i $PROJECT_NAME chart/ --atomic --timeout 100s --set image.tag=$TAG_NAME --set ingress.domain=$INGRESS_DOMAIN --set ingress.tlsname=$INGRESS_DOMAIN
 
       - name: deploy to production cluster
-        uses: wahyd4/kubectl-helm-action@0.1.2
+        uses: wahyd4/kubectl-helm-action@v0.1.2
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_PROD_CONFIG_DATA }}
           TAG_NAME: ${{ github.sha }}
