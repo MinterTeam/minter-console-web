@@ -4,10 +4,10 @@ ARG BUILD_BRANCH_ENV_PREFIX
 
 WORKDIR /app
 COPY . .
-# Two steps to copy .env.example only if no .env exists
+# Two steps to copy .env.branch only if no .env exists
 # (it is needed to support docker-compose with local env and kubernetes prod build at the same time)
 # 1. just copy
-COPY .env${BUILD_BRANCH_ENV_PREFIX}.example .env
+COPY .env${BUILD_BRANCH_ENV_PREFIX} .env
 # 2. overwrite .env back if it exists (dummy package.json to ensure COPY not to fail)
 COPY package.json .en[v] ./
 RUN npm ci && npm run production
