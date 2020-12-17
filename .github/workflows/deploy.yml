@@ -7,8 +7,7 @@ env:
   INGRESS_DOMAIN_mainnet: "console.minter.network"
   INGRESS_DOMAIN_testnet: "console.testnet.minter.network"
   KUBE_NAMESPACE_mainnet: "mainnet"
-  KUBE_NAMESPACE_testnet: "default"
-  KUBE_NAMESPACE_RESERVED: "mainnet-reserved"
+  KUBE_NAMESPACE_testnet: "testnet"
 jobs:
   ci:
     name: build
@@ -52,12 +51,12 @@ jobs:
           clusterName: k8s-prod-do
 
       - name: Install helm
-        run: wget https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz &> /dev/null && tar xvzf helm-v3.3.4-linux-amd64.tar.gz && chmod 777 linux-amd64/helm && ./linux-amd64/helm ls -n $KUBE_NAMESPACE_RESERVED
+        run: wget https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz &> /dev/null && tar xvzf helm-v3.3.4-linux-amd64.tar.gz && chmod 777 linux-amd64/helm && ./linux-amd64/helm ls -n ${{ KUBE_NAMESPACE }}-reserved
 
       - name: Deploy to DO
         env:
           TAG_NAME: ${{ github.sha }}
-        run: ./linux-amd64/helm upgrade -n $KUBE_NAMESPACE_RESERVED -i $PROJECT_NAME chart/ --atomic --timeout 100s --set image.tag=$TAG_NAME --set ingress.domain=$INGRESS_DOMAIN --set ingress.tlsname=$INGRESS_DOMAIN
+        run: ./linux-amd64/helm upgrade -n ${{ KUBE_NAMESPACE }}-reserved -i $PROJECT_NAME chart/ --atomic --timeout 100s --set image.tag=$TAG_NAME --set ingress.domain=$INGRESS_DOMAIN --set ingress.tlsname=$INGRESS_DOMAIN
 
       - name: deploy to production cluster
         uses: wahyd4/kubectl-helm-action@v0.1.2
