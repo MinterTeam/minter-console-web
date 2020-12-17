@@ -1,97 +1,103 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import {estimateCoinSell} from '~/api/gate';
-    import checkEmpty from '~/assets/v-check-empty';
-    import {getErrorText} from "~/assets/server-error";
-    import {pretty, prettyExact} from "~/assets/utils";
-    import TxForm from '~/components/common/TxForm.vue';
-    import FieldCoin from '~/components/common/FieldCoin';
-    import FieldUseMax from '~/components/common/FieldUseMax';
+import {validationMixin} from 'vuelidate';
+import required from 'vuelidate/lib/validators/required';
+import minLength from 'vuelidate/lib/validators/minLength';
+import maxLength from 'vuelidate/lib/validators/maxLength';
+import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {estimateCoinSell} from '~/api/gate';
+import checkEmpty from '~/assets/v-check-empty';
+import {getErrorText} from "~/assets/server-error";
+import {pretty, prettyExact} from "~/assets/utils";
+import TxForm from '~/components/common/TxForm.vue';
+import FieldCoin from '~/components/common/FieldCoin';
+import FieldUseMax from '~/components/common/FieldUseMax';
 
-    export default {
-        pretty,
-        prettyExact,
-        TX_TYPE,
-        components: {
-            TxForm,
-            FieldCoin,
-            FieldUseMax,
-        },
-        directives: {
-            checkEmpty,
-        },
-        mixins: [validationMixin],
-        data() {
-            return {
-                form: {
-                    sellAmount: '',
-                    coinFrom: '',
-                    coinTo: '',
-                },
-                estimation: null,
-            };
-        },
-        validations() {
-            const form = {
-                sellAmount: {
-                    //@TODO maxValue
-                    //@TODO validAmount
-                    required,
-                },
-                coinFrom: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-                coinTo: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-            };
+export default {
+    pretty,
+    prettyExact,
+    TX_TYPE,
+    components: {
+        TxForm,
+        FieldCoin,
+        FieldUseMax,
+    },
+    directives: {
+        checkEmpty,
+    },
+    mixins: [validationMixin],
+    data() {
+        return {
+            form: {
+                sellAmount: '',
+                coinFrom: '',
+                coinTo: '',
+            },
+            estimation: null,
+        };
+    },
+    validations() {
+        const form = {
+            sellAmount: {
+                //@TODO maxValue
+                //@TODO validAmount
+                required,
+            },
+            coinFrom: {
+                required,
+                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+            coinTo: {
+                required,
+                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+        };
 
-            return {form};
-        },
-        computed: {
-        },
-        methods: {
-            getEstimation(txFormContext) {
-                if (this.$store.getters.isOfflineMode) {
-                    return;
-                }
-                txFormContext.isFormSending = true;
-                txFormContext.serverError = '';
-                txFormContext.serverSuccess = '';
-                return estimateCoinSell({
-                    coinToSell: this.form.coinFrom,
-                    valueToSell: this.form.sellAmount,
-                    coinToBuy: this.form.coinTo,
+        return {form};
+    },
+    computed: {
+    },
+    methods: {
+        getEstimation(txFormContext) {
+            if (this.$store.getters.isOfflineMode) {
+                return;
+            }
+            txFormContext.isFormSending = true;
+            txFormContext.serverError = '';
+            txFormContext.serverSuccess = '';
+            return estimateCoinSell({
+                coinToSell: this.form.coinFrom,
+                valueToSell: this.form.sellAmount,
+                coinToBuy: this.form.coinTo,
+            })
+                .then((result) => {
+                    this.estimation = result.will_get;
+                    txFormContext.isFormSending = false;
                 })
-                    .then((result) => {
-                        this.estimation = result.will_get;
-                        txFormContext.isFormSending = false;
-                    })
-                    .catch((error) => {
-                        txFormContext.isFormSending = false;
-                        txFormContext.serverError = getErrorText(error);
-                        throw error;
-                    });
-            },
-            clearForm() {
-                this.form.sellAmount = '';
-                this.form.coinFrom = this.balance && this.balance.length ? this.balance[0].coin : '';
-                this.form.coinTo = '';
-                this.$v.$reset();
-            },
+                .catch((error) => {
+                    txFormContext.isFormSending = false;
+                    txFormContext.serverError = getErrorText(error);
+                    throw error;
+                });
         },
-    };
+        clearForm() {
+            this.form.sellAmount = '';
+            this.form.coinFrom = '';
+            this.form.coinTo = '';
+            this.$v.$reset();
+        },
+    },
+};
 </script>
 
 <template>
     <!-- @TODO minimumValueToBuy -->
-    <TxForm data-test-id="convertSell" :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToSell: form.sellAmount}" :$txData="$v.form" :txType="$options.TX_TYPE.SELL" :before-confirm-modal-show="getEstimation" @clear-form="clearForm()">
+    <TxForm
+        data-test-id="convertSell"
+        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToSell: form.sellAmount}"
+        :$txData="$v.form" :txType="$options.TX_TYPE.SELL"
+        :before-confirm-modal-show="getEstimation"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Sell Coins', 'convert.sell-title') }}

@@ -3,12 +3,22 @@
     import CoinSellForm from '~/components/CoinSellForm';
     import CoinSellAllForm from '~/components/CoinSellAllForm';
     import CoinBuyForm from '~/components/CoinBuyForm';
+    import CoinSwapAddForm from '~/components/CoinSwapAddForm.vue';
+    import CoinSwapRemoveForm from '~/components/CoinSwapRemoveForm.vue';
+    import CoinSwapSellForm from '~/components/CoinSwapSellForm.vue';
+    import CoinSwapSellAllForm from '~/components/CoinSwapSellAllForm.vue';
+    import CoinSwapBuyForm from '~/components/CoinSwapBuyForm.vue';
 
     export default {
         components: {
             CoinSellForm,
             CoinSellAllForm,
             CoinBuyForm,
+            CoinSwapAddForm,
+            CoinSwapRemoveForm,
+            CoinSwapSellForm,
+            CoinSwapSellAllForm,
+            CoinSwapBuyForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
@@ -35,9 +45,13 @@
 <template>
     <section class="u-section u-container">
         <CoinSellForm/>
-
         <CoinSellAllForm/>
-
         <CoinBuyForm/>
+
+        <CoinSwapAddForm/>
+        <CoinSwapRemoveForm/>
+        <CoinSwapBuyForm/>
+        <CoinSwapSellForm/>
+        <CoinSwapSellAllForm/>
     </section>
 </template>

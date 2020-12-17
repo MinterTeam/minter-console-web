@@ -6,7 +6,6 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
-    import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
@@ -15,6 +14,7 @@
     import TxForm from '~/components/common/TxForm.vue';
     import InputUppercase from '~/components/common/InputUppercase';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+    import FieldPercentage from '~/components/common/FieldPercentage.vue';
 
     const MIN_CRR = 10;
     const MAX_CRR = 100;
@@ -57,37 +57,24 @@
     }
 
     export default {
-        // first key not handled by webstorm intelliSense
-        ideFix: true,
         TX_TYPE,
         // MIN_DESTROY_RESERVE,
         MIN_CREATE_RESERVE,
         MIN_PRICE,
         MIN_SUPPLY,
+        MIN_CRR,
+        MAX_CRR,
         COIN_MIN_MAX_SUPPLY,
         COIN_MAX_MAX_SUPPLY,
-        maskCrr: {
-            allowDecimalPadding: false,
-            decimalPlaces: 0,
-            digitGroupSeparator: '',
-            emptyInputBehavior: 'null',
-            currencySymbol: '\u2009%',
-            currencySymbolPlacement: 's',
-            minimumValue: MIN_CRR,
-            maximumValue: MAX_CRR,
-            overrideMinMaxLimits: 'ignore',
-            unformatOnHover: false,
-            wheelStep: 1,
-        },
         prettyRound,
         prettyPreciseFloor,
         prettyExact,
         prettyExactDecrease,
         components: {
-            VueAutonumeric,
             TxForm,
             InputUppercase,
             InputMaskedAmount,
+            FieldPercentage,
         },
         directives: {
             checkEmpty,
@@ -246,14 +233,13 @@
                 <span class="form-field__error" v-else-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.minValue">{{ $td(`Min reserve is ${$store.getters.COIN_NAME} ${$options.prettyRound($options.MIN_CREATE_RESERVE)}`, 'form.coiner-create-reserve-error-min', {coin: $store.getters.COIN_NAME, min: $options.MIN_CREATE_RESERVE}) }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2">
-                <label class="form-field" :class="{'is-error': $v.form.constantReserveRatio.$error}">
-                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
-                                    v-model="form.constantReserveRatio"
-                                    @blur.native="$v.form.constantReserveRatio.$touch()"
-                                    :options="$options.maskCrr"
-                    />
-                    <span class="form-field__label">{{ $td('Constant reserve ratio', 'form.coiner-create-crr') }}</span>
-                </label>
+                <FieldPercentage
+                    v-model="form.constantReserveRatio"
+                    :$value="$v.form.constantReserveRatio"
+                    :label="$td('Constant reserve ratio', 'form.coiner-create-crr')"
+                    :min-value="$options.MIN_CRR"
+                    :max-value="$options.MAX_CRR"
+                />
                 <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.required">{{ $td('Enter CRR', 'form.coiner-create-crr-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.between">{{ $td('CRR should be between 10 and 100', 'form.coiner-create-crr-error-between') }}</span>
                 <div class="form-field__help">{{ $td('CRR reflects the volume of BIP reserves backing a newly issued coin. The higher the coefficient, the higher the reserves and thus the lower the volatility. And vice versa. The value should be integer and fall in the range from 10 to 100.', 'form.coiner-create-crr-help') }}</div>

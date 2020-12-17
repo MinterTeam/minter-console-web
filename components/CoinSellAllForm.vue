@@ -1,98 +1,106 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minValue from 'vuelidate/lib/validators/minValue';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import {estimateCoinSell} from '~/api/gate';
-    import checkEmpty from '~/assets/v-check-empty';
-    import {getErrorText} from "~/assets/server-error";
-    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
-    import TxForm from '~/components/common/TxForm.vue';
-    import FieldCoin from '~/components/common/FieldCoin';
+import {validationMixin} from 'vuelidate';
+import required from 'vuelidate/lib/validators/required';
+import minValue from 'vuelidate/lib/validators/minValue';
+import minLength from 'vuelidate/lib/validators/minLength';
+import maxLength from 'vuelidate/lib/validators/maxLength';
+import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {estimateCoinSell} from '~/api/gate';
+import checkEmpty from '~/assets/v-check-empty';
+import {getErrorText} from "~/assets/server-error";
+import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
+import TxForm from '~/components/common/TxForm.vue';
+import FieldCoin from '~/components/common/FieldCoin';
 
-    export default {
-        pretty,
-        prettyExact,
-        TX_TYPE,
-        components: {
-            TxForm,
-            FieldCoin,
-        },
-        directives: {
-            checkEmpty,
-        },
-        mixins: [validationMixin],
-        data() {
-            return {
-                form: {
-                    coinFrom: '',
-                    coinTo: '',
-                },
-                estimation: null,
-                addressBalance: [],
-            };
-        },
-        validations() {
-            const form = {
-                coinFrom: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-                coinTo: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-            };
-
-            return {form};
-        },
-        computed: {
-            sellAmount() {
-                const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
-                return coinSellItem && coinSellItem.amount;
+export default {
+    pretty,
+    prettyExact,
+    TX_TYPE,
+    components: {
+        TxForm,
+        FieldCoin,
+    },
+    directives: {
+        checkEmpty,
+    },
+    mixins: [validationMixin],
+    data() {
+        return {
+            form: {
+                coinFrom: '',
+                coinTo: '',
             },
+            estimation: null,
+            addressBalance: [],
+        };
+    },
+    validations() {
+        const form = {
+            coinFrom: {
+                required,
+                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+            coinTo: {
+                required,
+                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+        };
+
+        return {form};
+    },
+    computed: {
+        sellAmount() {
+            const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
+            return coinSellItem && coinSellItem.amount;
         },
-        methods: {
-            getEstimation(txFormContext) {
-                if (this.$store.getters.isOfflineMode) {
-                    return;
-                }
-                if (!this.sellAmount) {
-                    txFormContext.serverError = `There are no ${this.form.coinFrom} on your balance`;
-                    return Promise.reject(txFormContext.serverError);
-                }
-                txFormContext.isFormSending = true;
-                txFormContext.serverError = '';
-                txFormContext.serverSuccess = '';
-                return estimateCoinSell({
-                    coinToSell: this.form.coinFrom,
-                    valueToSell: this.sellAmount,
-                    coinToBuy: this.form.coinTo,
+    },
+    methods: {
+        getEstimation(txFormContext) {
+            if (this.$store.getters.isOfflineMode) {
+                return;
+            }
+            if (!this.sellAmount) {
+                txFormContext.serverError = `There are no ${this.form.coinFrom} on your balance`;
+                return Promise.reject(txFormContext.serverError);
+            }
+            txFormContext.isFormSending = true;
+            txFormContext.serverError = '';
+            txFormContext.serverSuccess = '';
+            return estimateCoinSell({
+                coinToSell: this.form.coinFrom,
+                valueToSell: this.sellAmount,
+                coinToBuy: this.form.coinTo,
+            })
+                .then((result) => {
+                    this.estimation = result.will_get;
+                    txFormContext.isFormSending = false;
                 })
-                    .then((result) => {
-                        this.estimation = result.will_get;
-                        txFormContext.isFormSending = false;
-                    })
-                    .catch((error) => {
-                        txFormContext.isFormSending = false;
-                        txFormContext.serverError = getErrorText(error);
-                        throw error;
-                    });
-            },
-            clearForm() {
-                this.form.coinFrom = '';
-                this.form.coinTo = '';
-                this.$v.$reset();
-            },
+                .catch((error) => {
+                    txFormContext.isFormSending = false;
+                    txFormContext.serverError = getErrorText(error);
+                    throw error;
+                });
         },
-    };
+        clearForm() {
+            this.form.coinFrom = '';
+            this.form.coinTo = '';
+            this.$v.$reset();
+        },
+    },
+};
 </script>
 
 <template>
     <!-- @TODO minimumValueToBuy -->
-    <TxForm data-test-id="convertSellAll" :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo}" :$txData="$v.form" :txType="$options.TX_TYPE.SELL_ALL" :before-confirm-modal-show="getEstimation" @update:addressBalance="addressBalance = $event" @clear-form="clearForm()">
+    <TxForm
+        data-test-id="convertSellAll"
+        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo}"
+        :$txData="$v.form"
+        :txType="$options.TX_TYPE.SELL_ALL"
+        :before-confirm-modal-show="getEstimation"
+        @update:addressBalance="addressBalance = $event"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Sell All Coins', 'convert.sell-all-title') }}

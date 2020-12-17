@@ -50,6 +50,14 @@
             $txData: {
                 type: Object,
                 required: true,
+                validator(value) {
+                    // it should be vuelidate object
+                    return typeof value.$error === 'boolean' &&
+                    typeof value.$dirty === 'boolean' &&
+                    typeof value.$invalid === 'boolean' &&
+                    typeof value.$model === 'object' &&
+                    typeof value.$params === 'object';
+                },
             },
             /** @type TX_TYPE */
             txType: {
@@ -161,7 +169,7 @@
                 if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
                     selectedCoinSymbol = txData.coin;
                 }
-                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL) {
+                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL || txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
                     selectedCoinSymbol = txData.coinToSell;
                 }
                 let createCoinSymbol = txType === TX_TYPE.CREATE_COIN ? txData.symbol : undefined;
@@ -407,6 +415,7 @@
                 }
                 this.form.gasPrice = '';
                 this.$v.$reset();
+                //@TODO
                 // clear txData
                 // const cleanTxData = {};
                 // Object.keys(this.txData).forEach((key) => {
@@ -443,7 +452,7 @@
             <slot name="panel-header"></slot>
         </div>
 
-        <slot name="extra-panel"></slot>
+        <slot name="extra-panel" :fee="fee" :address-balance="balance"></slot>
 
         <!-- Form -->
         <form class="panel__section" novalidate @submit.prevent="submitConfirm">

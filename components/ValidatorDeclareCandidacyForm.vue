@@ -4,7 +4,6 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
-    import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
@@ -12,15 +11,16 @@
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldUseMax from '~/components/common/FieldUseMax';
+    import FieldPercentage from '~/components/common/FieldPercentage.vue';
 
     export default {
         TX_TYPE,
         components: {
-            VueAutonumeric,
             TxForm,
             FieldCoin,
             FieldDomain,
             FieldUseMax,
+            FieldPercentage,
         },
         directives: {
             checkEmpty,
@@ -148,26 +148,13 @@
                 />
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
-                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
-                                    v-model="commissionFormatted"
-                                    @blur.native="$v.form.commission.$touch()"
-                                    :options="{
-                                        allowDecimalPadding: false,
-                                        decimalPlaces: 0,
-                                        digitGroupSeparator: '',
-                                        emptyInputBehavior: 'press',
-                                        currencySymbol: '\u2009%',
-                                        currencySymbolPlacement: 's',
-                                        minimumValue: '0',
-                                        maximumValue: '100',
-                                        overrideMinMaxLimits: 'ignore',
-                                        unformatOnHover: false,
-                                        wheelStep: 1,
-                                    }"
-                    />
-                    <span class="form-field__label">{{ $td('Commission', 'form.masternode-commission') }}</span>
-                </label>
+                <FieldPercentage
+                    v-model="commissionFormatted"
+                    :$value="$v.form.commission"
+                    :label="$td('Commission', 'form.masternode-commission')"
+                    min-value="0"
+                    max-value="100"
+                />
                 <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">{{ $td('Enter commission', 'form.masternode-commission-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">{{ $td('Must be between 0 and 100', 'form.masternode-commission-error-between') }}</span>
             </div>

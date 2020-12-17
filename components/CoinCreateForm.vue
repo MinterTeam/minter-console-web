@@ -1,183 +1,172 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minValue from 'vuelidate/lib/validators/minValue';
-    import maxValue from 'vuelidate/lib/validators/maxValue';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import withParams from 'vuelidate/lib/withParams';
-    import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
-    import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
-    import checkEmpty from '~/assets/v-check-empty';
-    import {prettyCeil, prettyPreciseFloor, prettyExact, prettyExactDecrease, prettyRound} from "~/assets/utils";
-    import TxForm from '~/components/common/TxForm.vue';
-    import InputUppercase from '~/components/common/InputUppercase';
-    import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+import {validationMixin} from 'vuelidate';
+import required from 'vuelidate/lib/validators/required';
+import minValue from 'vuelidate/lib/validators/minValue';
+import maxValue from 'vuelidate/lib/validators/maxValue';
+import minLength from 'vuelidate/lib/validators/minLength';
+import maxLength from 'vuelidate/lib/validators/maxLength';
+import withParams from 'vuelidate/lib/withParams';
+import {COIN_MAX_MAX_SUPPLY, COIN_MIN_MAX_SUPPLY} from "minterjs-util/src/variables.js";
+import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {sellCoin} from 'minterjs-util/src/coin-math';
+import checkEmpty from '~/assets/v-check-empty';
+import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound} from "~/assets/utils";
+import TxForm from '~/components/common/TxForm.vue';
+import InputUppercase from '~/components/common/InputUppercase';
+import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+import FieldPercentage from '~/components/common/FieldPercentage.vue';
 
-    const MIN_CRR = 10;
-    const MAX_CRR = 100;
+const MIN_CRR = 10;
+const MAX_CRR = 100;
 
-    // const MIN_DESTROY_RESERVE = 100;
-    const MIN_CREATE_RESERVE = 10000;
-    const MIN_PRICE = 0;
-    const MIN_SUPPLY = 0;
+// const MIN_DESTROY_RESERVE = 100;
+const MIN_CREATE_RESERVE = 10000;
+const MIN_PRICE = 0;
+const MIN_SUPPLY = 0;
 
-    const coinNameValidator = withParams({type: 'coinName'}, function(value) {
-        return /^[A-Z0-9]{3,10}$/.test(value);
-    });
+const coinNameValidator = withParams({type: 'coinName'}, function(value) {
+    return /^[A-Z0-9]{3,10}$/.test(value);
+});
 
-    const constantReserveRatioValidator = withParams({type: 'constantReserveRatio'}, function(value) {
-        let constantReserveRatio = parseInt(value, 10);
-        return MIN_CRR <= constantReserveRatio && MAX_CRR >= constantReserveRatio;
-    });
+const constantReserveRatioValidator = withParams({type: 'constantReserveRatio'}, function(value) {
+    let constantReserveRatio = parseInt(value, 10);
+    return MIN_CRR <= constantReserveRatio && MAX_CRR >= constantReserveRatio;
+});
 
 
-    /**
-     * @param {Object} form
-     * @return {number}
-     */
-    function calculatePrice(form) {
-        const sellAmount = 1;
-        const price = sellCoin(formToCoin(form), sellAmount);
-        return price >= 0 ? price : 0;
-    }
+/**
+ * @param {Object} form
+ * @return {number}
+ */
+function calculatePrice(form) {
+    const sellAmount = 1;
+    const price = sellCoin(formToCoin(form), sellAmount);
+    return price >= 0 ? price : 0;
+}
 
-    /**
-     * @param {Object} form
-     * @return {Coin}
-     */
-    function formToCoin(form) {
-        return {
-            supply: form.initialAmount,
-            reserve: form.initialReserve,
-            crr: form.constantReserveRatio / 100,
-        };
-    }
-
-    export default {
-        // first key not handled by webstorm intelliSense
-        ideFix: true,
-        TX_TYPE,
-        // MIN_DESTROY_RESERVE,
-        MIN_CREATE_RESERVE,
-        MIN_PRICE,
-        MIN_SUPPLY,
-        COIN_MIN_MAX_SUPPLY,
-        COIN_MAX_MAX_SUPPLY,
-        maskCrr: {
-            allowDecimalPadding: false,
-            decimalPlaces: 0,
-            digitGroupSeparator: '',
-            emptyInputBehavior: 'null',
-            currencySymbol: '\u2009%',
-            currencySymbolPlacement: 's',
-            minimumValue: MIN_CRR,
-            maximumValue: MAX_CRR,
-            overrideMinMaxLimits: 'ignore',
-            unformatOnHover: false,
-            wheelStep: 1,
-        },
-        prettyRound,
-        prettyPreciseFloor,
-        prettyExact,
-        prettyExactDecrease,
-        components: {
-            VueAutonumeric,
-            TxForm,
-            InputUppercase,
-            InputMaskedAmount,
-        },
-        directives: {
-            checkEmpty,
-        },
-        mixins: [validationMixin],
-        data() {
-            return {
-                form: {
-                    name: '',
-                    symbol: '',
-                    initialAmount: '',
-                    constantReserveRatio: null,
-                    initialReserve: '',
-                    maxSupply: '',
-                },
-            };
-        },
-        validations() {
-            const form = {
-                name: {
-                    required,
-                    maxLength: maxLength(64),
-                },
-                symbol: {
-                    required,
-                    minLength: minLength(3),
-                    maxLength: maxLength(10),
-                    name: coinNameValidator,
-                },
-                initialAmount: {
-                    required,
-                    minValue: minValue(1),
-                    maxValue: maxValue(this.form.maxSupply || COIN_MAX_MAX_SUPPLY),
-                },
-                constantReserveRatio: {
-                    required,
-                    between: constantReserveRatioValidator,
-                },
-                initialReserve: {
-                    required,
-                    minValue: minValue(MIN_CREATE_RESERVE),
-                },
-                maxSupply: {
-                    minValue: this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY) : () => true,
-                    maxValue: this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY) : () => true,
-                },
-            };
-
-            return {
-                form,
-                coinPrice: {
-                    // minValue: minValue(this.$options.MIN_PRICE),
-                },
-            };
-        },
-        computed: {
-            coinPrice() {
-                return calculatePrice(this.form);
-            },
-/*
-            sellToLiquidateByReserve() {
-                return sellCoinByBip(formToCoin(this.form), this.form.initialReserve - MIN_DESTROY_RESERVE);
-            },
-            sellToLiquidateBySupply() {
-                return Math.max(this.form.initialAmount - MIN_SUPPLY, 0.000000000000000001);
-            },
-            //@TODO
-            // sellToLiquidateByPrice() {
-            //
-            // },
-            sellToLiquidateByReservePercent() {
-                return this.sellToLiquidateByReserve / this.form.initialAmount * 100;
-            },
-            sellToLiquidateBySupplyPercent() {
-                return this.sellToLiquidateBySupply / this.form.initialAmount * 100;
-            },
-*/
-        },
-        methods: {
-            clearForm() {
-                this.form.name = '';
-                this.form.symbol = '';
-                this.form.initialAmount = '';
-                this.form.constantReserveRatio = null;
-                this.form.initialReserve = '';
-                this.form.maxSupply = '';
-                this.$v.$reset();
-            },
-        },
+/**
+ * @param {Object} form
+ * @return {Coin}
+ */
+function formToCoin(form) {
+    return {
+        supply: form.initialAmount,
+        reserve: form.initialReserve,
+        crr: form.constantReserveRatio / 100,
     };
+}
+
+export default {
+    // first key not handled by webstorm intelliSense
+    ideFix: true,
+    TX_TYPE,
+    // MIN_DESTROY_RESERVE,
+    MIN_CREATE_RESERVE,
+    MIN_PRICE,
+    MIN_SUPPLY,
+    MIN_CRR,
+    MAX_CRR,
+    COIN_MIN_MAX_SUPPLY,
+    COIN_MAX_MAX_SUPPLY,
+    prettyRound,
+    prettyPreciseFloor,
+    prettyExact,
+    prettyExactDecrease,
+    components: {
+        FieldPercentage,
+        TxForm,
+        InputUppercase,
+        InputMaskedAmount,
+    },
+    directives: {
+        checkEmpty,
+    },
+    mixins: [validationMixin],
+    data() {
+        return {
+            form: {
+                name: '',
+                symbol: '',
+                initialAmount: '',
+                constantReserveRatio: null,
+                initialReserve: '',
+                maxSupply: '',
+            },
+        };
+    },
+    validations() {
+        const form = {
+            name: {
+                required,
+                maxLength: maxLength(64),
+            },
+            symbol: {
+                required,
+                minLength: minLength(3),
+                maxLength: maxLength(10),
+                name: coinNameValidator,
+            },
+            initialAmount: {
+                required,
+                minValue: minValue(1),
+                maxValue: maxValue(this.form.maxSupply || COIN_MAX_MAX_SUPPLY),
+            },
+            constantReserveRatio: {
+                required,
+                between: constantReserveRatioValidator,
+            },
+            initialReserve: {
+                required,
+                minValue: minValue(MIN_CREATE_RESERVE),
+            },
+            maxSupply: {
+                minValue: this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY) : () => true,
+                maxValue: this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY) : () => true,
+            },
+        };
+
+        return {
+            form,
+            coinPrice: {
+                // minValue: minValue(this.$options.MIN_PRICE),
+            },
+        };
+    },
+    computed: {
+        coinPrice() {
+            return calculatePrice(this.form);
+        },
+        /*
+                    sellToLiquidateByReserve() {
+                        return sellCoinByBip(formToCoin(this.form), this.form.initialReserve - MIN_DESTROY_RESERVE);
+                    },
+                    sellToLiquidateBySupply() {
+                        return Math.max(this.form.initialAmount - MIN_SUPPLY, 0.000000000000000001);
+                    },
+                    //@TODO
+                    // sellToLiquidateByPrice() {
+                    //
+                    // },
+                    sellToLiquidateByReservePercent() {
+                        return this.sellToLiquidateByReserve / this.form.initialAmount * 100;
+                    },
+                    sellToLiquidateBySupplyPercent() {
+                        return this.sellToLiquidateBySupply / this.form.initialAmount * 100;
+                    },
+        */
+    },
+    methods: {
+        clearForm() {
+            this.form.name = '';
+            this.form.symbol = '';
+            this.form.initialAmount = '';
+            this.form.constantReserveRatio = null;
+            this.form.initialReserve = '';
+            this.form.maxSupply = '';
+            this.$v.$reset();
+        },
+    },
+};
 </script>
 
 <template>
@@ -246,14 +235,13 @@
                 <span class="form-field__error" v-else-if="$v.form.initialReserve.$dirty && !$v.form.initialReserve.minValue">{{ $td(`Min reserve is ${$store.getters.COIN_NAME} ${$options.prettyRound($options.MIN_CREATE_RESERVE)}`, 'form.coiner-create-reserve-error-min', {coin: $store.getters.COIN_NAME, min: $options.MIN_CREATE_RESERVE}) }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2">
-                <label class="form-field" :class="{'is-error': $v.form.constantReserveRatio.$error}">
-                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
-                                    v-model="form.constantReserveRatio"
-                                    @blur.native="$v.form.constantReserveRatio.$touch()"
-                                    :options="$options.maskCrr"
-                    />
-                    <span class="form-field__label">{{ $td('Constant reserve ratio', 'form.coiner-create-crr') }}</span>
-                </label>
+                <FieldPercentage
+                    v-model="form.constantReserveRatio"
+                    :$value="$v.form.constantReserveRatio"
+                    :label="$td('Constant reserve ratio', 'form.coiner-create-crr')"
+                    :min-value="$options.MIN_CRR"
+                    :max-value="$options.MAX_CRR"
+                />
                 <span class="form-field__error" v-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.required">{{ $td('Enter CRR', 'form.coiner-create-crr-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.constantReserveRatio.$dirty && !$v.form.constantReserveRatio.between">{{ $td('CRR should be between 10 and 100', 'form.coiner-create-crr-error-between') }}</span>
                 <div class="form-field__help">{{ $td('CRR reflects the volume of BIP reserves backing a newly issued coin. The higher the coefficient, the higher the reserves and thus the lower the volatility. And vice versa. The value should be integer and fall in the range from 10 to 100.', 'form.coiner-create-crr-help') }}</div>

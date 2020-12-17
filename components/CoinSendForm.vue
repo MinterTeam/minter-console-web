@@ -67,7 +67,13 @@
 </script>
 
 <template>
-    <TxForm data-test-id="walletSend" :txData="{to: form.address, value: form.amount, coin: form.coinSymbol}" :$txData="$v.form" :txType="$options.TX_TYPE.SEND" @clear-form="clearForm()">
+    <TxForm
+        data-test-id="walletSend"
+        :txData="{to: form.address, value: form.amount, coin: form.coinSymbol}"
+        :$txData="$v.form"
+        :txType="$options.TX_TYPE.SEND"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Send Coins', 'wallet.send-title') }}
