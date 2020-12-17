@@ -73,15 +73,18 @@ export function getTimeDistance(timestamp, allowFuture) {
 }
 
 export function getExplorerBlockUrl(block) {
-    return EXPLORER_HOST + '/blocks/' + block;
+    return 'https://node-v2.testnet.minter.network/v2/block/' + block;
+    // return EXPLORER_HOST + '/blocks/' + block;
 }
 
 export function getExplorerTxUrl(hash) {
-    return EXPLORER_HOST + '/transactions/' + hash;
+    return 'https://node-v2.testnet.minter.network/v2/transactions/' + hash;
+    // return EXPLORER_HOST + '/transactions/' + hash;
 }
 
 export function getExplorerAddressUrl(address) {
-    return EXPLORER_HOST + '/address/' + address;
+    return 'https://node-v2.testnet.minter.network/v2/address/' + address;
+    // return EXPLORER_HOST + '/address/' + address;
 }
 
 export function getExplorerValidatorUrl(pubKey) {
