@@ -2,15 +2,18 @@
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required';
 import minValue from 'vuelidate/lib/validators/minValue';
+import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import minLength from 'vuelidate/lib/validators/minLength';
 import maxLength from 'vuelidate/lib/validators/maxLength';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
 import {estimateCoinSell} from '~/api/gate';
 import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
 import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils";
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
+import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 
 export default {
     pretty,
@@ -19,6 +22,7 @@ export default {
     components: {
         TxForm,
         FieldCoin,
+        InputMaskedAmount,
     },
     directives: {
         checkEmpty,
@@ -29,6 +33,7 @@ export default {
             form: {
                 coinFrom: '',
                 coinTo: '',
+                minimumValueToBuy: '',
             },
             estimation: null,
             addressBalance: [],
@@ -43,6 +48,10 @@ export default {
             coinTo: {
                 required,
                 minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+            minimumValueToBuy: {
+                minValue: this.form.minimumValueToBuy ? minValue(0) : () => true,
+                maxValue: this.form.minimumValueToBuy ? maxValue(COIN_MAX_AMOUNT) : () => true,
             },
         };
 
@@ -84,6 +93,7 @@ export default {
         clearForm() {
             this.form.coinFrom = '';
             this.form.coinTo = '';
+            this.form.minimumValueToBuy = '';
             this.$v.$reset();
         },
     },
@@ -91,10 +101,9 @@ export default {
 </script>
 
 <template>
-    <!-- @TODO minimumValueToBuy -->
     <TxForm
         data-test-id="convertSellAll"
-        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo}"
+        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, minimumValueToBuy: form.minimumValueToBuy}"
         :$txData="$v.form"
         :txType="$options.TX_TYPE.SELL_ALL"
         :before-confirm-modal-show="getEstimation"
@@ -111,7 +120,7 @@ export default {
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
                     data-test-id="convertSellAllInputSellCoin"
                     v-model="form.coinFrom"
@@ -123,7 +132,7 @@ export default {
                 <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
                     data-test-id="convertSellAllInputBuyCoin"
                     v-model="form.coinTo"
@@ -134,10 +143,24 @@ export default {
                 <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
+            <div class="u-cell u-cell--medium--1-3">
+                <label class="form-field" :class="{'is-error': $v.form.minimumValueToBuy.$error}">
+                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                                       v-model="form.minimumValueToBuy"
+                                       @blur.native="$v.form.minimumValueToBuy.$touch()"
+                    />
+                    <span class="form-field__label">{{ $td('Min amount to get', 'form.convert-sell-min') }}</span>
+                </label>
+                <span class="form-field__error" v-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.minValue">{{ $td(`Min value is 0`, 'form.convert-sell-min-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
+                <span class="form-field__error" v-else-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.maxValue">{{ $td(`Max value is 10^15`, 'form.convert-sell-min-error-max') }}</span>
+                <div class="form-field__help">
+                    {{ $td('Default:', 'form.help-default') }} 0
+                </div>
+            </div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Sell', 'form.convert-sell-button') }}
+            {{ $td('Sell all', 'form.convert-sell-button') }}
         </template>
 
         <template v-slot:confirm-modal-header>
