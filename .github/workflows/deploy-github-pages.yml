@@ -26,7 +26,7 @@ jobs:
       
       - run: npm ci
 
-      - run: cp .env.mainnet.example .env
+      - run: cp .env.mainnet .env
       - name: Build
         run: npm run production
         env:
