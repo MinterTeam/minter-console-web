@@ -8,7 +8,7 @@ import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath} from 'minter-js-sdk/src/api/
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import {GATE_API_URL, CHAIN_ID} from '~/assets/variables';
 
-const minterApi = new MinterApi({apiType: 'node', baseURL: 'http://node-api.taconet.minter.network:8843/v2/', chainId: CHAIN_ID});
+const minterApi = new MinterApi({apiType: 'node', baseURL: 'https://node-api.taconet.minter.network/v2/', chainId: CHAIN_ID});
 
 export const postTx = PostTx(minterApi);
 export const postSignedTx = PostSignedTx(minterApi);

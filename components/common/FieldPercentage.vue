@@ -12,7 +12,7 @@ export default {
     props: {
         value: {
             type: [String, Number],
-            required: true,
+            required: false, // allow null
         },
         $value: {
             type: Object,

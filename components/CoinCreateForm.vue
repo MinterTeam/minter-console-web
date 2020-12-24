@@ -30,7 +30,7 @@ const coinNameValidator = withParams({type: 'coinName'}, function(value) {
 
 const constantReserveRatioValidator = withParams({type: 'constantReserveRatio'}, function(value) {
     let constantReserveRatio = parseInt(value, 10);
-    return MIN_CRR <= constantReserveRatio && MAX_CRR >= constantReserveRatio;
+    return constantReserveRatio === 0 || (MIN_CRR <= constantReserveRatio && MAX_CRR >= constantReserveRatio);
 });
 
 
@@ -117,7 +117,7 @@ export default {
             },
             initialReserve: {
                 required,
-                minValue: minValue(MIN_CREATE_RESERVE),
+                minValue: (val) => parseInt(val) === 0 || minValue(MIN_CREATE_RESERVE)(val),
             },
             maxSupply: {
                 minValue: this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY) : () => true,
@@ -226,7 +226,7 @@ export default {
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.initialReserve"
+                                       v-model.number="form.initialReserve"
                                        @blur="$v.form.initialReserve.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Initial reserve', 'form.coiner-create-reserve') }}</span>

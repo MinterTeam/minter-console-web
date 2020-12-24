@@ -147,17 +147,29 @@ function getEstimation(coinSymbol, baseCoinAmount) {
         return coinPricePromiseList[coinSymbol].promise;
     }
 
-    coinPricePromiseList[coinSymbol] = {};
-    coinPricePromiseList[coinSymbol].promise = estimateCoinBuy({
+    const bancorEstimate = estimateCoinBuy({
         coinToSell: coinSymbol,
         valueToBuy: baseCoinAmount,
         coinToBuy: COIN_NAME,
-    })
-        .then((result) => {
+    });
+    const swapEstimate = estimateCoinBuy({
+        coinToSell: coinSymbol,
+        valueToBuy: baseCoinAmount,
+        coinToBuy: COIN_NAME,
+        fromPool: true,
+    });
+    coinPricePromiseList[coinSymbol] = {};
+    coinPricePromiseList[coinSymbol].promise = Promise.allSettled([bancorEstimate, swapEstimate])
+        .then(([bancorResult, swapResult]) => {
+            const willPayList = [bancorResult, swapResult].map((item) => item.value?.will_pay).filter((item) => item);
+            if (willPayList.length === 0) {
+                throw bancorResult.reason;
+            }
+
             coinPricePromiseList[coinSymbol].timestamp = Date.now();
             return {
                 coinSymbol,
-                coinAmount: result.will_pay,
+                coinAmount: Math.min(...willPayList),
                 baseCoinAmount,
             };
         })
