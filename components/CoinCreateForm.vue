@@ -10,6 +10,7 @@
     import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {sellCoin, sellCoinByBip} from 'minterjs-util/src/coin-math';
+    import {getFeeValue} from 'minterjs-util/src/fee.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {prettyCeil, prettyPreciseFloor, prettyExact, prettyExactDecrease, prettyRound} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
@@ -167,6 +168,11 @@
 */
         },
         methods: {
+            getFee(length) {
+                return prettyRound(getFeeValue(TX_TYPE.CREATE_COIN, {
+                    coinSymbolLength: length,
+                }));
+            },
             clearForm() {
                 this.form.name = '';
                 this.form.symbol = '';
@@ -299,11 +305,11 @@
                 <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker Symbol Fees:</p>
                 <p>
-                    3 letters — {{ $store.getters.COIN_NAME }} 1 000 000<br>
-                    4 letters — {{ $store.getters.COIN_NAME }} 100 000<br>
-                    5 letters — {{ $store.getters.COIN_NAME }} 10 000<br>
-                    6 letters — {{ $store.getters.COIN_NAME }} 1 000<br>
-                    7-10 letters — {{ $store.getters.COIN_NAME }} 100<br>
+                    3 letters — {{ $store.getters.COIN_NAME }} {{ getFee(3) }}<br>
+                    4 letters — {{ $store.getters.COIN_NAME }} {{ getFee(4) }}<br>
+                    5 letters — {{ $store.getters.COIN_NAME }} {{ getFee(5) }}<br>
+                    6 letters — {{ $store.getters.COIN_NAME }} {{ getFee(6) }}<br>
+                    7-10 letters — {{ $store.getters.COIN_NAME }} {{ getFee(7) }}<br>
                 </p>
             </template>
             <template v-if="$i18n.locale === 'ru'">
@@ -314,11 +320,11 @@
                 <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
-                    3 буквы — {{ $store.getters.COIN_NAME }} 1 000 000<br>
-                    4 буквы — {{ $store.getters.COIN_NAME }} 100 000<br>
-                    5 букв — {{ $store.getters.COIN_NAME }} 10 000<br>
-                    6 букв — {{ $store.getters.COIN_NAME }} 1 000<br>
-                    7-10 букв — {{ $store.getters.COIN_NAME }} 100<br>
+                    3 буквы — {{ $store.getters.COIN_NAME }} {{ getFee(3) }}<br>
+                    4 буквы — {{ $store.getters.COIN_NAME }} {{ getFee(4) }}<br>
+                    5 букв — {{ $store.getters.COIN_NAME }} {{ getFee(5) }}<br>
+                    6 букв — {{ $store.getters.COIN_NAME }} {{ getFee(6) }}<br>
+                    7-10 букв — {{ $store.getters.COIN_NAME }} {{ getFee(7) }}<br>
                 </p>
             </template>
         </template>
