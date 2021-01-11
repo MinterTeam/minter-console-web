@@ -9,7 +9,7 @@ env:
   RELEASE_NAME_master: ""
   RELEASE_NAME_testnet: "-testnet"
 jobs:
-  deploy:
+  build-electron:
     runs-on: ubuntu-latest
     steps:
       - name: set env BUILD_BRANCH
@@ -22,7 +22,9 @@ jobs:
   
       # To build app in 32 bit from a machine with 64 bit
       - name: Install gcc-multilib
-        run: sudo apt-get install --no-install-recommends -y gcc-multilib g++-multilib
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y gcc-multilib g++-multilib
         
       # To build app for Windows on Linux
       # https://github.com/actions/virtual-environments/issues/743#issuecomment-616349857
