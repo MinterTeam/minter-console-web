@@ -1,0 +1,44 @@
+name: github pages
+
+on:
+  push:
+    branches: [ master, testnet ]
+    tags: [ 'v*.*.*' ]
+env:
+  RELEASE_NAME_master: ""
+  RELEASE_NAME_testnet: "-testnet"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set env BUILD_BRANCH
+        run: echo "BUILD_BRANCH=$(echo $GITHUB_REF | sed 's:refs/heads/::')" >> $GITHUB_ENV
+        
+      - name: set env RELEASE_NAME
+        env:
+          RELEASE_NAME_KEY: RELEASE_NAME_${{ env.BUILD_BRANCH }}
+        run: echo "RELEASE_NAME=$(echo ${!RELEASE_NAME_KEY})" >> $GITHUB_ENV
+        
+      - uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - run: npm ci
+
+      - run: cp .env.master .env
+
+      - name: Build
+        run: npm run electron:build
+
+      - name: Release
+        uses: softprops/action-gh-release@v0.1.5
+#        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          name: ${{ github.ref }}${{ env.RELEASE_NAME }}
+          files: tmp/electron/minter-console-*.{dmg,snap,zip,exe,AppImage}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
