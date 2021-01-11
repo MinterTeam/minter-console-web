@@ -3,7 +3,7 @@ name: github pages
 on:
   push:
     branches:
-      - mainnet
+      - master
 
 jobs:
   deploy:
@@ -26,7 +26,7 @@ jobs:
       
       - run: npm ci
 
-      - run: cp .env.mainnet .env
+      - run: cp .env.master .env
       - name: Build
         run: npm run production
         env:
