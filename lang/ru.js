@@ -40,7 +40,7 @@ export default {
         'auth-sign-in-seed-title': 'Войти при помощи seed-фразы',
         'auth-sign-in-seed-text': 'Ваша seed&#x2011;фраза',
         'auth-sign-in-seed-button': 'Войти',
-        'auth-sign-up-seed-title': 'Зарегистрироваться при помощи seed&#x2011;фразы',
+        'auth-sign-up-seed-title': 'Создать кошелек',
         'auth-sign-up-seed-generate': 'Сгенерировать seed&#x2011;фразу',
         'auth-sign-up-seed-result': 'Сгенерированная seed&#x2011;фраза',
         'auth-sign-up-seed-address': 'Сгенерированный адрес',
