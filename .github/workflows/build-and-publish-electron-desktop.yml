@@ -35,6 +35,9 @@ jobs:
           sudo add-apt-repository ppa:cybermax-dexter/sdl2-backport
           sudo apt-add-repository "deb https://dl.winehq.org/wine-builds/ubuntu $(lsb_release -cs) main"
           sudo apt install --install-recommends winehq-stable
+      
+      - name: Install Wine
+        run: wine --version
 
       - uses: actions/checkout@v2
 
@@ -48,7 +51,8 @@ jobs:
       - run: cp .env.master .env
 
       - name: Build
-        run: npm run electron:build
+#        run: npm run electron:build
+        run: npm run electron:build-x86
 
       - name: Release
         uses: softprops/action-gh-release@v0.1.5
