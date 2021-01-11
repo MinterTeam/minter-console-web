@@ -1,8 +1,9 @@
-name: github pages
+name: electron desktop
 
 on:
   push:
-    branches: [ master, testnet ]
+#    looks like it works as OR instead of AND
+#    branches: [ master, testnet ]
     tags: [ 'v*.*.*' ]
 env:
   RELEASE_NAME_master: ""
@@ -18,7 +19,21 @@ jobs:
         env:
           RELEASE_NAME_KEY: RELEASE_NAME_${{ env.BUILD_BRANCH }}
         run: echo "RELEASE_NAME=$(echo ${!RELEASE_NAME_KEY})" >> $GITHUB_ENV
+  
+      # To build app in 32 bit from a machine with 64 bit
+      - name: Install gcc-multilib
+        run: sudo apt-get install --no-install-recommends -y gcc-multilib g++-multilib
         
+      # To build app for Windows on Linux
+      # https://github.com/actions/virtual-environments/issues/743#issuecomment-616349857
+      - name: Install Wine
+        run: |
+          sudo dpkg --add-architecture i386
+          wget -qO - https://dl.winehq.org/wine-builds/winehq.key | sudo apt-key add -
+          sudo add-apt-repository ppa:cybermax-dexter/sdl2-backport
+          sudo apt-add-repository "deb https://dl.winehq.org/wine-builds/ubuntu $(lsb_release -cs) main"
+          sudo apt install --install-recommends winehq-stable
+
       - uses: actions/checkout@v2
 
       - name: Setup Node
