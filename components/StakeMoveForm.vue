@@ -1,19 +1,18 @@
 <script>
     import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import required from 'vuelidate/lib/validators/required.js';
+    import minLength from 'vuelidate/lib/validators/minLength.js';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import {isValidPublic} from "minterjs-util/src/public";
-    import eventBus from '~/assets/event-bus';
-    import focusElement from '~/assets/focus-element';
-    import checkEmpty from '~/assets/v-check-empty';
-    import {pretty, prettyExact} from "~/assets/utils";
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
+    import {isValidPublic} from "minterjs-util/src/public.js";
+    import eventBus from '~/assets/event-bus.js';
+    import focusElement from '~/assets/focus-element.js';
+    import checkEmpty from '~/assets/v-check-empty.js';
+    import {pretty, prettyExact} from "~/assets/utils.js";
     import TxForm from '~/components/common/TxForm.vue';
-    import FieldDomain from '~/components/common/FieldDomain';
-    import FieldCoin from '~/components/common/FieldCoin';
-    import FieldUseMax from '~/components/common/FieldUseMax';
+    import FieldDomain from '~/components/common/FieldDomain.vue';
+    import FieldCoin from '~/components/common/FieldCoin.vue';
+    import FieldUseMax from '~/components/common/FieldUseMax.vue';
 
     export default {
         TX_TYPE,
@@ -31,21 +30,28 @@
         data() {
             return {
                 form: {
-                    publicKey: '',
+                    publicKeyFrom: '',
+                    publicKeyTo: '',
                     stake: '',
                     coinSymbol: '',
                 },
-                domain: '',
-                isDomainResolving: false,
+                publicKeyFromDomain: '',
+                isPublicKeyFromDomainResolving: false,
+                publicKeyToDomain: '',
+                isPublicKeyToDomainResolving: false,
                 isMultisigAddress: false,
                 successTx: null,
             };
         },
         validations() {
             const form = {
-                publicKey: {
+                publicKeyFrom: {
                     required,
-                    validPublicKey: this.isDomainResolving ? () => new Promise(() => 0) : isValidPublic,
+                    validPublicKey: this.isPublicKeyFromDomainResolving ? () => new Promise(() => 0) : isValidPublic,
+                },
+                publicKeyTo: {
+                    required,
+                    validPublicKey: this.isPublicKeyToDomainResolving ? () => new Promise(() => 0) : isValidPublic,
                 },
                 stake: {
                     required,
@@ -116,7 +122,7 @@
                 });
             },
             stakeList() {
-                const selectedValidator = this.validatorData[this.form.publicKey];
+                const selectedValidator = this.validatorData[this.form.publicKeyFrom];
                 if (selectedValidator) {
                     return selectedValidator.stakeList;
                 } else {
@@ -142,28 +148,29 @@
             },
         },
         watch: {
-            'form.publicKey': function(newVal) {
+            'form.publicKeyFrom': function(newVal) {
                 if (this.stakeList.length === 1) {
                     this.form.coinSymbol = this.stakeList[0].coin.symbol;
                 }
             },
         },
-        mounted() {
-            eventBus.$on('activate-unbond', ({hash, coin}) => {
-                this.form.publicKey = hash;
-                this.form.coinSymbol = coin;
-
-                const inputEl = this.$refs.fieldStake.$el.querySelector('input');
-                focusElement(inputEl);
-            });
-        },
-        destroyed() {
-            eventBus.$off('activate-unbond');
-        },
+        // mounted() {
+        //     eventBus.$on('activate-move-stake', ({hash, coin}) => {
+        //         this.form.publicKeyFrom = hash;
+        //         this.form.coinSymbol = coin;
+        //
+        //         const inputEl = this.$refs.fieldStake.$el.querySelector('input');
+        //         focusElement(inputEl);
+        //     });
+        // },
+        // destroyed() {
+        //     eventBus.$off('activate-move-stake');
+        // },
         methods: {
             prettyExact,
             clearForm() {
-                this.form.publicKey = '';
+                this.form.publicKeyFrom = '';
+                this.form.publicKeyTo = '';
                 this.form.stake = '';
                 this.form.coinSymbol = '';
                 this.$v.$reset();
@@ -173,30 +180,40 @@
 </script>
 
 <template>
-    <TxForm :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.UNBOND" @update:isMultisigAddress="isMultisigAddress = $event" @clear-form="clearForm()" @success-tx="successTx = $event">
+    <TxForm :txData="{from: form.publicKeyFrom, to: form.publicKeyTo, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.MOVE_STAKE" @update:isMultisigAddress="isMultisigAddress = $event" @clear-form="clearForm()" @success-tx="successTx = $event">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Unbond', 'delegation.unbond-title') }}
+                {{ $td('Move stake', 'delegation.move-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding. The process will be finalized within 30 days after the request has been sent.', 'delegation.unbond-description') }}
+                {{ $td('Move your stake from one validator to another. The process will be finalized within 30 days after the request has been sent.', 'delegation.move-description') }}
             </p>
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldDomain
-                    v-model.trim="form.publicKey"
-                    :$value="$v.form.publicKey"
+                    v-model.trim="form.publicKeyFrom"
+                    :$value="$v.form.publicKeyFrom"
                     valueType="publicKey"
-                    :label="$td('Public key or domain', 'form.masternode-public')"
+                    :label="$td('Public key or domain from', 'form.masternode-move-public-from')"
                     :suggestionList="suggestionValidatorList"
                     :suggestionMinInputLength="0"
-                    @update:domain="domain = $event"
-                    @update:resolving="isDomainResolving = $event"
+                    @update:domain="publicKeyFromDomain = $event"
+                    @update:resolving="isPublicKeyFromDomainResolving = $event"
                 />
             </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+            <div class="u-cell u-cell--xlarge--1-2">
+                <FieldDomain
+                    v-model.trim="form.publicKeyTo"
+                    :$value="$v.form.publicKeyTo"
+                    valueType="publicKey"
+                    :label="$td('Public key or domain to', 'form.masternode-move-public-to')"
+                    @update:domain="publicKeyToDomain = $event"
+                    @update:resolving="isPublicKeyToDomainResolving = $event"
+                />
+            </div>
+            <div class="u-cell u-cell--small--1-2">
                 <FieldCoin
                     v-model="form.coinSymbol"
                     :$value="$v.form.coinSymbol"
@@ -207,7 +224,7 @@
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+            <div class="u-cell u-cell--small--1-2">
                 <FieldUseMax
                     ref="fieldStake"
                     v-model="form.stake"
@@ -220,25 +237,25 @@
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Unbond', `form.delegation-unbond-button`) }}
+            {{ $td('Move stake', `form.delegation-move-button`) }}
         </template>
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-unbond.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Unbond', 'delegation.unbond-title') }}
+                {{ $td('Move', 'delegation.move-title') }}
             </h1>
         </template>
 
         <template v-slot:confirm-modal-body>
             <div class="u-grid u-grid--small u-grid--vertical-margin">
-                <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-unbond-confirm-description')"></div>
+                <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-move-confirm-description')"></div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
                         >
-                        <span class="form-field__label">{{ $td('You unbond', 'form.delegation-unbond-confirm-amount') }}</span>
+                        <span class="form-field__label">{{ $td('You move', 'form.delegation-move-confirm-amount') }}</span>
                     </label>
                 </div>
                 <div class="u-cell">
@@ -246,9 +263,19 @@
                         <textarea
                             class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
                             v-autosize
-                            :value="form.publicKey + (domain ? `\n(${domain})` : '')"
+                            :value="form.publicKeyFrom + (publicKeyFromDomain ? `\n(${publicKeyFromDomain})` : '')"
                         ></textarea>
-                        <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-unbond-confirm-address') }}</span>
+                        <span class="form-field__label">{{ $td('From the masternode', 'form.delegation-move-confirm-public-from') }}</span>
+                    </label>
+                </div>
+                <div class="u-cell">
+                    <label class="form-field form-field--dashed">
+                        <textarea
+                            class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1" rows="1"
+                            v-autosize
+                            :value="form.publicKeyTo + (publicKeyToDomain ? `\n(${publicKeyToDomain})` : '')"
+                        ></textarea>
+                        <span class="form-field__label">{{ $td('To the masternode', 'form.delegation-move-confirm-public-to') }}</span>
                     </label>
                 </div>
             </div>
@@ -258,7 +285,7 @@
             <div class="u-mt-10">
                 You stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes).
                 <br>
-                Coins will return to your address in 518&#x202F;400 blocks.
+                Coins will return to your address in 518&#x202F;400 blocks (~30 days).
             </div>
         </template>
     </TxForm>

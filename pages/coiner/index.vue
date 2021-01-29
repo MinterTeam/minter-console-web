@@ -3,12 +3,20 @@
     import CoinCreateForm from '~/components/CoinCreateForm';
     import CoinRecreateForm from '~/components/CoinRecreateForm.vue';
     import CoinEditOwnerForm from '~/components/CoinEditOwnerForm.vue';
+    import CoinCreateTokenForm from '~/components/CoinCreateTokenForm.vue';
+    import CoinRecreateTokenForm from '~/components/CoinRecreateTokenForm.vue';
+    import CoinMintTokenForm from '~/components/CoinMintTokenForm.vue';
+    import CoinBurnTokenForm from '~/components/CoinBurnTokenForm.vue';
 
     export default {
         components: {
             CoinCreateForm,
             CoinRecreateForm,
             CoinEditOwnerForm,
+            CoinCreateTokenForm,
+            CoinRecreateTokenForm,
+            CoinMintTokenForm,
+            CoinBurnTokenForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Coiner', 'common.page-coiner'));
@@ -39,5 +47,13 @@
         <CoinRecreateForm/>
 
         <CoinEditOwnerForm/>
+
+        <CoinCreateTokenForm/>
+
+        <CoinRecreateTokenForm/>
+
+        <CoinMintTokenForm/>
+
+        <CoinBurnTokenForm/>
     </section>
 </template>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {COIN_NAME, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
@@ -6,6 +7,7 @@ import stripZeros from 'pretty-num/src/strip-zeros.js';
 
 const instance = axios.create({
     baseURL: EXPLORER_API_URL,
+    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
 });
 addToCamelInterceptor(instance);
 addTimeInterceptor(instance);
@@ -75,11 +77,17 @@ export function prepareBalance(balanceList) {
         });
 }
 
+
+// 1 min cache
+const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
+
 /**
  * @return {Promise<Array<CoinItem>>}
  */
 export function getCoinList() {
-    return explorer.get('coins')
+    return explorer.get('coins', {
+            cache: coinsCache,
+        })
         // .then((response) => response.data.data);
         // @TODO don't sort, coins should already be sorted by reserve
         .then((response) => response.data.data.sort((a, b) => {

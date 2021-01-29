@@ -237,5 +237,19 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 
 
-
+.form-checkbox {
+    position: relative; display: flex; user-select: none; cursor: pointer; font-weight: inherit; margin: 0;
+    &.is-error {color: @c-red;}
+    &+& {margin-top: 16px;}
+}
+.form-checkbox__input-native {position: absolute; left: 0; top: 0; opacity: 0; z-index: -1;}
+.form-checkbox__input-visible {
+    width: 20px; height: 20px; border-radius: 2px; border: 2px solid @c-black-light; margin-right: 16px; flex-shrink: 0; position: relative;
+    &::before {content: ''; width: 13px; height: 8px; margin: -6px 0 0 -6px; position: absolute; left: 50%; top: 50%; border: solid #fff; border-width: 0 0 2px 2px; visibility: hidden; transform: rotate(-45deg);}
+    .is-error > & {border-color: @c-red;}
+    .form-checkbox__input-native:focus + & {border-color: @c-main;}
+    .form-checkbox__input-native:checked + & {background: @c-main; border-color: @c-main;}
+    .form-checkbox__input-native:checked + &::before {visibility: visible;}
+}
+.form-checkbox__label {flex-grow: 2; line-height: 20px;}
 

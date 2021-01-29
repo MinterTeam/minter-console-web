@@ -1,20 +1,22 @@
 <script>
     import getTitle from '~/assets/get-title';
     import StakeListTable from '~/components/StakeListTable';
-    import ValidatorDelegateForm from '~/components/ValidatorDelegateForm';
-    import ValidatorUnbondForm from '~/components/ValidatorUnbondForm';
-    import ValidatorReinvestForm from '~/components/ValidatorReinvestForm';
-    import ValidatorReinvestPostForm from '~/components/ValidatorReinvestStartForm';
+    import StakeDelegateForm from '~/components/StakeDelegateForm.vue';
+    import StakeUnbondForm from '~/components/StakeUnbondForm.vue';
+    // import StakeMoveForm from '~/components/StakeMoveForm.vue';
+    import StakeReinvestForm from '~/components/StakeReinvestForm.vue';
+    import StakeReinvestPostForm from '~/components/StakeReinvestStartForm.vue';
 
     let stakeInterval;
 
     export default {
         components: {
             StakeListTable,
-            ValidatorDelegateForm,
-            ValidatorUnbondForm,
-            ValidatorReinvestForm,
-            ValidatorReinvestPostForm,
+            StakeDelegateForm,
+            StakeUnbondForm,
+            // StakeMoveForm,
+            StakeReinvestForm,
+            StakeReinvestPostForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Delegation', 'common.page-delegation'));
@@ -63,9 +65,11 @@
         </section>
 
 
-        <ValidatorDelegateForm/>
+        <StakeDelegateForm/>
 
-        <ValidatorUnbondForm/>
+        <StakeUnbondForm/>
+
+        <!--        <StakeMoveForm/>-->
 
         <div class="panel">
             <div class="panel__header">
@@ -76,7 +80,7 @@
                     {{ $td('In order to enable automatic delegation, you will first need to generate a batch of transactions. You may do it either on-line or locally (we recommend that you use the second option as it is more secure). If you do it off-line, download the resulting file and proceed to the next step. If you do it on-line, generated transactions will be sent to auto-delegation server automatically.', 'delegation.reinvest-generate-description') }}
                 </p>
             </div>
-            <ValidatorReinvestForm/>
+            <StakeReinvestForm/>
         </div>
         <div class="panel">
             <div class="panel__header">
@@ -87,7 +91,7 @@
                     {{ $td('Here you need to upload and submit the file that contains the list of generated transactions. They will be sent to auto-delegation server that will check your account balance and try to send a delegation transaction. To stop auto-delegation, you have to send any other transaction to break nonce order in the auto-delegator queue.', 'delegation.reinvest-start-description') }}
                 </p>
             </div>
-            <ValidatorReinvestPostForm/>
+            <StakeReinvestPostForm/>
         </div>
     </section>
 </template>

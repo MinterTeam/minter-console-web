@@ -1,11 +1,10 @@
 import Vue from 'vue';
 import Big from 'big.js';
-import {getFeeValue} from 'minterjs-util/src/fee';
+import {BaseCoinFee} from 'minterjs-util/src/fee.js';
 import {COIN_NAME} from '~/assets/variables';
-import {estimateCoinBuy} from '~/api/gate';
+import {estimateCoinBuy, getCommissionPrice} from '~/api/gate';
+import {getCoinList} from '~/api/explorer.js';
 
-
-let coinPricePromiseList = {};
 
 /**
  * @typedef {Object} FeeData
@@ -20,43 +19,51 @@ let coinPricePromiseList = {};
  *
  * @param {string} txType
  * @param {{payload: string, coinSymbol: string, multisendCount: number}} [txFeeOptions]
- * @param {string} [selectedCoinSymbol]
- * @param {string} [selectedFeeCoinSymbol]
+ * @param {string|number} [selectedCoin]
+ * @param {string|number} [selectedFeeCoin]
  * @param {number} [baseCoinAmount]
  * @param {boolean} [isOffline]
  * @return {Vue}
  * @constructor
  */
 
-export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, selectedFeeCoinSymbol, baseCoinAmount = 0, isOffline}) {
+export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeCoin, baseCoinAmount = 0, isOffline}) {
     return new Vue({
         data: {
             txType,
             txFeeOptions,
-            selectedCoinSymbol,
-            selectedFeeCoinSymbol,
+            selectedCoin,
+            selectedFeeCoin,
             baseCoinAmount,
             coinPriceList: {},
+            coinList: {},
+            /** @type CommissionPriceMapped|null */
+            commissionData: null,
             isOffline,
         },
         computed: {
             baseCoinFeeValue() {
-                return getFeeValue(this.txType, this.txFeeOptions) || 0;
+                if (!this.commissionData) {
+                    return 0;
+                }
+                const baseCoinFee = new BaseCoinFee(this.commissionData);
+
+                return baseCoinFee.getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
             isBaseCoinEnough() {
                 return this.baseCoinAmount >= this.baseCoinFeeValue;
             },
             isBaseCoinFee() {
-                // use selectedFeeCoinSymbol if it is defined
-                if (this.selectedFeeCoinSymbol) {
-                    return this.selectedFeeCoinSymbol === COIN_NAME;
+                // use selectedFeeCoin if it is defined
+                if (isCoinDefined(this.selectedFeeCoin)) {
+                    return isBaseCoin(this.selectedFeeCoin);
                 }
                 // no coins selected: show base
-                if (!this.selectedCoinSymbol) {
+                if (!isCoinDefined(this.selectedCoin)) {
                     return true;
                 }
                 // base coin is selected
-                if (this.selectedCoinSymbol === COIN_NAME) {
+                if (isBaseCoin(this.selectedCoin)) {
                     return true;
                 }
                 // base coin is enough to pay fee
@@ -66,7 +73,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                 if (this.isBaseCoinFee) {
                     return this.baseCoinFeeValue;
                 } else {
-                    const coinEstimation = this.coinPriceList[this.feeCoinSymbol];
+                    const coinEstimation = this.coinPriceList[this.feeCoin];
                     if (coinEstimation) {
                         return new Big(coinEstimation.coinAmount).div(coinEstimation.baseCoinAmount).times(this.baseCoinFeeValue).toFixed();
                     } else {
@@ -74,15 +81,20 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                     }
                 }
             },
-            feeCoinSymbol() {
-                // use selectedFeeCoinSymbol if it is defined
-                if (this.selectedFeeCoinSymbol) {
-                    return this.selectedFeeCoinSymbol;
-                }
+            feeCoin() {
                 if (this.isBaseCoinFee) {
                     return COIN_NAME;
+                }
+                if (isCoinDefined(this.selectedFeeCoin)) {
+                    return this.selectedFeeCoin;
+                }
+                return this.selectedCoin;
+            },
+            feeCoinSymbol() {
+                if (isCoinId(this.feeCoin)) {
+                    return this.coinList[this.feeCoin];
                 } else {
-                    return this.selectedCoinSymbol;
+                    return this.feeCoin;
                 }
             },
             fee() {
@@ -92,6 +104,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
                     isBaseCoin: this.isBaseCoinFee,
                     isBaseCoinEnough: this.isBaseCoinEnough,
                     value: this.feeValue,
+                    coin: this.feeCoin,
                     coinSymbol: this.feeCoinSymbol,
                 };
             },
@@ -105,78 +118,86 @@ export default function FeeBus({txType, txFeeOptions, selectedCoinSymbol, select
             },
         },
         created() {
+            this.fetchCoinData();
+
             this.$on('update-params', function(params) {
                 Object.keys(params).forEach((key) => {
                     this[key] = params[key];
                 });
+                this.fetchCoinData();
+            });
+        },
+        methods: {
+            fetchCoinData() {
                 if (this.isOffline) {
                     return;
                 }
                 // wait for computed to recalculate
                 this.$nextTick(() => {
+                    getCommissionPrice()
+                        .then((commissionData) => {
+                            this.commissionData = commissionData;
+                        });
+
                     if (!this.isBaseCoinFee) {
-                        const feeCoinSymbol = this.feeCoinSymbol;
-                        getEstimation(feeCoinSymbol, this.baseCoinFeeValue)
-                            .then((result) => this.$set(this.coinPriceList, feeCoinSymbol, result));
+                        const feeCoin = this.feeCoin;
+                        getEstimation(feeCoin, this.baseCoinFeeValue)
+                            .then((result) => this.$set(this.coinPriceList, feeCoin, result));
+
+                        getCoinList()
+                            .then((coinList) => {
+                                let result = {};
+                                coinList.forEach((coinInfo) => {
+                                    result[coinInfo.id] = coinInfo.symbol;
+                                });
+                                this.coinList = Object.freeze(result);
+                            });
                     }
                 });
-            });
+            },
         },
     });
 }
 
 
 /**
- * is older than 1 min?
- * @param coinPricePromise
- * @return {boolean}
+ *
+ * @param coinIdOrSymbol
+ * @param baseCoinAmount
+ * @return {Promise<{coinAmount: string, baseCoinAmount: string}>}
  */
-function isEstimationOutdated(coinPricePromise) {
-    return coinPricePromise.timestamp && (Date.now() - coinPricePromise.timestamp) > 60 * 1000;
+function getEstimation(coinIdOrSymbol, baseCoinAmount) {
+    return estimateCoinBuy({
+        coinToSell: !isCoinId(coinIdOrSymbol) ? coinIdOrSymbol : undefined,
+        coinIdToSell: isCoinId(coinIdOrSymbol) ? coinIdOrSymbol : undefined,
+        valueToBuy: baseCoinAmount,
+        coinToBuy: COIN_NAME,
+        swapFrom: 'optimal',
+    })
+        .then((result) => {
+            return {
+                coinAmount: result.will_pay,
+                baseCoinAmount,
+            };
+        });
 }
 
 /**
- *
- * @param coinSymbol
- * @param baseCoinAmount
- * @return {Promise<{coinSymbol: string, coinAmount: string, baseCoinAmount: string}>}
+ * @param {string|number} coinIdOrSymbol
+ * @return {boolean}
  */
-function getEstimation(coinSymbol, baseCoinAmount) {
-    // if estimation exists and not outdated return it
-    if (coinPricePromiseList[coinSymbol] && !isEstimationOutdated(coinPricePromiseList[coinSymbol])) {
-        return coinPricePromiseList[coinSymbol].promise;
-    }
+function isCoinDefined(coinIdOrSymbol) {
+    return !!coinIdOrSymbol || coinIdOrSymbol === 0;
+}
 
-    const bancorEstimate = estimateCoinBuy({
-        coinToSell: coinSymbol,
-        valueToBuy: baseCoinAmount,
-        coinToBuy: COIN_NAME,
-    });
-    const swapEstimate = estimateCoinBuy({
-        coinToSell: coinSymbol,
-        valueToBuy: baseCoinAmount,
-        coinToBuy: COIN_NAME,
-        fromPool: true,
-    });
-    coinPricePromiseList[coinSymbol] = {};
-    coinPricePromiseList[coinSymbol].promise = Promise.allSettled([bancorEstimate, swapEstimate])
-        .then(([bancorResult, swapResult]) => {
-            const willPayList = [bancorResult, swapResult].map((item) => item.value?.will_pay).filter((item) => item);
-            if (willPayList.length === 0) {
-                throw bancorResult.reason;
-            }
+function isCoinId(coinIdOrSymbol) {
+    return typeof coinIdOrSymbol === 'number';
+}
 
-            coinPricePromiseList[coinSymbol].timestamp = Date.now();
-            return {
-                coinSymbol,
-                coinAmount: Math.min(...willPayList),
-                baseCoinAmount,
-            };
-        })
-        .catch((e) => {
-            delete coinPricePromiseList[coinSymbol];
-            throw e;
-        });
-
-    return coinPricePromiseList[coinSymbol].promise;
+/**
+ * @param {string|number} coinIdOrSymbol
+ * @return {boolean}
+ */
+function isBaseCoin(coinIdOrSymbol) {
+    return coinIdOrSymbol === COIN_NAME || coinIdOrSymbol === 0 || coinIdOrSymbol === '0';
 }

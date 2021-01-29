@@ -60,7 +60,7 @@
     <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.SET_HALT_BLOCK" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Set halt block', 'masternode.halt-block-title') }}
+                {{ $td('Vote for halt block', 'masternode.halt-block-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('', 'masternode.halt-block-description') }}

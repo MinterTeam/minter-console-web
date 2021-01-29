@@ -70,7 +70,7 @@
 </script>
 
 <template>
-    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_COIN_OWNER" @clear-form="clearForm()">
+    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_TICKER_OWNER" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Edit coin owner', 'coiner.edit-coin-owner-title') }}

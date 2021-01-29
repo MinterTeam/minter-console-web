@@ -1,6 +1,7 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
 import formatDistanceStrict from "date-fns/esm/formatDistanceStrict";
+import withParams from 'vuelidate/lib/withParams.js';
 import decode from 'entity-decode';
 import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
@@ -73,18 +74,15 @@ export function getTimeDistance(timestamp, allowFuture) {
 }
 
 export function getExplorerBlockUrl(block) {
-    return 'https://node-v2.testnet.minter.network/v2/block/' + block;
-    // return EXPLORER_HOST + '/blocks/' + block;
+    return EXPLORER_HOST + '/blocks/' + block;
 }
 
 export function getExplorerTxUrl(hash) {
-    return 'https://node-v2.testnet.minter.network/v2/transactions/' + hash;
-    // return EXPLORER_HOST + '/transactions/' + hash;
+    return EXPLORER_HOST + '/transactions/' + hash;
 }
 
 export function getExplorerAddressUrl(address) {
-    return 'https://node-v2.testnet.minter.network/v2/address/' + address;
-    // return EXPLORER_HOST + '/address/' + address;
+    return EXPLORER_HOST + '/address/' + address;
 }
 
 export function getExplorerValidatorUrl(pubKey) {
@@ -212,6 +210,10 @@ export function fromBase64(str) {
         return asci;
     }
 }
+
+export const coinSymbolValidator = withParams({type: 'coinName'}, function(value) {
+    return /^[A-Z0-9]{3,10}$/.test(value);
+});
 
 
 export function suggestionValidatorFilter(suggestion, query) {

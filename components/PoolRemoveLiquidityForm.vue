@@ -135,7 +135,7 @@ export default {
 
 <template>
     <!-- @TODO minimumVolume -->
-    <TxForm :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}" :$txData="$v.form" :txType="$options.TX_TYPE.REMOVE_SWAP_POOL" @clear-form="clearForm()">
+    <TxForm :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}" :$txData="$v.form" :txType="$options.TX_TYPE.REMOVE_LIQUIDITY" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Remove liquidity from swap pool', 'swap.remove-title') }}

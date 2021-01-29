@@ -10,7 +10,7 @@ import {COIN_MAX_MAX_SUPPLY, COIN_MIN_MAX_SUPPLY} from "minterjs-util/src/variab
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
 import {sellCoin} from 'minterjs-util/src/coin-math';
 import checkEmpty from '~/assets/v-check-empty';
-import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound} from "~/assets/utils";
+import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound, coinSymbolValidator as coinNameValidator} from "~/assets/utils.js";
 import TxForm from '~/components/common/TxForm.vue';
 import InputUppercase from '~/components/common/InputUppercase';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -23,10 +23,6 @@ const MAX_CRR = 100;
 const MIN_CREATE_RESERVE = 10000;
 const MIN_PRICE = 0;
 const MIN_SUPPLY = 0;
-
-const coinNameValidator = withParams({type: 'coinName'}, function(value) {
-    return /^[A-Z0-9]{3,10}$/.test(value);
-});
 
 const constantReserveRatioValidator = withParams({type: 'constantReserveRatio'}, function(value) {
     let constantReserveRatio = parseInt(value, 10);
@@ -191,7 +187,7 @@ export default {
                 </label>
                 <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.required">{{ $td('Enter coin name', 'form.coiner-create-name-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.maxLength">{{ $td('Max 64 letters', 'form.coiner-create-name-error-max') }}</span>
-                <div class="form-field__help" v-html="$td('The full name of your coin (for example, <strong>Bitcoin</strong>). Arbitrary string up to 64 letters long.', 'form.coiner-create-name-help')"></div>
+                <div class="form-field__help" v-html="$td('The full name or description of your coin (for example, <strong>Bitcoin</strong>). Arbitrary string up to 64 letters long.', 'form.coiner-create-name-help')"></div>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.symbol.$error}">
@@ -284,8 +280,8 @@ export default {
                                 <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
                 -->
                 <p><span class="u-emoji">⚠️</span> Warning! Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
-                <p>Coin Issue Sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
-                <p>Ticker Symbol Fees:</p>
+                <p>Coin issue sandbox: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
+                <p>Ticker symbol fees:</p>
                 <p>
                     3 letters — {{ $store.getters.COIN_NAME }} 1 000 000<br>
                     4 letters — {{ $store.getters.COIN_NAME }} 100 000<br>

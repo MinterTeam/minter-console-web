@@ -7,20 +7,23 @@
     import maxValue from 'vuelidate/lib/validators/maxValue.js';
     import {TX_TYPE} from 'minterjs-tx/src/tx-types';
     import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
-    import {estimateCoinBuy} from '~/api/gate';
+    import {estimateCoinSell} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {pretty, prettyExact} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
+    import FieldUseMax from '~/components/common/FieldUseMax';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
 
-
     export default {
+        pretty,
+        prettyExact,
         TX_TYPE,
         components: {
             TxForm,
             FieldCoin,
+            FieldUseMax,
             InputMaskedAmount,
         },
         directives: {
@@ -30,17 +33,19 @@
         data() {
             return {
                 form: {
-                    buyAmount: '',
+                    sellAmount: '',
                     coinFrom: '',
                     coinTo: '',
-                    maximumValueToSell: '',
+                    minimumValueToBuy: '',
                 },
                 estimation: null,
             };
         },
         validations() {
             const form = {
-                buyAmount: {
+                sellAmount: {
+                    //@TODO maxValue
+                    //@TODO validAmount
                     required,
                 },
                 coinFrom: {
@@ -51,9 +56,9 @@
                     required,
                     minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
-                maximumValueToSell: {
-                    minValue: this.form.maximumValueToSell ? minValue(0) : () => true,
-                    maxValue: this.form.maximumValueToSell ? maxValue(COIN_MAX_AMOUNT) : () => true,
+                minimumValueToBuy: {
+                    minValue: this.form.minimumValueToBuy ? minValue(0) : () => true,
+                    maxValue: this.form.minimumValueToBuy ? maxValue(COIN_MAX_AMOUNT) : () => true,
                 },
             };
 
@@ -62,8 +67,6 @@
         computed: {
         },
         methods: {
-            pretty,
-            prettyExact,
             getEstimation(txFormContext) {
                 if (this.$store.getters.isOfflineMode) {
                     return;
@@ -71,14 +74,14 @@
                 txFormContext.isFormSending = true;
                 txFormContext.serverError = '';
                 txFormContext.serverSuccess = '';
-                return estimateCoinBuy({
-                    coinToBuy: this.form.coinTo,
-                    valueToBuy: this.form.buyAmount,
+                return estimateCoinSell({
                     coinToSell: this.form.coinFrom,
-                    fromPool: true,
+                    valueToSell: this.form.sellAmount,
+                    coinToBuy: this.form.coinTo,
+                    swapFrom: 'pool',
                 })
                     .then((result) => {
-                        this.estimation = result.will_pay;
+                        this.estimation = result.will_get;
                         txFormContext.isFormSending = false;
                     })
                     .catch((error) => {
@@ -88,10 +91,10 @@
                     });
             },
             clearForm() {
-                this.form.buyAmount = '';
+                this.form.sellAmount = '';
                 this.form.coinFrom = '';
                 this.form.coinTo = '';
-                this.form.maximumValueToSell = '';
+                this.form.minimumValueToBuy = '';
                 this.$v.$reset();
             },
         },
@@ -100,47 +103,27 @@
 
 <template>
     <TxForm
-        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToBuy: form.buyAmount, maximumValueToSell: form.maximumValueToSell}"
+        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToSell: form.sellAmount, minimumValueToBuy: form.minimumValueToBuy}"
         :$txData="$v.form"
-        :txType="$options.TX_TYPE.BUY_SWAP_POOL"
+        :txType="$options.TX_TYPE.SELL_SWAP_POOL"
         :before-confirm-modal-show="getEstimation"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Buy coins from swap pool', 'convert.buy-title') }}
+                {{ $td('Sell coins to swap pool', 'convert.sell-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('If you want to buy a specific coin, you can do it here.', 'convert.buy-description') }}
+                {{ $td('Choose one of the coins that you own and specify the amount you would like to sell.', 'convert.sell-description') }}
             </p>
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--medium--1-2">
                 <FieldCoin
-                    v-model="form.coinTo"
-                    :$value="$v.form.coinTo"
-                    :label="$td('Coin to buy', 'form.convert-buy-coin-buy')"
-                />
-                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <!--<span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-            </div>
-            <div class="u-cell u-cell--medium--1-2">
-                <label class="form-field" :class="{'is-error': $v.form.buyAmount.$error}">
-                    <InputMaskedAmount class="form-field__input" v-check-empty
-                                       v-model="form.buyAmount"
-                                       @blur="$v.form.buyAmount.$touch()"
-                    />
-                    <span class="form-field__label">{{ $td('Buy amount', 'form.convert-buy-amount') }}</span>
-                </label>
-                <span class="form-field__error" v-if="$v.form.buyAmount.$dirty && !$v.form.buyAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-            </div>
-            <div class="u-cell u-cell--medium--1-2">
-                <FieldCoin
                     v-model="form.coinFrom"
                     :$value="$v.form.coinFrom"
-                    :label="$td('Coin to spend', 'form.convert-buy-coin-spend')"
+                    :label="$td('Coin to sell', 'form.convert-sell-coin-sell')"
                     :coin-list="addressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -148,23 +131,44 @@
                 <!--<span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--medium--1-2">
-                <label class="form-field" :class="{'is-error': $v.form.maximumValueToSell.$error}">
+                <FieldUseMax
+                    v-model="form.sellAmount"
+                    :$value="$v.form.sellAmount"
+                    :label="$td('Sell amount', 'form.convert-sell-amount')"
+                    :selected-coin-symbol="form.coinFrom"
+                    :fee="fee"
+                    :address-balance="addressBalance"
+                />
+                <span class="form-field__error" v-if="$v.form.sellAmount.$dirty && !$v.form.sellAmount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <FieldCoin
+                    v-model="form.coinTo"
+                    :$value="$v.form.coinTo"
+                    :label="$td('Coin to get', 'form.convert-sell-coin-get')"
+                />
+                <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field" :class="{'is-error': $v.form.minimumValueToBuy.$error}">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.maximumValueToSell"
-                                       @blur.native="$v.form.maximumValueToSell.$touch()"
+                                       v-model="form.minimumValueToBuy"
+                                       @blur.native="$v.form.minimumValueToBuy.$touch()"
                     />
-                    <span class="form-field__label">{{ $td('Max amount to spend', 'form.swap-buy-max') }}</span>
+                    <span class="form-field__label">{{ $td('Min amount to get', 'form.swap-sell-min') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.maximumValueToSell.$dirty && !$v.form.maximumValueToSell.minValue">{{ $td(`Min value is 0`, 'form.swap-buy-max-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
-                <span class="form-field__error" v-else-if="$v.form.maximumValueToSell.$dirty && !$v.form.maximumValueToSell.maxValue">{{ $td(`Max value is 10^15`, 'form.swap-buy-max-error-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.minValue">{{ $td(`Min value is 0`, 'form.swap-sell-min-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
+                <span class="form-field__error" v-else-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.maxValue">{{ $td(`Max value is 10^15`, 'form.swap-sell-min-error-max') }}</span>
                 <div class="form-field__help">
-                    {{ $td('Default:', 'form.help-default') }} 10^15
+                    {{ $td('Default:', 'form.help-default') }} 0
                 </div>
             </div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Buy', 'form.convert-buy-button') }}
+            {{ $td('Sell', 'form.convert-sell-button') }}
         </template>
 
         <template v-slot:confirm-modal-header>
@@ -179,18 +183,18 @@
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinTo + ' ' + prettyExact(form.buyAmount)"
+                               :value="form.coinFrom + ' ' + $options.prettyExact(form.sellAmount)"
                         >
-                        <span class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</span>
+                        <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
                     </label>
                 </div>
                 <div class="u-cell">
                     <template v-if="estimation">
                         <label class="form-field form-field--dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="form.coinFrom + ' ' + pretty(estimation)"
+                                   :value="form.coinTo + ' ' + $options.pretty(estimation)"
                             >
-                            <span class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</span>
+                            <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive-estimation') }}</span>
                         </label>
                         <div class="form-field__help u-text-left">
                             {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
@@ -199,9 +203,9 @@
                     <template v-else>
                         <label class="form-field form-field--dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="form.coinFrom"
+                                   :value="form.coinTo"
                             >
-                            <span class="form-field__label">{{ $td('You will pay', 'form.convert-buy-confirm-pay') }}</span>
+                            <span class="form-field__label">{{ $td('You will get', 'form.convert-sell-confirm-receive') }}</span>
                         </label>
                     </template>
                 </div>

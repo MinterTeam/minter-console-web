@@ -3,18 +3,24 @@
     import ValidatorDeclareCandidacyForm from '~/components/ValidatorDeclareCandidacyForm';
     import ValidatorEditCandidateForm from '~/components/ValidatorEditCandidateForm';
     import ValidatorEditCandidatePublicKeyForm from '~/components/ValidatorEditCandidatePublicKeyForm.vue';
+    import ValidatorEditCandidateCommissionForm from '~/components/ValidatorEditCandidateCommissionForm.vue';
     import ValidatorSetCandidateOnOffForm from '~/components/ValidatorSetCandidateOnOffForm';
-    import ValidatorSetHaltBlockForm from '~/components/ValidatorSetHaltBlockForm.vue';
-    import ValidatorPriceVoteForm from '~/components/ValidatorPriceVoteForm.vue';
+    import ValidatorVoteCommissionForm from '~/components/ValidatorVoteCommissionForm.vue';
+    import ValidatorVoteUpdateForm from '~/components/ValidatorVoteUpdateForm.vue';
+    import ValidatorVoteHaltBlockForm from '~/components/ValidatorVoteHaltBlockForm.vue';
+    // import ValidatorVotePriceForm from '~/components/ValidatorVotePriceForm.vue';
 
     export default {
         components: {
             ValidatorDeclareCandidacyForm,
             ValidatorEditCandidateForm,
             ValidatorEditCandidatePublicKeyForm,
+            ValidatorEditCandidateCommissionForm,
             ValidatorSetCandidateOnOffForm,
-            ValidatorSetHaltBlockForm,
-            ValidatorPriceVoteForm,
+            ValidatorVoteCommissionForm,
+            ValidatorVoteUpdateForm,
+            ValidatorVoteHaltBlockForm,
+            // ValidatorVotePriceForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Masternode', 'common.page-masternode'));
@@ -50,8 +56,11 @@
 
         <ValidatorEditCandidatePublicKeyForm/>
 
-        <ValidatorSetHaltBlockForm/>
+        <ValidatorEditCandidateCommissionForm/>
 
-        <ValidatorPriceVoteForm/>
+        <ValidatorVoteCommissionForm/>
+        <ValidatorVoteUpdateForm/>
+        <ValidatorVoteHaltBlockForm/>
+        <!--        <ValidatorVotePriceForm/>-->
     </section>
 </template>

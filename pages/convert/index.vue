@@ -1,19 +1,21 @@
 <script>
     import getTitle from '~/assets/get-title';
-    import CoinSellForm from '~/components/CoinSellForm';
-    import CoinSellAllForm from '~/components/CoinSellAllForm';
-    import CoinBuyForm from '~/components/CoinBuyForm';
-    import CoinSwapAddForm from '~/components/CoinSwapAddForm.vue';
-    import CoinSwapRemoveForm from '~/components/CoinSwapRemoveForm.vue';
-    import CoinSwapSellForm from '~/components/CoinSwapSellForm.vue';
-    import CoinSwapSellAllForm from '~/components/CoinSwapSellAllForm.vue';
-    import CoinSwapBuyForm from '~/components/CoinSwapBuyForm.vue';
+    import CoinSellForm from '~/components/ConvertBancorSellForm.vue';
+    import CoinSellAllForm from '~/components/ConvertBancorSellAllForm.vue';
+    import CoinBuyForm from '~/components/ConvertBancorBuyForm.vue';
+    import PoolCreateForm from '@/components/PoolCreateForm.vue';
+    import CoinSwapAddForm from '@/components/PoolAddLiquidityForm.vue';
+    import CoinSwapRemoveForm from '@/components/PoolRemoveLiquidityForm.vue';
+    import CoinSwapSellForm from '@/components/PoolSellForm.vue';
+    import CoinSwapSellAllForm from '@/components/PoolSellAllForm.vue';
+    import CoinSwapBuyForm from '@/components/PoolBuyForm.vue';
 
     export default {
         components: {
             CoinSellForm,
             CoinSellAllForm,
             CoinBuyForm,
+            PoolCreateForm,
             CoinSwapAddForm,
             CoinSwapRemoveForm,
             CoinSwapSellForm,
@@ -48,6 +50,7 @@
         <CoinSellAllForm/>
         <CoinBuyForm/>
 
+        <PoolCreateForm/>
         <CoinSwapAddForm/>
         <CoinSwapRemoveForm/>
         <CoinSwapBuyForm/>

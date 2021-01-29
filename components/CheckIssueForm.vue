@@ -89,8 +89,8 @@
                 return {
                     txType: TX_TYPE.REDEEM_CHECK,
                     txFeeOptions: {},
-                    selectedCoinSymbol: this.form.coinSymbol,
-                    selectedFeeCoinSymbol: this.form.gasCoin,
+                    selectedCoin: this.form.coinSymbol,
+                    selectedFeeCoin: this.form.gasCoin,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };

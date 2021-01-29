@@ -172,16 +172,15 @@
                 if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL || txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
                     selectedCoinSymbol = txData.coinToSell;
                 }
-                let createCoinSymbol = txType === TX_TYPE.CREATE_COIN ? txData.symbol : undefined;
 
                 return {
                     txType: txType,
                     txFeeOptions: {
                         payload: this.form.payload,
-                        coinSymbol: createCoinSymbol,
+                        coinSymbol: txData.symbol,
                     },
-                    selectedCoinSymbol,
-                    selectedFeeCoinSymbol: this.form.gasCoin,
+                    selectedCoin: selectedCoinSymbol,
+                    selectedFeeCoin: this.form.gasCoin,
                     baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };

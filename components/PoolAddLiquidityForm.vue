@@ -74,7 +74,7 @@
     <TxForm
         :txData="form"
         :$txData="$v.form"
-        :txType="$options.TX_TYPE.ADD_SWAP_POOL"
+        :txType="$options.TX_TYPE.ADD_LIQUIDITY"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
