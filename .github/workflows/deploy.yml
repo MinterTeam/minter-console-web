@@ -52,7 +52,7 @@ jobs:
           personalAccessToken: ${{ secrets.DIGITALOCEAN_TOKEN }}
           clusterName: k8s-prod-do
 
-      - name: Install helm
+      - name: Install helm to DO
         run: wget https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz &> /dev/null && tar xvzf helm-v3.3.4-linux-amd64.tar.gz && chmod 777 linux-amd64/helm && ./linux-amd64/helm ls -n ${{ env.KUBE_NAMESPACE }}-reserved
 
       - name: Deploy to DO

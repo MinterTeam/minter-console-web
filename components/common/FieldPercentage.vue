@@ -30,12 +30,17 @@ export default {
             type: [String, Number],
             default: undefined,
         },
+        allowDecimal: {
+            type: Boolean,
+            default: false,
+        },
     },
     computed: {
         maskCrr() {
             return {
                 allowDecimalPadding: false,
-                decimalPlaces: 0,
+                decimalPlaces: this.allowDecimal ? 18 : 0,
+                decimalCharacterAlternative: ',',
                 digitGroupSeparator: '',
                 emptyInputBehavior: 'null',
                 currencySymbol: '\u2009%',

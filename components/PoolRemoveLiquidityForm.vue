@@ -1,6 +1,7 @@
 <script>
 import Big from 'big.js';
 import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
+import debounce from 'debounce-promise';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required';
 import minLength from 'vuelidate/lib/validators/minLength';
@@ -8,7 +9,7 @@ import maxLength from 'vuelidate/lib/validators/maxLength';
 import minValue from 'vuelidate/lib/validators/minValue.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-import {getAddressLiquidity, getCoinInfo} from '~/api/gate.js';
+import {getAddressLiquidity, getCoinId} from '~/api/gate.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
 import {pretty, prettyExact} from "~/assets/utils";
@@ -17,8 +18,6 @@ import FieldCoin from '~/components/common/FieldCoin';
 import FieldPercentage from '~/components/common/FieldPercentage.vue';
 
 export default {
-    pretty,
-    prettyExact,
     TX_TYPE,
     components: {
         TxForm,
@@ -61,46 +60,38 @@ export default {
         return {form};
     },
     asyncComputed: {
-        liquidity() {
-            // no pair entered
-            if (!this.form.coin0 || !this.form.coin1 || this.form.coin0 === this.form.coin1) {
-                return;
-            }
-
-            return Promise.all([getCoinInfo(this.form.coin0), getCoinInfo(this.form.coin1)])
-                .then(([info0, info1]) => {
-                    return getAddressLiquidity(this.$store.getters.address, info0.id, info1.id);
-                });
+        addressLiquidityData() {
+            return this.fetchAddressLiquidity(this.form.coin0, this.form.coin1);
         },
     },
     computed: {
         liquidityAmount() {
-            if (!this.liquidity?.balance || !this.form.liquidity) {
+            if (!this.addressLiquidityData?.liquidity || !this.form.liquidity) {
                 return 0;
             }
 
-            return new Big(this.form.liquidity).div(100).times(this.liquidity.balance).div(10 ** 18).toFixed();
+            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.liquidity).div(10 ** 18).toFixed();
         },
         coin0Amount() {
-            if (!this.liquidity?.amount0 || !this.form.liquidity) {
+            if (!this.addressLiquidityData?.amount0 || !this.form.liquidity) {
                 return 0;
             }
 
-            return new Big(this.form.liquidity).div(100).times(this.liquidity.amount0).div(10 ** 18).toFixed();
+            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount0).div(10 ** 18).toFixed();
         },
         coin1Amount() {
-            if (!this.liquidity?.amount1 || !this.form.liquidity) {
+            if (!this.addressLiquidityData?.amount1 || !this.form.liquidity) {
                 return 0;
             }
 
-            return new Big(this.form.liquidity).div(100).times(this.liquidity.amount1).div(10 ** 18).toFixed();
+            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount1).div(10 ** 18).toFixed();
         },
         /*
         maxAmount() {
-            if (!this.liquidity) {
+            if (!this.addressLiquidityData) {
                 return;
             }
-            return this.liquidity.balance;
+            return this.addressLiquidityData.liquidity;
 
             // @TODO select from list
             // no pool liquidity
@@ -123,6 +114,19 @@ export default {
         */
     },
     methods: {
+        pretty,
+        prettyExact,
+        fetchAddressLiquidity: debounce(function() {
+            // no pair entered
+            if (!this.form.coin0 || !this.form.coin1 || this.form.coin0 === this.form.coin1) {
+                return;
+            }
+
+            return getCoinId([this.form.coin0, this.form.coin1])
+                .then(([id0, id1]) => {
+                    return getAddressLiquidity(id0, id1, this.$store.getters.address);
+                });
+        }, 400),
         clearForm() {
             this.form.liquidity = '';
             this.form.coin0 = '';
@@ -173,6 +177,7 @@ export default {
                     :label="$td('Liquidity', 'form.swap-remove-liquidity')"
                     min-value="0"
                     max-value="100"
+                    :allow-decimal="true"
                 />
                 <span class="form-field__error" v-if="$v.form.liquidity.$dirty && !$v.form.liquidity.required">{{ $td('Enter percentage', 'form.swap-remove-liquidity-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.minValue">{{ $td('Min value 0', 'form.swap-remove-liquidity-error-min') }}</span>
@@ -189,19 +194,19 @@ export default {
             <div class="u-grid">
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ $options.pretty(coin0Amount) }}</div>
-                        <span class="form-field__label">{{ form.coin0 || 'Coin' }} {{ $td('to remove', 'form.swap-remove-coin-amount') }}</span>
+                        <div class="form-field__input is-not-empty">{{ pretty(coin0Amount) }}</div>
+                        <span class="form-field__label">{{ form.coin0 || 'Coin' }} {{ $td('to return', 'form.swap-remove-coin-amount') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ $options.pretty(coin1Amount) }}</div>
-                        <span class="form-field__label">{{ form.coin1 || 'Coin' }} {{ $td('to remove', 'form.swap-remove-coin-amount') }}</span>
+                        <div class="form-field__input is-not-empty">{{ pretty(coin1Amount) }}</div>
+                        <span class="form-field__label">{{ form.coin1 || 'Coin' }} {{ $td('to return', 'form.swap-remove-coin-amount') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ $options.pretty(liquidityAmount) }}</div>
+                        <div class="form-field__input is-not-empty">{{ pretty(liquidityAmount) }}</div>
                         <span class="form-field__label">{{ $td('Liquidity to remove', 'form.swap-remove-liquidity-amount') }}</span>
                     </div>
                 </div>
@@ -210,7 +215,7 @@ export default {
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
-                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation" width="40" height="40">
+                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Remove liquidity from swap pool', 'swap.remove-title') }}
             </h1>
         </template>
@@ -220,7 +225,7 @@ export default {
                         <div class="u-cell">
                             <label class="form-field form-field&#45;&#45;dashed">
                                 <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                       :value="form.coin0 + ' ' + $options.prettyExact(form.liquidity)"
+                                       :value="form.coin0 + ' ' + prettyExact(form.liquidity)"
                                 >
                                 <span class="form-field__label">{{ $td('You will send', 'form.swap-sell-confirm-send') }}</span>
                             </label>
@@ -229,7 +234,7 @@ export default {
                             <template v-if="estimation">
                                 <label class="form-field form-field&#45;&#45;dashed">
                                     <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                           :value="form.coin1 + ' ' + $options.pretty(estimation)"
+                                           :value="form.coin1 + ' ' + pretty(estimation)"
                                     >
                                     <span class="form-field__label">{{ $td('You will get approximately *', 'form.swap-sell-confirm-receive-estimation') }}</span>
                                 </label>

@@ -1,73 +1,97 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import checkEmpty from '~/assets/v-check-empty';
-    import {getErrorText} from "~/assets/server-error";
-    import {pretty, prettyExact} from "~/assets/utils";
-    import TxForm from '~/components/common/TxForm.vue';
-    import FieldCoin from '~/components/common/FieldCoin';
-    import FieldUseMax from '~/components/common/FieldUseMax';
+import Big from 'big.js';
+import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
+import debounce from 'debounce-promise';
+import {validationMixin} from 'vuelidate';
+import required from 'vuelidate/lib/validators/required.js';
+import minLength from 'vuelidate/lib/validators/minLength.js';
+import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {getPool, getCoinId} from '@/api/gate.js';
+import checkEmpty from '~/assets/v-check-empty';
+import {pretty, prettyExact} from "~/assets/utils.js";
+import TxForm from '~/components/common/TxForm.vue';
+import FieldCoin from '~/components/common/FieldCoin.vue';
+import FieldUseMax from '~/components/common/FieldUseMax.vue';
 
-    export default {
+export default {
+    TX_TYPE,
+    components: {
+        TxForm,
+        FieldCoin,
+        FieldUseMax,
+    },
+    directives: {
+        checkEmpty,
+    },
+    mixins: [validationMixin, AsyncComputedMixin],
+    data() {
+        return {
+            form: {
+                coin0: '',
+                volume0: '',
+                coin1: '',
+                maximumVolume1: '',
+            },
+        };
+    },
+    validations() {
+        const form = {
+            volume0: {
+                //@TODO maxValue
+                //@TODO validAmount
+                required,
+            },
+            coin0: {
+                required,
+                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+            coin1: {
+                required,
+                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+            },
+            maximumVolume1: {
+            },
+        };
+
+        return {form};
+    },
+    asyncComputed: {
+        poolData() {
+            return this.fetchPoolData(this.form.coin0, this.form.coin1);
+        },
+    },
+    computed: {
+        coin1Amount() {
+            if (!this.poolData?.amount0 || !this.form.volume0) {
+                return 0;
+            }
+
+            return new Big(this.form.volume0).div(this.poolData.amount0).times(this.poolData.amount1).toFixed();
+        },
+    },
+    methods: {
         pretty,
         prettyExact,
-        TX_TYPE,
-        components: {
-            TxForm,
-            FieldCoin,
-            FieldUseMax,
-        },
-        directives: {
-            checkEmpty,
-        },
-        mixins: [validationMixin],
-        data() {
-            return {
-                form: {
-                    coin0: '',
-                    volume0: '',
-                    coin1: '',
-                    maximumVolume1: '',
-                },
-                estimation: null,
-            };
-        },
-        validations() {
-            const form = {
-                volume0: {
-                    //@TODO maxValue
-                    //@TODO validAmount
-                    required,
-                },
-                coin0: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-                coin1: {
-                    required,
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                },
-                maximumVolume1: {
-                },
-            };
+        fetchPoolData: debounce(function() {
+            // no pair entered
+            if (!this.form.coin0 || !this.form.coin1 || this.form.coin0 === this.form.coin1) {
+                return;
+            }
 
-            return {form};
+            return getCoinId([this.form.coin0, this.form.coin1])
+                .then(([id0, id1]) => {
+                    return getPool(id0, id1);
+                });
+        }, 400),
+        clearForm() {
+            this.form.volume0 = '';
+            this.form.coin0 = '';
+            this.form.coin1 = '';
+            this.form.maximumVolume1 = '';
+            this.$v.$reset();
         },
-        computed: {
-        },
-        methods: {
-            clearForm() {
-                this.form.volume0 = '';
-                this.form.coin0 = '';
-                this.form.coin1 = '';
-                this.form.maximumVolume1 = '';
-                this.$v.$reset();
-            },
-        },
-    };
+    },
+};
 </script>
 
 <template>
@@ -144,9 +168,20 @@
             {{ $td('Add', 'form.swap-add-button') }}
         </template>
 
+        <template v-slot:panel-footer>
+            <div class="u-grid">
+                <div class="u-cell u-cell--medium--1-2">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(coin1Amount) }}</div>
+                        <span class="form-field__label">{{ $td('Second coin amount estimation', 'form.swap-add-coin-estimation') }}</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
-                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation" width="40" height="40">
+                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Add liquidity to swap pool', 'swap.add-title') }}
             </h1>
         </template>
@@ -156,7 +191,7 @@
                 <div class="u-cell">
                     <label class="form-field form-field&#45;&#45;dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coin0 + ' ' + $options.prettyExact(form.volume0)"
+                               :value="form.coin0 + ' ' + prettyExact(form.volume0)"
                         >
                         <span class="form-field__label">{{ $td('You will send', 'form.swap-sell-confirm-send') }}</span>
                     </label>
@@ -165,7 +200,7 @@
                     <template v-if="estimation">
                         <label class="form-field form-field&#45;&#45;dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="form.coin1 + ' ' + $options.pretty(estimation)"
+                                   :value="form.coin1 + ' ' + pretty(estimation)"
                             >
                             <span class="form-field__label">{{ $td('You will get approximately *', 'form.swap-sell-confirm-receive-estimation') }}</span>
                         </label>

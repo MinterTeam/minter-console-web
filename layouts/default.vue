@@ -128,6 +128,12 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('pool')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation">
+                                    {{ $td('Pools', 'common.page-pool') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('delegation')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-mining.svg`" alt="" role="presentation">
                                     {{ $td('Delegation', 'common.page-delegation') }}

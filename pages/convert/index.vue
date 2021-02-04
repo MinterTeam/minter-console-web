@@ -3,24 +3,18 @@
     import CoinSellForm from '~/components/ConvertBancorSellForm.vue';
     import CoinSellAllForm from '~/components/ConvertBancorSellAllForm.vue';
     import CoinBuyForm from '~/components/ConvertBancorBuyForm.vue';
-    import PoolCreateForm from '@/components/PoolCreateForm.vue';
-    import CoinSwapAddForm from '@/components/PoolAddLiquidityForm.vue';
-    import CoinSwapRemoveForm from '@/components/PoolRemoveLiquidityForm.vue';
-    import CoinSwapSellForm from '@/components/PoolSellForm.vue';
-    import CoinSwapSellAllForm from '@/components/PoolSellAllForm.vue';
-    import CoinSwapBuyForm from '@/components/PoolBuyForm.vue';
+    import CoinPoolSellForm from '@/components/PoolSellForm.vue';
+    import CoinPoolSellAllForm from '@/components/PoolSellAllForm.vue';
+    import CoinPoolBuyForm from '@/components/PoolBuyForm.vue';
 
     export default {
         components: {
             CoinSellForm,
             CoinSellAllForm,
             CoinBuyForm,
-            PoolCreateForm,
-            CoinSwapAddForm,
-            CoinSwapRemoveForm,
-            CoinSwapSellForm,
-            CoinSwapSellAllForm,
-            CoinSwapBuyForm,
+            CoinPoolSellForm,
+            CoinPoolSellAllForm,
+            CoinPoolBuyForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
@@ -50,11 +44,8 @@
         <CoinSellAllForm/>
         <CoinBuyForm/>
 
-        <PoolCreateForm/>
-        <CoinSwapAddForm/>
-        <CoinSwapRemoveForm/>
-        <CoinSwapBuyForm/>
-        <CoinSwapSellForm/>
-        <CoinSwapSellAllForm/>
+        <CoinPoolBuyForm/>
+        <CoinPoolSellForm/>
+        <CoinPoolSellAllForm/>
     </section>
 </template>
