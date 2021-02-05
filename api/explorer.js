@@ -16,6 +16,26 @@ const explorer = instance;
 
 
 /**
+ * @typedef {Object} Status
+ * @property {number} marketCap - in $
+ * @property {number} bipPriceUsd
+ * @property {number} bipPriceBtc
+ * @property {number} bipPriceChange - in %
+ * @property {number} latestBlockHeight - block count
+ * @property {number} avgBlockTime - in seconds
+ * @property {number} totalTransactions - tx count
+ * @property {number} transactionsPerSecond - tps
+ */
+
+/**
+ * @return {Promise<Status>}
+ */
+export function getStatus() {
+    return explorer.get('status')
+        .then((response) => response.data.data);
+}
+
+/**
  * @typedef {Object} TransactionListInfo
  * @property {Array<Transaction>} data
  * @property {Object} meta - pagination
@@ -187,4 +207,36 @@ export function getTransaction(hash) {
             return tx;
         });
 }
+
+
+/**
+ * @param {string} address
+ * @param {Object} [params]
+ * @param {number} [params.page]
+ * @param {number} [params.limit]
+ * @return {Promise<PoolProviderListInfo>}
+ */
+export function getProviderPoolList(address, params) {
+    return explorer.get(`pools?provider=${address}`, {
+            params,
+        })
+        .then((response) => response.data);
+}
+
+/**
+ * @typedef {Object} PoolListInfo
+ * @property {Array<Pool>} data
+ * @property {Object} meta - pagination
+ */
+
+/**
+ * @typedef {Object} Pool
+ * @property {Coin} coin0
+ * @property {Coin} coin1
+ * @property {number|string} amount0
+ * @property {number|string} amount1
+ * @property {number|string} liquidity
+ * @property {number|string} liquidityBip
+ * @property {string} poolToken
+ */
 

@@ -89,6 +89,10 @@ export function getExplorerValidatorUrl(pubKey) {
     return EXPLORER_HOST + '/validator/' + pubKey;
 }
 
+export function getExplorerPoolUrl(coin0, coin1) {
+    return EXPLORER_HOST + `/pools/${coin0}/${coin1}`;
+}
+
 /**
  * @param {string|number} value
  * @param {ROUNDING_MODE} [roundingMode]

@@ -1,11 +1,13 @@
 <script>
     import getTitle from '~/assets/get-title.js';
+    import PoolList from '~/components/PoolList.vue';
     import PoolCreateForm from '@/components/PoolCreateForm.vue';
     import PoolAddLiquidityForm from '@/components/PoolAddLiquidityForm.vue';
     import PoolRemoveLiquidityForm from '@/components/PoolRemoveLiquidityForm.vue';
 
     export default {
         components: {
+            PoolList,
             PoolCreateForm,
             PoolAddLiquidityForm,
             PoolRemoveLiquidityForm,
@@ -34,6 +36,8 @@
 
 <template>
     <section class="u-section u-container">
+        <PoolList/>
+
         <PoolCreateForm/>
         <PoolAddLiquidityForm/>
         <PoolRemoveLiquidityForm/>
