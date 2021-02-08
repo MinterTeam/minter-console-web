@@ -17,12 +17,6 @@ const minterApi = new MinterApi({
     chainId: CHAIN_ID,
     adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
 });
-const nodeApi = new MinterApi({
-    apiType: 'node',
-    baseURL: 'https://node-api.taconet.minter.network/v2/',
-    chainId: CHAIN_ID,
-    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
-});
 
 export const postTx = PostTx(minterApi);
 export const postSignedTx = PostSignedTx(minterApi);
@@ -40,14 +34,4 @@ export const replaceCoinSymbolByPath = ReplaceCoinSymbolByPath(minterApi);
 export const getCoinId = (symbol) => GetCoinId(minterApi)(symbol, undefined, {cache: coinCache});
 
 const commissionCache = new Cache({maxAge: 60 * 60 * 1000});
-export const getCommissionPrice = () => GetCommissionPrice(nodeApi)({mapData: true}, {cache: commissionCache});
-
-export function getAddressLiquidity(coin0, coin1, address) {
-    return nodeApi.get(`swap_pool/${coin0}/${coin1}/${address}`)
-        .then((response) => response.data);
-}
-
-export function getPool(coin0, coin1) {
-    return nodeApi.get(`swap_pool/${coin0}/${coin1}`)
-        .then((response) => response.data);
-}
+export const getCommissionPrice = () => GetCommissionPrice(minterApi)({mapData: true}, {cache: commissionCache});

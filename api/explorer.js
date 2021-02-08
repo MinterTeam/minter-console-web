@@ -208,16 +208,36 @@ export function getTransaction(hash) {
         });
 }
 
+/**
+ * @param {string} coin0
+ * @param {string} coin1
+ * @return {Promise<Pool>}
+ */
+export function getPool(coin0, coin1) {
+    return explorer.get(`pools/coins/${coin0}/${coin1}`)
+        .then((response) => response.data.data);
+}
+
+/**
+ * @param {string} coin0
+ * @param {string} coin1
+ * @param {string} address
+ * @return {Promise<Pool>}
+ */
+export function getPoolProvider(coin0, coin1, address) {
+    return explorer.get(`pools/coins/${coin0}/${coin1}/providers/${address}`)
+        .then((response) => response.data.data);
+}
 
 /**
  * @param {string} address
  * @param {Object} [params]
  * @param {number} [params.page]
  * @param {number} [params.limit]
- * @return {Promise<PoolProviderListInfo>}
+ * @return {Promise<ProviderPoolListInfo>}
  */
 export function getProviderPoolList(address, params) {
-    return explorer.get(`pools?provider=${address}`, {
+    return explorer.get(`pools/providers/${address}`, {
             params,
         })
         .then((response) => response.data);
@@ -230,6 +250,12 @@ export function getProviderPoolList(address, params) {
  */
 
 /**
+ * @typedef {Object} ProviderPoolListInfo
+ * @property {Array<PoolProvider>} data
+ * @property {Object} meta - pagination
+ */
+
+/**
  * @typedef {Object} Pool
  * @property {Coin} coin0
  * @property {Coin} coin1
@@ -237,6 +263,18 @@ export function getProviderPoolList(address, params) {
  * @property {number|string} amount1
  * @property {number|string} liquidity
  * @property {number|string} liquidityBip
- * @property {string} poolToken
+ * @property {string} token
+ */
+
+/**
+ * @typedef {Object} PoolProvider
+ * @property {string} address
+ * @property {Coin} coin0
+ * @property {Coin} coin1
+ * @property {number|string} amount0
+ * @property {number|string} amount1
+ * @property {number|string} liquidity
+ * @property {number|string} liquidityBip
+ * @property {string} token
  */
 

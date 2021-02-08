@@ -6,7 +6,8 @@ import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-import {getPool, getCoinId} from '@/api/gate.js';
+import {getCoinId} from '@/api/gate.js';
+import {getPool} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {pretty, prettyExact} from "~/assets/utils.js";
 import TxForm from '~/components/common/TxForm.vue';
@@ -144,6 +145,7 @@ export default {
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
                             :label="$td('Coin', 'form.swap-add-coin-pair')"
+                            :coin-list="addressBalance"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

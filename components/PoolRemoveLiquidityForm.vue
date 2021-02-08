@@ -9,7 +9,8 @@ import maxLength from 'vuelidate/lib/validators/maxLength';
 import minValue from 'vuelidate/lib/validators/minValue.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-import {getAddressLiquidity, getCoinId} from '~/api/gate.js';
+import {getCoinId} from '~/api/gate.js';
+import {getPoolProvider, getProviderPoolList} from '~/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
 import {pretty, prettyExact} from "~/assets/utils";
@@ -28,6 +29,25 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin, AsyncComputedMixin],
+    fetch() {
+        getProviderPoolList(this.$store.getters.address, {limit: 999})
+            .then((info) => {
+                const poolList = info.data;
+                let coinList = {};
+                poolList.forEach((pool) => {
+                    coinList[pool.coin0.symbol] = {
+                        coin: pool.coin0,
+                        amount: pool.amount0,
+                    };
+                    coinList[pool.coin1.symbol] = {
+                        coin: pool.coin1,
+                        amount: pool.amount1,
+                    };
+                });
+
+                this.poolCoinList = Object.values(coinList);
+            });
+    },
     data() {
         return {
             form: {
@@ -36,6 +56,7 @@ export default {
                 coin1: '',
             },
             estimation: null,
+            poolCoinList: [],
         };
     },
     validations() {
@@ -70,21 +91,21 @@ export default {
                 return 0;
             }
 
-            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.liquidity).div(10 ** 18).toFixed();
+            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.liquidity).toFixed();
         },
         coin0Amount() {
             if (!this.addressLiquidityData?.amount0 || !this.form.liquidity) {
                 return 0;
             }
 
-            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount0).div(10 ** 18).toFixed();
+            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount0).toFixed();
         },
         coin1Amount() {
             if (!this.addressLiquidityData?.amount1 || !this.form.liquidity) {
                 return 0;
             }
 
-            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount1).div(10 ** 18).toFixed();
+            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount1).toFixed();
         },
         /*
         maxAmount() {
@@ -124,7 +145,7 @@ export default {
 
             return getCoinId([this.form.coin0, this.form.coin1])
                 .then(([id0, id1]) => {
-                    return getAddressLiquidity(id0, id1, this.$store.getters.address);
+                    return getPoolProvider(id0, id1, this.$store.getters.address);
                 });
         }, 400),
         clearForm() {
@@ -155,6 +176,7 @@ export default {
                     v-model="form.coin0"
                     :$value="$v.form.coin0"
                     :label="$td('Coin', 'form.swap-remove-coin')"
+                    :coin-list="poolCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -165,6 +187,7 @@ export default {
                     v-model="form.coin1"
                     :$value="$v.form.coin1"
                     :label="$td('Coin', 'form.swap-remove-coin')"
+                    :coin-list="poolCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

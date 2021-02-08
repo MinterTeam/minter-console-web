@@ -119,6 +119,7 @@
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
                             :label="$td('Coin', 'form.swap-create-coin-pair')"
+                            :coin-list="addressBalance"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

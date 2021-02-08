@@ -56,9 +56,9 @@ export default {
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="pool in poolListFormatted" :key="pool.poolToken">
+                <tr v-for="pool in poolListFormatted" :key="pool.token.symbol">
                     <td>
-                        {{ pool.poolToken }}
+                        {{ pool.token.symbol }}
                     </td>
                     <td>
                         <TableLink :link-text="pool.coin0.symbol + '-' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
@@ -73,6 +73,6 @@ export default {
         <div class="panel__content panel__section u-text-center" v-else-if="$fetchState.pending">
             <Loader :isLoading="true"/>
         </div>
-        <div class="panel__content panel__section u-text-center" v-else>No pools</div>
+        <div class="panel__content panel__section u-text-center" v-else>You have no pools yet</div>
     </section>
 </template>
