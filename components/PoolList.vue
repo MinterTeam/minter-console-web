@@ -48,25 +48,25 @@ export default {
         <div class="table-wrap" v-if="poolList.length">
             <table class="u-text-nowrap">
                 <thead>
-                <tr>
-                    <th>Your pools</th>
-                    <th>Pair</th>
-                    <th colspan="2">Amount</th>
-                    <th>Liquidity</th>
-                </tr>
+                    <tr>
+                        <th>Your pools</th>
+                        <th>Pair</th>
+                        <th colspan="2">Amount</th>
+                        <th>Liquidity</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr v-for="pool in poolListFormatted" :key="pool.token.symbol">
-                    <td>
-                        {{ pool.token.symbol }}
-                    </td>
-                    <td>
-                        <TableLink :link-text="pool.coin0.symbol + '-' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
-                    </td>
-                    <td>{{ pretty(pool.amount0) }} {{ pool.coin0.symbol }}</td>
-                    <td>{{ pretty(pool.amount1) }} {{ pool.coin1.symbol }}</td>
-                    <td>{{ pretty(pool.liquidityUsd) }} $</td>
-                </tr>
+                    <tr v-for="pool in poolListFormatted" :key="pool.token.symbol">
+                        <td>
+                            {{ pool.token.symbol }}
+                        </td>
+                        <td>
+                            <TableLink :link-text="pool.coin0.symbol + '-' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
+                        </td>
+                        <td>{{ pretty(pool.amount0) }} {{ pool.coin0.symbol }}</td>
+                        <td>{{ pretty(pool.amount1) }} {{ pool.coin1.symbol }}</td>
+                        <td>{{ pretty(pool.liquidityUsd) }} $</td>
+                    </tr>
                 </tbody>
             </table>
         </div>

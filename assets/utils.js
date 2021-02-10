@@ -107,7 +107,7 @@ export function pretty(value, roundingMode, skipFalsy) {
         return '';
     }
     const PRECISION = 2;
-    if (value >= 1 || value <= -1 || Number(value) === 0) {
+    if (value >= 0.1 || value <= -0.1 || Number(value) === 0) {
         return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
     } else {
         value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&#x202F;'}));
