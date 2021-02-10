@@ -112,10 +112,10 @@ export default {
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Sell all coins to swap pool', 'convert.sell-all-title') }}
+                {{ $td('Sell all coins to swap pool', 'convert.pool-sell-all-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
+                {{ $td('Sell all of the coins that you possess in a single click.', 'convert.pool-sell-all-description') }}
             </p>
         </template>
 

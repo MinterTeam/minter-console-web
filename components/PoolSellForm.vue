@@ -111,10 +111,10 @@
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Sell coins to swap pool', 'convert.sell-title') }}
+                {{ $td('Sell coins to swap pool', 'convert.pool-sell-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Choose one of the coins that you own and specify the amount you would like to sell.', 'convert.sell-description') }}
+                {{ $td('Choose one of the coins that you own and specify the amount you would like to sell.', 'convert.pool-sell-description') }}
             </p>
         </template>
 

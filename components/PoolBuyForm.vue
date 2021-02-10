@@ -108,10 +108,10 @@
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Buy coins from swap pool', 'convert.buy-title') }}
+                {{ $td('Buy coins from swap pool', 'convert.pool-buy-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('If you want to buy a specific coin, you can do it here.', 'convert.buy-description') }}
+                {{ $td('If you want to buy a specific coin, you can do it here.', 'convert.pool-buy-description') }}
             </p>
         </template>
 
@@ -170,7 +170,7 @@
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Convert Coins', 'convert.convert-title') }}
+                {{ $td('Convert coins', 'convert.convert-title') }}
             </h1>
         </template>
 
