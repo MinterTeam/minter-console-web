@@ -79,6 +79,7 @@ export default {
                 coinToSell: this.form.coinFrom,
                 valueToSell: this.sellAmount,
                 coinToBuy: this.form.coinTo,
+                swapFrom: 'bancor',
             })
                 .then((result) => {
                     this.estimation = result.will_get;

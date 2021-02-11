@@ -61,10 +61,10 @@ export default {
                             {{ pool.token.symbol }}
                         </td>
                         <td>
-                            <TableLink :link-text="pool.coin0.symbol + '-' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
+                            <TableLink :link-text="pool.coin0.symbol + ' / ' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
                         </td>
-                        <td>{{ pretty(pool.amount0) }} {{ pool.coin0.symbol }}</td>
-                        <td>{{ pretty(pool.amount1) }} {{ pool.coin1.symbol }}</td>
+                        <td><span class="u-fw-500">{{ pretty(pool.amount0) }}</span> {{ pool.coin0.symbol }}</td>
+                        <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
                     </tr>
                 </tbody>
