@@ -275,6 +275,7 @@ export function getProviderPoolList(address, params) {
  * @property {number|string} amount1
  * @property {number|string} liquidity
  * @property {number|string} liquidityBip
+ * @property {number|string} liquidityShare
  * @property {string} token
  */
 

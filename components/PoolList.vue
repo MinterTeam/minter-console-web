@@ -53,6 +53,7 @@ export default {
                         <th>Pair</th>
                         <th colspan="2">Amount</th>
                         <th>Liquidity</th>
+                        <th>Share</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,6 +67,7 @@ export default {
                         <td><span class="u-fw-500">{{ pretty(pool.amount0) }}</span> {{ pool.coin0.symbol }}</td>
                         <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
+                        <td>{{ pretty(pool.liquidityShare) }}%</td>
                     </tr>
                 </tbody>
             </table>
