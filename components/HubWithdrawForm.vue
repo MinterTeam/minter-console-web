@@ -9,6 +9,7 @@ import {getExplorerTxUrl} from '~/assets/utils.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import FieldQr from '@/components/common/FieldQr.vue';
+import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
 
@@ -18,6 +19,7 @@ const HUB_API = 'https://hub-api.dl-dev.ru';
 export default {
     components: {
         FieldQr,
+        Loader,
         Modal,
     },
     directives: {
@@ -104,18 +106,19 @@ export default {
 
             this.serverError = '';
             this.serverSuccess = null;
+            this.isFormSending = true;
 
             let txParams = {
                 type: TX_TYPE.SEND,
                 data: {
                     to: HUB_MULTISIG_ADDRESS,
-                    value: this.form.amount,
+                    value: (BigInt(this.form.amount) + BigInt(this.form.fee)).toString(),
                     coin: this.hubCoinId,
                 },
                 payload: JSON.stringify({
                     recipient: this.form.address,
                     type: 'send_to_eth',
-                    fee: BigInt(BigInt(Math.round(this.form.fee * 10000)) * BigInt(1e14)).toString(),
+                    fee: (BigInt(Math.round(this.form.fee * 10000)) * BigInt(1e14)).toString(),
                 }),
             };
 
@@ -150,50 +153,63 @@ export default {
 </script>
 
 <template>
-    <div>
-        <div class="card">
-            <div class="card__content card__content--gray card__content--small u-h--uppercase">Minter → <span class="u-text-orange">Ethereum</span></div>
-            <form class="card__content card__content--small" @submit.prevent="submit">
-                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                    <div class="u-cell">
-                        <FieldQr
-                            v-model.trim="form.address"
-                            :$value="$v.form.address"
-                            :label="$td('Withdraw to address', 'form.hub-withdraw-address')"
-                            @blur="$v.form.address.$touch()"
-                        />
-
-                        <span class="form-field__help" v-if="!$v.form.address.$error">Ethereum address starting with 0x…</span>
-                        <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Ethereum address</span>
-                        <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Ethereum address</span>
-                    </div>
-                    <div class="u-cell u-cell--small--auto send__amount-cell">
-                        <label class="form-field form-field--row" :class="{'is-error': $v.form.amount.$error}">
-                            <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                   v-model.trim="form.amount"
-                                   @blur="$v.form.amount.$touch()"
-                            />
-                            <span class="form-field__label">HUB amount</span>
-                        </label>
-                        <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">Enter amount</span>
-                    </div>
-                    <div class="u-cell u-cell--small--auto send__amount-cell">
-                        <label class="form-field form-field--row" :class="{'is-error': $v.form.fee.$error}">
-                            <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                   v-model.trim="form.fee"
-                                   @blur="$v.form.fee.$touch()"
-                            />
-                            <span class="form-field__label">Fee (min {{ minFee }} HUB)</span>
-                        </label>
-                        <span class="form-field__error" v-if="$v.form.fee.$dirty && !$v.form.fee.required">Enter fee</span>
-                    </div>
-                    <div class="u-cell u-cell--small--auto">
-                        <button class="button button--ghost-green send__submit-button" :class="{'is-disabled': $v.$invalid}">Withdraw</button>
-                        <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
-                    </div>
-                </div>
-            </form>
+    <div class="panel">
+        <div class="panel__header">
+            <h1 class="panel__header-title">
+                {{ $td('Withdraw', 'hub.withdraw-title') }}
+            </h1>
+            <p class="panel__header-description">
+                {{ $td('Send coins from Minter to Ethereum', 'hub.withdraw-description') }}
+            </p>
         </div>
+
+        <!-- Form -->
+        <form class="panel__section" @submit.prevent="submit">
+            <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                <div class="u-cell">
+                    <FieldQr
+                        v-model.trim="form.address"
+                        :$value="$v.form.address"
+                        :label="$td('Withdraw to address', 'form.hub-withdraw-address')"
+                        @blur="$v.form.address.$touch()"
+                    />
+
+                    <span class="form-field__help" v-if="!$v.form.address.$error">Ethereum address starting with 0x…</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Ethereum address</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Ethereum address</span>
+                </div>
+                <div class="u-cell u-cell--small--auto send__amount-cell">
+                    <label class="form-field form-field--row" :class="{'is-error': $v.form.amount.$error}">
+                        <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                               v-model.trim="form.amount"
+                               @blur="$v.form.amount.$touch()"
+                        />
+                        <span class="form-field__label">HUB amount</span>
+                    </label>
+                    <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">Enter amount</span>
+                </div>
+                <div class="u-cell u-cell--small--auto send__amount-cell">
+                    <label class="form-field form-field--row" :class="{'is-error': $v.form.fee.$error}">
+                        <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                               v-model.trim="form.fee"
+                               @blur="$v.form.fee.$touch()"
+                        />
+                        <span class="form-field__label">Fee (min {{ minFee }} HUB)</span>
+                    </label>
+                    <span class="form-field__error" v-if="$v.form.fee.$dirty && !$v.form.fee.required">Enter fee</span>
+                </div>
+                <div class="u-cell u-cell--small--auto">
+                    <button
+                        class="button button--main"
+                        :class="{'is-disabled': $v.$invalid, 'is-loading': isFormSending}"
+                    >
+                        <span class="button__content">Withdraw</span>
+                        <Loader class="button__loader" :isLoading="true"/>
+                    </button>
+                    <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+                </div>
+            </div>
+        </form>
 
         <!-- Success Modal -->
         <Modal v-bind:isOpen.sync="isSuccessModalVisible">

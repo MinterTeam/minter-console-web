@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-tx/src/tx-types';
-import {EXPLORER_HOST} from "~/assets/variables";
+import {EXPLORER_HOST, ETHERSCAN_HOST} from "~/assets/variables.js";
 
 
 
@@ -91,6 +91,10 @@ export function getExplorerValidatorUrl(pubKey) {
 
 export function getExplorerPoolUrl(coin0, coin1) {
     return EXPLORER_HOST + `/pools/${coin0}/${coin1}`;
+}
+
+export function getEtherscanTxUrl(hash) {
+    return ETHERSCAN_HOST + '/tx/' + hash;
 }
 
 /**
@@ -262,4 +266,13 @@ function boldenSuggestion(text, query) {
     }
     const queries = query.split(/[\s-_/\\|.]/gm).filter((t) => !!t) || [''];
     return text.replace(new RegExp('(.*?)(' + queries.join('|') + ')(.*?)', 'gi'), '$1<b>$2</b>$3');
+}
+
+export function shortFilter(value, endLength = 6, minLengthToShort) {
+    const startLength = endLength + 'Mx'.length - 1;
+    minLengthToShort = minLengthToShort || startLength + endLength;
+    value = value.toString();
+    const isLong = value.length > minLengthToShort;
+
+    return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
