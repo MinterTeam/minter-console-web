@@ -214,7 +214,7 @@ export default {
         </template>
 
         <template v-slot:panel-footer>
-            <div class="u-grid">
+            <div class="u-grid u-grid--small">
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coin0Amount) }}</div>

@@ -261,7 +261,7 @@ export default {
         </template>
 
         <template v-slot:panel-footer>
-            <div class="u-grid">
+            <div class="u-grid u-grid--small">
                 <div class="u-cell u-cell--large--1-2">
                     <label class="form-field form-field--dashed" :class="{'is-error': $v.coinPrice.$error}">
                         <input class="form-field__input is-not-empty" type="text" readonly

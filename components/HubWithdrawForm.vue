@@ -1,14 +1,18 @@
 <script>
+import Big from 'big.js';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
+import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import axios from "axios";
 import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx, ensureNonce, replaceCoinSymbol, getCoinId} from '~/api/gate.js';
-import {getExplorerTxUrl} from '~/assets/utils.js';
+import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import FieldQr from '@/components/common/FieldQr.vue';
+import FieldUseMax from '~/components/common/FieldUseMax';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
@@ -16,9 +20,15 @@ import Modal from '~/components/common/Modal.vue';
 const HUB_MULTISIG_ADDRESS = 'Mxb26bc23e5a72ea2033f70006751066602d3349fd';
 const HUB_API = 'https://hub-api.dl-dev.ru';
 
+const SPEED_MIN = 'min';
+const SPEED_FAST = 'fast';
+
 export default {
+    SPEED_MIN,
+    SPEED_FAST,
     components: {
         FieldQr,
+        FieldUseMax,
         Loader,
         Modal,
     },
@@ -27,6 +37,27 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin],
+    fetch() {
+        const ethPromise = axios.get(HUB_API + "/oracle/eth_fee")
+            .then((response) => {
+                this.ethFee = response.data.result;
+            });
+
+        const hubPromise = getCoinId('HUB')
+            .then((hubCoinId) => {
+                this.hubCoinId = hubCoinId;
+
+                return axios.get(HUB_API + "/oracle/prices").then((data) => {
+                    for (let listKey in data.data.result.list) {
+                        if (data.data.result.list[listKey].name === "minter/" + this.hubCoinId) {
+                            this.hubPrice = data.data.result.list[listKey].value;
+                        }
+                    }
+                });
+            });
+
+        return Promise.all([ethPromise, hubPromise]);
+    },
     data() {
         return {
             hubCoinId: null,
@@ -35,10 +66,13 @@ export default {
             form: {
                 amount: "",
                 address: "",
-                fee: "",
+                speed: SPEED_MIN,
             },
-            minEthFee: BigInt(0),
-            hubPrice: BigInt(0),
+            ethFee: {
+                min: 0,
+                fast: 0,
+            },
+            hubPrice: '0',
             // transactions: []
             isFormSending: false,
             serverSuccess: null,
@@ -47,32 +81,28 @@ export default {
         };
     },
     computed: {
-        minFee() {
-            if (this.hubPrice === 0n) {
-                return "...";
+        fee() {
+            if (this.hubPrice === '0') {
+                return 0;
+            }
+            const ethFee = this.form.speed === SPEED_MIN ? this.ethFee.min : this.ethFee.fast;
+
+            return new Big(ethFee).div(this.hubPrice).toFixed();
+        },
+        maxAmount() {
+            const selectedCoin = this.$store.getters.balance.find((coin) => {
+                return coin.coin.symbol === 'HUB';
+            });
+            // coin not selected
+            if (!selectedCoin) {
+                return undefined;
             }
 
-            return Number((this.minEthFee * 10000n / this.hubPrice).toString()) / 10000;
+            return new Big(selectedCoin.amount).minus(this.fee).toFixed();
         },
-    },
-    mounted() {
-        axios.get(HUB_API + "/oracle/min_eth_fee").then((data) => {
-            this.minEthFee = BigInt(data.data.result.value);
-        });
-
-        getCoinId('HUB')
-        .then((hubCoinId) => {
-            this.hubCoinId = hubCoinId;
-
-            return axios.get(HUB_API + "/oracle/prices").then((data) => {
-                for (let listKey in data.data.result.list) {
-                    if (data.data.result.list[listKey].name === "minter/" + this.hubCoinId) {
-                        this.hubPrice = BigInt(data.data.result.list[listKey].value);
-                    }
-                }
-            });
-        });
-
+        amountToSpend() {
+            return new Big(this.fee).plus(this.form.amount || 0).toFixed();
+        },
     },
     validations() {
         return {
@@ -86,17 +116,13 @@ export default {
                 amount: {
                     required,
                     // validAmount: isValidAmount,
-                    // maxValue: maxValue(this.maxAmount || 0),
-                },
-                fee: {
-                    required,
-                    // validAmount: isValidAmount,
-                    // maxValue: maxValue(this.maxAmount || 0),
+                    maxValue: maxValue(this.maxAmount || 0),
                 },
             },
         };
     },
     methods: {
+        pretty,
         getExplorerTxUrl,
         submit() {
             if (this.$v.$invalid) {
@@ -112,24 +138,17 @@ export default {
                 type: TX_TYPE.SEND,
                 data: {
                     to: HUB_MULTISIG_ADDRESS,
-                    value: (BigInt(this.form.amount) + BigInt(this.form.fee)).toString(),
+                    value: this.amountToSpend,
                     coin: this.hubCoinId,
                 },
                 payload: JSON.stringify({
                     recipient: this.form.address,
                     type: 'send_to_eth',
-                    fee: (BigInt(Math.round(this.form.fee * 10000)) * BigInt(1e14)).toString(),
+                    fee: convertToPip(this.fee),
                 }),
             };
 
-            Promise.all([
-                    ensureNonce(txParams, {address: this.$store.getters.address}),
-                    // replaceCoinSymbol(txParams),
-                ])
-                .then(([nonce]) => {
-                    // private key to sign
-                    return postTx({...txParams, nonce}, {privateKey: this.$store.getters.privateKey});
-                })
+            return postTx(txParams, {privateKey: this.$store.getters.privateKey})
                 .then((tx) => {
                     this.isFormSending = false;
                     this.serverSuccess = tx;
@@ -146,7 +165,7 @@ export default {
             this.$v.$reset();
             this.form.address = '';
             this.form.amount = '';
-            this.form.fee = '';
+            this.form.speed = SPEED_MIN;
         },
     },
 };
@@ -166,7 +185,7 @@ export default {
         <!-- Form -->
         <form class="panel__section" @submit.prevent="submit">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                <div class="u-cell">
+                <div class="u-cell u-cell--xlarge--1-2">
                     <FieldQr
                         v-model.trim="form.address"
                         :$value="$v.form.address"
@@ -178,30 +197,26 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Ethereum address</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Ethereum address</span>
                 </div>
-                <div class="u-cell">
-                    <label class="form-field form-field--row" :class="{'is-error': $v.form.amount.$error}">
-                        <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                               v-model.trim="form.amount"
-                               @blur="$v.form.amount.$touch()"
-                        />
-                        <span class="form-field__label">HUB amount</span>
-                    </label>
+                <div class="u-cell u-cell--xlarge--1-2">
+                    <FieldUseMax
+                        v-model="form.amount"
+                        :$value="$v.form.amount"
+                        :label="$td('HUB amount', 'form.hub-withdraw-amount')"
+                        :max-value="maxAmount"
+                    />
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">Enter amount</span>
+                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough HUB (max {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell">
-<!--                    <label class="form-checkbox">-->
-<!--                        <input class="form-checkbox__input-native" type="checkbox" v-model="form.speed"/>-->
-<!--                        <span class="form-checkbox__input-visible"></span>-->
-<!--                        <span class="form-checkbox__label">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>-->
-<!--                    </label>-->
-                    <label class="form-field form-field--row" :class="{'is-error': $v.form.fee.$error}">
-                        <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                               v-model.trim="form.fee"
-                               @blur="$v.form.fee.$touch()"
-                        />
-                        <span class="form-field__label">Fee (min {{ minFee }} HUB)</span>
+                    <div class="form-check-label">Tx speed</div>
+                    <label class="form-check">
+                        <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_MIN" v-model="form.speed">
+                        <span class="form-check__label form-check__label--radio">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.fee.$dirty && !$v.form.fee.required">Enter fee</span>
+                    <label class="form-check">
+                        <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_FAST" v-model="form.speed">
+                        <span class="form-check__label form-check__label--radio">{{ $td('Fast', 'form.hub-withdraw-speed-fast') }}</span>
+                    </label>
                 </div>
                 <div class="u-cell">
                     <button
@@ -215,6 +230,16 @@ export default {
                 </div>
             </div>
         </form>
+        <div class="panel__section panel__section--tint">
+            <div class="u-grid u-grid--small">
+                <div class="u-cell u-cell--medium--1-2">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(amountToSpend) }} HUB</div>
+                        <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Success Modal -->
         <Modal v-bind:isOpen.sync="isSuccessModalVisible">

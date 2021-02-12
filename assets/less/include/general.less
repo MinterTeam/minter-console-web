@@ -261,3 +261,44 @@ dd {overflow-wrap: break-word; margin: 0;}
 }
 .form-checkbox__label {flex-grow: 2; line-height: 20px;}
 
+
+// checkbox & radio
+.form-check-label {margin-bottom: 8px; font-size: 16px;}
+.form-check-error {.error-text(); margin-top: 4px;}
+.form-check {
+    position: relative; display: inline-block; user-select: none; cursor: pointer; font-weight: 400; margin: 0; line-height: 0;
+    &.is-disabled {opacity: 0.5; cursor: default;}
+    &+& {margin-left: 20px;}
+}
+.form-check__input {position: absolute; left: 0; top: 0; opacity: 0; z-index: -1;}
+.form-check__label {
+    padding-left: 30px; display: inline-block; font-size: inherit; line-height: 22px;
+    .is-error > & {color: @c-red;}
+    &::before {content: ''; position: absolute; border: 2px solid @c-black-light; transition: 0.15s;}
+    &::after {content: ''; position: absolute; transition: 0.15s;}
+    .form-check__input:focus + & {
+        &::before {box-shadow: 0 0 4px currentColor;}
+    }
+    .form-check__input:checked + & {
+        &::before {border-color: @c-main;}
+    }
+    .is-error > & {
+        &::before {border-color: @c-red;}
+    }
+}
+.form-check__label--radio {
+    &::before {width: 20px; height: 20px; left: 0px; top: 1px; border-radius: 99px;}
+    &::after {left: 10px; top: 11px; transform: translate(-50%, -50%); border: 0 solid @c-main; border-radius: 99px;}
+    .form-check__input:checked + & {
+        &::after {border-width: 5px;}
+    }
+}
+.form-check__label--checkbox {
+    &::before {width: 20px; height: 20px; left: 0px; top: 1px; border-radius: 2px;}
+    &::after {width: 13px; height: 8px; position: absolute; left: 4px; top: 5px; border: solid #fff; border-width: 0 0 2px 2px; transform: rotate(-45deg); opacity: 0;}
+    .form-check__input:checked + & {
+        &::before {background-color: @c-main;}
+        &::after {opacity: 1;}
+    }
+}
+

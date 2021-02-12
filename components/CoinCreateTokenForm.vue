@@ -166,15 +166,14 @@ export default {
                 </div>
             </div>
             <div class="u-cell">
-                <label class="form-checkbox">
-                    <input class="form-checkbox__input-native" type="checkbox" v-model="form.mintable"/>
-                    <span class="form-checkbox__input-visible"></span>
-                    <span class="form-checkbox__label">{{ $td('Mintable', 'form.coiner-create-token-mintable') }}</span>
+                <div class="form-check-label">Allow edit token supply by owner</div>
+                <label class="form-check">
+                    <input class="form-check__input" type="checkbox" v-model="form.mintable">
+                    <span class="form-check__label form-check__label--checkbox">{{ $td('Mintable', 'form.coiner-create-token-mintable') }}</span>
                 </label>
-                <label class="form-checkbox">
-                    <input class="form-checkbox__input-native" type="checkbox" v-model="form.burnable"/>
-                    <span class="form-checkbox__input-visible"></span>
-                    <span class="form-checkbox__label">{{ $td('Burnable', 'form.coiner-create-token-burnalbe') }}</span>
+                <label class="form-check">
+                    <input class="form-check__input" type="checkbox" v-model="form.burnable">
+                    <span class="form-check__label form-check__label--checkbox">{{ $td('Burnable', 'form.coiner-create-token-burnalbe') }}</span>
                 </label>
             </div>
         </template>
