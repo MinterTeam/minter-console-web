@@ -13,7 +13,7 @@ import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
 
-const HUB_MULTISIG_ADDRESS = 'Mx9060ba199824e4de6717085efa734ea8e0c0e4e0';
+const HUB_MULTISIG_ADDRESS = 'Mxb26bc23e5a72ea2033f70006751066602d3349fd';
 const HUB_API = 'https://hub-api.dl-dev.ru';
 
 export default {
@@ -178,7 +178,7 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Ethereum address</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Ethereum address</span>
                 </div>
-                <div class="u-cell u-cell--small--auto send__amount-cell">
+                <div class="u-cell">
                     <label class="form-field form-field--row" :class="{'is-error': $v.form.amount.$error}">
                         <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                v-model.trim="form.amount"
@@ -188,7 +188,12 @@ export default {
                     </label>
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">Enter amount</span>
                 </div>
-                <div class="u-cell u-cell--small--auto send__amount-cell">
+                <div class="u-cell">
+<!--                    <label class="form-checkbox">-->
+<!--                        <input class="form-checkbox__input-native" type="checkbox" v-model="form.speed"/>-->
+<!--                        <span class="form-checkbox__input-visible"></span>-->
+<!--                        <span class="form-checkbox__label">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>-->
+<!--                    </label>-->
                     <label class="form-field form-field--row" :class="{'is-error': $v.form.fee.$error}">
                         <input class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                v-model.trim="form.fee"
@@ -198,7 +203,7 @@ export default {
                     </label>
                     <span class="form-field__error" v-if="$v.form.fee.$dirty && !$v.form.fee.required">Enter fee</span>
                 </div>
-                <div class="u-cell u-cell--small--auto">
+                <div class="u-cell">
                     <button
                         class="button button--main"
                         :class="{'is-disabled': $v.$invalid, 'is-loading': isFormSending}"
