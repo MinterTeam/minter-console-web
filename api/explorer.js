@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
-import {COIN_NAME, EXPLORER_API_URL} from "~/assets/variables";
+import {BASE_COIN, COIN_NAME, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
@@ -68,6 +68,7 @@ export function getBalance(addressHash) {
 /**
  * @typedef {Object} BalanceItem
  * @property {number|string} amount
+ * @property {number|string} bipAmount
  * @property {Coin} coin
  */
 
@@ -110,15 +111,33 @@ export function getCoinList() {
         })
         // .then((response) => response.data.data);
         // @TODO don't sort, coins should already be sorted by reserve
-        .then((response) => response.data.data.sort((a, b) => {
-            if (a.symbol === COIN_NAME) {
-                return -1;
-            } else if (b.symbol === COIN_NAME) {
-                return 1;
-            } else {
-                return 0;
-                // return a.symbol.localeCompare(b.symbol);
-            }
+        .then((response) => {
+            const coinList = response.data.data;
+            //@TODO base coin type will be fixed in api
+            const baseCoin = coinList.find((coin) => coin.symbol === BASE_COIN);
+            baseCoin.type = 'coin';
+            return coinList.sort((a, b) => {
+                if (a.symbol === BASE_COIN) {
+                    return -1;
+                } else if (b.symbol === BASE_COIN) {
+                    return 1;
+                } else {
+                    return 0;
+                    // return a.symbol.localeCompare(b.symbol);
+                }
+            });
+        });
+}
+
+/**
+ * @return {Promise<Array<CoinItem>>}
+ */
+export function getSwapCoinList() {
+    return explorer.get('pools/list/coins', {
+            cache: coinsCache,
+        })
+        .then((response) => response.data.sort((a, b) => {
+            return a.id - b.id;
         }));
 }
 
@@ -132,11 +151,14 @@ export function getCoinList() {
 /**
  * @typedef {Object} CoinItem
  * @property {number} id
+ * @property {string} symbol
+ * @property {string} type
  * @property {number} crr
  * @property {number|string} volume
- * @property {number|string} reserve_balance
+ * @property {number|string} reserveBalance
  * @property {string} name
- * @property {string} symbol
+ * @property {boolean} mintable
+ * @property {boolean} burnable
  */
 
 

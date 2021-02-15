@@ -56,6 +56,7 @@ export default {
                 coin1: '',
             },
             estimation: null,
+            // list of own pools' coins
             poolCoinList: [],
         };
     },

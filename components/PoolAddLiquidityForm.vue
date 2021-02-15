@@ -7,7 +7,7 @@ import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
 import {getCoinId} from '@/api/gate.js';
-import {getPool} from '@/api/explorer.js';
+import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {pretty, prettyExact} from "~/assets/utils.js";
 import TxForm from '~/components/common/TxForm.vue';
@@ -25,6 +25,12 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin, AsyncComputedMixin],
+    fetch() {
+        return getSwapCoinList()
+            .then((coinList) => {
+                this.poolCoinList = coinList;
+            });
+    },
     data() {
         return {
             form: {
@@ -33,6 +39,9 @@ export default {
                 coin1: '',
                 maximumVolume1: '',
             },
+            // list of all pools' coins
+            poolCoinList: [],
+            addressBalance: [],
         };
     },
     validations() {
@@ -69,6 +78,16 @@ export default {
 
             return new Big(this.form.volume0).div(this.poolData.amount0).times(this.poolData.amount1).toFixed();
         },
+        // intersection of address balance and pool coins
+        availableCoinList() {
+            if (!this.poolCoinList.length) {
+                return this.addressBalance;
+            }
+
+            return this.addressBalance.filter((balanceItem) => {
+                return this.poolCoinList.find((poolCoin) => poolCoin.id === balanceItem.coin.id);
+            });
+        },
     },
     methods: {
         pretty,
@@ -100,6 +119,7 @@ export default {
         :txData="form"
         :$txData="$v.form"
         :txType="$options.TX_TYPE.ADD_LIQUIDITY"
+        @update:addressBalance="addressBalance = $event"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
@@ -119,7 +139,7 @@ export default {
                             v-model="form.coin0"
                             :$value="$v.form.coin0"
                             :label="$td('Coin', 'form.swap-add-coin')"
-                            :coin-list="addressBalance"
+                            :coin-list="availableCoinList"
                         />
                         <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -145,7 +165,7 @@ export default {
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
                             :label="$td('Coin', 'form.swap-add-coin-pair')"
-                            :coin-list="addressBalance"
+                            :coin-list="availableCoinList"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

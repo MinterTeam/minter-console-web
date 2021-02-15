@@ -2,9 +2,17 @@
     import VueSimpleSuggest from 'vue-simple-suggest/lib/vue-simple-suggest';
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty} from '~/assets/utils.js';
+    import {getCoinList} from '@/api/explorer.js';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
+    const COIN_TYPE = {
+        ANY: 'any',
+        COIN: 'coin',
+        ANY_TOKEN: 'any_token',
+        TOKEN: 'token',
+        POOL_TOKEN: 'pool_token',
+    };
 
     export default {
         ideFix: null,
@@ -30,15 +38,22 @@
                 type: String,
                 required: true,
             },
-            /** @type Array */
+            /**
+             * Flat array or array of balance items
+             * @type Array<string>|Array<BalanceItem>
+             * */
             coinList: {
                 type: Array,
                 default: () => [],
             },
+            coinType: {
+                type: String,
+                default: COIN_TYPE.ANY,
+            },
         },
         data() {
             return {
-                /** @type Array<string> */
+                /** @type Array<CoinItem> */
                 coinListAll: [],
             };
         },
@@ -52,7 +67,14 @@
                 return this.coinList && this.coinList.length;
             },
             currentCoinList() {
-                return this.isConListSpecified ? this.coinList : this.coinListAll;
+                if (this.isConListSpecified) {
+                    return this.coinList
+                        .filter((balanceItem) => ofType(balanceItem.type, this.coinType));
+                } else {
+                    return this.coinListAll
+                        .filter((coin) => ofType(coin.type, this.coinType))
+                        .map((item) => item.symbol);
+                }
             },
             maxSuggestions() {
                 return this.isConListSpecified ? 0 : MAX_ITEM_COUNT;
@@ -68,9 +90,9 @@
             if (this.$store.getters.isOfflineMode) {
                 return;
             }
-            this.$store.dispatch('FETCH_COIN_LIST')
+            getCoinList()
                 .then((coinListAll) => {
-                    this.coinListAll = Object.freeze(coinListAll.map((item) => item.symbol));
+                    this.coinListAll = Object.freeze(coinListAll);
                 })
                 .catch((e) => {
                     console.log(e);
@@ -113,7 +135,15 @@
         },
     };
 
-
+    function ofType(coinType, selectedType) {
+        if (selectedType === COIN_TYPE.ANY) {
+            return true;
+        } else if (selectedType === COIN_TYPE.ANY_TOKEN) {
+            return coinType === COIN_TYPE.TOKEN || coinType === COIN_TYPE.POOL_TOKEN;
+        } else {
+            return coinType === selectedType;
+        }
+    }
 </script>
 
 <template>
