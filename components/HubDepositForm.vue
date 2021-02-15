@@ -32,7 +32,7 @@ let web3 = new Web3(new Web3.providers.HttpProvider(ETHEREUM_API_URL));
 const hubTokenAddress = "0x8c2b6949590bebe6bc1124b670e58da85b081b2e";
 const hubToken = new web3.eth.Contract(hubABI, hubTokenAddress);
 
-const peggyAddress = "0x27275f77f9ab7764a30c8a560caf0d26e90975ad";
+const peggyAddress = "0x172e3a57f33abf15d98cc66c49f56e35ff1fe681";
 const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
