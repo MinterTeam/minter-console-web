@@ -1,104 +1,145 @@
 <script>
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required';
-import minLength from 'vuelidate/lib/validators/minLength';
-import maxLength from 'vuelidate/lib/validators/maxLength';
-import minValue from 'vuelidate/lib/validators/minValue.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
-import {estimateCoinSell} from '~/api/gate';
-import checkEmpty from '~/assets/v-check-empty';
-import {getErrorText} from "~/assets/server-error";
-import {pretty, prettyExact} from "~/assets/utils";
-import TxForm from '~/components/common/TxForm.vue';
-import FieldCoin from '~/components/common/FieldCoin';
-import FieldUseMax from '~/components/common/FieldUseMax';
-import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
+    import {validationMixin} from 'vuelidate';
+    import required from 'vuelidate/lib/validators/required';
+    import minLength from 'vuelidate/lib/validators/minLength';
+    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import minValue from 'vuelidate/lib/validators/minValue.js';
+    import maxValue from 'vuelidate/lib/validators/maxValue.js';
+    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
+    import {estimateCoinSell} from '~/api/gate';
+    import checkEmpty from '~/assets/v-check-empty';
+    import {getErrorText} from "~/assets/server-error";
+    import {pretty, prettyExact} from "~/assets/utils";
+    import {CONVERT_TYPE} from '~/assets/variables.js';
+    import TxForm from '~/components/common/TxForm.vue';
+    import FieldCoin from '~/components/common/FieldCoin';
+    import FieldUseMax from '~/components/common/FieldUseMax';
+    import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 
-export default {
-    pretty,
-    prettyExact,
-    TX_TYPE,
-    components: {
-        TxForm,
-        FieldCoin,
-        FieldUseMax,
-        InputMaskedAmount,
-    },
-    directives: {
-        checkEmpty,
-    },
-    mixins: [validationMixin],
-    data() {
-        return {
-            form: {
-                sellAmount: '',
-                coinFrom: '',
-                coinTo: '',
-                minimumValueToBuy: '',
-            },
-            estimation: null,
-        };
-    },
-    validations() {
-        const form = {
-            sellAmount: {
-                //@TODO maxValue
-                //@TODO validAmount
-                required,
-            },
-            coinFrom: {
-                required,
-                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-            },
-            coinTo: {
-                required,
-                minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-            },
-            minimumValueToBuy: {
-                minValue: this.form.minimumValueToBuy ? minValue(0) : () => true,
-                maxValue: this.form.minimumValueToBuy ? maxValue(COIN_MAX_AMOUNT) : () => true,
-            },
-        };
+    export default {
+        pretty,
+        prettyExact,
+        TX_TYPE,
+        CONVERT_TYPE,
+        components: {
+            TxForm,
+            FieldCoin,
+            FieldUseMax,
+            InputMaskedAmount,
+        },
+        directives: {
+            checkEmpty,
+        },
+        mixins: [validationMixin],
+        data() {
+            return {
+                form: {
+                    sellAmount: '',
+                    coinFrom: '',
+                    coinTo: '',
+                    minimumValueToBuy: '',
+                },
+                estimation: null,
+                estimationType: null,
+                //@TODO disable optimal in offline mode
+                selectedConvertType: CONVERT_TYPE.OPTIMAL,
+            };
+        },
+        validations() {
+            const form = {
+                sellAmount: {
+                    //@TODO maxValue
+                    //@TODO validAmount
+                    required,
+                },
+                coinFrom: {
+                    required,
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+                },
+                coinTo: {
+                    required,
+                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+                },
+                minimumValueToBuy: {
+                    minValue: this.form.minimumValueToBuy ? minValue(0) : () => true,
+                    maxValue: this.form.minimumValueToBuy ? maxValue(COIN_MAX_AMOUNT) : () => true,
+                },
+            };
 
-        return {form};
-    },
-    computed: {
-    },
-    methods: {
-        getEstimation(txFormContext) {
-            if (this.$store.getters.isOfflineMode) {
-                return;
-            }
-            txFormContext.isFormSending = true;
-            txFormContext.serverError = '';
-            txFormContext.serverSuccess = '';
-            return estimateCoinSell({
-                coinToSell: this.form.coinFrom,
-                valueToSell: this.form.sellAmount,
-                coinToBuy: this.form.coinTo,
-                swapFrom: 'bancor',
-            })
-                .then((result) => {
-                    this.estimation = result.will_get;
-                    txFormContext.isFormSending = false;
+            return {form};
+        },
+        computed: {
+            convertType() {
+                if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
+                    return this.estimationType;
+                } else {
+                    return this.selectedConvertType;
+                }
+            },
+            txType() {
+                if (this.convertType === CONVERT_TYPE.POOL) {
+                    return TX_TYPE.SELL_SWAP_POOL;
+                }
+                return TX_TYPE.SELL;
+            },
+        },
+        methods: {
+            getEstimation(txFormContext) {
+                if (this.$store.getters.isOfflineMode) {
+                    return;
+                }
+                txFormContext.isFormSending = true;
+                txFormContext.serverError = '';
+                txFormContext.serverSuccess = '';
+                return estimateCoinSell({
+                    coinToSell: this.form.coinFrom,
+                    valueToSell: this.form.sellAmount,
+                    coinToBuy: this.form.coinTo,
+                    swapFrom: this.selectedConvertType,
                 })
-                .catch((error) => {
-                    txFormContext.isFormSending = false;
-                    txFormContext.serverError = getErrorText(error);
-                    throw error;
-                });
+                    .then((result) => {
+                        this.estimation = result.will_get;
+                        txFormContext.isFormSending = false;
+
+                        //@TODO replace with estimation type from API
+                        if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
+                            this.estimationType = null;
+                            return estimateCoinSell({
+                                coinToSell: this.form.coinFrom,
+                                valueToSell: this.form.sellAmount,
+                                coinToBuy: this.form.coinTo,
+                                swapFrom: CONVERT_TYPE.BANCOR,
+                            })
+                                .then((result) => {
+                                    if (Number(result.will_get) < Number(this.estimation)) {
+                                        this.estimationType = CONVERT_TYPE.POOL;
+                                    } else {
+                                        this.estimationType = CONVERT_TYPE.BANCOR;
+                                    }
+                                })
+                                .catch((error) => {
+                                    this.estimationType = CONVERT_TYPE.POOL;
+                                });
+                        }
+                    })
+                    .catch((error) => {
+                        txFormContext.isFormSending = false;
+                        txFormContext.serverError = getErrorText(error);
+                        throw error;
+                    });
+            },
+            clearForm() {
+                this.form.sellAmount = '';
+                this.form.coinFrom = '';
+                this.form.coinTo = '';
+                this.form.minimumValueToBuy = '';
+                this.$v.$reset();
+
+                this.selectedConvertType = CONVERT_TYPE.OPTIMAL;
+            },
         },
-        clearForm() {
-            this.form.sellAmount = '';
-            this.form.coinFrom = '';
-            this.form.coinTo = '';
-            this.form.minimumValueToBuy = '';
-            this.$v.$reset();
-        },
-    },
-};
+    };
 </script>
 
 <template>
@@ -106,13 +147,13 @@ export default {
         data-test-id="convertSell"
         :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToSell: form.sellAmount, minimumValueToBuy: form.minimumValueToBuy}"
         :$txData="$v.form"
-        :txType="$options.TX_TYPE.SELL"
+        :txType="txType"
         :before-confirm-modal-show="getEstimation"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Sell Coins', 'convert.sell-title') }}
+                {{ $td('Sell coins', 'convert.sell-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('Choose one of the coins that you own and specify the amount you would like to sell.', 'convert.sell-description') }}
@@ -120,6 +161,21 @@ export default {
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
+            <div class="u-cell">
+                <div class="form-check-label">Convert type</div>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.OPTIMAL" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Auto', 'form.convert-type-auto') }}</span>
+                </label>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.BANCOR" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Reserves', 'form.convert-type-bancor') }}</span>
+                </label>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Pools', 'form.convert-type-pool') }}</span>
+                </label>
+            </div>
             <div class="u-cell u-cell--medium--1-2">
                 <FieldCoin
                     data-test-id="convertSellInputSellCoin"
@@ -178,7 +234,7 @@ export default {
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Convert Coins', 'convert.convert-title') }}
+                {{ $td('Convert coins', 'convert.convert-title') }}
             </h1>
         </template>
 

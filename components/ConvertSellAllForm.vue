@@ -11,14 +11,16 @@ import {estimateCoinSell} from '~/api/gate';
 import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
 import {pretty, prettyExact} from "~/assets/utils";
+import {CONVERT_TYPE} from '~/assets/variables.js';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
-import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 
 export default {
     pretty,
     prettyExact,
     TX_TYPE,
+    CONVERT_TYPE,
     components: {
         TxForm,
         FieldCoin,
@@ -36,6 +38,9 @@ export default {
                 minimumValueToBuy: '',
             },
             estimation: null,
+            estimationType: null,
+            //@TODO disable optimal in offline mode
+            selectedConvertType: CONVERT_TYPE.OPTIMAL,
             addressBalance: [],
         };
     },
@@ -62,6 +67,19 @@ export default {
             const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
             return coinSellItem && coinSellItem.amount;
         },
+        convertType() {
+            if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
+                return this.estimationType;
+            } else {
+                return this.selectedConvertType;
+            }
+        },
+        txType() {
+            if (this.convertType === CONVERT_TYPE.POOL) {
+                return TX_TYPE.SELL_ALL_SWAP_POOL;
+            }
+            return TX_TYPE.SELL_ALL;
+        },
     },
     methods: {
         getEstimation(txFormContext) {
@@ -79,11 +97,32 @@ export default {
                 coinToSell: this.form.coinFrom,
                 valueToSell: this.sellAmount,
                 coinToBuy: this.form.coinTo,
-                swapFrom: 'pool',
+                swapFrom: this.selectedConvertType,
             })
                 .then((result) => {
                     this.estimation = result.will_get;
                     txFormContext.isFormSending = false;
+
+                    //@TODO replace with estimation type from API
+                    if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
+                        this.estimationType = null;
+                        return estimateCoinSell({
+                            coinToSell: this.form.coinFrom,
+                            valueToSell: this.form.sellAmount,
+                            coinToBuy: this.form.coinTo,
+                            swapFrom: CONVERT_TYPE.BANCOR,
+                        })
+                            .then((result) => {
+                                if (Number(result.will_get) < Number(this.estimation)) {
+                                    this.estimationType = CONVERT_TYPE.POOL;
+                                } else {
+                                    this.estimationType = CONVERT_TYPE.BANCOR;
+                                }
+                            })
+                            .catch((error) => {
+                                this.estimationType = CONVERT_TYPE.POOL;
+                            });
+                    }
                 })
                 .catch((error) => {
                     txFormContext.isFormSending = false;
@@ -96,6 +135,8 @@ export default {
             this.form.coinTo = '';
             this.form.minimumValueToBuy = '';
             this.$v.$reset();
+
+            this.selectedConvertType = CONVERT_TYPE.OPTIMAL;
         },
     },
 };
@@ -103,25 +144,42 @@ export default {
 
 <template>
     <TxForm
+        data-test-id="convertSellAll"
         :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, minimumValueToBuy: form.minimumValueToBuy}"
         :$txData="$v.form"
-        :txType="$options.TX_TYPE.SELL_ALL_SWAP_POOL"
+        :txType="txType"
         :before-confirm-modal-show="getEstimation"
         @update:addressBalance="addressBalance = $event"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Sell all coins to swap pool', 'convert.pool-sell-all-title') }}
+                {{ $td('Sell all coins', 'convert.sell-all-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Sell all of the coins that you possess in a single click.', 'convert.pool-sell-all-description') }}
+                {{ $td('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
             </p>
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
+            <div class="u-cell">
+                <div class="form-check-label">Convert type</div>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.OPTIMAL" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Auto', 'form.convert-type-auto') }}</span>
+                </label>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.BANCOR" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Reserves', 'form.convert-type-bancor') }}</span>
+                </label>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Pools', 'form.convert-type-pool') }}</span>
+                </label>
+            </div>
             <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
+                    data-test-id="convertSellAllInputSellCoin"
                     v-model="form.coinFrom"
                     :$value="$v.form.coinFrom"
                     :label="$td('Coin to sell', 'form.convert-sell-coin-sell')"
@@ -133,6 +191,7 @@ export default {
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
+                    data-test-id="convertSellAllInputBuyCoin"
                     v-model="form.coinTo"
                     :$value="$v.form.coinTo"
                     :label="$td('Coin to get', 'form.convert-sell-coin-get')"
@@ -147,10 +206,10 @@ export default {
                                        v-model="form.minimumValueToBuy"
                                        @blur.native="$v.form.minimumValueToBuy.$touch()"
                     />
-                    <span class="form-field__label">{{ $td('Min amount to get', 'form.swap-sell-min') }}</span>
+                    <span class="form-field__label">{{ $td('Min amount to get', 'form.convert-sell-min') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.minValue">{{ $td(`Min value is 0`, 'form.swap-sell-min-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
-                <span class="form-field__error" v-else-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.maxValue">{{ $td(`Max value is 10^15`, 'form.swap-sell-min-error-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.minValue">{{ $td(`Min value is 0`, 'form.convert-sell-min-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
+                <span class="form-field__error" v-else-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.maxValue">{{ $td(`Max value is 10^15`, 'form.convert-sell-min-error-max') }}</span>
                 <div class="form-field__help">
                     {{ $td('Default:', 'form.help-default') }} 0
                 </div>

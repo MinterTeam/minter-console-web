@@ -1,20 +1,14 @@
 <script>
     import getTitle from '~/assets/get-title';
-    import CoinSellForm from '~/components/ConvertBancorSellForm.vue';
-    import CoinSellAllForm from '~/components/ConvertBancorSellAllForm.vue';
-    import CoinBuyForm from '~/components/ConvertBancorBuyForm.vue';
-    import CoinPoolSellForm from '@/components/PoolSellForm.vue';
-    import CoinPoolSellAllForm from '@/components/PoolSellAllForm.vue';
-    import CoinPoolBuyForm from '@/components/PoolBuyForm.vue';
+    import ConvertSellForm from '~/components/ConvertSellForm.vue';
+    import ConvertSellAllForm from '~/components/ConvertSellAllForm.vue';
+    import ConvertBuyForm from '~/components/ConvertBuyForm.vue';
 
     export default {
         components: {
-            CoinSellForm,
-            CoinSellAllForm,
-            CoinBuyForm,
-            CoinPoolSellForm,
-            CoinPoolSellAllForm,
-            CoinPoolBuyForm,
+            ConvertSellForm,
+            ConvertSellAllForm,
+            ConvertBuyForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
@@ -40,12 +34,8 @@
 
 <template>
     <section class="u-section u-container">
-        <CoinSellForm/>
-        <CoinSellAllForm/>
-        <CoinBuyForm/>
-
-        <CoinPoolBuyForm/>
-        <CoinPoolSellForm/>
-        <CoinPoolSellAllForm/>
+        <ConvertBuyForm/>
+        <ConvertSellForm/>
+        <ConvertSellAllForm/>
     </section>
 </template>
