@@ -17,7 +17,7 @@ import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
 
-const HUB_MULTISIG_ADDRESS = 'Mx9060ba199824e4de6717085efa734ea8e0c0e4e0';
+const HUB_MULTISIG_ADDRESS = 'Mx65fac6b722d625d7659d41b72db7d1104111dbc8';
 const HUB_API = 'https://hub-api.dl-dev.ru';
 
 const SPEED_MIN = 'min';
