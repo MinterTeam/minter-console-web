@@ -77,6 +77,18 @@
                 }
                 return TX_TYPE.BUY;
             },
+            txData() {
+                return {
+                    ...(this.txType === TX_TYPE.BUY ? {
+                        coinToSell: this.form.coinFrom,
+                        coinToBuy: this.form.coinTo,
+                    } : {
+                        coins: [this.form.coinTo, this.form.coinFrom],
+                    }),
+                    valueToBuy: this.form.buyAmount,
+                    maximumValueToSell: this.form.maximumValueToSell,
+                };
+            },
         },
         methods: {
             pretty,
@@ -141,7 +153,7 @@
 <template>
     <TxForm
         data-test-id="convertBuy"
-        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, valueToBuy: form.buyAmount, maximumValueToSell: form.maximumValueToSell}"
+        :txData="txData"
         :$txData="$v.form"
         :txType="txType"
         :before-confirm-modal-show="getEstimation"
@@ -149,7 +161,7 @@
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Buy Coins', 'convert.buy-title') }}
+                {{ $td('Buy coins', 'convert.buy-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('If you want to buy a specific coin, you can do it here.', 'convert.buy-description') }}
@@ -158,7 +170,7 @@
 
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell">
-                <div class="form-check-label">Convert type</div>
+                <div class="form-check-label">Swap type</div>
                 <label class="form-check">
                     <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.OPTIMAL" v-model="selectedConvertType">
                     <span class="form-check__label form-check__label--radio">{{ $td('Auto', 'form.convert-type-auto') }}</span>

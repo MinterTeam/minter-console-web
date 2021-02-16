@@ -80,6 +80,17 @@ export default {
             }
             return TX_TYPE.SELL_ALL;
         },
+        txData() {
+            return {
+                ...(this.txType === TX_TYPE.SELL_ALL ? {
+                    coinToSell: this.form.coinFrom,
+                    coinToBuy: this.form.coinTo,
+                } : {
+                    coins: [this.form.coinFrom, this.form.coinTo],
+                }),
+                minimumValueToBuy: this.form.minimumValueToBuy,
+            };
+        },
     },
     methods: {
         getEstimation(txFormContext) {
@@ -145,7 +156,7 @@ export default {
 <template>
     <TxForm
         data-test-id="convertSellAll"
-        :txData="{coinToSell: form.coinFrom, coinToBuy: form.coinTo, minimumValueToBuy: form.minimumValueToBuy}"
+        :txData="txData"
         :$txData="$v.form"
         :txType="txType"
         :before-confirm-modal-show="getEstimation"
@@ -163,7 +174,7 @@ export default {
 
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell">
-                <div class="form-check-label">Convert type</div>
+                <div class="form-check-label">Swap type</div>
                 <label class="form-check">
                     <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.OPTIMAL" v-model="selectedConvertType">
                     <span class="form-check__label form-check__label--radio">{{ $td('Auto', 'form.convert-type-auto') }}</span>

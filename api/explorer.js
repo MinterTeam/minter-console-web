@@ -113,9 +113,6 @@ export function getCoinList() {
         // @TODO don't sort, coins should already be sorted by reserve
         .then((response) => {
             const coinList = response.data.data;
-            //@TODO base coin type will be fixed in api
-            const baseCoin = coinList.find((coin) => coin.symbol === BASE_COIN);
-            baseCoin.type = 'coin';
             return coinList.sort((a, b) => {
                 if (a.symbol === BASE_COIN) {
                     return -1;
