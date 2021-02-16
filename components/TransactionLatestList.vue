@@ -52,14 +52,23 @@
                 this.isTxExpanded = {[txn]: !this.isTxExpanded[txn]};
                 // this.$set(this.isTxExpanded, txn, !this.isTxExpanded[txn]);
             },
+            isTxType(tx, txType) {
+                return tx.type === Number(txType);
+            },
             isSell(tx) {
-                return tx.type === Number(TX_TYPE.SELL) || tx.type === Number(TX_TYPE.SELL_ALL);
+                return this.isTxType(tx, TX_TYPE.SELL) || this.isTxType(tx, TX_TYPE.SELL_ALL);
+            },
+            isSellPool(tx) {
+                return this.isTxType(tx, TX_TYPE.SELL_SWAP_POOL) || this.isTxType(tx, TX_TYPE.SELL_ALL_SWAP_POOL);
             },
             isBuy(tx) {
-                return tx.type === Number(TX_TYPE.BUY);
+                return this.isTxType(tx, TX_TYPE.BUY);
+            },
+            isBuyPool(tx) {
+                return this.isTxType(tx, TX_TYPE.BUY_SWAP_POOL);
             },
             isMultisend(tx) {
-                return tx.type === Number(TX_TYPE.MULTISEND);
+                return this.isTxType(tx, TX_TYPE.MULTISEND);
             },
             isIncomeMultisend(tx) {
                 if (!this.isMultisend(tx)) {
@@ -93,20 +102,38 @@
                 }
             },
             getConvertCoinSymbol(tx) {
-                if (tx.type === Number(TX_TYPE.SELL) || tx.type === Number(TX_TYPE.SELL_ALL)) {
+                if (this.isSell(tx)) {
                     return tx.data.coinToSell.symbol;
                 }
-                if (tx.type === Number(TX_TYPE.BUY)) {
+                if (this.isBuy(tx)) {
                     return tx.data.coinToBuy.symbol;
+                }
+                if (this.isSellPool(tx) || this.isBuyPool(tx)) {
+                    return tx.data.coins[0].symbol;
                 }
             },
             getConvertValue(tx) {
-                if (tx.type === Number(TX_TYPE.SELL) || tx.type === Number(TX_TYPE.SELL_ALL)) {
+                if (this.isSell(tx) || this.isSellPool(tx)) {
                     return tx.data.valueToSell;
                 }
-                if (tx.type === Number(TX_TYPE.BUY)) {
+                if (this.isBuy(tx) || this.isBuyPool(tx)) {
                     return tx.data.valueToBuy;
                 }
+            },
+            isEditPool(tx) {
+                return this.isTxType(tx, TX_TYPE.CREATE_SWAP_POOL) || this.isTxType(tx, TX_TYPE.ADD_LIQUIDITY) || this.isTxType(tx, TX_TYPE.REMOVE_LIQUIDITY);
+            },
+            getPoolCoins(tx) {
+                let symbol0, symbol1;
+                if (tx.data.coin0.id < tx.data.coin1.id) {
+                    symbol0 = tx.data.coin0.symbol;
+                    symbol1 = tx.data.coin1.symbol;
+                } else {
+                    symbol0 = tx.data.coin1.symbol;
+                    symbol1 = tx.data.coin0.symbol;
+                }
+
+                return `${symbol0} / ${symbol1}`;
             },
             getMultisendDeliveryList(tx) {
                 const isOutcomeMultisend = !this.isIncomeMultisend(tx);
@@ -206,9 +233,12 @@
                             </td>
                             <!-- amount -->
                             <td class="u-hidden-large-down">
-                                <div v-if="hasAmount(tx)">
+                                <template v-if="hasAmount(tx)">
                                     {{ getAmountWithCoin(tx) }}
-                                </div>
+                                </template>
+                                <template v-else-if="isEditPool(tx)">
+                                    {{ getPoolCoins(tx) }}
+                                </template>
                             </td>
                             <!-- value -->
                             <td class="u-hidden-large-up">
@@ -253,6 +283,15 @@
                                         <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
                                         {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
                                     </div>
+                                    <!-- SELL_POOL -->
+                                    <div class="table__inner-item" v-if="isSellPool(tx)">
+                                        <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
+                                        {{ tx.data.coins[0].symbol }} {{ tx.data.valueToSell | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="isSellPool(tx)">
+                                        <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
+                                        {{ tx.data.coins[tx.data.coins.length - 1].symbol }} {{ tx.data.valueToBuy | pretty }}
+                                    </div>
                                     <!-- BUY -->
                                     <div class="table__inner-item" v-if="isBuy(tx)">
                                         <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
@@ -261,6 +300,15 @@
                                     <div class="table__inner-item" v-if="isBuy(tx)">
                                         <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
                                         {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
+                                    </div>
+                                    <!-- BUY_POOL -->
+                                    <div class="table__inner-item" v-if="isBuyPool(tx)">
+                                        <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
+                                        {{ tx.data.coins[0].symbol }} {{ tx.data.valueToBuy | pretty }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="isBuyPool(tx)">
+                                        <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
+                                        {{ tx.data.coins[tx.data.coins.length - 1].symbol }} {{ tx.data.valueToSell | pretty }}
                                     </div>
 
                                     <!-- type CREATE_COIN -->

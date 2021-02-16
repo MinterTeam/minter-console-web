@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import Big from 'big.js';
 import {BaseCoinFee} from 'minterjs-util/src/fee.js';
-import {COIN_NAME} from '~/assets/variables';
-import {estimateCoinBuy, getCommissionPrice} from '~/api/gate';
+import {BASE_COIN} from '~/assets/variables.js';
+import {estimateCoinBuy, getCommissionPrice} from '~/api/gate.js';
 import {getCoinList} from '~/api/explorer.js';
 
 
@@ -37,7 +37,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
             baseCoinAmount,
             coinPriceList: {},
             coinList: {},
-            /** @type CommissionPriceMapped|null */
+            /** @type CommissionPriceData|null */
             commissionData: null,
             isOffline,
         },
@@ -83,7 +83,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
             },
             feeCoin() {
                 if (this.isBaseCoinFee) {
-                    return COIN_NAME;
+                    return BASE_COIN;
                 }
                 if (isCoinDefined(this.selectedFeeCoin)) {
                     return this.selectedFeeCoin;
@@ -171,7 +171,7 @@ function getEstimation(coinIdOrSymbol, baseCoinAmount) {
         coinToSell: !isCoinId(coinIdOrSymbol) ? coinIdOrSymbol : undefined,
         coinIdToSell: isCoinId(coinIdOrSymbol) ? coinIdOrSymbol : undefined,
         valueToBuy: baseCoinAmount,
-        coinToBuy: COIN_NAME,
+        coinToBuy: BASE_COIN,
         swapFrom: 'optimal',
     })
         .then((result) => {
@@ -199,5 +199,5 @@ function isCoinId(coinIdOrSymbol) {
  * @return {boolean}
  */
 function isBaseCoin(coinIdOrSymbol) {
-    return coinIdOrSymbol === COIN_NAME || coinIdOrSymbol === 0 || coinIdOrSymbol === '0';
+    return coinIdOrSymbol === BASE_COIN || coinIdOrSymbol === 0 || coinIdOrSymbol === '0';
 }

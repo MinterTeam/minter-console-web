@@ -34,4 +34,4 @@ export const replaceCoinSymbolByPath = ReplaceCoinSymbolByPath(minterApi);
 export const getCoinId = (symbol) => GetCoinId(minterApi)(symbol, undefined, {cache: coinCache});
 
 const commissionCache = new Cache({maxAge: 60 * 60 * 1000});
-export const getCommissionPrice = () => GetCommissionPrice(minterApi)({mapData: true}, {cache: commissionCache});
+export const getCommissionPrice = () => GetCommissionPrice(minterApi)({cache: commissionCache});

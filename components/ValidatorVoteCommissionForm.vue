@@ -1,10 +1,10 @@
 <script>
 import JSON5 from 'json5';
+import camelcaseKeys from 'camelcase-keys';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
-import {TxDataVoteCommission} from 'minterjs-tx';
-import {isValidPublic} from "minterjs-util";
+import {isValidPublic, convertFromPip} from "minterjs-util";
 import autosize from 'v-autosize';
 import checkEmpty from '~/assets/v-check-empty.js';
 import TxForm from '~/components/common/TxForm.vue';
@@ -12,6 +12,7 @@ import FieldCoin from '~/components/common/FieldCoin.vue';
 import FieldDomain from '~/components/common/FieldDomain.vue';
 import InputMaskedInteger from '~/components/common/InputMaskedInteger.vue';
 import minLength from 'vuelidate/lib/validators/minLength.js';
+import {getCommissionPrice} from '@/api/gate.js';
 
 export default {
     TX_TYPE,
@@ -26,62 +27,26 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin],
+    fetch() {
+        return getCommissionPrice()
+            .then((commissionData) => {
+                let list = {};
+                Object.keys(commissionData).forEach((fieldName) => {
+                    if (fieldName !== 'publicKey' && fieldName !== 'height' && fieldName !== 'coin') {
+                        list[fieldName] = convertFromPip(commissionData[fieldName]);
+                    }
+                });
+                this.form.commissionList = JSON.stringify(list, null, 4);
+                this.form.coin = commissionData.coin.symbol;
+            });
+    },
     data() {
-        const fieldsArray = (new TxDataVoteCommission())._fields;
-        let list = {};
-        fieldsArray.forEach((fieldName) => {
-            if (fieldName !== 'publicKey' && fieldName !== 'height' && fieldName !== 'coin') {
-                list[fieldName] = 0;
-            }
-        });
-
         return {
             form: {
                 publicKey: '',
                 height: '',
                 coin: '',
-                commissionList: JSON.stringify(list, null, 4),
-                // payloadByte: '',
-                // send: '',
-                // buyBancor: '',
-                // sellBancor: '',
-                // sellAllBancor: '',
-                // buyPool: '',
-                // sellPool: '',
-                // sellAllPool: '',
-                // createTicker3: '',
-                // createTicker4: '',
-                // createTicker5: '',
-                // createTicker6: '',
-                // createTicker7to10: '',
-                // createCoin: '',
-                // createToken: '',
-                // recreateCoin: '',
-                // recreateToken: '',
-                // declareCandidacy: '',
-                // delegate: '',
-                // unbond: '',
-                // redeemCheck: '',
-                // setCandidateOn: '',
-                // setCandidateOff: '',
-                // createMultisig: '',
-                // multisendBase: '',
-                // multisendDelta: '',
-                // editCandidate: '',
-                // setHaltBlock: '',
-                // editTickerOwner: '',
-                // editMultisig: '',
-                // priceVote: '',
-                // editCandidatePublicKey: '',
-                // addLiquidity: '',
-                // removeLiquidity: '',
-                // editCandidateCommission: '',
-                // moveStake: '',
-                // burnToken: '',
-                // mintToken: '',
-                // voteCommission: '',
-                // voteUpdate: '',
-                // createPool: '',
+                commissionList: '',
             },
             publicKeyDomain: '',
             isPublicKeyDomainResolving: false,
@@ -105,129 +70,6 @@ export default {
             commissionList: {
                 required,
             },
-            // payloadByte: {
-            //     required,
-            // },
-            // send: {
-            //     required,
-            // },
-            // buyBancor: {
-            //     required,
-            // },
-            // sellBancor: {
-            //     required,
-            // },
-            // sellAllBancor: {
-            //     required,
-            // },
-            // buyPool: {
-            //     required,
-            // },
-            // sellPool: {
-            //     required,
-            // },
-            // sellAllPool: {
-            //     required,
-            // },
-            // createTicker3: {
-            //     required,
-            // },
-            // createTicker4: {
-            //     required,
-            // },
-            // createTicker5: {
-            //     required,
-            // },
-            // createTicker6: {
-            //     required,
-            // },
-            // createTicker7to10: {
-            //     required,
-            // },
-            // createCoin: {
-            //     required,
-            // },
-            // createToken: {
-            //     required,
-            // },
-            // recreateCoin: {
-            //     required,
-            // },
-            // recreateToken: {
-            //     required,
-            // },
-            // declareCandidacy: {
-            //     required,
-            // },
-            // delegate: {
-            //     required,
-            // },
-            // unbond: {
-            //     required,
-            // },
-            // redeemCheck: {
-            //     required,
-            // },
-            // setCandidateOn: {
-            //     required,
-            // },
-            // setCandidateOff: {
-            //     required,
-            // },
-            // createMultisig: {
-            //     required,
-            // },
-            // multisendBase: {
-            //     required,
-            // },
-            // multisendDelta: {
-            //     required,
-            // },
-            // editCandidate: {
-            //     required,
-            // },
-            // setHaltBlock: {
-            //     required,
-            // },
-            // editTickerOwner: {
-            //     required,
-            // },
-            // editMultisig: {
-            //     required,
-            // },
-            // priceVote: {
-            //     required,
-            // },
-            // editCandidatePublicKey: {
-            //     required,
-            // },
-            // addLiquidity: {
-            //     required,
-            // },
-            // removeLiquidity: {
-            //     required,
-            // },
-            // editCandidateCommission: {
-            //     required,
-            // },
-            // moveStake: {
-            //     required,
-            // },
-            // burnToken: {
-            //     required,
-            // },
-            // mintToken: {
-            //     required,
-            // },
-            // voteCommission: {
-            //     required,
-            // },
-            // voteUpdate: {
-            //     required,
-            // },
-            // createPool: {
-            //     required,
-            // },
         };
 
         return {
@@ -248,7 +90,11 @@ export default {
                     return;
                 }
                 try {
-                    this.commissionListJson =  JSON5.parse(this.form.commissionList);
+                    let commissionData = JSON5.parse(this.form.commissionList);
+                    commissionData = camelcaseKeys(commissionData);
+                    commissionData.createTicker7to10 = commissionData.createTicker710;
+                    delete commissionData.createTicker710;
+                    this.commissionListJson = commissionData;
                 } catch (error) {
                     console.log(error);
                     this.commissionListError = error.message;

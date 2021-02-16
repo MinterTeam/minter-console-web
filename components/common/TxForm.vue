@@ -169,8 +169,21 @@
                 if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
                     selectedCoinSymbol = txData.coin;
                 }
-                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL || txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
+                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL ) {
                     selectedCoinSymbol = txData.coinToSell;
+                }
+                if (txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
+                    selectedCoinSymbol = txData.coins[0];
+                }
+
+                let deltaItemCount;
+                if (txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
+                    // count of pools
+                    deltaItemCount = txData.coins.length - 1;
+                }
+                if (txType === TX_TYPE.MULTISEND) {
+                    // count of recipients
+                    deltaItemCount = txData.list.length;
                 }
 
                 return {
@@ -178,6 +191,7 @@
                     txFeeOptions: {
                         payload: this.form.payload,
                         coinSymbol: txData.symbol,
+                        deltaItemCount,
                     },
                     selectedCoin: selectedCoinSymbol,
                     selectedFeeCoin: this.form.gasCoin,
