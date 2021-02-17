@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
-import {BASE_COIN, COIN_NAME, EXPLORER_API_URL} from "~/assets/variables";
+import {convertToPip} from 'minterjs-util';
+import {BASE_COIN, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
@@ -81,9 +82,9 @@ export function getBalance(addressHash) {
 export function prepareBalance(balanceList) {
     return balanceList.sort((a, b) => {
             // set base coin first
-            if (a.coin.symbol === COIN_NAME) {
+            if (a.coin.symbol === BASE_COIN) {
                 return -1;
-            } else if (b.coin.symbol === COIN_NAME) {
+            } else if (b.coin.symbol === BASE_COIN) {
                 return 1;
             } else {
                 // sort coins by name, instead of reserve
@@ -259,6 +260,27 @@ export function getProviderPoolList(address, params) {
     return explorer.get(`pools/providers/${address}`, {
             params,
         })
+        .then((response) => response.data);
+}
+
+/**
+ * @param {string} coin0
+ * @param {string} coin1
+ * @param {Object} amountOptions
+ * @param {number|string} [amountOptions.buyAmount]
+ * @param {number|string} [amountOptions.sellAmount]
+ * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string}>}
+ */
+export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
+    const amount = convertToPip(buyAmount || sellAmount);
+    let type;
+    if (sellAmount) {
+        type = 'input';
+    }
+    if (buyAmount) {
+        type = 'output';
+    }
+    return explorer.get(`pools/coins/${coin0}/${coin1}/route?type=${type}&amount=${amount}`)
         .then((response) => response.data);
 }
 

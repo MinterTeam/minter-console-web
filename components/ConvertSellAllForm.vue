@@ -39,6 +39,7 @@ export default {
             },
             estimation: null,
             estimationType: null,
+            estimationRoute: null,
             //@TODO disable optimal in offline mode
             selectedConvertType: CONVERT_TYPE.OPTIMAL,
             addressBalance: [],
@@ -86,7 +87,9 @@ export default {
                     coinToSell: this.form.coinFrom,
                     coinToBuy: this.form.coinTo,
                 } : {
-                    coins: [this.form.coinFrom, this.form.coinTo],
+                    coins: this.estimationRoute
+                        ? this.estimationRoute.map((coin) => coin.id)
+                        : [this.form.coinFrom, this.form.coinTo],
                 }),
                 minimumValueToBuy: this.form.minimumValueToBuy,
             };
@@ -109,10 +112,12 @@ export default {
                 valueToSell: this.sellAmount,
                 coinToBuy: this.form.coinTo,
                 swapFrom: this.selectedConvertType,
+                findRoute: true,
             })
                 .then((result) => {
                     this.estimation = result.will_get;
                     this.estimationType = result.swap_from;
+                    this.estimationRoute = result.route;
                     txFormContext.isFormSending = false;
                 })
                 .catch((error) => {
@@ -171,7 +176,7 @@ export default {
             <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
                     data-test-id="convertSellAllInputSellCoin"
-                    v-model="form.coinFrom"
+                    v-model.trim="form.coinFrom"
                     :$value="$v.form.coinFrom"
                     :label="$td('Coin to sell', 'form.convert-sell-coin-sell')"
                     :coin-list="addressBalance"
@@ -183,7 +188,7 @@ export default {
             <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
                     data-test-id="convertSellAllInputBuyCoin"
-                    v-model="form.coinTo"
+                    v-model.trim="form.coinTo"
                     :$value="$v.form.coinTo"
                     :label="$td('Coin to get', 'form.convert-sell-coin-get')"
                 />
@@ -248,6 +253,14 @@ export default {
                             <span class="form-field__label">{{ $td('You will get', 'form.convert-sell-confirm-receive') }}</span>
                         </label>
                     </template>
+                </div>
+                <div class="u-cell" v-if="estimationRoute">
+                    <label class="form-field form-field--dashed">
+                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
+                               :value="estimationRoute.map((coin) => coin.symbol).join(' > ')"
+                        >
+                        <span class="form-field__label">{{ $td('Swap route', 'form.convert-route') }}</span>
+                    </label>
                 </div>
             </div>
         </template>

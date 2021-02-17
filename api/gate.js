@@ -1,3 +1,4 @@
+import Big from 'big.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import MinterApi from "minter-js-sdk/src/api";
@@ -9,7 +10,8 @@ import EstimateCoinBuy from 'minter-js-sdk/src/api/estimate-coin-buy';
 import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath, GetCoinId} from 'minter-js-sdk/src/api/replace-coin.js';
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import GetCommissionPrice from 'minter-js-sdk/src/api/get-commission-price.js';
-import {GATE_API_URL, CHAIN_ID} from '~/assets/variables';
+import {GATE_API_URL, CHAIN_ID, CONVERT_TYPE} from '~/assets/variables.js';
+import {getSwapRoute} from '@/api/explorer.js';
 
 const minterApi = new MinterApi({
     apiType: 'gate',
@@ -25,8 +27,73 @@ export const getNonce = GetNonce(minterApi);
 export const ensureNonce = EnsureNonce(minterApi);
 
 const estimateCache = new Cache({maxAge: 1 * 60 * 1000});
-export const estimateCoinSell = (params, axiosOptions) => EstimateCoinSell(minterApi)(params, {...axiosOptions, cache: estimateCache});
-export const estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions, cache: estimateCache});
+const _estimateCoinSell = (params, axiosOptions) => EstimateCoinSell(minterApi)(params, {...axiosOptions, cache: estimateCache});
+const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions, cache: estimateCache});
+export function estimateCoinSell(params) {
+    if (params.findRoute && params.swapFrom !== CONVERT_TYPE.BANCOR) {
+        let estimateError;
+        const estimatePromise = _estimateCoinSell(params)
+            .catch((error) => {
+                estimateError = error;
+            });
+        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell})
+            // ignore route errors
+            .catch((error) => {
+                console.log(error);
+            });
+        return Promise.all([estimatePromise, routePromise])
+            .then(([estimateData, routeData]) => {
+                if (estimateError && !routeData) {
+                    throw estimateError;
+                }
+                const isRouteOnly = routeData && estimateError;
+                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_get).lt(routeData.amountOut);
+
+                if (isRouteOnly || isRouteBetter) {
+                    estimateData = estimateData || {};
+                    // swap by route is better
+                    estimateData.will_get = routeData.amountOut;
+                    estimateData.swap_from = CONVERT_TYPE.POOL;
+                    estimateData.route = routeData.coins;
+                }
+                return estimateData;
+            });
+    } else {
+        return _estimateCoinSell(params);
+    }
+}
+export function estimateCoinBuy(params) {
+    if (params.findRoute && params.swapFrom !== CONVERT_TYPE.BANCOR) {
+        let estimateError;
+        const estimatePromise = _estimateCoinBuy(params)
+            .catch((error) => {
+                estimateError = error;
+            });
+        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy})
+            // ignore route errors
+            .catch((error) => {
+                console.log(error);
+            });
+        return Promise.all([estimatePromise, routePromise])
+            .then(([estimateData, routeData]) => {
+                if (estimateError && !routeData) {
+                    throw estimateError;
+                }
+                const isRouteOnly = routeData && estimateError;
+                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_pay).gt(routeData.amountIn);
+
+                if (isRouteOnly || isRouteBetter) {
+                    estimateData = estimateData || {};
+                    estimateData.will_pay = routeData.amountIn;
+                    estimateData.swap_from = CONVERT_TYPE.POOL;
+                    estimateData.route = routeData.coins;
+                }
+                return estimateData;
+            });
+    } else {
+        return _estimateCoinBuy(params);
+    }
+}
 
 const coinCache = new Cache({maxAge: 1 * 60 * 1000});
 export const replaceCoinSymbol = ReplaceCoinSymbol(minterApi);
