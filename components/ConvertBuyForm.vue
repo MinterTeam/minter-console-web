@@ -83,7 +83,7 @@
                         coinToSell: this.form.coinFrom,
                         coinToBuy: this.form.coinTo,
                     } : {
-                        coins: [this.form.coinTo, this.form.coinFrom],
+                        coins: [this.form.coinFrom, this.form.coinTo],
                     }),
                     valueToBuy: this.form.buyAmount,
                     maximumValueToSell: this.form.maximumValueToSell,
@@ -108,28 +108,8 @@
                 })
                     .then((result) => {
                         this.estimation = result.will_pay;
+                        this.estimationType = result.swap_from;
                         txFormContext.isFormSending = false;
-
-                        //@TODO replace with estimation type from API
-                        if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
-                            this.estimationType = null;
-                            return estimateCoinBuy({
-                                coinToBuy: this.form.coinTo,
-                                valueToBuy: this.form.buyAmount,
-                                coinToSell: this.form.coinFrom,
-                                swapFrom: CONVERT_TYPE.BANCOR,
-                            })
-                                .then((result) => {
-                                    if (Number(result.will_pay) > Number(this.estimation)) {
-                                        this.estimationType = CONVERT_TYPE.POOL;
-                                    } else {
-                                        this.estimationType = CONVERT_TYPE.BANCOR;
-                                    }
-                                })
-                                .catch((error) => {
-                                    this.estimationType = CONVERT_TYPE.POOL;
-                                });
-                        }
                     })
                     .catch((error) => {
                         txFormContext.isFormSending = false;

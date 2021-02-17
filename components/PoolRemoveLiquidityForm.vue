@@ -79,7 +79,12 @@ export default {
             },
         };
 
-        return {form};
+        return {
+            form,
+            addressLiquidityData: {
+                success: () => this.isPoolLoaded,
+            },
+        };
     },
     asyncComputed: {
         addressLiquidityData() {
@@ -87,22 +92,25 @@ export default {
         },
     },
     computed: {
+        isPoolLoaded() {
+            return this.$asyncComputed.addressLiquidityData.success && this.addressLiquidityData?.liquidity;
+        },
         liquidityAmount() {
-            if (!this.addressLiquidityData?.liquidity || !this.form.liquidity) {
+            if (!this.isPoolLoaded || !this.form.liquidity) {
                 return 0;
             }
 
             return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.liquidity).toFixed();
         },
         coin0Amount() {
-            if (!this.addressLiquidityData?.amount0 || !this.form.liquidity) {
+            if (!this.isPoolLoaded || !this.form.liquidity) {
                 return 0;
             }
 
             return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount0).toFixed();
         },
         coin1Amount() {
-            if (!this.addressLiquidityData?.amount1 || !this.form.liquidity) {
+            if (!this.isPoolLoaded || !this.form.liquidity) {
                 return 0;
             }
 
@@ -161,7 +169,7 @@ export default {
 
 <template>
     <!-- @TODO minimumVolume -->
-    <TxForm :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}" :$txData="$v.form" :txType="$options.TX_TYPE.REMOVE_LIQUIDITY" @clear-form="clearForm()">
+    <TxForm :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}" :$txData="$v" :txType="$options.TX_TYPE.REMOVE_LIQUIDITY" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Remove liquidity from swap pool', 'swap.remove-title') }}
@@ -207,6 +215,9 @@ export default {
                 <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.minValue">{{ $td('Min value 0', 'form.swap-remove-liquidity-error-min') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.maxValue">{{ $td('Maximum 100%', 'form.swap-remove-liquidity-error-max') }}</span>
                 <span class="form-field__help" v-else>Percentage of your pool liquidity</span>
+            </div>
+            <div class="u-cell">
+                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.addressLiquidityData.$dirty && !$v.addressLiquidityData.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.swap-remove-liquidity-error-pool') }}</span>
             </div>
         </template>
 

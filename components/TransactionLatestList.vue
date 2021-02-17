@@ -111,6 +111,9 @@
                 if (this.isSellPool(tx) || this.isBuyPool(tx)) {
                     return tx.data.coins[0].symbol;
                 }
+                if (this.isSellPool(tx) || this.isBuyPool(tx)) {
+                    return tx.data.coins[tx.data.coins.length - 1].symbol;
+                }
             },
             getConvertValue(tx) {
                 if (this.isSell(tx) || this.isSellPool(tx)) {
@@ -304,11 +307,11 @@
                                     <!-- BUY_POOL -->
                                     <div class="table__inner-item" v-if="isBuyPool(tx)">
                                         <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
-                                        {{ tx.data.coins[0].symbol }} {{ tx.data.valueToBuy | pretty }}
+                                        {{ tx.data.coins[tx.data.coins.length - 1].symbol }} {{ tx.data.valueToBuy | pretty }}
                                     </div>
                                     <div class="table__inner-item" v-if="isBuyPool(tx)">
                                         <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
-                                        {{ tx.data.coins[tx.data.coins.length - 1].symbol }} {{ tx.data.valueToSell | pretty }}
+                                        {{ tx.data.coins[0].symbol }} {{ tx.data.valueToSell | pretty }}
                                     </div>
 
                                     <!-- type CREATE_COIN -->

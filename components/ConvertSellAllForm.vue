@@ -112,28 +112,8 @@ export default {
             })
                 .then((result) => {
                     this.estimation = result.will_get;
+                    this.estimationType = result.swap_from;
                     txFormContext.isFormSending = false;
-
-                    //@TODO replace with estimation type from API
-                    if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
-                        this.estimationType = null;
-                        return estimateCoinSell({
-                            coinToSell: this.form.coinFrom,
-                            valueToSell: this.form.sellAmount,
-                            coinToBuy: this.form.coinTo,
-                            swapFrom: CONVERT_TYPE.BANCOR,
-                        })
-                            .then((result) => {
-                                if (Number(result.will_get) < Number(this.estimation)) {
-                                    this.estimationType = CONVERT_TYPE.POOL;
-                                } else {
-                                    this.estimationType = CONVERT_TYPE.BANCOR;
-                                }
-                            })
-                            .catch((error) => {
-                                this.estimationType = CONVERT_TYPE.POOL;
-                            });
-                    }
                 })
                 .catch((error) => {
                     txFormContext.isFormSending = false;
