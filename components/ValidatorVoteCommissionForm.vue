@@ -3,16 +3,17 @@ import JSON5 from 'json5';
 import camelcaseKeys from 'camelcase-keys';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
+import minLength from 'vuelidate/lib/validators/minLength.js';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
 import {isValidPublic, convertFromPip} from "minterjs-util";
 import autosize from 'v-autosize';
+import {getCommissionPrice} from '@/api/gate.js';
+import {getSwapCoinList} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin.vue';
 import FieldDomain from '~/components/common/FieldDomain.vue';
 import InputMaskedInteger from '~/components/common/InputMaskedInteger.vue';
-import minLength from 'vuelidate/lib/validators/minLength.js';
-import {getCommissionPrice} from '@/api/gate.js';
 
 export default {
     TX_TYPE,
@@ -28,7 +29,7 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        return getCommissionPrice()
+        const commissionPromise = getCommissionPrice()
             .then((commissionData) => {
                 let list = {};
                 Object.keys(commissionData).forEach((fieldName) => {
@@ -39,6 +40,13 @@ export default {
                 this.form.commissionList = JSON.stringify(list, null, 4);
                 this.form.coin = commissionData.coin.symbol;
             });
+
+        const coinPromise = getSwapCoinList(this.$store.getters.BASE_COIN)
+            .then((coinList) => {
+                this.coinList = coinList;
+            });
+
+        return Promise.all([commissionPromise, coinPromise]);
     },
     data() {
         return {
@@ -52,6 +60,7 @@ export default {
             isPublicKeyDomainResolving: false,
             commissionListError: '',
             commissionListJson: null,
+            coinList: [],
         };
     },
     validations() {
@@ -80,6 +89,9 @@ export default {
         };
     },
     computed: {
+        suggestionList() {
+            return [this.$store.getters.BASE_COIN].concat(this.coinList.map((item) => item.symbol));
+        },
     },
     watch: {
         'form.commissionList': {
@@ -151,7 +163,7 @@ export default {
                     v-model="form.coin"
                     :$value="$v.form.coin"
                     :label="$td('Coin', 'form.coin')"
-                    :coin-list="addressBalance"
+                    :coin-list="suggestionList"
                 />
                 <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

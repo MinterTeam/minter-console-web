@@ -128,10 +128,12 @@ export function getCoinList() {
 }
 
 /**
+ * @param {string|number} [coin]
  * @return {Promise<Array<CoinItem>>}
  */
-export function getSwapCoinList() {
-    return explorer.get('pools/list/coins', {
+export function getSwapCoinList(coin) {
+    const coinUrlSuffix = coin ? '/' + coin : '';
+    return explorer.get('pools/list/coins' + coinUrlSuffix, {
             cache: coinsCache,
         })
         .then((response) => response.data.sort((a, b) => {
