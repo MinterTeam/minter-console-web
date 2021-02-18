@@ -1,4 +1,4 @@
-export const hubABI = [
+export const erc20ABI = [
     // balanceOf
     {
         "constant":true,

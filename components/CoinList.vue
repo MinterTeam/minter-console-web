@@ -20,10 +20,10 @@
         },
         computed: {
             hasCustomCoins() {
-                return this.$store.state.balance.filter((coinItem) => coinItem.coin.symbol !== this.$store.getters.COIN_NAME).length;
+                return this.$store.getters.balance.filter((coinItem) => coinItem.coin.symbol !== this.$store.getters.COIN_NAME).length;
             },
             coinList() {
-                return this.isFullListActive ? this.$store.state.balance : this.$store.state.balance.slice(0, 5);
+                return this.isFullListActive ? this.$store.getters.balance : this.$store.getters.balance.slice(0, 5);
             },
         },
         methods: {
