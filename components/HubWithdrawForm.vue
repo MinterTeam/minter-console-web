@@ -3,24 +3,22 @@ import Big from 'big.js';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
 import axios from "axios";
 import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx, ensureNonce, replaceCoinSymbol, getCoinId} from '~/api/gate.js';
-import {getOracleEthFee, getOracleCoinList, getOraclePriceList} from '@/api/hub.js';
 import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
-import FieldCoin from '@/components/common/FieldCoin.vue';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
 
-const HUB_MULTISIG_ADDRESS = 'Mxb26bc23e5a72ea2033f70006751066602d3349fd';
+const HUB_MULTISIG_ADDRESS = 'Mxf467c5f45f3b580b9a75b5bdff8fc421e4a34508';
+const HUB_API = 'https://hub-api.dl-dev.ru';
 
 const SPEED_MIN = 'min';
 const SPEED_FAST = 'fast';
@@ -31,7 +29,6 @@ export default {
     components: {
         FieldQr,
         FieldUseMax,
-        FieldCoin,
         Loader,
         Modal,
     },
@@ -41,17 +38,32 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        return Promise.all([getOracleEthFee(), getOracleCoinList(), getOraclePriceList()])
-            .then(([ethFee, coinList, priceList]) => {
-                this.ethFee = ethFee;
-                this.coinList = coinList;
-                this.priceList = priceList;
+        const ethPromise = axios.get(HUB_API + "/oracle/eth_fee")
+            .then((response) => {
+                this.ethFee = response.data.result;
             });
+
+        const hubPromise = getCoinId('HUB')
+            .then((hubCoinId) => {
+                this.hubCoinId = hubCoinId;
+
+                return axios.get(HUB_API + "/oracle/prices").then((data) => {
+                    for (let listKey in data.data.result.list) {
+                        if (data.data.result.list[listKey].name === "minter/" + this.hubCoinId) {
+                            this.hubPrice = data.data.result.list[listKey].value;
+                        }
+                    }
+                });
+            });
+
+        return Promise.all([ethPromise, hubPromise]);
     },
     data() {
         return {
+            hubCoinId: null,
+            // address: "",
+            // balances: [],
             form: {
-                coin: '',
                 amount: "",
                 address: "",
                 speed: SPEED_MIN,
@@ -60,14 +72,7 @@ export default {
                 min: 0,
                 fast: 0,
             },
-            /**
-             * @type Array<{denom: string, eth_addr: string, minter_id: string}>
-             */
-            coinList: [],
-            /**
-             * @type Array<{name: string, value: string}>
-             */
-            priceList: [],
+            hubPrice: '0',
             // transactions: []
             isFormSending: false,
             serverSuccess: null,
@@ -76,46 +81,27 @@ export default {
         };
     },
     computed: {
-        coinId() {
-            const coinItem = this.coinList.find((item) => item.denom.toUpperCase() === this.form.coin);
-            return coinItem ? coinItem.minter_id : undefined;
-        },
-        coinPrice() {
-            const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
-            return priceItem ? priceItem.value : '0';
-        },
-        coinFee() {
-            if (this.coinPrice === '0') {
+        fee() {
+            if (this.hubPrice === '0') {
                 return 0;
             }
             const ethFee = this.form.speed === SPEED_MIN ? this.ethFee.min : this.ethFee.fast;
 
-            return new Big(ethFee).div(this.coinPrice).toFixed();
+            return new Big(ethFee).div(this.hubPrice).toFixed();
         },
         maxAmount() {
             const selectedCoin = this.$store.getters.balance.find((coin) => {
-                return coin.coin.symbol === this.form.coin;
+                return coin.coin.symbol === 'HUB';
             });
             // coin not selected
             if (!selectedCoin) {
                 return undefined;
             }
 
-            const maxAmount = new Big(selectedCoin.amount).minus(this.coinFee);
-            if (maxAmount.lt(0)) {
-                return 0;
-            } else {
-                return maxAmount.toFixed();
-            }
+            return new Big(selectedCoin.amount).minus(this.fee).toFixed();
         },
         amountToSpend() {
-            return new Big(this.coinFee).plus(this.form.amount || 0).toFixed();
-        },
-        // intersection of address balance and hub supported coins
-        suggestionList() {
-            return this.$store.getters.balance.filter((balanceItem) => {
-                return this.coinList.find((item) => Number(item.minter_id) === balanceItem.coin.id);
-            });
+            return new Big(this.fee).plus(this.form.amount || 0).toFixed();
         },
     },
     validations() {
@@ -126,11 +112,6 @@ export default {
                     validAddress(address) {
                         return /^0x[0-9a-fA-F]{40}$/.test(address);
                     },
-                },
-                coin: {
-                    required,
-                    minLength: minLength(3),
-                    supported: () => !!this.coinId,
                 },
                 amount: {
                     required,
@@ -158,12 +139,12 @@ export default {
                 data: {
                     to: HUB_MULTISIG_ADDRESS,
                     value: this.amountToSpend,
-                    coin: this.coinId,
+                    coin: this.hubCoinId,
                 },
                 payload: JSON.stringify({
                     recipient: this.form.address,
                     type: 'send_to_eth',
-                    fee: convertToPip(this.coinFee),
+                    fee: convertToPip(this.fee),
                 }),
             };
 
@@ -216,26 +197,15 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Ethereum address</span>
                     <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Ethereum address</span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
-                    <FieldCoin
-                        v-model="form.coin"
-                        :$value="$v.form.coin"
-                        :label="$td('Coin', 'form.coin')"
-                        :coin-list="suggestionList"
-                    />
-                    <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by HUB bridge', 'form.hub-coin-error-supported') }}</span>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                <div class="u-cell u-cell--xlarge--1-2">
                     <FieldUseMax
                         v-model="form.amount"
                         :$value="$v.form.amount"
-                        :label="$td('Amount', 'form.hub-amount')"
+                        :label="$td('HUB amount', 'form.hub-withdraw-amount')"
                         :max-value="maxAmount"
                     />
-                    <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
+                    <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">Enter amount</span>
+                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough HUB (max {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell">
                     <div class="form-check-label">Tx speed</div>
@@ -264,7 +234,7 @@ export default {
             <div class="u-grid u-grid--small">
                 <div class="u-cell u-cell--medium--1-2">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(amountToSpend) }} {{ form.coin }}</div>
+                        <div class="form-field__input is-not-empty">{{ pretty(amountToSpend) }} HUB</div>
                         <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
                     </div>
                 </div>
