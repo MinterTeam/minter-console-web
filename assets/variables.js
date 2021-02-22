@@ -36,3 +36,10 @@ export const CONVERT_TYPE = {
     POOL: 'pool',
     OPTIMAL: 'optimal',
 };
+export const COIN_TYPE = {
+    ANY: 'any',
+    COIN: 'coin',
+    ANY_TOKEN: 'any_token',
+    TOKEN: 'token',
+    POOL_TOKEN: 'pool_token',
+};

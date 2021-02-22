@@ -29,7 +29,6 @@
                 },
                 publicKeyDomain: '',
                 isPublicKeyDomainResolving: false,
-                commissionFormatted: '0',
             };
         },
         validations() {
@@ -47,15 +46,6 @@
             return {form};
         },
         computed: {
-        },
-        watch: {
-            commissionFormatted: {
-                handler(newVal) {
-                    newVal = parseFloat(newVal);
-                    this.form.commission = newVal === 0 ? null : newVal;
-                },
-                immediate: true,
-            },
         },
         methods: {
             clearForm() {
@@ -96,7 +86,7 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-2">
                 <FieldPercentage
-                    v-model="commissionFormatted"
+                    v-model="form.commission"
                     :$value="$v.form.commission"
                     :label="$td('New commission', 'form.masternode-edit-commission')"
                     min-value="0"

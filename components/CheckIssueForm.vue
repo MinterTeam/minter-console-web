@@ -251,7 +251,7 @@
                 <FieldCoin
                     v-model="form.gasCoin"
                     :$value="$v.form.gasCoin"
-                    :label="$td('Coin to pay fee', 'form.fee')"
+                    :label="$td('Coin to pay fee (optional)', 'form.fee')"
                     :coin-list="balance"
                 />
                 <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -270,7 +270,7 @@
                                         v-model="form.dueBlock"
                                         @blur="$v.form.dueBlock.$touch()"
                     />
-                    <span class="form-field__label">{{ $td('Due block', 'form.checks-issue-due') }}</span>
+                    <span class="form-field__label">{{ $td('Due block (optional)', 'form.checks-issue-due') }}</span>
                 </label>
                 <div class="form-field__help">
                     {{ $td('Default:', 'form.help-default') }} 999999999

@@ -35,7 +35,6 @@
                     stake: '',
                     coinSymbol: '',
                 },
-                commissionFormatted: '0',
                 addressDomain: '',
                 isAddressDomainResolving: false,
                 publicKeyDomain: '',
@@ -68,15 +67,6 @@
             return {form};
         },
         computed: {
-        },
-        watch: {
-            commissionFormatted: {
-                handler(newVal) {
-                    newVal = parseFloat(newVal);
-                    this.form.commission = newVal === 0 ? null : newVal;
-                },
-                immediate: true,
-            },
         },
         methods: {
             clearForm() {
@@ -150,7 +140,7 @@
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
                 <FieldPercentage
-                    v-model="commissionFormatted"
+                    v-model="form.commission"
                     :$value="$v.form.commission"
                     :label="$td('Commission', 'form.masternode-commission')"
                     min-value="0"

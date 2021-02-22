@@ -175,7 +175,7 @@ export default {
                         <FieldUseMax
                             v-model="form.maximumVolume1"
                             :$value="$v.form.maximumVolume1"
-                            :label="$td('Maximum amount', 'form.swap-add-max-amount')"
+                            :label="$td('Maximum amount (optional)', 'form.swap-add-max-amount')"
                         />
                         <!--                        <span class="form-field__error" v-if="$v.form.maximumVolume1.$dirty && !$v.form.maximumVolume1.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>-->
                     </div>

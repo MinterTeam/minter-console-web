@@ -41,7 +41,8 @@ export default {
                 this.form.coin = commissionData.coin.symbol;
             });
 
-        const coinPromise = getSwapCoinList(this.$store.getters.BASE_COIN)
+        // commission coin can by only base coin or coin from pool with base
+        const coinPromise = getSwapCoinList(this.$store.getters.BASE_COIN, 1)
             .then((coinList) => {
                 this.coinList = coinList;
             });

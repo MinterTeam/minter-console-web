@@ -8,10 +8,11 @@ import maxLength from 'vuelidate/lib/validators/maxLength';
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
 import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
 import {estimateCoinSell} from '~/api/gate';
+import {getCoinList, getSwapCoinList} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
 import {pretty, prettyExact} from "~/assets/utils";
-import {CONVERT_TYPE} from '~/assets/variables.js';
+import {CONVERT_TYPE, COIN_TYPE} from '~/assets/variables.js';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
@@ -30,6 +31,24 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin],
+    fetch() {
+        return Promise.all([getCoinList(), getSwapCoinList()])
+            .then(([coinList, swapCoinList]) => {
+                const tradableCoinList = coinList.filter((coinItem) => {
+                    // coin with reserve
+                    if (coinItem.type === COIN_TYPE.COIN) {
+                        return true;
+                    }
+                    // swapable within pool
+                    if (swapCoinList.find((swapCoinItem) => swapCoinItem.id === coinItem.id)) {
+                        return true;
+                    }
+                    return false;
+                });
+
+                this.tradableCoinList = tradableCoinList.map((coinItem) => coinItem.symbol);
+            });
+    },
     data() {
         return {
             form: {
@@ -43,6 +62,7 @@ export default {
             //@TODO disable optimal in offline mode
             selectedConvertType: CONVERT_TYPE.OPTIMAL,
             addressBalance: [],
+            tradableCoinList: [],
         };
     },
     validations() {
@@ -93,6 +113,11 @@ export default {
                 }),
                 minimumValueToBuy: this.form.minimumValueToBuy,
             };
+        },
+        tradableAddressBalance() {
+            return this.addressBalance.filter((balanceItem) => {
+                return this.tradableCoinList.find((coinSymbol) => balanceItem.coin.symbol === coinSymbol);
+            });
         },
     },
     methods: {
@@ -179,7 +204,7 @@ export default {
                     v-model.trim="form.coinFrom"
                     :$value="$v.form.coinFrom"
                     :label="$td('Coin to sell', 'form.convert-sell-coin-sell')"
-                    :coin-list="addressBalance"
+                    :coin-list="tradableAddressBalance"
                 />
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -191,6 +216,7 @@ export default {
                     v-model.trim="form.coinTo"
                     :$value="$v.form.coinTo"
                     :label="$td('Coin to get', 'form.convert-sell-coin-get')"
+                    :coin-list="tradableCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -202,7 +228,7 @@ export default {
                                        v-model="form.minimumValueToBuy"
                                        @blur.native="$v.form.minimumValueToBuy.$touch()"
                     />
-                    <span class="form-field__label">{{ $td('Min amount to get', 'form.convert-sell-min') }}</span>
+                    <span class="form-field__label">{{ $td('Min amount to get (optional)', 'form.convert-sell-min') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.minValue">{{ $td(`Min value is 0`, 'form.convert-sell-min-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
                 <span class="form-field__error" v-else-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.maxValue">{{ $td(`Max value is 10^15`, 'form.convert-sell-min-error-max') }}</span>

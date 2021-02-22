@@ -2,17 +2,11 @@
     import VueSimpleSuggest from 'vue-simple-suggest/lib/vue-simple-suggest';
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty} from '~/assets/utils.js';
+    import {COIN_TYPE} from '~/assets/variables.js';
     import {getCoinList} from '@/api/explorer.js';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
-    const COIN_TYPE = {
-        ANY: 'any',
-        COIN: 'coin',
-        ANY_TOKEN: 'any_token',
-        TOKEN: 'token',
-        POOL_TOKEN: 'pool_token',
-    };
 
     export default {
         ideFix: null,

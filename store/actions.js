@@ -1,5 +1,5 @@
 import {getProfile, getProfileAddressEncrypted} from "~/api";
-import {getBalance, getCoinList, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
+import {getBalance, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
 
 export default {
     FETCH_PROFILE: ({ state, commit }) => {
@@ -59,11 +59,8 @@ export default {
             .then(async (balanceResponse) => {
                 const balanceList = balanceResponse.data.balances;
 
-                //@TODO type should be in balance API
-                const coinList = await getCoinList();
                 balanceList.forEach((balanceItem) => {
-                    const coinType = coinList.find((coin) => coin.id === balanceItem.coin.id)?.type;
-                    balanceItem.type = coinType;
+                    balanceItem.type = balanceItem.coin.type;
                 });
 
                 commit('SET_BALANCE', balanceList);

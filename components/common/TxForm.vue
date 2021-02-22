@@ -11,10 +11,12 @@
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce, replaceCoinSymbol} from '~/api/gate.js';
+    import {getSwapCoinList} from '~/api/explorer.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
     import {getExplorerTxUrl, pretty} from "~/assets/utils.js";
+    import {COIN_TYPE} from '~/assets/variables.js';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
     import FieldQr from '~/components/common/FieldQr.vue';
@@ -73,6 +75,12 @@
                 default: false,
             },
         },
+        fetch() {
+            return getSwapCoinList(this.$store.getters.BASE_COIN, 1)
+                .then((swapCoinList) => {
+                    this.swapBaseCoinList = swapCoinList;
+                });
+        },
         data() {
             return {
                 isFormSending: false,
@@ -100,6 +108,7 @@
                 signedTx: null,
                 multisigDomain: '',
                 isMultisigDomainResolving: false,
+                swapBaseCoinList: [],
             };
         },
         validations() {
@@ -108,7 +117,7 @@
                     minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
                 payload: {
-                    maxLength: maxLength(1024),
+                    maxLength: maxLength(10000),
                     isNotMnemonic: (value) => !isValidMnemonic(value),
                 },
                 multisigAddress: {
@@ -146,6 +155,19 @@
                 balance = this.$store.getters.balance;
                 this.$emit('update:addressBalance', balance);
                 return balance;
+            },
+            gasSuitableBalance() {
+                return this.balance.filter((balanceItem) => {
+                    // coin with reserve
+                    if (balanceItem.coin.type === COIN_TYPE.COIN) {
+                        return true;
+                    }
+                    // swapable within pool to base coin
+                    if (this.swapBaseCoinList.find((swapCoinItem) => swapCoinItem.id === balanceItem.coin.id)) {
+                        return true;
+                    }
+                    return false;
+                });
             },
             isShowPayload() {
                 return this.txType !== TX_TYPE.REDEEM_CHECK;
@@ -478,7 +500,7 @@
                         v-model="form.gasCoin"
                         :$value="$v.form.gasCoin"
                         :label="$td('Coin to pay fee', 'form.fee')"
-                        :coin-list="balance"
+                        :coin-list="gasSuitableBalance"
                     />
                     <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
@@ -499,9 +521,9 @@
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
+                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td('Max 10000 symbols', 'form.message-error-max') }}</span>
                     <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
-                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <FieldDomain

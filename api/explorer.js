@@ -129,11 +129,13 @@ export function getCoinList() {
 
 /**
  * @param {string|number} [coin]
+ * @param {number} [depth]
  * @return {Promise<Array<CoinItem>>}
  */
-export function getSwapCoinList(coin) {
+export function getSwapCoinList(coin, depth) {
     const coinUrlSuffix = coin ? '/' + coin : '';
     return explorer.get('pools/list/coins' + coinUrlSuffix, {
+            params: {depth},
             cache: coinsCache,
         })
         .then((response) => response.data.sort((a, b) => {
