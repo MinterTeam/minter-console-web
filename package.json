@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.7.1",
+  "version": "0.9.0-alpha.0",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -14,7 +14,7 @@
     "analyze": "gulp once && nuxt build --analyze",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "lint:fix": "eslint --ext .js,.vue --ignore-path .gitignore --fix .",
-    "test": "gulp once && NODE_ENV=test APP_BRANCH_ENV=mainnet jest --bail --runInBand --verbose",
+    "test": "gulp once && NODE_ENV=test jest --bail --runInBand --verbose",
     "test:skip-build": "NUXT_SKIP_SELF_BUILD=true npm run test",
     "test:debug": "DEBUG=true npm run test",
     "test:debug:skip-build": "DEBUG=true NUXT_SKIP_SELF_BUILD=true npm run test",

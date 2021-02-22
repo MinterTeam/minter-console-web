@@ -41,7 +41,7 @@ describe('private routes redirect', () => {
 
 describe('index page', () => {
     /** @type {ItConcurrent} */
-    const testnetBranchOnly = process.env.APP_BRANCH_ENV === TESTNET ? test : test.skip;
+    // const testnetBranchOnly = process.env.APP_BRANCH_ENV === TESTNET ? test : test.skip;
 
     beforeAll(async () => {
         await page.goto(ROUTES.public.index);
@@ -51,6 +51,7 @@ describe('index page', () => {
         await page.waitForSelector('[data-test-id="authSection"]');
     });
 
+    /*
     testnetBranchOnly('register new user and redirect to wallet', async () => {
         // console.log({user});
         await page.type('[data-test-id="authRegisterInputName"]', user.username);
@@ -78,6 +79,7 @@ describe('index page', () => {
     testnetBranchOnly('logout and redirect to auth form', () => {
         return logout(page);
     });
+    */
 
     test('generate mnemonic and login', async () => {
         // generate

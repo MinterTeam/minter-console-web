@@ -2,12 +2,12 @@ name: github pages
 
 on:
   push:
-    branches:
-      - mainnet
+    branches: [ master ]
 
 jobs:
   deploy:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip deploy')"
     steps:
       - uses: actions/checkout@v2
       
@@ -26,7 +26,7 @@ jobs:
       
       - run: npm ci
 
-      - run: cp .env.mainnet .env
+      - run: cp .env.master .env
       - name: Build
         run: npm run production
         env:

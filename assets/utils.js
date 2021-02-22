@@ -112,9 +112,9 @@ export function pretty(value, roundingMode, skipFalsy) {
     }
     const PRECISION = 2;
     if (value >= 0.1 || value <= -0.1 || Number(value) === 0) {
-        return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
+        return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&nbsp;'}));
     } else {
-        value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&#x202F;'}));
+        value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&nbsp;'}));
         value = value.substr(0, 10);
         if (value === '0.00000000') {
             return '0.00';
@@ -128,7 +128,7 @@ export function pretty(value, roundingMode, skipFalsy) {
  * @return {string}
  */
 export function prettyRound(value) {
-    return decode(prettyNum(value, {precision: 0, thousandsSeparator: '&#x202F;'}));
+    return decode(prettyNum(value, {precision: 0, thousandsSeparator: '&nbsp;'}));
 }
 
 /**
@@ -136,7 +136,7 @@ export function prettyRound(value) {
  * @return {string}
  */
 export function prettyCeil(value) {
-    return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode: ROUNDING_MODE.CEIL, thousandsSeparator: '&#x202F;'}));
+    return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode: ROUNDING_MODE.CEIL, thousandsSeparator: '&nbsp;'}));
 }
 
 /**
@@ -149,10 +149,10 @@ export function prettyPrecise(value, roundingMode) {
     const parts = stripZeros(fromExponential(value)).split('.');
     const isReduced = parts[1] && parts[1].length > 2;
     if (isReduced) {
-        return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.REDUCE, roundingMode, thousandsSeparator: '&#x202F;'}));
+        return decode(prettyNum(value, {precision: 8, precisionSetting: PRECISION_SETTING.REDUCE, roundingMode, thousandsSeparator: '&nbsp;'}));
     } else {
         // ensure at least 2 decimal digits
-        return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&#x202F;'}));
+        return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&nbsp;'}));
     }
 }
 
@@ -171,7 +171,10 @@ export function prettyPreciseFloor(value) {
  * @return {string}
  */
 export function prettyExact(value) {
-    return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&#x202F;'}));
+    if (!value && value !== 0) {
+        return '';
+    }
+    return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&nbsp;'}));
 }
 
 /**
@@ -180,7 +183,7 @@ export function prettyExact(value) {
  * @return {string}
  */
 export function prettyExactDecrease(value) {
-    return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&#x202F;'}));
+    return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&nbsp;'}));
 }
 
 /**

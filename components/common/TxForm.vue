@@ -15,7 +15,7 @@
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
-    import {getExplorerTxUrl, pretty} from "~/assets/utils.js";
+    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils.js";
     import {COIN_TYPE} from '~/assets/variables.js';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
@@ -115,6 +115,7 @@
             const form = {
                 gasCoin: {
                     minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+                    fee: () => this.$store.getters.isOfflineMode ? true : !this.fee.error,
                 },
                 payload: {
                     maxLength: maxLength(10000),
@@ -257,6 +258,7 @@
         },
         methods: {
             pretty: (val) => pretty(val, undefined, true),
+            prettyExact,
             submitConfirm() {
                 if (this.isFormSending) {
                     return;
@@ -331,7 +333,11 @@
                         ])
                         .then(([nonce]) => {
                             // private key to sign
-                            return postTx({...txParams, nonce}, {privateKey: this.$store.getters.privateKey});
+                            return postTx({...txParams, nonce}, {
+                                privateKey: this.$store.getters.privateKey,
+                                // don't increase gasPrice for high-fee tx
+                                gasRetryLimit: this.fee.isHighFee ? 0 : 2,
+                            });
                         });
                 } else {
                     let txParams = this.getTxParamsMultisigData();
@@ -504,6 +510,7 @@
                     />
                     <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                    <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
                     <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                     <div class="form-field__help" v-else>
                         {{ fee.coinSymbol }} {{ pretty(fee.value) }}
@@ -656,6 +663,16 @@
                 </div>
                 <div class="panel__section" v-if="form.multisigAddress">
                     <SignatureList v-model="form.signatureList"/>
+                </div>
+                <div class="panel__section u-text-left">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ fee.coinSymbol }} {{ prettyExact(fee.value) }}
+                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ prettyExact(fee.baseCoinValue) }})</span>
+                        </div>
+                        <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>
+                    </div>
+                    <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> Transaction requires high fee.</div>
                 </div>
                 <div class="panel__section">
                     <button class="button button--main button--full" type="button" data-test-id="txModalSubmitButton" data-focus-on-open

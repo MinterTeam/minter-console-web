@@ -1,9 +1,11 @@
 import Vue from 'vue';
 import Big from 'big.js';
 import {BaseCoinFee} from 'minterjs-util/src/fee.js';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {BASE_COIN} from '~/assets/variables.js';
 import {estimateCoinBuy, getCommissionPrice} from '~/api/gate.js';
 import {getCoinList} from '~/api/explorer.js';
+import {getErrorText} from 'assets/server-error.js';
 
 
 /**
@@ -13,6 +15,7 @@ import {getCoinList} from '~/api/explorer.js';
  * @property {number|string} baseCoinValue
  * @property {number|string} value
  * @property {string} coinSymbol
+ * @property {string} error
  */
 
 /**
@@ -36,6 +39,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
             selectedFeeCoin,
             baseCoinAmount,
             coinPriceList: {},
+            coinErrorList: {},
             coinList: {},
             /** @type CommissionPriceData|null */
             commissionData: null,
@@ -81,6 +85,13 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                     }
                 }
             },
+            feeError() {
+                if (this.isBaseCoinFee) {
+                    return '';
+                } else {
+                    return this.coinErrorList[this.feeCoinSymbol] || '';
+                }
+            },
             feeCoin() {
                 if (this.isBaseCoinFee) {
                     return BASE_COIN;
@@ -97,6 +108,10 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                     return this.feeCoin;
                 }
             },
+            isHighFee() {
+                const sendFee = getFeeValue(TX_TYPE.SEND);
+                return sendFee && this.baseCoinFeeValue / sendFee >= 10000;
+            },
             fee() {
                 //@TODO always change, even if data stay the same
                 return {
@@ -106,6 +121,8 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                     value: this.feeValue,
                     coin: this.feeCoin,
                     coinSymbol: this.feeCoinSymbol,
+                    isHighFee: this.isHighFee,
+                    error: this.feeError,
                 };
             },
         },
@@ -142,7 +159,14 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                     if (!this.isBaseCoinFee) {
                         const feeCoin = this.feeCoin;
                         getEstimation(feeCoin, this.baseCoinFeeValue)
-                            .then((result) => this.$set(this.coinPriceList, feeCoin, result));
+                            .then((result) => {
+                                this.$set(this.coinPriceList, feeCoin, result);
+                                this.$set(this.coinErrorList, feeCoin, '');
+                            })
+                            .catch((error) => {
+                                this.$set(this.coinPriceList, feeCoin, '');
+                                this.$set(this.coinErrorList, feeCoin, getErrorText(error));
+                            });
 
                         getCoinList()
                             .then((coinList) => {

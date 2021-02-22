@@ -15,7 +15,8 @@ module.exports = {
         // "nuxt.config.js",
         ".nuxt/**/*",
     ],
-    "publish": ["github"],
+    // "publish": ["github"],
+    "publish": null,
     // mac (zip)
     "mac": {
         "artifactName": `${appName}-\${version}-\${arch}-mac.\${ext}`,
