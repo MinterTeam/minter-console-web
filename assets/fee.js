@@ -42,15 +42,15 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
             coinErrorList: {},
             coinList: {},
             /** @type CommissionPriceData|null */
-            commissionData: null,
+            commissionPriceData: null,
             isOffline,
         },
         computed: {
             baseCoinFeeValue() {
-                if (!this.commissionData) {
+                if (!this.commissionPriceData) {
                     return 0;
                 }
-                const baseCoinFee = new BaseCoinFee(this.commissionData);
+                const baseCoinFee = new BaseCoinFee(this.commissionPriceData);
 
                 return baseCoinFee.getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
@@ -109,7 +109,12 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                 }
             },
             isHighFee() {
-                const sendFee = getFeeValue(TX_TYPE.SEND);
+                if (!this.commissionPriceData) {
+                    return false;
+                }
+                const baseCoinFee = new BaseCoinFee(this.commissionPriceData);
+
+                const sendFee = baseCoinFee.getFeeValue(TX_TYPE.SEND);
                 return sendFee && this.baseCoinFeeValue / sendFee >= 10000;
             },
             fee() {
@@ -152,8 +157,8 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                 // wait for computed to recalculate
                 this.$nextTick(() => {
                     getCommissionPrice()
-                        .then((commissionData) => {
-                            this.commissionData = commissionData;
+                        .then((commissionPriceData) => {
+                            this.commissionPriceData = commissionPriceData;
                         });
 
                     if (!this.isBaseCoinFee) {

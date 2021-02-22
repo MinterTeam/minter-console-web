@@ -9,7 +9,8 @@ import withParams from 'vuelidate/lib/withParams';
 import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
 import {sellCoin} from 'minterjs-util/src/coin-math';
-import {getFeeValue} from 'minterjs-util/src/fee.js';
+import {BaseCoinFee} from 'minterjs-util/src/fee.js';
+import {getCommissionPrice} from '~/api/gate.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound, coinSymbolValidator as coinNameValidator} from "~/assets/utils.js";
 import TxForm from '~/components/common/TxForm.vue';
@@ -79,6 +80,12 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin],
+    fetch() {
+        return getCommissionPrice()
+            .then((commissionPriceData) => {
+                this.commissionPriceData = commissionPriceData;
+            });
+    },
     data() {
         return {
             form: {
@@ -89,6 +96,8 @@ export default {
                 initialReserve: '',
                 maxSupply: '',
             },
+            /** @type CommissionPriceData|null */
+            commissionPriceData: null,
         };
     },
     validations() {
@@ -133,6 +142,9 @@ export default {
         coinPrice() {
             return calculatePrice(this.form);
         },
+        feePriceCoin() {
+            return this.commissionPriceData?.coin.symbol || '';
+        },
         /*
                     sellToLiquidateByReserve() {
                         return sellCoinByBip(formToCoin(this.form), this.form.initialReserve - MIN_DESTROY_RESERVE);
@@ -154,7 +166,12 @@ export default {
     },
     methods: {
         getFee(length) {
-            return prettyRound(getFeeValue(TX_TYPE.CREATE_COIN, {
+            if (!this.commissionPriceData) {
+                return false;
+            }
+            const baseCoinFee = new BaseCoinFee(this.commissionPriceData);
+
+            return prettyRound(baseCoinFee.getFeeValue(TX_TYPE.CREATE_COIN, {
                 coinSymbolLength: length,
             }));
         },
@@ -285,15 +302,15 @@ export default {
                 <!--
                                 <p>Note: coin will be deleted if reserve is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_DESTROY_RESERVE }}, OR price is less than {{ $store.getters.COIN_NAME }} {{ $options.MIN_PRICE }}, OR volume is less than {{ $options.MIN_SUPPLY }} coin</p>
                 -->
-                <p><span class="u-emoji">⚠️</span> Warning! Coin liquidation is not allowed. One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
+                <p><span class="u-emoji">⚠️</span> Coin liquidation is not allowed. One can't sell coin if it reserve goes lower than 10&#x202F;000 {{ $store.getters.COIN_NAME }}.</p>
                 <p>See how coin reserve works: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p>Ticker symbol fees:</p>
                 <p>
-                    3 letters — {{ $store.getters.COIN_NAME }} {{ getFee(3) }}<br>
-                    4 letters — {{ $store.getters.COIN_NAME }} {{ getFee(4) }}<br>
-                    5 letters — {{ $store.getters.COIN_NAME }} {{ getFee(5) }}<br>
-                    6 letters — {{ $store.getters.COIN_NAME }} {{ getFee(6) }}<br>
-                    7-10 letters — {{ $store.getters.COIN_NAME }} {{ getFee(7) }}<br>
+                    3 letters — {{ feePriceCoin }} {{ getFee(3) }}<br>
+                    4 letters — {{ feePriceCoin }} {{ getFee(4) }}<br>
+                    5 letters — {{ feePriceCoin }} {{ getFee(5) }}<br>
+                    6 letters — {{ feePriceCoin }} {{ getFee(6) }}<br>
+                    7-10 letters — {{ feePriceCoin }} {{ getFee(7) }}<br>
                 </p>
             </template>
             <template v-if="$i18n.locale === 'ru'">
@@ -304,11 +321,11 @@ export default {
                 <p>Вы можете проверить как работает связь между выпуском, резервом и CRR в нашем калькуляторе: <a class="link--default" href="https://calculator.minter.network" target="_blank">calculator.minter.network</a></p>
                 <p class="u-text-muted">Комиссии на длину тикера:</p>
                 <p class="u-text-muted">
-                    3 буквы — {{ $store.getters.COIN_NAME }} {{ getFee(3) }}<br>
-                    4 буквы — {{ $store.getters.COIN_NAME }} {{ getFee(4) }}<br>
-                    5 букв — {{ $store.getters.COIN_NAME }} {{ getFee(5) }}<br>
-                    6 букв — {{ $store.getters.COIN_NAME }} {{ getFee(6) }}<br>
-                    7-10 букв — {{ $store.getters.COIN_NAME }} {{ getFee(7) }}<br>
+                    3 буквы — {{ feePriceCoin }} {{ getFee(3) }}<br>
+                    4 буквы — {{ feePriceCoin }} {{ getFee(4) }}<br>
+                    5 букв — {{ feePriceCoin }} {{ getFee(5) }}<br>
+                    6 букв — {{ feePriceCoin }} {{ getFee(6) }}<br>
+                    7-10 букв — {{ feePriceCoin }} {{ getFee(7) }}<br>
                 </p>
             </template>
         </template>
@@ -375,7 +392,6 @@ export default {
 
         <template v-slot:confirm-modal-footer>
             <div class="u-text-left">
-                <strong>{{ $td('Warning!', 'form.coiner-create-confirm-warning') }}</strong>
                 <p v-if="$i18n.locale === 'en'">
                     Coin liquidation is not allowed. <br> One can't sell coin if it reserve goes lower than <strong class="u-display-ib">10&#x202F;000 {{ $store.getters.COIN_NAME }}</strong>.
                 </p>
