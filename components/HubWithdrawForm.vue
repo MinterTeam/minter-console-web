@@ -84,6 +84,7 @@ export default {
             const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
             return priceItem ? priceItem.value : '0';
         },
+        // fee to ethereum network calculated in COIN
         coinFee() {
             if (this.coinPrice === '0') {
                 return 0;
@@ -91,6 +92,17 @@ export default {
             const ethFee = this.form.speed === SPEED_MIN ? this.ethFee.min : this.ethFee.fast;
 
             return new Big(ethFee).div(this.coinPrice).toFixed();
+        },
+        // fee to HUB bridge calculated in COIN
+        hubFee() {
+            const amount = new Big(this.coinFee).plus(this.form.amount || 0);
+            return amount.div(0.99).minus(amount).toFixed();
+        },
+        totalFee() {
+            return new Big(this.coinFee).plus(this.hubFee).toFixed();
+        },
+        amountToSpend() {
+            return new Big(this.totalFee).plus(this.form.amount || 0).toFixed();
         },
         maxAmount() {
             const selectedCoin = this.$store.getters.balance.find((coin) => {
@@ -101,15 +113,12 @@ export default {
                 return undefined;
             }
 
-            const maxAmount = new Big(selectedCoin.amount).minus(this.coinFee);
+            const maxAmount = new Big(selectedCoin.amount).minus(this.totalFee);
             if (maxAmount.lt(0)) {
                 return 0;
             } else {
                 return maxAmount.toFixed();
             }
-        },
-        amountToSpend() {
-            return new Big(this.coinFee).plus(this.form.amount || 0).toFixed();
         },
         // intersection of address balance and hub supported coins
         suggestionList() {
@@ -163,6 +172,7 @@ export default {
                 payload: JSON.stringify({
                     recipient: this.form.address,
                     type: 'send_to_eth',
+                    // fee to ethereum network
                     fee: convertToPip(this.coinFee),
                 }),
             };
@@ -262,10 +272,22 @@ export default {
         </form>
         <div class="panel__section panel__section--tint">
             <div class="u-grid u-grid--small">
-                <div class="u-cell u-cell--medium--1-2">
+                <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(amountToSpend) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                    </div>
+                </div>
+                <div class="u-cell u-cell--medium--1-3">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
+                        <span class="form-field__label">{{ $td('Ethereum fee', 'form.hub-withdraw-eth-fee') }}</span>
+                    </div>
+                </div>
+                <div class="u-cell u-cell--medium--1-3">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
+                        <span class="form-field__label">{{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}</span>
                     </div>
                 </div>
             </div>

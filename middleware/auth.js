@@ -6,6 +6,7 @@ export default function({app, store, route, redirect, error}) {
     console.log('-- route', route);
     console.log('-- path', route.path);
 
+    /*
     const urlRequiresAuth = [
         /^(\/ru)?\/account(\/|$)/,
         /^(\/ru)?\/checks(\/|$)/,
@@ -21,9 +22,11 @@ export default function({app, store, route, redirect, error}) {
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });
+    */
 
     const urlAllowsNonAuth = [
-        /^(\/ru)?\/profile\/confirm/,
+        // /^(\/ru)?\/profile\/confirm/,
+        /^(\/ru)?\/$/,
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });
@@ -36,7 +39,7 @@ export default function({app, store, route, redirect, error}) {
     // });
 
 
-    if (!store.getters.isAuthorized && urlRequiresAuth && !urlAllowsNonAuth) {
+    if (!store.getters.isAuthorized && !urlAllowsNonAuth) {
         console.log('-- restricted: redirect to auth');
         return redirect(app.i18nGetPreferredPath('index'));
     }
