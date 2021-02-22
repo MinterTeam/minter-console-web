@@ -162,6 +162,9 @@ export function prettyPreciseFloor(value) {
  * @return {string}
  */
 export function prettyExact(value) {
+    if (!value && value !== 0) {
+        return '';
+    }
     return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&nbsp;'}));
 }
 
