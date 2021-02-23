@@ -170,8 +170,6 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                     await getCommissionPrice()
                         .then((commissionPriceData) => {
                             this.commissionPriceData = commissionPriceData;
-                            //@TODO
-                            this.commissionPriceData.coin = {id: 5, symbol: 'COMMISSION'};
                         });
 
                     await getPool(0, this.commissionPriceData.coin.id)
