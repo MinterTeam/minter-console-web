@@ -1,10 +1,10 @@
 import Vue from 'vue';
 import Big from 'big.js';
-import {BaseCoinFee} from 'minterjs-util/src/fee.js';
+import {BaseCoinFee as FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {BASE_COIN} from '~/assets/variables.js';
 import {estimateCoinBuy, getCommissionPrice} from '~/api/gate.js';
-import {getCoinList} from '~/api/explorer.js';
+import {getCoinList, getPool} from '~/api/explorer.js';
 import {getErrorText} from 'assets/server-error.js';
 
 
@@ -43,19 +43,29 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
             coinList: {},
             /** @type CommissionPriceData|null */
             commissionPriceData: null,
+            /** @type Pool|null */
+            priceCoinPool: null,
             isOffline,
         },
         computed: {
-            baseCoinFeeValue() {
+            // coin which set as commission price coin
+            priceCoinFeeValue() {
                 if (!this.commissionPriceData) {
                     return 0;
                 }
-                const baseCoinFee = new BaseCoinFee(this.commissionPriceData);
+                const feePrice = new FeePrice(this.commissionPriceData);
 
-                return baseCoinFee.getFeeValue(this.txType, this.txFeeOptions) || 0;
+                return feePrice.getFeeValue(this.txType, this.txFeeOptions) || 0;
+            },
+            baseCoinFeeValue() {
+                if (isPriceCoinEqualBaseCoin(this.commissionPriceData)) {
+                    return this.priceCoinFeeValue;
+                } else {
+                    return getBaseCoinAmountFromPool(this.priceCoinFeeValue, this.priceCoinPool);
+                }
             },
             isBaseCoinEnough() {
-                return this.baseCoinAmount >= this.baseCoinFeeValue;
+                return new Big(this.baseCoinAmount).gte(this.baseCoinFeeValue);
             },
             isBaseCoinFee() {
                 // use selectedFeeCoin if it is defined
@@ -112,14 +122,15 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                 if (!this.commissionPriceData) {
                     return false;
                 }
-                const baseCoinFee = new BaseCoinFee(this.commissionPriceData);
+                const feePrice = new FeePrice(this.commissionPriceData);
 
-                const sendFee = baseCoinFee.getFeeValue(TX_TYPE.SEND);
-                return sendFee && this.baseCoinFeeValue / sendFee >= 10000;
+                const sendFee = feePrice.getFeeValue(TX_TYPE.SEND);
+                return sendFee && this.priceCoinFeeValue / sendFee >= 10000;
             },
             fee() {
                 //@TODO always change, even if data stay the same
                 return {
+                    priceCoinValue: this.priceCoinFeeValue,
                     baseCoinValue: this.baseCoinFeeValue,
                     isBaseCoin: this.isBaseCoinFee,
                     isBaseCoinEnough: this.isBaseCoinEnough,
@@ -155,23 +166,33 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                     return;
                 }
                 // wait for computed to recalculate
-                this.$nextTick(() => {
-                    getCommissionPrice()
+                this.$nextTick(async () => {
+                    await getCommissionPrice()
                         .then((commissionPriceData) => {
                             this.commissionPriceData = commissionPriceData;
+                            //@TODO
+                            this.commissionPriceData.coin = {id: 5, symbol: 'COMMISSION'};
+                        });
+
+                    await getPool(0, this.commissionPriceData.coin.id)
+                        .then((pool) => {
+                            this.priceCoinPool = pool;
                         });
 
                     if (!this.isBaseCoinFee) {
-                        const feeCoin = this.feeCoin;
-                        getEstimation(feeCoin, this.baseCoinFeeValue)
-                            .then((result) => {
-                                this.$set(this.coinPriceList, feeCoin, result);
-                                this.$set(this.coinErrorList, feeCoin, '');
-                            })
-                            .catch((error) => {
-                                this.$set(this.coinPriceList, feeCoin, '');
-                                this.$set(this.coinErrorList, feeCoin, getErrorText(error));
-                            });
+                        // wait baseCoinFeeValue to recalculate
+                        this.$nextTick(() => {
+                            const feeCoin = this.feeCoin;
+                            getEstimation(feeCoin, this.baseCoinFeeValue)
+                                .then((result) => {
+                                    this.$set(this.coinPriceList, feeCoin, result);
+                                    this.$set(this.coinErrorList, feeCoin, '');
+                                })
+                                .catch((error) => {
+                                    this.$set(this.coinPriceList, feeCoin, '');
+                                    this.$set(this.coinErrorList, feeCoin, getErrorText(error));
+                                });
+                        });
 
                         getCoinList()
                             .then((coinList) => {
@@ -209,6 +230,33 @@ function getEstimation(coinIdOrSymbol, baseCoinAmount) {
                 baseCoinAmount,
             };
         });
+}
+
+/**
+ * @param {CommissionPriceData} commissionPriceData
+ * @return {boolean}
+ */
+function isPriceCoinEqualBaseCoin(commissionPriceData) {
+    return parseInt(commissionPriceData?.coin.id, 10) === 0;
+}
+
+/**
+ *
+ * @param {number|string} priceCoinAmount
+ * @param {Pool} pool
+ * @return {string}
+ */
+function getBaseCoinAmountFromPool(priceCoinAmount, pool) {
+    if (!pool) {
+        return '0';
+    }
+    // amount of base coin in pool
+    const reserveBase = new Big(pool.amount0);
+    // amount of price coin in pool
+    const reservePrice = new Big(pool.amount1);
+
+    // (reserveBase * reservePrice / (reservePrice - priceCoinAmount) - reserveBase) / 0.997
+    return reserveBase.times(reservePrice).div(reservePrice.minus(priceCoinAmount)).minus(reserveBase).div(0.998).toFixed();
 }
 
 /**

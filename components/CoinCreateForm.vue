@@ -9,7 +9,7 @@ import withParams from 'vuelidate/lib/withParams';
 import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
 import {TX_TYPE} from 'minterjs-tx/src/tx-types';
 import {sellCoin} from 'minterjs-util/src/coin-math';
-import {BaseCoinFee} from 'minterjs-util/src/fee.js';
+import {BaseCoinFee as FeePrice} from 'minterjs-util/src/fee.js';
 import {getCommissionPrice} from '~/api/gate.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound, coinSymbolValidator as coinNameValidator} from "~/assets/utils.js";
@@ -169,9 +169,9 @@ export default {
             if (!this.commissionPriceData) {
                 return false;
             }
-            const baseCoinFee = new BaseCoinFee(this.commissionPriceData);
+            const feePrice = new FeePrice(this.commissionPriceData);
 
-            return prettyRound(baseCoinFee.getFeeValue(TX_TYPE.CREATE_COIN, {
+            return prettyRound(feePrice.getFeeValue(TX_TYPE.CREATE_COIN, {
                 coinSymbolLength: length,
             }));
         },

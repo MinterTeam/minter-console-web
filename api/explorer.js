@@ -232,13 +232,18 @@ export function getTransaction(hash) {
         });
 }
 
+// 10s cache
+const poolCache = new Cache({maxAge: 10 * 1000});
+
 /**
- * @param {string} coin0
- * @param {string} coin1
+ * @param {string|number} coin0
+ * @param {string|number} coin1
  * @return {Promise<Pool>}
  */
 export function getPool(coin0, coin1) {
-    return explorer.get(`pools/coins/${coin0}/${coin1}`)
+    return explorer.get(`pools/coins/${coin0}/${coin1}`, {
+            cache: poolCache,
+        })
         .then((response) => response.data.data);
 }
 
