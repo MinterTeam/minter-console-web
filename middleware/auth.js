@@ -26,7 +26,7 @@ export default function({app, store, route, redirect, error}) {
 
     const urlAllowsNonAuth = [
         // /^(\/ru)?\/profile\/confirm/,
-        /^(\/ru)?\/$/,
+        /^\/(ru)?(\/)?$/,
     ].some((pathRegex) => {
         return pathRegex.test(route.path);
     });
