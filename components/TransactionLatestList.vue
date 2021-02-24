@@ -108,10 +108,10 @@
                 if (this.isBuy(tx)) {
                     return tx.data.coinToBuy.symbol;
                 }
-                if (this.isSellPool(tx) || this.isBuyPool(tx)) {
+                if (this.isSellPool(tx)) {
                     return tx.data.coins[0].symbol;
                 }
-                if (this.isSellPool(tx) || this.isBuyPool(tx)) {
+                if (this.isBuyPool(tx)) {
                     return tx.data.coins[tx.data.coins.length - 1].symbol;
                 }
             },

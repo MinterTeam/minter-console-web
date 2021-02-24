@@ -12,7 +12,7 @@ import {sellCoin} from 'minterjs-util/src/coin-math';
 import {BaseCoinFee as FeePrice} from 'minterjs-util/src/fee.js';
 import {getCommissionPrice} from '~/api/gate.js';
 import checkEmpty from '~/assets/v-check-empty';
-import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound, coinSymbolValidator as coinNameValidator} from "~/assets/utils.js";
+import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound, coinSymbolValidator} from "~/assets/utils.js";
 import TxForm from '~/components/common/TxForm.vue';
 import InputUppercase from '~/components/common/InputUppercase';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount';
@@ -103,14 +103,13 @@ export default {
     validations() {
         const form = {
             name: {
-                required,
                 maxLength: maxLength(64),
             },
             symbol: {
                 required,
                 minLength: minLength(3),
                 maxLength: maxLength(10),
-                name: coinNameValidator,
+                valid: coinSymbolValidator,
             },
             initialAmount: {
                 required,
@@ -208,7 +207,6 @@ export default {
                     >
                     <span class="form-field__label">{{ $td('Coin name', 'form.coiner-create-name') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.required">{{ $td('Enter coin name', 'form.coiner-create-name-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.name.$dirty && !$v.form.name.maxLength">{{ $td('Max 64 letters', 'form.coiner-create-name-error-max') }}</span>
                 <div class="form-field__help" v-html="$td('The full name or description of your coin (for example, <strong>Bitcoin</strong>). Arbitrary string up to 64 letters long.', 'form.coiner-create-name-help')"></div>
             </div>
@@ -223,7 +221,7 @@ export default {
                 <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.required">{{ $td('Enter coin symbol', 'form.coiner-create-symbol-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.name">{{ $td('Invalid coin ticker', 'form.coin-error-name') }}</span>
+                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.valid">{{ $td('Invalid coin ticker', 'form.coin-error-name') }}</span>
                 <div class="form-field__help" v-html="$td('Ticker symbol (for example, <strong>BTC</strong>). Must be unique, alphabetic, uppercase, and 3 to 10 symbols long.', 'form.coiner-create-symbol-help')"></div>
             </div>
             <div class="u-cell u-cell--medium--1-2">
