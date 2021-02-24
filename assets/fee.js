@@ -58,14 +58,14 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                 return feePrice.getFeeValue(this.txType, this.txFeeOptions) || 0;
             },
             baseCoinFeeValue() {
-                if (isPriceCoinEqualBaseCoin(this.commissionPriceData)) {
+                if (isPriceCoinSameAsBaseCoin(this.commissionPriceData)) {
                     return this.priceCoinFeeValue;
                 } else {
                     return getBaseCoinAmountFromPool(this.priceCoinFeeValue, this.priceCoinPool);
                 }
             },
             isBaseCoinEnough() {
-                return new Big(this.baseCoinAmount).gte(this.baseCoinFeeValue);
+                return new Big(this.baseCoinAmount || 0).gte(this.baseCoinFeeValue);
             },
             isBaseCoinFee() {
                 // use selectedFeeCoin if it is defined
@@ -187,7 +187,7 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
                                     this.$set(this.coinErrorList, feeCoin, '');
                                 })
                                 .catch((error) => {
-                                    this.$set(this.coinPriceList, feeCoin, '');
+                                    this.$set(this.coinPriceList, feeCoin, undefined);
                                     this.$set(this.coinErrorList, feeCoin, getErrorText(error));
                                 });
                         });
@@ -234,7 +234,7 @@ function getEstimation(coinIdOrSymbol, baseCoinAmount) {
  * @param {CommissionPriceData} commissionPriceData
  * @return {boolean}
  */
-function isPriceCoinEqualBaseCoin(commissionPriceData) {
+function isPriceCoinSameAsBaseCoin(commissionPriceData) {
     return parseInt(commissionPriceData?.coin.id, 10) === 0;
 }
 

@@ -218,7 +218,7 @@
                     },
                     selectedCoin: selectedCoinSymbol,
                     selectedFeeCoin: this.form.gasCoin,
-                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
             },
