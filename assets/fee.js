@@ -161,36 +161,34 @@ export default function FeeBus({txType, txFeeOptions, selectedCoin, selectedFeeC
             });
         },
         methods: {
-            fetchCoinData() {
+            async fetchCoinData() {
                 if (this.isOffline) {
                     return;
                 }
+
+                await getCommissionPrice()
+                    .then((commissionPriceData) => {
+                        this.commissionPriceData = commissionPriceData;
+                    });
+
+                await getPool(0, this.commissionPriceData.coin.id)
+                    .then((pool) => {
+                        this.priceCoinPool = pool;
+                    });
+
                 // wait for computed to recalculate
                 this.$nextTick(async () => {
-                    await getCommissionPrice()
-                        .then((commissionPriceData) => {
-                            this.commissionPriceData = commissionPriceData;
-                        });
-
-                    await getPool(0, this.commissionPriceData.coin.id)
-                        .then((pool) => {
-                            this.priceCoinPool = pool;
-                        });
-
                     if (!this.isBaseCoinFee) {
-                        // wait baseCoinFeeValue to recalculate
-                        this.$nextTick(() => {
-                            const feeCoin = this.feeCoin;
-                            getEstimation(feeCoin, this.baseCoinFeeValue)
-                                .then((result) => {
-                                    this.$set(this.coinPriceList, feeCoin, result);
-                                    this.$set(this.coinErrorList, feeCoin, '');
-                                })
-                                .catch((error) => {
-                                    this.$set(this.coinPriceList, feeCoin, undefined);
-                                    this.$set(this.coinErrorList, feeCoin, getErrorText(error));
-                                });
-                        });
+                        const feeCoin = this.feeCoin;
+                        getEstimation(feeCoin, this.baseCoinFeeValue)
+                            .then((result) => {
+                                this.$set(this.coinPriceList, feeCoin, result);
+                                this.$set(this.coinErrorList, feeCoin, '');
+                            })
+                            .catch((error) => {
+                                this.$set(this.coinPriceList, feeCoin, undefined);
+                                this.$set(this.coinErrorList, feeCoin, getErrorText(error));
+                            });
 
                         getCoinList()
                             .then((coinList) => {
