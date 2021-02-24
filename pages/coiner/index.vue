@@ -3,8 +3,6 @@
     import CoinCreateForm from '~/components/CoinCreateForm';
     import CoinRecreateForm from '~/components/CoinRecreateForm.vue';
     import CoinEditOwnerForm from '~/components/CoinEditOwnerForm.vue';
-    import CoinCreateTokenForm from '~/components/CoinCreateTokenForm.vue';
-    import CoinRecreateTokenForm from '~/components/CoinRecreateTokenForm.vue';
     import CoinMintTokenForm from '~/components/CoinMintTokenForm.vue';
     import CoinBurnTokenForm from '~/components/CoinBurnTokenForm.vue';
 
@@ -13,8 +11,6 @@
             CoinCreateForm,
             CoinRecreateForm,
             CoinEditOwnerForm,
-            CoinCreateTokenForm,
-            CoinRecreateTokenForm,
             CoinMintTokenForm,
             CoinBurnTokenForm,
         },
@@ -47,10 +43,6 @@
         <CoinRecreateForm/>
 
         <CoinEditOwnerForm/>
-
-        <CoinCreateTokenForm/>
-
-        <CoinRecreateTokenForm/>
 
         <CoinMintTokenForm/>
 
