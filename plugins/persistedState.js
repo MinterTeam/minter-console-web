@@ -11,16 +11,16 @@ const authMutationList = [
 
 export default ({store}) => {
     // window.onNuxtReady(() => {
-    if (isCreated) {
-        return;
-    }
+    // if (isCreated) {
+    //     return;
+    // }
     createPersistedState({
-        paths: ['auth'],
-        filter(mutation) {
-            // is auth mutation
-            return authMutationList.indexOf(mutation.type) !== -1;
-        },
+        paths: ['auth', 'hub'],
+        // filter(mutation) {
+        //     // is auth mutation
+        //     return authMutationList.indexOf(mutation.type) !== -1;
+        // },
     })(store);
-    isCreated = true;
+    // isCreated = true;
     // });
 };

@@ -1,11 +1,13 @@
 <script>
     import getTitle from '~/assets/get-title';
     import HubWithdrawForm from '~/components/HubWithdrawForm.vue';
+    import HubWithdrawTxList from '~/components/HubWithdrawTxList.vue';
     import HubDepositForm from '~/components/HubDepositForm.vue';
 
     export default {
         components: {
             HubWithdrawForm,
+            HubWithdrawTxList,
             HubDepositForm,
         },
         fetch({ app, store }) {
@@ -40,6 +42,7 @@
 <template>
     <section class="u-section u-container">
         <HubWithdrawForm/>
+        <HubWithdrawTxList/>
         <HubDepositForm/>
     </section>
 </template>

@@ -1,9 +1,11 @@
 import axios from 'axios';
 import {HUB_API_URL} from "~/assets/variables";
+import addToCamelInterceptor from '~/assets/to-camel.js';
 
 const instance = axios.create({
     baseURL: HUB_API_URL,
 });
+addToCamelInterceptor(instance);
 
 /**
  *
@@ -17,7 +19,7 @@ export function getOracleEthFee() {
 }
 
 /**
- * @return {Promise<Array<{denom: string, eth_addr: string, minter_id: string}>>}
+ * @return {Promise<Array<HubCoinItem>>}
  */
 export function getOracleCoinList() {
     return instance.get('oracle/coins')
@@ -35,3 +37,22 @@ export function getOraclePriceList() {
             return response.data.result.list;
         });
 }
+
+/**
+ *
+ * @param hash
+ * @return {Promise<{status: string, txHash: string}>}
+ */
+export function getMinterTxStatus(hash) {
+    return instance.get(`minter/tx_status/${hash}`)
+        .then((response) => {
+            return response.data.result;
+        });
+}
+
+/**
+ * @typedef {object} HubCoinItem
+ * @property {string} denom
+ * @property {string} ethAddr
+ * @property {string} minterId
+ */

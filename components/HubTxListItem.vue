@@ -26,14 +26,14 @@ export default {
 
 <template>
     <div class="preview__transaction">
-        <div class="preview__transaction-row u-text-overflow">
+        <div class="hub__preview-transaction-row u-text-overflow">
             <div>
-                <a class="link--main" :href="getEtherscanTxUrl(tx.hash)">{{ formatHash(tx.hash) }}</a>
+                <a class="link--main" :href="getEtherscanTxUrl(tx.hash)" target="_blank">{{ formatHash(tx.hash) }}</a>
             </div>
             <div><!--            @TODO amount  --></div>
         </div>
 
-        <div class="preview__transaction-row preview__transaction-meta">
+        <div class="hub__preview-transaction-row hub__preview-transaction-meta">
             <div>{{ timeDistance }} ago ({{ time }})</div>
             <div>
                 {{ tx.type }}
