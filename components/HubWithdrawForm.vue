@@ -4,7 +4,6 @@ import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
-import axios from "axios";
 import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
@@ -61,14 +60,13 @@ export default {
                 fast: 0,
             },
             /**
-             * @type Array<{denom: string, eth_addr: string, minter_id: string}>
+             * @type Array<HubCoinItem>
              */
             coinList: [],
             /**
              * @type Array<{name: string, value: string}>
              */
             priceList: [],
-            // transactions: []
             isFormSending: false,
             serverSuccess: null,
             serverError: '',
@@ -78,7 +76,7 @@ export default {
     computed: {
         coinId() {
             const coinItem = this.coinList.find((item) => item.denom.toUpperCase() === this.form.coin);
-            return coinItem ? coinItem.minter_id : undefined;
+            return coinItem ? coinItem.minterId : undefined;
         },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
@@ -123,7 +121,7 @@ export default {
         // intersection of address balance and hub supported coins
         suggestionList() {
             return this.$store.getters.balance.filter((balanceItem) => {
-                return this.coinList.find((item) => Number(item.minter_id) === balanceItem.coin.id);
+                return this.coinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
             });
         },
     },
@@ -162,6 +160,7 @@ export default {
             this.serverSuccess = null;
             this.isFormSending = true;
 
+            const amount = this.form.amount;
             let txParams = {
                 type: TX_TYPE.SEND,
                 data: {
@@ -183,6 +182,7 @@ export default {
                     this.serverSuccess = tx;
                     this.isSuccessModalVisible = true;
                     this.clearForm();
+                    this.$store.commit('hub/saveWithdraw', {tx, amount});
                 })
                 .catch((error) => {
                     console.log(error);
@@ -271,20 +271,20 @@ export default {
             </div>
         </form>
         <div class="panel__section panel__section--tint">
-            <div class="u-grid u-grid--small">
+            <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(amountToSpend) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
                     </div>
                 </div>
-                <div class="u-cell u-cell--medium--1-3">
+                <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $td('Ethereum fee', 'form.hub-withdraw-eth-fee') }}</span>
                     </div>
                 </div>
-                <div class="u-cell u-cell--medium--1-3">
+                <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}</span>

@@ -88,7 +88,7 @@ export default {
                 address: this.$store.getters.address,
             },
             /**
-             * @type Array<{denom: string, eth_addr: string, minter_id: string}>
+             * @type Array<HubCoinItem>
              */
             coinList: [],
             //@TODO tx status (sent/pending)
@@ -126,7 +126,7 @@ export default {
         },
         coinContractAddress() {
             const coinItem = this.coinList.find((item) => item.denom.toUpperCase() === this.form.coin);
-            return coinItem ? coinItem.eth_addr : undefined;
+            return coinItem ? coinItem.ethAddr : undefined;
         },
         isCoinApproved() {
             if (!this.allowance.value) {
@@ -187,7 +187,7 @@ export default {
                 bridge: "https://bridge.walletconnect.org", // Required
                 qrcodeModal: QRCodeModal,
             });
-            console.log('init', {connector});
+            // console.log('init', {connector});
 
             // Subscribe to connection events
             connector.on("connect", this.handleEvent);
@@ -204,7 +204,7 @@ export default {
 
             // Get provided accounts and chainId
             const { accounts, chainId } = payload.params[0];
-            console.log(payload.event, payload.params, accounts, chainId);
+            // console.log(payload.event, payload.params, accounts, chainId);
             if (accounts) {
                 this.ethAddress = accounts[0];
                 this.updateBalance();
@@ -254,7 +254,6 @@ export default {
                 })
                 .then((hash) => {
                     // Returns transaction hash
-                    console.log(hash);
                     this.transactionList.push({
                         hash,
                         type: isApproveTx ? TX_APPROVE : TX_TRANSFER,
@@ -342,7 +341,6 @@ export default {
                 value: "0x00", // Optional
                 nonce: await web3.eth.getTransactionCount(this.ethAddress, "pending"), // Optional
             };
-            console.log(txParams);
 
             return connector.sendTransaction(txParams);
         },
@@ -428,7 +426,7 @@ export default {
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by HUB bridge', 'form.hub-coin-error-supported') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by Hub bridge', 'form.hub-coin-error-supported') }}</span>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <FieldUseMax

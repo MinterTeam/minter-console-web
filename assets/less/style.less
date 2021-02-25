@@ -226,7 +226,7 @@ td, th {
 @header-height: 64px;
 .header {box-shadow: 0 2px 5px rgba(0,0,0,0.1); background: #2c2c2c; color: #fff; width: 100%;}
 .header__container {display: flex; justify-content: space-between; align-items: center; height: @header-height;}
-.header__logo {display: flex; align-items: center;}
+.header__logo {display: flex; align-items: center; width: 50%; flex-grow: 2; overflow: hidden;}
 .header__logo-image {margin-right: 20px; margin-left: 2px; font-size: 0;}
 .header__logo-text {font-size: 20px; line-height: 1.25; white-space: nowrap;}
 .header__user {display: flex; align-items: center; margin-right: 16px; font-weight: 700;}
@@ -235,10 +235,10 @@ td, th {
 .header__control-language {}
 .header__language-button {font-size: 0; display: block;}
 .header__language-text {margin-right: 16px;}
-@media (min-width: @breakpoint-mini-up) {
+@media (min-width: @breakpoint-small-up) {
     .header__logo-text {font-size: 24px;}
 }
-@media (min-width: @breakpoint-small-up) {
+@media (min-width: @breakpoint-medium-up) {
     .header__logo-text {font-size: 26px;}
 }
 @menu-icon-size: 26px;
@@ -360,4 +360,11 @@ td, th {
 .vote-commission__list {max-height: 240px;}
 
 .hub__icon-wc {vertical-align: middle; margin-top: -3px; margin-left: 2px;}
+
+.hub__preview-transaction-row {/*font-size: 14px;*/font-weight: 500;line-height: 20px;}
+.hub__preview-transaction-meta {color: @c-black-light;font-size: 12px;line-height: 18px;}
+.hub__preview-loader {width: 18px;height: 18px;display: inline-block;vertical-align: middle;margin-top: -3px;margin-left: 2px;}
+@media (min-width: @breakpoint-medium-up) {
+    .hub__preview-transaction-row {display: flex;justify-content: space-between;}
+}
 

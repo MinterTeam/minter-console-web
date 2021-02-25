@@ -298,16 +298,16 @@
                         <span class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</span>
                     </label>
                 </div>
-                <div class="u-cell">
-                    <label class="form-field form-field--dashed" v-if="txType === $options.TX_TYPE.RECREATE_COIN">
+                <div class="u-cell" v-if="txType === $options.TX_TYPE.RECREATE_COIN">
+                    <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
                                :value="form.constantReserveRatio + '%'"
                         />
                         <span class="form-field__label">{{ $td('With CRR', 'form.coiner-create-confirm-crr') }}</span>
                     </label>
                 </div>
-                <div class="u-cell">
-                    <label class="form-field form-field--dashed" v-if="txType === $options.TX_TYPE.RECREATE_COIN">
+                <div class="u-cell" v-if="txType === $options.TX_TYPE.RECREATE_COIN">
+                    <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
                                :value="$store.getters.COIN_NAME + ' ' + $options.prettyExact(form.initialReserve)"
                         />
