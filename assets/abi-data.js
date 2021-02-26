@@ -7,6 +7,20 @@ export const erc20ABI = [
         "outputs":[{"name":"balance", "type":"uint256"}],
         "type":"function",
     },
+    // decimals
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8",
+            },
+        ],
+        "payable": false,
+        "type": "function",
+    },
     {
         "constant": true,
         "inputs": [

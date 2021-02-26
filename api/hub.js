@@ -55,4 +55,5 @@ export function getMinterTxStatus(hash) {
  * @property {string} denom
  * @property {string} ethAddr
  * @property {string} minterId
+ * @property {string} ethDecimals
  */
