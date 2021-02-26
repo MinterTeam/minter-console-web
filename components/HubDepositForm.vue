@@ -76,6 +76,7 @@ export default {
         return {
             ethAddress: "",
             balances: {},
+            decimals: {},
             //@TODO update after tx confirmation instead of long polling
             allowance: {
                 value: null,
@@ -134,7 +135,7 @@ export default {
             }
 
             const allowance = new BN(this.allowance.value, 10);
-            const amount = new BN(web3.utils.toWei(this.form.amount || '0', "ether").toString(10), 10);
+            const amount = new BN(toErcDecimals(this.form.amount || '0', this.decimals[this.form.coin] || 18), 10);
             return allowance.gt(new BN(0)) && allowance.gte(amount);
         },
         maxAmount() {
@@ -219,16 +220,14 @@ export default {
                 return;
             }
 
-            // web3.eth.getBalance(this.ethAddress)
-            //     .then((result) => {
-            //         this.balances["eth"] = web3.utils.fromWei(result, "ether");
-            //     })
-            //     .catch(console.error);
-
             const coinSymbol = this.form.coin;
-            coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call()
-                .then((result) => {
-                    this.$set(this.balances, coinSymbol, web3.utils.fromWei(result, "ether"));
+            Promise.all([
+                coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call(),
+                coinContract(this.coinContractAddress).methods.decimals().call(),
+            ])
+                .then(([balance, decimals]) => {
+                    this.$set(this.balances, coinSymbol, fromErcDecimals(balance, decimals));
+                    this.$set(this.decimals, coinSymbol, decimals);
                 })
                 .catch(console.error);
         },
@@ -320,14 +319,14 @@ export default {
             }
         },
         sendApproveTx() {
-            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, web3.utils.toWei(this.form.amount, "ether")).encodeABI();
+            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, toErcDecimals(this.form.amount, this.decimals[this.form.coin])).encodeABI();
 
             return this.sendEthTx(this.coinContractAddress, data);
         },
         sendCoinTx() {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
-            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, web3.utils.toWei(this.form.amount, "ether")).encodeABI();
+            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.form.amount, this.decimals[this.form.coin])).encodeABI();
 
             return this.sendEthTx(peggyAddress, data);
         },
@@ -373,6 +372,25 @@ export default {
         // },
     },
 };
+
+/**
+ *
+ * @param balance - balance in erc20 decimals
+ * @param decimals
+ * @return {string}
+ */
+function fromErcDecimals(balance, decimals) {
+    const decimalsDelta = Math.max(18 - decimals, 0);
+    balance = new BN(10).pow(new BN(decimalsDelta)).mul(new BN(balance)).toString();
+    return web3.utils.fromWei(balance, "ether");
+}
+
+function toErcDecimals(balance, decimals) {
+    balance = web3.utils.toWei(balance, "ether");
+    const decimalsDelta = Math.max(18 - decimals, 0);
+    const tens = new BN(10).pow(new BN(decimalsDelta));
+    return new BN(balance).div(tens).toString();
+}
 </script>
 
 <template>
