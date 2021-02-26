@@ -19,7 +19,7 @@ import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
 
-const HUB_MULTISIG_ADDRESS = 'Mx942ccc0b2f6a4ecc9ee310fb3fec9b52c8f0d7a6';
+const HUB_MULTISIG_ADDRESS = 'Mxebb451994aa2c5b61817f9c694185b52a9928919';
 
 const SPEED_MIN = 'min';
 const SPEED_FAST = 'fast';
