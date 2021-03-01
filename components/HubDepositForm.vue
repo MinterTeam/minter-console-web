@@ -13,8 +13,9 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import {getOracleCoinList} from '@/api/hub.js';
+import {getCoinList} from '@/api/explorer.js';
 import {MAINNET, NETWORK, ETHEREUM_API_URL} from '~/assets/variables.js';
-import {pretty} from 'assets/utils.js';
+import {pretty} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
@@ -63,9 +64,13 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        return getOracleCoinList()
-            .then((coinList) => {
-                this.coinList = coinList;
+        return Promise.all([getOracleCoinList(), getCoinList()])
+            .then(([oracleCoinList, minterCoinList]) => {
+                oracleCoinList.forEach((oracleCoin) => {
+                    const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
+                    oracleCoin.symbol = minterCoin.symbol;
+                });
+                this.coinList = oracleCoinList;
             });
     },
     data() {
@@ -126,7 +131,7 @@ export default {
             return !!this.ethAddress;
         },
         coinContractAddress() {
-            const coinItem = this.coinList.find((item) => item.denom.toUpperCase() === this.form.coin);
+            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.ethAddr : undefined;
         },
         isCoinApproved() {
@@ -142,7 +147,7 @@ export default {
             return this.balances[this.form.coin];
         },
         suggestionList() {
-            return this.coinList.map((item) => item.denom.toUpperCase());
+            return this.coinList.map((item) => item.symbol.toUpperCase());
         },
     },
     mounted() {
