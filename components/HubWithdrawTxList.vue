@@ -5,17 +5,16 @@ import {getExplorerTxUrl, getEtherscanTxUrl, getTimeDistance, getTimeStamp as ge
 import Loader from '@/components/common/Loader.vue';
 
 const WITHDRAW_STATUS = {
-    eth_outgoing_batch_executed: "eth_outgoing_batch_executed",
-    eth_outgoing_batch: "eth_outgoing_batch",
-    minter_deposit_received: "minter_deposit_received",
-    minter_refund: "minter_refund",
-    eth_refund: "eth_refund",
+    not_found: 'TX_STATUS_NOT_FOUND',
+    minter_deposit_received: "TX_STATUS_DEPOSIT_RECEIVED",
+    eth_outgoing_batch: "TX_STATUS_BATCH_CREATED",
+    eth_outgoing_batch_executed: "TX_STATUS_BATCH_EXECUTED",
+    refund: "TX_STATUS_REFUNDED",
 };
 
 const finishedStatus = {
     [WITHDRAW_STATUS.eth_outgoing_batch_executed]: true,
-    [WITHDRAW_STATUS.minter_refund]: true,
-    [WITHDRAW_STATUS.eth_refund]: true,
+    [WITHDRAW_STATUS.refund]: true,
 };
 
 function isFinished(withdraw) {
@@ -63,7 +62,7 @@ export default {
         getEtherscanTxUrl,
         convertFromPip,
         pretty,
-        formatHash: (value) => shortFilter(value, 13),
+        formatHash: (value) => shortFilter(value || '', 13),
         isFinished,
         poll(hash) {
             getMinterTxStatus(hash)
@@ -101,15 +100,14 @@ export default {
             <div class="hub__preview-transaction-row hub__preview-transaction-meta">
                 <div>{{ getTimeDistance(withdraw.timestamp || 0) }} ago ({{ getTime(withdraw.timestamp || 0) }})</div>
                 <div>
-                    <template v-if="!withdraw.status">Sending to Hub bridge</template>
+                    <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.minter_deposit_received">Bridge collecting batch to Ethereum</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch">Sent to Ethereum, wait confirmation</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch">Sent to Ethereum, waiting confirmation</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch_executed">
                         Success
-                        <a class="link--main" :href="getEtherscanTxUrl(withdraw.ethTxHash)" target="_blank">{{ formatHash(withdraw.ethTxHash) }}</a>
+                        <a class="link--main" :href="getEtherscanTxUrl(withdraw.outTxHash)" target="_blank">{{ formatHash(withdraw.ethTxHash) }}</a>
                     </template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_refund">Eth refund</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.minter_refund">Refunded</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.refund">Refunded</template>
 
                     <Loader class="hub__preview-loader" :is-loading="!isFinished(withdraw)"/>
                 </div>

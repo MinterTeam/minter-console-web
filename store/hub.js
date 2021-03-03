@@ -14,11 +14,11 @@ export const mutations = {
             timestamp: (new Date()).toISOString(),
         });
     },
-    updateWithdraw(state, {hash, status, txHash}) {
-        Vue.set(state.minterList, hash, {
-            ...state.minterList[hash],
+    updateWithdraw(state, {inTxHash, status, outTxHash}) {
+        Vue.set(state.minterList, inTxHash, {
+            ...state.minterList[inTxHash],
             status,
-            ethTxHash: txHash,
+            ethTxHash: outTxHash,
         });
     },
 };
