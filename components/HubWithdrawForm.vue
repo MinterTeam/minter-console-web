@@ -9,6 +9,7 @@ import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx, ensureNonce, replaceCoinSymbol, getCoinId} from '~/api/gate.js';
 import {getOracleEthFee, getOracleCoinList, getOraclePriceList} from '@/api/hub.js';
+import {getCoinList} from '@/api/explorer.js';
 import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -40,7 +41,16 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        return Promise.all([getOracleEthFee(), getOracleCoinList(), getOraclePriceList()])
+        const coinListPromise = Promise.all([getOracleCoinList(), getCoinList()])
+            .then(([oracleCoinList, minterCoinList]) => {
+                oracleCoinList.forEach((oracleCoin) => {
+                    const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
+                    oracleCoin.symbol = minterCoin.symbol;
+                });
+                return oracleCoinList;
+            });
+
+        return Promise.all([getOracleEthFee(), coinListPromise, getOraclePriceList()])
             .then(([ethFee, coinList, priceList]) => {
                 this.ethFee = ethFee;
                 this.coinList = coinList;
@@ -75,7 +85,7 @@ export default {
     },
     computed: {
         coinId() {
-            const coinItem = this.coinList.find((item) => item.denom.toUpperCase() === this.form.coin);
+            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
         coinPrice() {
@@ -235,7 +245,7 @@ export default {
                     />
                     <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by HUB bridge', 'form.hub-coin-error-supported') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by Hub bridge', 'form.hub-coin-error-supported') }}</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <FieldUseMax
