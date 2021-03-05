@@ -105,7 +105,7 @@ export default {
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch">Sent to Ethereum, waiting confirmation</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch_executed">
                         Success
-                        <a class="link--main" :href="getEtherscanTxUrl(withdraw.outTxHash)" target="_blank">{{ formatHash(withdraw.ethTxHash) }}</a>
+                        <a class="link--main" :href="getEtherscanTxUrl(withdraw.ethTxHash)" target="_blank">{{ formatHash(withdraw.ethTxHash) }}</a>
                     </template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.refund">Refunded</template>
 
