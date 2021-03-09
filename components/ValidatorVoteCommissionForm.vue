@@ -4,7 +4,7 @@ import camelcaseKeys from 'camelcase-keys';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
-import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {isValidPublic, convertFromPip} from "minterjs-util";
 import autosize from 'v-autosize';
 import {getCommissionPrice} from '@/api/gate.js';
@@ -34,6 +34,9 @@ export default {
                 let list = {};
                 Object.keys(commissionData).forEach((fieldName) => {
                     if (fieldName !== 'publicKey' && fieldName !== 'height' && fieldName !== 'coin') {
+                        if (!commissionData[fieldName]) {
+                            return;
+                        }
                         list[fieldName] = convertFromPip(commissionData[fieldName]);
                     }
                 });

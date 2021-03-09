@@ -5,7 +5,7 @@ import debounce from 'debounce-promise';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
-import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {getCoinId} from '@/api/gate.js';
 import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
@@ -13,6 +13,8 @@ import {pretty, prettyExact} from "~/assets/utils.js";
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin.vue';
 import FieldUseMax from '~/components/common/FieldUseMax.vue';
+
+Big.RM = 2;
 
 export default {
     TX_TYPE,

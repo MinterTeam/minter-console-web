@@ -8,7 +8,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import issueCheck from 'minter-js-sdk/src/check';
     import {prepareLink} from 'minter-js-sdk/src/link';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {replaceCoinSymbolByPath} from '~/api/gate.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty';
@@ -87,11 +87,11 @@
             }),
             feeBusParams() {
                 return {
-                    txType: TX_TYPE.REDEEM_CHECK,
-                    txFeeOptions: {},
-                    selectedCoin: this.form.coinSymbol,
-                    selectedFeeCoin: this.form.gasCoin,
-                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    txParams: {
+                        type: TX_TYPE.REDEEM_CHECK,
+                        gasCoin: this.form.gasCoin,
+                    },
+                    baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
             },
@@ -137,7 +137,7 @@
                     chainId: this.$store.getters.CHAIN_ID,
                     ...clearEmptyFields(this.form),
                     coin: this.form.coinSymbol,
-                    gasCoin: this.fee.coinSymbol,
+                    gasCoin: this.fee.coin,
                 };
                 Promise.all([
                         replaceCoinSymbolByPath(params, ['gasCoin', 'coin']),
@@ -258,7 +258,7 @@
                 <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
                 <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
-                    {{ fee.coinSymbol }} {{ pretty(fee.value) }}
+                    {{ fee.coin }} {{ pretty(fee.value) }}
                     <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
                     <br>
                     {{ $td('Default:', 'form.help-default') }} {{ fee.isBaseCoinEnough ? $store.getters.COIN_NAME : $td('same as coin to transfer', 'form.wallet-send-fee-same') }}
