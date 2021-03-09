@@ -7,7 +7,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength.js';
     import withParams from 'vuelidate/lib/withParams.js';
     import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {sellCoin} from 'minterjs-util/src/coin-math.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {prettyPreciseFloor, prettyExact, prettyExactDecrease, prettyRound, coinSymbolValidator} from "~/assets/utils.js";

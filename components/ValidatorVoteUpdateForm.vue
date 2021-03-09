@@ -1,7 +1,7 @@
 <script>
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
-import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {isValidPublic} from "minterjs-util";
 import checkEmpty from '~/assets/v-check-empty.js';
 import TxForm from '~/components/common/TxForm.vue';

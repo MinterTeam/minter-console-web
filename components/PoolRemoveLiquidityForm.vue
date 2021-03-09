@@ -8,7 +8,7 @@ import minLength from 'vuelidate/lib/validators/minLength';
 import maxLength from 'vuelidate/lib/validators/maxLength';
 import minValue from 'vuelidate/lib/validators/minValue.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import {TX_TYPE} from 'minterjs-utl/src/tx-types.js';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {getCoinId} from '~/api/gate.js';
 import {getPoolProvider, getProviderPoolList} from '~/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';

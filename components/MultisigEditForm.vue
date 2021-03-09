@@ -7,7 +7,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import maxValue from 'vuelidate/lib/validators/maxValue';
     import integer from 'vuelidate/lib/validators/integer.js';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util";
     import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';

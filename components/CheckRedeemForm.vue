@@ -2,7 +2,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import {isValidCheck} from "minterjs-util";
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import checkEmpty from '~/assets/v-check-empty';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldQr from '~/components/common/FieldQr';

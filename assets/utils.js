@@ -6,7 +6,7 @@ import decode from 'entity-decode';
 import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
-import {txTypeList} from 'minterjs-tx/src/tx-types';
+import {txTypeList} from 'minterjs-util/src/tx-types.js';
 import {EXPLORER_HOST, ETHERSCAN_HOST} from "~/assets/variables.js";
 
 

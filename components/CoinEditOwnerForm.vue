@@ -4,7 +4,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import checkEmpty from '~/assets/v-check-empty';
     import TxForm from '~/components/common/TxForm.vue';
     import InputUppercase from '~/components/common/InputUppercase';

@@ -4,7 +4,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {prettyExact} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';

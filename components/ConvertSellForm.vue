@@ -5,8 +5,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import minValue from 'vuelidate/lib/validators/minValue.js';
     import maxValue from 'vuelidate/lib/validators/maxValue.js';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
-    import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {estimateCoinSell} from '~/api/gate';
     import {getCoinList, getSwapCoinList} from '@/api/explorer.js';
     import checkEmpty from '~/assets/v-check-empty';
@@ -85,7 +84,6 @@
                 },
                 minimumValueToBuy: {
                     minValue: this.form.minimumValueToBuy ? minValue(0) : () => true,
-                    maxValue: this.form.minimumValueToBuy ? maxValue(COIN_MAX_AMOUNT) : () => true,
                 },
             };
 
