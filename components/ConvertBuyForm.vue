@@ -5,7 +5,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import minValue from 'vuelidate/lib/validators/minValue.js';
     import maxValue from 'vuelidate/lib/validators/maxValue.js';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {COIN_MAX_AMOUNT} from 'minterjs-util/src/variables.js';
     import {estimateCoinBuy} from '~/api/gate';
     import {getCoinList, getSwapCoinList} from '@/api/explorer.js';

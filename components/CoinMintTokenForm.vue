@@ -3,7 +3,7 @@ import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import autosize from 'v-autosize';
-import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {prettyExact} from "~/assets/utils.js";
 import checkEmpty from '~/assets/v-check-empty.js';
 import TxForm from '~/components/common/TxForm.vue';

@@ -3,7 +3,7 @@
     import required from 'vuelidate/lib/validators/required.js';
     import minLength from 'vuelidate/lib/validators/minLength.js';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types.js';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util/src/public.js";
     import eventBus from '~/assets/event-bus.js';
     import focusElement from '~/assets/focus-element.js';
