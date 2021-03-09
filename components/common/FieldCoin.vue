@@ -77,8 +77,6 @@
         watch: {
             // @TODO workaround for https://github.com/KazanExpress/vue-simple-suggest/issues/301 and https://github.com/KazanExpress/vue-simple-suggest/issues/302
             currentCoinList() {
-                console.log('canSend', this.$refs.vss.canSend);
-                console.log('research', this.currentCoinList);
                 const vss = this.$refs.vss;
                 if (vss.canSend) {
                     vss.research();

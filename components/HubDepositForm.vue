@@ -33,6 +33,7 @@ const ALLOWANCE_PENDING = 'pending';
 const TX_APPROVE = 'approve';
 const TX_TRANSFER = 'transfer';
 
+let timer;
 let connector;
 let web3 = new Web3(new Web3.providers.HttpProvider(ETHEREUM_API_URL));
 
@@ -160,8 +161,13 @@ export default {
             this.getAllowance();
         }
 
-        setInterval(this.updateBalance, 5000);
-        setInterval(this.getAllowance, 5000);
+        timer = setInterval(() => {
+            this.updateBalance();
+            this.getAllowance();
+        }, 5000);
+    },
+    destroyed() {
+        clearInterval(timer);
     },
     methods: {
         pretty,

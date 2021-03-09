@@ -28,8 +28,9 @@ export const getNonce = GetNonce(minterApi);
 export const ensureNonce = EnsureNonce(minterApi);
 
 const estimateCache = new Cache({maxAge: 30 * 1000});
-const _estimateCoinSell = (params, axiosOptions) => EstimateCoinSell(minterApi)(params, {...axiosOptions, cache: estimateCache});
-const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions, cache: estimateCache});
+// sell/buy estimates not used often (only before confirmation modal opening) so no need to cache them
+const _estimateCoinSell = (params, axiosOptions) => EstimateCoinSell(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
+const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
 export function estimateCoinSell(params) {
     if (params.findRoute && params.swapFrom !== CONVERT_TYPE.BANCOR) {
         let estimateError;
