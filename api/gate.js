@@ -7,6 +7,7 @@ import PostSignedTx from 'minter-js-sdk/src/api/post-signed-tx';
 import GetNonce from 'minter-js-sdk/src/api/get-nonce';
 import EstimateCoinSell from 'minter-js-sdk/src/api/estimate-coin-sell';
 import EstimateCoinBuy from 'minter-js-sdk/src/api/estimate-coin-buy';
+import EstimateTxCommission from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath, GetCoinId} from 'minter-js-sdk/src/api/replace-coin.js';
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import GetCommissionPrice from 'minter-js-sdk/src/api/get-commission-price.js';
@@ -26,7 +27,7 @@ export const postSignedTx = PostSignedTx(minterApi);
 export const getNonce = GetNonce(minterApi);
 export const ensureNonce = EnsureNonce(minterApi);
 
-const estimateCache = new Cache({maxAge: 1 * 60 * 1000});
+const estimateCache = new Cache({maxAge: 30 * 1000});
 const _estimateCoinSell = (params, axiosOptions) => EstimateCoinSell(minterApi)(params, {...axiosOptions, cache: estimateCache});
 const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions, cache: estimateCache});
 export function estimateCoinSell(params) {
@@ -94,6 +95,8 @@ export function estimateCoinBuy(params) {
         return _estimateCoinBuy(params);
     }
 }
+
+export const estimateTxCommission = (params, axiosOptions) => EstimateTxCommission(minterApi)(params, {direct: false}, {...axiosOptions, cache: estimateCache});
 
 const coinCache = new Cache({maxAge: 1 * 60 * 1000});
 export const replaceCoinSymbol = ReplaceCoinSymbol(minterApi);

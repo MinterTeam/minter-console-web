@@ -8,7 +8,7 @@ import minLength from 'vuelidate/lib/validators/minLength';
 import maxLength from 'vuelidate/lib/validators/maxLength';
 import minValue from 'vuelidate/lib/validators/minValue.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+import {TX_TYPE} from 'minterjs-utl/src/tx-types.js';
 import {getCoinId} from '~/api/gate.js';
 import {getPoolProvider, getProviderPoolList} from '~/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
@@ -17,6 +17,8 @@ import {pretty, prettyExact} from "~/assets/utils";
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
 import FieldPercentage from '~/components/common/FieldPercentage.vue';
+
+Big.RM = 2;
 
 export default {
     TX_TYPE,

@@ -6,7 +6,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
@@ -188,16 +188,6 @@
             feeBusParams() {
                 const txType = this.txType;
                 const txData = this.txData;
-                let selectedCoinSymbol;
-                if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
-                    selectedCoinSymbol = txData.coin;
-                }
-                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL ) {
-                    selectedCoinSymbol = txData.coinToSell;
-                }
-                if (txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
-                    selectedCoinSymbol = txData.coins[0];
-                }
 
                 let deltaItemCount;
                 if (txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
@@ -210,14 +200,12 @@
                 }
 
                 return {
-                    txType: txType,
-                    txFeeOptions: {
+                    txParams: {
+                        gasCoin: this.form.gasCoin,
                         payload: this.form.payload,
-                        coinSymbol: txData.symbol,
-                        deltaItemCount,
+                        type: txType,
+                        data: txData,
                     },
-                    selectedCoin: selectedCoinSymbol,
-                    selectedFeeCoin: this.form.gasCoin,
                     baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
@@ -409,7 +397,7 @@
                     ...clearEmptyFields(this.form),
                     data: clearEmptyFields(this.txData),
                     type: this.txType,
-                    gasCoin: this.fee.coinSymbol,
+                    gasCoin: this.fee.coin,
                     signatureType: this.form.multisigAddress ? 2 : 1,
                 };
             },
@@ -513,10 +501,8 @@
                     <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
                     <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                     <div class="form-field__help" v-else>
-                        {{ fee.coinSymbol }} {{ pretty(fee.value) }}
+                        {{ fee.coin }} {{ pretty(fee.value) }}
                         <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
-                        <br>
-                        {{ $td('Default:', 'form.help-default') }} {{ (fee.isBaseCoinEnough || !feeBusParams.selectedCoin) ? $store.getters.COIN_NAME : $td('same as coin to send', 'form.wallet-send-fee-same') }}
                     </div>
                 </div>
                 <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
@@ -667,7 +653,7 @@
                 <div class="panel__section u-text-left">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            {{ fee.coinSymbol }} {{ prettyExact(fee.value) }}
+                            {{ fee.coin }} {{ prettyExact(fee.value) }}
                             <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ prettyExact(fee.baseCoinValue) }})</span>
                         </div>
                         <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>

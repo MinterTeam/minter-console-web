@@ -19,6 +19,10 @@ import FieldCoin from '@/components/common/FieldCoin.vue';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
+Big.DP = 18;
+// ROUND_HALF_EVEN
+Big.RM = 2;
+
 
 const HUB_MULTISIG_ADDRESS = 'Mxffffffffffffffffffffffffffffffffffffffff';
 

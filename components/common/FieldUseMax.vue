@@ -3,6 +3,8 @@
     import checkEmpty from '~/assets/v-check-empty';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
 
+    Big.RM = 2;
+
     export default {
         components: {
             InputMaskedAmount,
