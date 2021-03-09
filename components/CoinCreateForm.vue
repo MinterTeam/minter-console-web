@@ -219,9 +219,9 @@ export default {
                     <span class="form-field__label">{{ $td('Coin symbol', 'form.coiner-create-symbol') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.required">{{ $td('Enter coin symbol', 'form.coiner-create-symbol-error-required') }}</span>
-                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
-                <span class="form-field__error" v-if="$v.form.symbol.$dirty && !$v.form.symbol.valid">{{ $td('Invalid coin ticker', 'form.coin-error-name') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.symbol.$dirty && !$v.form.symbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.symbol.$dirty && !$v.form.symbol.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.symbol.$dirty && !$v.form.symbol.valid">{{ $td('Invalid coin ticker', 'form.coin-error-name') }}</span>
                 <div class="form-field__help" v-html="$td('Ticker symbol (for example, <strong>BTC</strong>). Must be unique, alphabetic, uppercase, and 3 to 10 symbols long.', 'form.coiner-create-symbol-help')"></div>
             </div>
             <div class="u-cell u-cell--medium--1-2">

@@ -22,12 +22,16 @@ function isFinished(withdraw) {
 }
 
 
-const txPollList = {};
-
 export default {
     WITHDRAW_STATUS,
     components: {
         Loader,
+    },
+    data() {
+        return {
+            txPollList: {},
+            isDestroyed: false,
+        };
     },
     computed: {
         hasTx() {
@@ -39,7 +43,7 @@ export default {
         '$store.state.hub.minterList': {
             handler: function(list = {}) {
                 Object.keys(list).forEach((hash) => {
-                    if (txPollList[hash]) {
+                    if (this.txPollList[hash]) {
                         // already polling
                         return;
                     }
@@ -48,12 +52,15 @@ export default {
                         return;
                     }
 
-                    txPollList[hash] = true;
+                    this.txPollList[hash] = true;
                     this.poll(hash);
                 });
             },
             immediate: true,
         },
+    },
+    destroyed() {
+        this.isDestroyed = true;
     },
     methods: {
         getTime,
@@ -74,10 +81,13 @@ export default {
                         this.$store.commit('hub/updateWithdraw', {hash, ...withdraw});
                     }
                     if (isFinished(withdraw)) {
-                        delete txPollList[hash];
+                        delete this.txPollList[hash];
                         return;
                     }
                     setTimeout(() => {
+                        if (this.isDestroyed) {
+                            return;
+                        }
                         this.poll(hash);
                     }, 10000);
                 });
