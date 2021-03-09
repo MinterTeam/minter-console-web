@@ -77,7 +77,17 @@
         watch: {
             // @TODO workaround for https://github.com/KazanExpress/vue-simple-suggest/issues/301 and https://github.com/KazanExpress/vue-simple-suggest/issues/302
             currentCoinList() {
-                this.$refs.vss.research();
+                console.log('canSend', this.$refs.vss.canSend);
+                console.log('research', this.currentCoinList);
+                const vss = this.$refs.vss;
+                if (vss.canSend) {
+                    vss.research();
+                } else {
+                    vss.getSuggestions(vss.text)
+                        .then((newList) => {
+                            vss.$set(vss, 'suggestions', newList);
+                        });
+                }
             },
         },
         mounted() {
