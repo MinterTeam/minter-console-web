@@ -653,8 +653,8 @@
                 <div class="panel__section u-text-left">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            {{ fee.coin }} {{ prettyExact(fee.value) }}
-                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ prettyExact(fee.baseCoinValue) }})</span>
+                            {{ pretty(fee.value) }} {{ fee.coin }}
+                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
                         </div>
                         <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>
                     </div>
