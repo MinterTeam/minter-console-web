@@ -260,36 +260,54 @@
         </template>
 
         <template v-slot:confirm-modal-body>
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinTo + ' ' + prettyExact(form.buyAmount)"
+                               :value="prettyExact(form.buyAmount) + ' ' + form.coinTo"
                         >
                         <span class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</span>
                     </label>
                 </div>
-                <div class="u-cell">
-                    <template v-if="estimation">
+                <template v-if="estimation">
+                    <div class="u-cell">
                         <label class="form-field form-field--dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="form.coinFrom + ' ' + pretty(estimation)"
+                                   :value="pretty(estimation) + ' ' + form.coinFrom"
                             >
                             <span class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</span>
                         </label>
                         <div class="form-field__help u-text-left">
                             {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
                         </div>
-                    </template>
-                    <template v-else>
+                    </div>
+                    <div class="u-cell">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">
+                                {{ pretty(form.buyAmount / estimation) + ' ' + form.coinFrom }}
+                            </div>
+                            <div class="form-field__label">1 {{ form.coinTo }} {{ $td('rate', 'form.convert-rate') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">
+                                {{ pretty(estimation / form.buyAmount) + ' ' +  form.coinTo }}
+                            </div>
+                            <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="u-cell">
                         <label class="form-field form-field--dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                    :value="form.coinFrom"
                             >
                             <span class="form-field__label">{{ $td('You will pay', 'form.convert-buy-confirm-pay') }}</span>
                         </label>
-                    </template>
-                </div>
+                    </div>
+                </template>
                 <div class="u-cell" v-if="estimationRoute">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
@@ -297,6 +315,14 @@
                         >
                         <span class="form-field__label">{{ $td('Swap route', 'form.convert-route') }}</span>
                     </label>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ convertType === $options.CONVERT_TYPE.POOL ? 'Pools' : 'Reserves' }}
+                        </div>
+                        <div class="form-field__label">{{ $td('Swap type', 'form.convert-type') }}</div>
+                    </div>
                 </div>
             </div>
         </template>

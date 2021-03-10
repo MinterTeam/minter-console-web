@@ -17,8 +17,6 @@ import FieldCoin from '~/components/common/FieldCoin';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 
 export default {
-    pretty,
-    prettyExact,
     TX_TYPE,
     CONVERT_TYPE,
     components: {
@@ -119,6 +117,8 @@ export default {
         },
     },
     methods: {
+        pretty,
+        prettyExact,
         getEstimation(txFormContext) {
             if (this.$store.getters.isOfflineMode) {
                 return;
@@ -248,36 +248,55 @@ export default {
         </template>
 
         <template v-slot:confirm-modal-body>
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinFrom + ' ' + $options.prettyExact(sellAmount)"
+                               :value="prettyExact(sellAmount) + ' ' + form.coinFrom"
                         >
                         <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
                     </label>
                 </div>
-                <div class="u-cell">
-                    <template v-if="estimation">
+                <template v-if="estimation">
+                    <div class="u-cell">
                         <label class="form-field form-field--dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="form.coinTo + ' ' + $options.pretty(estimation)"
+                                   :value="pretty(estimation) + ' ' + form.coinTo"
                             >
                             <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive-estimation') }}</span>
                         </label>
                         <div class="form-field__help u-text-left">
                             {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
                         </div>
-                    </template>
-                    <template v-else>
+                    </div>
+                    <div class="u-cell">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">
+                                {{ pretty(estimation / sellAmount) + ' ' +  form.coinTo }}
+                            </div>
+                            <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">
+                                {{ pretty(sellAmount / estimation) + ' ' + form.coinFrom }}
+                            </div>
+                            <div class="form-field__label">1 {{ form.coinTo }} {{ $td('rate', 'form.convert-rate') }}</div>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="u-cell">
                         <label class="form-field form-field--dashed">
                             <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
                                    :value="form.coinTo"
                             >
                             <span class="form-field__label">{{ $td('You will get', 'form.convert-sell-confirm-receive') }}</span>
                         </label>
-                    </template>
-                </div>
+                    </div>
+                </template>
+
                 <div class="u-cell" v-if="estimationRoute">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
@@ -285,6 +304,14 @@ export default {
                         >
                         <span class="form-field__label">{{ $td('Swap route', 'form.convert-route') }}</span>
                     </label>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ convertType === $options.CONVERT_TYPE.POOL ? 'Pools' : 'Reserves' }}
+                        </div>
+                        <div class="form-field__label">{{ $td('Swap type', 'form.convert-type') }}</div>
+                    </div>
                 </div>
             </div>
         </template>
