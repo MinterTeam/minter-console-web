@@ -156,10 +156,6 @@ function isCoinDefined(coinIdOrSymbol) {
     return !!coinIdOrSymbol || coinIdOrSymbol === 0;
 }
 
-function isCoinId(coinIdOrSymbol) {
-    return typeof coinIdOrSymbol === 'number';
-}
-
 /**
  * @param {string|number} coinIdOrSymbol
  * @return {boolean}
