@@ -118,7 +118,8 @@
                     fee: () => this.$store.getters.isOfflineMode ? true : !this.fee.error,
                 },
                 payload: {
-                    maxLength: maxLength(10000),
+                    // considers unicode bytes @see https://stackoverflow.com/a/42684638/4936667
+                    maxLength: (value) => this.payloadLength <= 10000,
                     isNotMnemonic: (value) => !isValidMnemonic(value),
                 },
                 multisigAddress: {
@@ -184,6 +185,9 @@
             },
             whatAffectsTxHash() {
                 return [this.form.gasCoin, this.form.gasPrice, this.form.nonce, this.form.payload, this.txData];
+            },
+            payloadLength() {
+                return new Blob([this.form.payload]).size;
             },
             feeBusParams() {
                 const txType = this.txType;
@@ -514,7 +518,7 @@
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td('Max 10000 symbols', 'form.message-error-max') }}</span>
+                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td(`Max 10000 symbols, given ${payloadLength}`, 'form.message-error-max') }}</span>
                     <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
                     <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
                 </div>

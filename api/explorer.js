@@ -148,6 +148,7 @@ export function getSwapCoinList(coin, depth) {
  * @typedef {Object} Coin
  * @property {number} id
  * @property {string} symbol
+ * @property {string} type
  */
 
 /**

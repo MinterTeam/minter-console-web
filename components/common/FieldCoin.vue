@@ -63,7 +63,7 @@
             currentCoinList() {
                 if (this.isConListSpecified) {
                     return this.coinList
-                        .filter((balanceItem) => ofType(balanceItem.type, this.coinType));
+                        .filter((balanceItem) => typeof balanceItem === 'object' ? ofType(balanceItem.coin.type, this.coinType) : true);
                 } else {
                     return this.coinListAll
                         .filter((coin) => ofType(coin.type, this.coinType))
