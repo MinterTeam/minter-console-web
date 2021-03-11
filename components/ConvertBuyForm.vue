@@ -284,7 +284,7 @@
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">
-                                {{ pretty(form.buyAmount / estimation) + ' ' + form.coinFrom }}
+                                {{ pretty(estimation / form.buyAmount) + ' ' + form.coinFrom }}
                             </div>
                             <div class="form-field__label">1 {{ form.coinTo }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
@@ -292,7 +292,7 @@
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">
-                                {{ pretty(estimation / form.buyAmount) + ' ' +  form.coinTo }}
+                                {{ pretty(form.buyAmount / estimation) + ' ' +  form.coinTo }}
                             </div>
                             <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
