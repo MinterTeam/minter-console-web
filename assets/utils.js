@@ -43,34 +43,56 @@ export function makeAccepter(propName, isAcceptUnmasked) {
     };
 }
 
+/**
+ *
+ * @param {string|number|Date} timestamp
+ * @return {Date|null}
+ */
+function parseTime(timestamp) {
+    if (timestamp instanceof Date) {
+        return timestamp;
+    }
+    if (typeof timestamp === 'string') {
+        return parseISO(timestamp);
+    }
+    if (typeof timestamp === 'number') {
+        return new Date(timestamp);
+    }
+
+    return null;
+}
 
 export function getTimeStamp(timestamp) {
-    const time = format(parseISO(timestamp), 'dd MMM yyyy HH:mm:ss');
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
+    }
 
-    return time && time !== 'Invalid Date' ? time : false;
+    return format(parseTime(timestamp), 'dd MMM yyyy HH:mm:ss');
 }
 
 export function getTimeZone(timestamp) {
-    if (!(timestamp instanceof Date)) {
-        timestamp = parseISO(timestamp);
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
     }
-    const time = format(timestamp, 'O');
 
-    return time && time !== 'Invalid Date' ? time : false;
+    return format(timestamp, 'O');
 }
 
 export function getTimeDistance(timestamp, allowFuture) {
-    if (typeof timestamp === 'string') {
-        timestamp = parseISO(timestamp);
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
     }
+
     const now = new Date();
     // if timestamp from future
     if (timestamp > now && !allowFuture) {
         timestamp = now;
     }
-    const distance = formatDistanceStrict(timestamp, now, {roundingMethod: 'floor'});
 
-    return distance && distance !== 'Invalid Date' ? distance : false;
+    return formatDistanceStrict(timestamp, now, {roundingMethod: 'floor'});
 }
 
 export function getExplorerBlockUrl(block) {

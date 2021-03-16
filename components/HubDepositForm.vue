@@ -2,7 +2,6 @@
 import BN from 'bn.js';
 import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
-import Web3 from 'web3';
 
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
@@ -12,6 +11,8 @@ import withParams from 'vuelidate/lib/withParams.js';
 // import axios from "axios";
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
+import * as web3 from '@/api/web3.js';
+import {subscribeTransaction, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getOracleCoinList} from '@/api/hub.js';
 import {getCoinList} from '@/api/explorer.js';
 import {MAINNET, NETWORK, ETHEREUM_API_URL} from '~/assets/variables.js';
@@ -20,7 +21,7 @@ import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
-import TxListItem from '~/components/HubTxListItem.vue';
+import TxListItem from '~/components/HubDepositTxListItem.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldCoin from '@/components/common/FieldCoin.vue';
@@ -35,7 +36,6 @@ const TX_TRANSFER = 'transfer';
 
 let timer;
 let connector;
-let web3 = new Web3(new Web3.providers.HttpProvider(ETHEREUM_API_URL));
 
 function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
@@ -123,6 +123,7 @@ export default {
                     required,
                     validAmount: isValidAmount,
                     maxValue: maxValue(this.maxAmount || 0),
+                    minValue: (value) => value > 0,
                 },
             },
         };
@@ -275,8 +276,10 @@ export default {
                         return this.getAllowance();
                     } else {
                         this.$v.$reset();
-                        this.form.address = '';
+                        // reset form
+                        this.form.address = this.$store.getters.address;
                         this.form.amount = '';
+                        this.form.coin = '';
                     }
                 })
                 .catch((error) => {
@@ -383,25 +386,6 @@ export default {
         // },
     },
 };
-
-/**
- *
- * @param balance - balance in erc20 decimals
- * @param decimals
- * @return {string}
- */
-function fromErcDecimals(balance, decimals) {
-    const decimalsDelta = Math.max(18 - decimals, 0);
-    balance = new BN(10).pow(new BN(decimalsDelta)).mul(new BN(balance)).toString();
-    return web3.utils.fromWei(balance, "ether");
-}
-
-function toErcDecimals(balance, decimals) {
-    balance = web3.utils.toWei(balance, "ether");
-    const decimalsDelta = Math.max(18 - decimals, 0);
-    const tens = new BN(10).pow(new BN(decimalsDelta));
-    return new BN(balance).div(tens).toString();
-}
 </script>
 
 <template>
@@ -465,6 +449,7 @@ function toErcDecimals(balance, decimals) {
                             :max-value="maxAmount"
                         />
                         <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
                     <div class="u-cell u-cell--small--auto">
@@ -500,7 +485,13 @@ function toErcDecimals(balance, decimals) {
 
         <div class="panel" v-if="transactionList.length">
             <div class="panel__header panel__header-title">Transactions</div>
-            <TxListItem class="panel__section" v-for="tx in transactionList" :key="tx.hash" :tx="tx"/>
+            <TxListItem
+                class="panel__section"
+                v-for="tx in transactionList"
+                :key="tx.hash"
+                :hash="tx.hash"
+                :coin-list="coinList"
+            />
         </div>
     </div>
 </template>
