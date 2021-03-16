@@ -272,7 +272,7 @@ export default {
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">
-                                {{ pretty(estimation / sellAmount) + ' ' +  form.coinTo }}
+                                {{ pretty(estimation / sellAmount) + ' ' + form.coinTo }}
                             </div>
                             <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>

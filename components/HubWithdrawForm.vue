@@ -156,6 +156,7 @@ export default {
                 amount: {
                     required,
                     // validAmount: isValidAmount,
+                    minValue: (value) => value > 0,
                     maxValue: maxValue(this.maxAmount || 0),
                 },
             },
@@ -259,6 +260,7 @@ export default {
                         :max-value="maxAmount"
                     />
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell">
