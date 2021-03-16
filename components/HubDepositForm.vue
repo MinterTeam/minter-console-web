@@ -16,7 +16,7 @@ import {subscribeTransaction, fromErcDecimals, toErcDecimals} from '@/api/web3.j
 import {getOracleCoinList} from '@/api/hub.js';
 import {getCoinList} from '@/api/explorer.js';
 import {MAINNET, NETWORK, ETHEREUM_API_URL} from '~/assets/variables.js';
-import {pretty} from '~/assets/utils.js';
+import {pretty, prettyExact} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
@@ -84,11 +84,7 @@ export default {
             balances: {},
             decimals: {},
             //@TODO update after tx confirmation instead of long polling
-            allowance: {
-                value: null,
-                promiseStatus: null,
-                promise: null,
-            },
+            allowanceList: {},
             form: {
                 coin: '',
                 amount: "",
@@ -102,6 +98,7 @@ export default {
             transactionList: transactionList || [],
             isFormSending: false,
             serverError: '',
+            waitApproveConfirmation: false,
             isConnectionStartedAndModalClosed: false,
         };
     },
@@ -122,7 +119,7 @@ export default {
                 amount: {
                     required,
                     validAmount: isValidAmount,
-                    maxValue: maxValue(this.maxAmount || 0),
+                    maxValue: maxValue(this.selectedBalance || 0),
                     minValue: (value) => value > 0,
                 },
             },
@@ -136,6 +133,18 @@ export default {
             const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.ethAddr : undefined;
         },
+        allowance() {
+            const allowance = this.allowanceList[this.form.coin];
+            if (allowance) {
+                return allowance;
+            } else {
+                return {
+                    value: null,
+                    promiseStatus: null,
+                    promise: null,
+                };
+            }
+        },
         isCoinApproved() {
             if (!this.allowance.value) {
                 return false;
@@ -145,11 +154,38 @@ export default {
             const amount = new BN(toErcDecimals(this.form.amount || '0', this.decimals[this.form.coin] || 18), 10);
             return allowance.gt(new BN(0)) && allowance.gte(amount);
         },
-        maxAmount() {
-            return this.balances[this.form.coin];
+        selectedBalance() {
+            return this.balances[this.form.coin] || 0;
+        },
+        selectedUnlocked() {
+            if (!this.allowance.value) {
+                return 0;
+            }
+
+            return fromErcDecimals(this.allowance.value, this.decimals[this.form.coin] || 18);
         },
         suggestionList() {
             return this.coinList.map((item) => item.symbol.toUpperCase());
+        },
+        transactionListSorted() {
+            return this.transactionList.slice(0).reverse();
+        },
+    },
+    watch: {
+        'form.coin': {
+            handler() {
+                this.updateBalance();
+                this.getAllowance();
+            },
+        },
+        isCoinApproved: {
+            handler(newVal) {
+                // stop form sending loader after allowance tx confirmed
+                if (newVal && this.waitApproveConfirmation) {
+                    this.waitApproveConfirmation = false;
+                    this.isFormSending = false;
+                }
+            },
         },
     },
     mounted() {
@@ -172,6 +208,7 @@ export default {
     },
     methods: {
         pretty,
+        prettyExact,
         connectEth() {
             if (!connector) {
                 this.initConnector();
@@ -271,48 +308,54 @@ export default {
                         timestamp: (new Date()).toISOString(),
                     });
                     window.localStorage.setItem('transactionList', JSON.stringify(this.transactionList));
-
-                    if (isApproveTx) {
-                        return this.getAllowance();
-                    } else {
-                        this.$v.$reset();
-                        // reset form
-                        this.form.address = this.$store.getters.address;
-                        this.form.amount = '';
-                        this.form.coin = '';
-                    }
                 })
                 .catch((error) => {
                     this.serverError = getErrorText(error);
                     // Error returned when rejected
                     console.error(error);
-                })
-                .finally(() => {
+
                     this.isFormSending = false;
                 });
         },
         getAllowance() {
+            let selectedCoin = this.form.coin;
+
+            let allowance = {...this.allowance};
             if (!this.isConnected || !this.coinContractAddress) {
                 return;
             }
-            if (this.allowance.promiseStatus === ALLOWANCE_PENDING) {
+            if (allowance.promiseStatus === ALLOWANCE_PENDING) {
                 return;
             }
 
-            this.allowance.promiseStatus = ALLOWANCE_PENDING;
-            this.allowance.promise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, peggyAddress).call()
-                .then((allowance) => {
-                    this.allowance.value = allowance;
-                    this.allowance.promiseStatus = ALLOWANCE_FINISHED;
+            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, peggyAddress).call()
+                .then((allowanceValue) => {
+                    this.$set(this.allowanceList, selectedCoin, {
+                        value: allowanceValue,
+                        promiseStatus: ALLOWANCE_FINISHED,
+                        // not needed here, but keep for consistency
+                        promise: allowancePromise,
+                    });
                 })
                 .catch((error) => {
                     console.log(error);
-                    this.allowance.value = null;
-                    this.allowance.promiseStatus = ALLOWANCE_REJECTED;
+                    this.$set(this.allowanceList, selectedCoin, {
+                        value: null,
+                        promiseStatus: ALLOWANCE_REJECTED,
+                        // not needed here, but keep for consistency
+                        promise: allowancePromise,
+                    });
                     this.serverError = 'Can\'t get allowance';
                 });
 
-            return this.allowance.promise;
+            this.$set(this.allowanceList, selectedCoin, {
+                promiseStatus: ALLOWANCE_PENDING,
+                promise: allowancePromise,
+                // old value
+                value: allowance.value,
+            });
+
+            return allowancePromise;
         },
         getIsCoinApproved() {
             if (this.allowance.promiseStatus === ALLOWANCE_FINISHED) {
@@ -335,14 +378,30 @@ export default {
         sendApproveTx() {
             let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, toErcDecimals(this.form.amount, this.decimals[this.form.coin])).encodeABI();
 
-            return this.sendEthTx(this.coinContractAddress, data);
+            return this.sendEthTx(this.coinContractAddress, data)
+                .then((hash) => {
+                    this.waitApproveConfirmation = true;
+
+                    return hash;
+                });
         },
         sendCoinTx() {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
             let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.form.amount, this.decimals[this.form.coin])).encodeABI();
 
-            return this.sendEthTx(peggyAddress, data);
+            return this.sendEthTx(peggyAddress, data)
+                .then((hash) => {
+                    this.$v.$reset();
+                    // reset form
+                    this.form.address = this.$store.getters.address;
+                    this.form.amount = '';
+                    this.form.coin = '';
+
+                    this.isFormSending = false;
+
+                    return hash;
+                });
         },
         async sendEthTx(to, data) {
             const txParams = {
@@ -432,6 +491,7 @@ export default {
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <FieldCoin
+                            :readonly="isFormSending"
                             v-model="form.coin"
                             :$value="$v.form.coin"
                             :label="$td('Coin', 'form.coin')"
@@ -443,22 +503,35 @@ export default {
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <FieldUseMax
+                            :readonly="isFormSending"
                             v-model="form.amount"
                             :$value="$v.form.amount"
                             :label="$td('Amount', 'form.hub-amount')"
-                            :max-value="maxAmount"
+                            :max-value="selectedBalance"
                         />
                         <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
+                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(selectedBalance) }})</span>
                     </div>
-                    <div class="u-cell u-cell--small--auto">
+                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyExact(selectedBalance) }}</div>
+                            <div class="form-field__label">{{ $td('Token balance', 'form.hub-deposit-selected-balance') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyExact(selectedUnlocked) }}</div>
+                            <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--xlarge--1-2">
                         <button
-                            class="button button--main"
+                            class="button button--main button--full"
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
                         >
                             <span class="button__content" v-if="isCoinApproved">Send</span>
-                            <span class="button__content" v-else>Approve</span>
+                            <span class="button__content" v-else>Unlock</span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
@@ -487,7 +560,7 @@ export default {
             <div class="panel__header panel__header-title">Transactions</div>
             <TxListItem
                 class="panel__section"
-                v-for="tx in transactionList"
+                v-for="tx in transactionListSorted"
                 :key="tx.hash"
                 :hash="tx.hash"
                 :coin-list="coinList"

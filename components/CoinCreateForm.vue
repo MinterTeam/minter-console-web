@@ -299,7 +299,7 @@ export default {
                         <input class="form-field__input is-not-empty" type="text" readonly
                                :value="$options.prettyPreciseFloor(coinPrice)"
                         >
-                        <span class="form-field__label">{{ $td('Initial Price', 'form.coiner-create-price') }}</span>
+                        <span class="form-field__label">{{ $td('Initial price', 'form.coiner-create-price') }}</span>
                     </label>
                 </div>
             </div>

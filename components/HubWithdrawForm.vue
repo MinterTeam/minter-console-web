@@ -263,7 +263,7 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
-                <div class="u-cell">
+                <div class="u-cell u-cell--xlarge--1-2">
                     <div class="form-check-label">Tx speed</div>
                     <label class="form-check">
                         <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_MIN" v-model="form.speed">
@@ -274,9 +274,9 @@ export default {
                         <span class="form-check__label form-check__label--radio">{{ $td('Fast', 'form.hub-withdraw-speed-fast') }}</span>
                     </label>
                 </div>
-                <div class="u-cell">
+                <div class="u-cell u-cell--xlarge--1-2">
                     <button
-                        class="button button--main"
+                        class="button button--main button--full"
                         :class="{'is-disabled': $v.$invalid, 'is-loading': isFormSending}"
                     >
                         <span class="button__content">Withdraw</span>

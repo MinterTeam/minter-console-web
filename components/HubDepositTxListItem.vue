@@ -111,11 +111,11 @@ export default {
             // remove 0x and function selector
             const input = tx.input.slice(2 + 8);
             const itemCount = input.length / 64;
-            // last item (2nd for `approve`, 3rd for `sendToMinter`)
+            // last item (2nd for `unlock`, 3rd for `sendToMinter`)
             let type;
             let tokenContract;
             if (itemCount === 2) {
-                type = 'Approve';
+                type = 'Unlock';
                 tokenContract = tx.to;
             } else if (itemCount === 3) {
                 type = 'Send';
@@ -156,7 +156,7 @@ export default {
             <div>
                 <template v-if="tx.timestamp">{{ timeDistance }} ago ({{ time }})</template>
             </div>
-            <div style="text-transform: capitalize">
+            <div>
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
                 <template v-if="status === $options.TX_STATUS.PENDING">Pending</template>
                 <template v-if="status === $options.TX_STATUS.RECEIPT">Received, wait confirmations</template>
