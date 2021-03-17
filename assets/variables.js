@@ -23,6 +23,8 @@ export const MNS_API_URL = process.env.APP_MNS_API_URL;
 export const MNS_PUBLIC_KEY = process.env.APP_MNS_PUBLIC_KEY;
 export const HUB_API_URL = 'https://hub-api.dl-dev.ru/';
 export const ETHEREUM_API_URL = 'https://ropsten.dl-dev.ru/';
+export const ETHERSCAN_API_URL = 'https://api-ropsten.etherscan.io/api/';
+export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';
 export const USERNAME_MIN_LENGTH = 5;

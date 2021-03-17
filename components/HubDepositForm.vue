@@ -12,7 +12,8 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {subscribeTransaction, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals, eth as web3Eth} from '@/api/web3.js';
+import {getAddressTransactionList} from '@/api/ethersacn.js';
 import {getOracleCoinList} from '@/api/hub.js';
 import {getCoinList} from '@/api/explorer.js';
 import {MAINNET, NETWORK, ETHEREUM_API_URL} from '~/assets/variables.js';
@@ -75,10 +76,6 @@ export default {
             });
     },
     data() {
-        //@TODO handle different eth addresses
-        let transactionList = window.localStorage.getItem('transactionList');
-        transactionList = transactionList ? JSON.parse(transactionList) : [];
-
         return {
             ethAddress: "",
             balances: {},
@@ -94,8 +91,8 @@ export default {
              * @type Array<HubCoinItem>
              */
             coinList: [],
-            //@TODO tx status (sent/pending)
-            transactionList: transactionList || [],
+            // @TODO use tx data in children components (for now only hash is used)
+            transactionList: [],
             isFormSending: false,
             serverError: '',
             waitApproveConfirmation: false,
@@ -167,11 +164,22 @@ export default {
         suggestionList() {
             return this.coinList.map((item) => item.symbol.toUpperCase());
         },
-        transactionListSorted() {
-            return this.transactionList.slice(0).reverse();
-        },
     },
     watch: {
+        ethAddress: {
+            handler(newVal) {
+                if (newVal) {
+                    this.updateBalance();
+                    this.getAllowance();
+                    getLatestTransactions(newVal)
+                        .then((txList) => {
+                            this.transactionList = txList;
+                        });
+                } else {
+                    this.transactionList = [];
+                }
+            },
+        },
         'form.coin': {
             handler() {
                 this.updateBalance();
@@ -194,8 +202,6 @@ export default {
         // Check if connection is already established
         if (connector.connected) {
             this.ethAddress = connector.accounts[0];
-            this.updateBalance();
-            this.getAllowance();
         }
 
         timer = setInterval(() => {
@@ -257,8 +263,6 @@ export default {
             // console.log(payload.event, payload.params, accounts, chainId);
             if (accounts) {
                 this.ethAddress = accounts[0];
-                this.updateBalance();
-                this.getAllowance();
             } else {
                 this.ethAddress = '';
                 connector = null;
@@ -302,12 +306,11 @@ export default {
                 })
                 .then((hash) => {
                     // Returns transaction hash
-                    this.transactionList.push({
+                    this.transactionList.unshift({
                         hash,
                         type: isApproveTx ? TX_APPROVE : TX_TRANSFER,
                         timestamp: (new Date()).toISOString(),
                     });
-                    window.localStorage.setItem('transactionList', JSON.stringify(this.transactionList));
                 })
                 .catch((error) => {
                     this.serverError = getErrorText(error);
@@ -445,6 +448,45 @@ export default {
         // },
     },
 };
+
+function getLatestTransactions(address) {
+    return Promise.all([
+        // check last 1000 txs
+        getAddressTransactionList(address, {page: 1, offset: 1000}),
+        getAddressPendingTransactions(address),
+    ])
+        .then(([etherscanTxList, pendingTxList]) => {
+            // assume web3 pending status is more correct and filter out such etherscan txs
+            etherscanTxList = etherscanTxList.filter((tx) => {
+                const isPending = pendingTxList.find((pendingTx) => pendingTx.hash.toLowerCase() === tx.hash.toLowerCase());
+
+                return !isPending;
+            });
+
+            let txList = pendingTxList.concat(etherscanTxList);
+
+            // keep only hub bridge transactions
+            txList = txList.filter((tx) => {
+                // remove 0x and function selector
+                const input = tx.input.slice(2 + 8);
+                const itemCount = input.length / 64;
+                if (itemCount === 2) {
+                    // approve erc20
+                    const bridgeAddressHex = '0x' + input.slice(0, 64);
+                    const bridgeAddress = web3.eth.abi.decodeParameter('address', bridgeAddressHex);
+                    return bridgeAddress === peggyAddress;
+                } else if (itemCount === 3) {
+                    // sentToMinter
+                    const bridgeAddress = tx.to;
+                    return bridgeAddress.toLowerCase() === peggyAddress.toLowerCase();
+                }
+
+                return false;
+            });
+
+            return txList.slice(0, 5);
+        });
+}
 </script>
 
 <template>
@@ -557,10 +599,10 @@ export default {
         </div>
 
         <div class="panel" v-if="transactionList.length">
-            <div class="panel__header panel__header-title">Transactions</div>
+            <div class="panel__header panel__header-title">Latest transactions</div>
             <TxListItem
                 class="panel__section"
-                v-for="tx in transactionListSorted"
+                v-for="tx in transactionList"
                 :key="tx.hash"
                 :hash="tx.hash"
                 :coin-list="coinList"
