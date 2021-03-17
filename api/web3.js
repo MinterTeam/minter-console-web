@@ -205,3 +205,15 @@ export function getTokenDecimals(tokenContractAddress) {
 
     return decimalsPromise;
 }
+
+/**
+ * May be no transactions depending on the eth node settings
+ * @param {string} address
+ * @return {Promise<Transaction[]>}
+ */
+export function getAddressPendingTransactions(address) {
+    return eth.getPendingTransactions()
+        .then((txList) => {
+            return txList.filter((tx) => tx.from === address);
+        });
+}
