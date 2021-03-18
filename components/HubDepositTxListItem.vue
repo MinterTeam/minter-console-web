@@ -1,7 +1,9 @@
 <script>
 import {subscribeTransaction, fromErcDecimals, getTokenDecimals, getBlockNumber, eth as web3Eth, CONFIRMATION_COUNT} from '@/api/web3.js';
-import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, pretty} from '~/assets/utils.js';
+import {subscribeTransfer} from '@/api/hub.js';
+import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import Loader from '@/components/common/Loader.vue';
+import {HUB_TRANSFER_STATUS} from 'assets/variables.js';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -15,6 +17,7 @@ const TX_STATUS = {
 
 export default {
     TX_STATUS,
+    HUB_TRANSFER_STATUS,
     components: {
         Loader,
     },
@@ -34,7 +37,7 @@ export default {
         // prefetch block number
         getBlockNumber();
 
-        subscribeTransaction(this.hash)
+        this.txWatcher = subscribeTransaction(this.hash)
             .once('tx', (tx) => {
                 this.tx = tx;
 
@@ -48,10 +51,16 @@ export default {
                     });
             })
             .once('confirmation', (tx) => {
+                // first confirmation
                 this.tx = tx;
             })
             .then((tx) => {
+                // enough confirmations
                 this.tx = tx;
+                this.transferWatcher = subscribeTransfer(tx.hash)
+                    .on('update', (transfer) => {
+                        this.transfer = transfer;
+                    });
             })
             .catch((error) => {
                 console.log(error);
@@ -62,6 +71,9 @@ export default {
             isLoading: true,
             tx: null,
             tokenInfo: null,
+            txWatcher: null,
+            transfer: null,
+            transferWatcher: null,
         };
     },
     computed: {
@@ -72,7 +84,7 @@ export default {
         time() {
             return getTime(this.tx?.timestamp);
         },
-        status() {
+        txStatus() {
             if (!this.tx) {
                 return TX_STATUS.NOT_FOUND;
             } else if (this.tx.blockHash && !this.tx.confirmations) {
@@ -87,8 +99,15 @@ export default {
                 return TX_STATUS.RECEIPT;
             }
         },
+        status() {
+            if (!this.transfer?.status || this.transfer.status === HUB_TRANSFER_STATUS.not_found) {
+                return this.txStatus;
+            } else {
+                return this.transfer.status;
+            }
+        },
         isFinished() {
-            return this.status === TX_STATUS.CONFIRMED || this.status === TX_STATUS.FAILED || this.status === TX_STATUS.NOT_FOUND;
+            return (isHubTransferFinished(this.transfer?.status) && this.txStatus === TX_STATUS.CONFIRMED) || this.txStatus === TX_STATUS.FAILED || this.txStatus === TX_STATUS.NOT_FOUND;
         },
         symbol() {
             if (!this.tokenInfo) {
@@ -99,9 +118,18 @@ export default {
             return coinItem ? coinItem.symbol : '';
         },
     },
+    destroyed() {
+        if (typeof this.txWatcher?.unsubscribe === 'function') {
+            this.txWatcher.unsubscribe();
+        }
+        if (typeof this.transferWatcher?.unsubscribe === 'function') {
+            this.transferWatcher.unsubscribe();
+        }
+    },
     methods: {
         pretty,
         getEtherscanTxUrl,
+        getExplorerTxUrl,
         formatHash: (value) => shortFilter(value, 13),
         /**
          * @param tx
@@ -159,8 +187,16 @@ export default {
             <div>
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
                 <template v-if="status === $options.TX_STATUS.PENDING">Pending</template>
-                <template v-if="status === $options.TX_STATUS.RECEIPT">Received, wait confirmations</template>
-                <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed</template>
+                <template v-if="status === $options.TX_STATUS.RECEIPT">Received, waiting confirmations</template>
+                <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed, waiting for bridge</template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.deposit_to_hub_received">Bridge collecting batch</template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_created">Bridge created batch</template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_executed">
+                    Success
+                    <a class="link--main" :href="getExplorerTxUrl(transfer.outTxHash)" target="_blank">{{ formatHash(transfer.outTxHash) }}</a>
+                </template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.refund">Refunded</template>
+
                 <span v-if="status === $options.TX_STATUS.FAILED" class="u-text-error">Failed</span>
 
                 <Loader class="hub__preview-loader" :is-loading="!isFinished"/>

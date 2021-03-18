@@ -453,7 +453,9 @@ function getLatestTransactions(address) {
     return Promise.all([
         // check last 1000 txs
         getAddressTransactionList(address, {page: 1, offset: 1000}),
-        getAddressPendingTransactions(address),
+        //@TODO store pending txs in localStorage
+        Promise.resolve([]),
+        // getAddressPendingTransactions(address),
     ])
         .then(([etherscanTxList, pendingTxList]) => {
             // assume web3 pending status is more correct and filter out such etherscan txs

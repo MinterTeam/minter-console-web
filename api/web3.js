@@ -69,7 +69,16 @@ export function subscribeTransaction(hash) {
             return tx;
         });
 
+    // proxy `.on` and `.once`
     proxyEmitter(txPromise, emitter);
+
+    // unsubscribe from all events and disable polling
+    txPromise.unsubscribe = function() {
+        isUnsubscribed = true;
+        emitter.off('tx');
+        emitter.off('confirmation');
+        emitter.off('confirmed');
+    };
 
     return txPromise;
 

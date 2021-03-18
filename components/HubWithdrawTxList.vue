@@ -1,27 +1,10 @@
 <script>
 import {convertFromPip} from 'minterjs-util/src/converter.js';
-import {getMinterTxStatus} from '@/api/hub.js';
-import {getExplorerTxUrl, getEtherscanTxUrl, getTimeDistance, getTimeStamp as getTime, shortFilter, pretty} from '~/assets/utils.js';
+import {subscribeTransfer} from '@/api/hub.js';
+import {getExplorerTxUrl, getEtherscanTxUrl, getTimeDistance, getTimeStamp as getTime, shortFilter, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
 import Loader from '@/components/common/Loader.vue';
 
-const WITHDRAW_STATUS = {
-    not_found_long: 'not_found_long', // custom status
-    not_found: 'TX_STATUS_NOT_FOUND',
-    minter_deposit_received: "TX_STATUS_DEPOSIT_RECEIVED",
-    eth_outgoing_batch: "TX_STATUS_BATCH_CREATED",
-    eth_outgoing_batch_executed: "TX_STATUS_BATCH_EXECUTED",
-    refund: "TX_STATUS_REFUNDED",
-};
-
-const finishedStatus = {
-    [WITHDRAW_STATUS.not_found_long]: true,
-    [WITHDRAW_STATUS.eth_outgoing_batch_executed]: true,
-    [WITHDRAW_STATUS.refund]: true,
-};
-
-function isFinished(withdraw) {
-    return !!finishedStatus[withdraw?.status];
-}
 
 
 export default {
@@ -35,14 +18,18 @@ export default {
     data() {
         return {
             txPollList: {},
-            isDestroyed: false,
         };
     },
     computed: {
         hasTx() {
             return Object.keys(this.$store.state.hub.minterList).length;
         },
-
+        withdrawList() {
+            return Object.values(this.$store.state.hub.minterList)
+                .sort((a, b) => {
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                });
+        },
     },
     watch: {
         '$store.state.hub.minterList': {
@@ -53,12 +40,17 @@ export default {
                         return;
                     }
                     const withdraw = list[hash];
-                    if (isFinished(withdraw)) {
+                    if (isHubTransferFinished(withdraw?.status)) {
                         return;
                     }
 
-                    this.txPollList[hash] = true;
-                    this.poll(hash);
+                    this.txPollList[hash] = subscribeTransfer(hash, withdraw.timestamp)
+                        .on('update', (transfer) => {
+                            this.$store.commit('hub/updateWithdraw', transfer);
+                        })
+                        .then(() => {
+                            delete this.txPollList[hash];
+                        });
                 });
             },
             deep: true,
@@ -66,7 +58,11 @@ export default {
         },
     },
     destroyed() {
-        this.isDestroyed = true;
+        Object.values(this.txPollList).forEach((watcher) => {
+            if (typeof watcher.unsubscribe === 'function') {
+                watcher.unsubscribe();
+            }
+        });
     },
     methods: {
         getTime,
@@ -76,36 +72,7 @@ export default {
         convertFromPip,
         pretty,
         formatHash: (value) => shortFilter(value || '', 13),
-        isFinished,
-        poll(hash) {
-            getMinterTxStatus(hash)
-                .catch((error) => {
-                    console.log(error);
-                })
-                .then((withdraw) => {
-                    // no withdraw when error
-                    if (withdraw) {
-                        const timestamp = this.$store.state.hub.minterList[hash].timestamp;
-                        const isLong = Date.now() - new Date(timestamp).getTime() > 10 * 60 * 1000;
-                        const status = isLong && withdraw.status === WITHDRAW_STATUS.not_found
-                            ? WITHDRAW_STATUS.not_found_long
-                            : withdraw.status;
-                        this.$store.commit('hub/updateWithdraw', {...withdraw, status});
-
-                        if (isFinished({status})) {
-                            delete this.txPollList[hash];
-                            return;
-                        }
-                    }
-
-                    setTimeout(() => {
-                        if (this.isDestroyed) {
-                            return;
-                        }
-                        this.poll(hash);
-                    }, 10000);
-                });
-        },
+        isHubTransferFinished,
     },
 };
 </script>
@@ -113,7 +80,7 @@ export default {
 <template>
     <div class="panel" v-if="hasTx">
         <div class="panel__header panel__header-title">Transactions</div>
-        <div class="panel__section preview__transaction" v-for="withdraw in $store.state.hub.minterList" :key="withdraw.tx.hash">
+        <div class="panel__section preview__transaction" v-for="withdraw in withdrawList" :key="withdraw.tx.hash">
             <div class="hub__preview-transaction-row u-text-overflow">
                 <div>
                     <a class="link--main" :href="getExplorerTxUrl(withdraw.tx.hash)" target="_blank">{{ formatHash(withdraw.tx.hash) }}</a>
@@ -126,15 +93,15 @@ export default {
                 <div>
                     <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.minter_deposit_received">Bridge collecting batch to Ethereum</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch">Sent to Ethereum, waiting confirmation</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch_executed">
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">Bridge collecting batch to Ethereum</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to Ethereum, waiting confirmation</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_executed">
                         Success
                         <a class="link--main" :href="getEtherscanTxUrl(withdraw.ethTxHash)" target="_blank">{{ formatHash(withdraw.ethTxHash) }}</a>
                     </template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.refund">Refunded</template>
 
-                    <Loader class="hub__preview-loader" :is-loading="!isFinished(withdraw)"/>
+                    <Loader class="hub__preview-loader" :is-loading="!isHubTransferFinished(withdraw.status)"/>
                 </div>
             </div>
         </div>
