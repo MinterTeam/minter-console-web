@@ -11,6 +11,7 @@ import {postTx, ensureNonce, replaceCoinSymbol, getCoinId} from '~/api/gate.js';
 import {getOracleEthFee, getOracleCoinList, getOraclePriceList} from '@/api/hub.js';
 import {getCoinList} from '@/api/explorer.js';
 import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
+import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import FieldQr from '@/components/common/FieldQr.vue';
@@ -23,8 +24,6 @@ Big.DP = 18;
 // ROUND_HALF_EVEN
 Big.RM = 2;
 
-
-const HUB_MULTISIG_ADDRESS = 'Mxffffffffffffffffffffffffffffffffffffffff';
 
 const SPEED_MIN = 'min';
 const SPEED_FAST = 'fast';
@@ -175,11 +174,10 @@ export default {
             this.serverSuccess = null;
             this.isFormSending = true;
 
-            const amount = this.form.amount;
             let txParams = {
                 type: TX_TYPE.SEND,
                 data: {
-                    to: HUB_MULTISIG_ADDRESS,
+                    to: HUB_MINTER_MULTISIG_ADDRESS,
                     value: this.amountToSpend,
                     coin: this.coinId,
                 },
@@ -197,7 +195,7 @@ export default {
                     this.serverSuccess = tx;
                     this.isSuccessModalVisible = true;
                     this.clearForm();
-                    this.$store.commit('hub/saveWithdraw', {tx, amount});
+                    this.$store.commit('hub/saveWithdrawFromGate', tx);
                 })
                 .catch((error) => {
                     console.log(error);

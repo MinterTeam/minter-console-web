@@ -5,6 +5,7 @@ import {getExplorerTxUrl, getEtherscanTxUrl, getTimeDistance, getTimeStamp as ge
 import Loader from '@/components/common/Loader.vue';
 
 const WITHDRAW_STATUS = {
+    not_found_long: 'not_found_long', // custom status
     not_found: 'TX_STATUS_NOT_FOUND',
     minter_deposit_received: "TX_STATUS_DEPOSIT_RECEIVED",
     eth_outgoing_batch: "TX_STATUS_BATCH_CREATED",
@@ -13,6 +14,7 @@ const WITHDRAW_STATUS = {
 };
 
 const finishedStatus = {
+    [WITHDRAW_STATUS.not_found_long]: true,
     [WITHDRAW_STATUS.eth_outgoing_batch_executed]: true,
     [WITHDRAW_STATUS.refund]: true,
 };
@@ -26,6 +28,9 @@ export default {
     WITHDRAW_STATUS,
     components: {
         Loader,
+    },
+    fetch() {
+        this.$store.dispatch('hub/loadWithdrawList');
     },
     data() {
         return {
@@ -56,6 +61,7 @@ export default {
                     this.poll(hash);
                 });
             },
+            deep: true,
             immediate: true,
         },
     },
@@ -77,13 +83,21 @@ export default {
                     console.log(error);
                 })
                 .then((withdraw) => {
+                    // no withdraw when error
                     if (withdraw) {
-                        this.$store.commit('hub/updateWithdraw', {hash, ...withdraw});
+                        const timestamp = this.$store.state.hub.minterList[hash].timestamp;
+                        const isLong = Date.now() - new Date(timestamp).getTime() > 10 * 60 * 1000;
+                        const status = isLong && withdraw.status === WITHDRAW_STATUS.not_found
+                            ? WITHDRAW_STATUS.not_found_long
+                            : withdraw.status;
+                        this.$store.commit('hub/updateWithdraw', {...withdraw, status});
+
+                        if (isFinished({status})) {
+                            delete this.txPollList[hash];
+                            return;
+                        }
                     }
-                    if (isFinished(withdraw)) {
-                        delete this.txPollList[hash];
-                        return;
-                    }
+
                     setTimeout(() => {
                         if (this.isDestroyed) {
                             return;
@@ -111,6 +125,7 @@ export default {
                 <div>{{ getTimeDistance(withdraw.timestamp || 0) }} ago ({{ getTime(withdraw.timestamp || 0) }})</div>
                 <div>
                     <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.minter_deposit_received">Bridge collecting batch to Ethereum</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch">Sent to Ethereum, waiting confirmation</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.eth_outgoing_batch_executed">
