@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-util/src/tx-types.js';
-import {EXPLORER_HOST, ETHERSCAN_HOST} from "~/assets/variables.js";
+import {EXPLORER_HOST, ETHERSCAN_HOST, HUB_TRANSFER_STATUS, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
 
 
 
@@ -300,4 +300,14 @@ export function shortFilter(value, endLength = 6, minLengthToShort) {
     const isLong = value.length > minLengthToShort;
 
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
+}
+
+export function isHubTransferFinished(status) {
+    const finishedStatus = {
+        [WITHDRAW_STATUS.not_found_long]: true,
+        [WITHDRAW_STATUS.batch_executed]: true,
+        [WITHDRAW_STATUS.refund]: true,
+    };
+
+    return !!finishedStatus[status];
 }

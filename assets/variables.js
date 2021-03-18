@@ -46,3 +46,12 @@ export const COIN_TYPE = {
     TOKEN: 'token',
     POOL_TOKEN: 'pool_token',
 };
+
+export const HUB_TRANSFER_STATUS = {
+    not_found_long: 'not_found_long', // custom status
+    not_found: 'TX_STATUS_NOT_FOUND',
+    deposit_to_hub_received: "TX_STATUS_DEPOSIT_RECEIVED",
+    batch_created: "TX_STATUS_BATCH_CREATED",
+    batch_executed: "TX_STATUS_BATCH_EXECUTED",
+    refund: "TX_STATUS_REFUNDED",
+};
