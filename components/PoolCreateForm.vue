@@ -4,14 +4,12 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import checkEmpty from '~/assets/v-check-empty';
-    import {pretty, prettyExact} from "~/assets/utils";
+    import {pretty, prettyExact} from "~/assets/utils.js";
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
     import FieldUseMax from '~/components/common/FieldUseMax';
 
     export default {
-        pretty,
-        prettyExact,
         TX_TYPE,
         components: {
             TxForm,
@@ -58,6 +56,8 @@
         computed: {
         },
         methods: {
+            pretty,
+            prettyExact,
             clearForm() {
                 this.form.volume0 = '';
                 this.form.coin0 = '';
@@ -144,11 +144,65 @@
             {{ $td('Create', 'form.swap-create-button') }}
         </template>
 
+        <template v-slot:panel-footer>
+            <div class="u-grid">
+                <div class="u-cell u-cell--medium--1-2">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(form.volume1 / form.volume0) }} {{ form.coin1 || 'coin1' }}</div>
+                        <span class="form-field__label">{{ form.coin0 || 'coin0' }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
+                    </div>
+                </div>
+                <div class="u-cell u-cell--medium--1-2">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(form.volume0 / form.volume1) }} {{ form.coin0 || 'coin0' }}</div>
+                        <span class="form-field__label">{{ form.coin1 || 'coin1' }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Create swap pool', 'swap.create-title') }}
             </h1>
+        </template>
+
+        <template v-slot:confirm-modal-body>
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ prettyExact(form.volume0) + ' ' + form.coin0 }}
+                        </div>
+                        <div class="form-field__label">{{ $td('First coin', 'form.pool-create-confirm-coin0') }}</div>
+                    </div>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ prettyExact(form.volume1) + ' ' + form.coin1 }}
+                        </div>
+                        <div class="form-field__label">{{ $td('Second coin', 'form.pool-create-confirm-coin1') }}</div>
+                    </div>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ pretty(form.volume1 / form.volume0) }} {{ form.coin1 }}
+                        </div>
+                        <div class="form-field__label">{{ form.coin0 }} {{ $td('price', 'form.pool-create-coin-price') }}</div>
+                    </div>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ pretty(form.volume0 / form.volume1) }} {{ form.coin0 }}
+                        </div>
+                        <div class="form-field__label">{{ form.coin1 }} {{ $td('price', 'form.pool-create-coin-price') }}</div>
+                    </div>
+                </div>
+            </div>
         </template>
     </TxForm>
 </template>
