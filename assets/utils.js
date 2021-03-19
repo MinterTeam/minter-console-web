@@ -115,8 +115,16 @@ export function getExplorerPoolUrl(coin0, coin1) {
     return EXPLORER_HOST + `/pools/${coin0}/${coin1}`;
 }
 
+export function getExplorerCoinUrl(coin) {
+    return EXPLORER_HOST + `/coins/${coin}`;
+}
+
 export function getEtherscanTxUrl(hash) {
     return ETHERSCAN_HOST + '/tx/' + hash;
+}
+
+export function getEtherscanAddressUrl(hash) {
+    return ETHERSCAN_HOST + '/address/' + hash;
 }
 
 /**

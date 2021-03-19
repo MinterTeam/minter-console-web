@@ -8,15 +8,12 @@ import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import withParams from 'vuelidate/lib/withParams.js';
-// import axios from "axios";
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals, eth as web3Eth} from '@/api/web3.js';
+import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getAddressTransactionList} from '@/api/ethersacn.js';
 import {getOracleCoinList} from '@/api/hub.js';
-import {getCoinList} from '@/api/explorer.js';
-import {MAINNET, NETWORK, ETHEREUM_API_URL} from '~/assets/variables.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -66,12 +63,8 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        return Promise.all([getOracleCoinList(), getCoinList()])
-            .then(([oracleCoinList, minterCoinList]) => {
-                oracleCoinList.forEach((oracleCoin) => {
-                    const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
-                    oracleCoin.symbol = minterCoin.symbol;
-                });
+        return getOracleCoinList()
+            .then((oracleCoinList) => {
                 this.coinList = oracleCoinList;
             });
     },
