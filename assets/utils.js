@@ -134,10 +134,11 @@ export function getEtherscanAddressUrl(hash) {
  * @return {string}
  */
 export function pretty(value, roundingMode, skipFalsy) {
-    if (!skipFalsy && !value) {
+    const isFalsy = !value || value === Infinity;
+    if (!skipFalsy && isFalsy) {
         value = 0;
     }
-    if (skipFalsy && !value && value !== 0) {
+    if (skipFalsy && isFalsy && value !== 0) {
         return '';
     }
     const PRECISION = 2;
