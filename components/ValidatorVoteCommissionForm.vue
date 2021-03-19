@@ -40,8 +40,12 @@ export default {
                         list[fieldName] = convertFromPip(commissionData[fieldName]);
                     }
                 });
-                this.form.commissionList = JSON.stringify(list, null, 4);
-                this.form.coin = commissionData.coin.symbol;
+                this.initialCommissionData = {
+                    list: JSON.stringify(list, null, 4),
+                    coin: commissionData.coin.symbol,
+                };
+                this.form.commissionList = this.initialCommissionData.list;
+                this.form.coin = this.initialCommissionData.coin;
             });
 
         // commission coin can by only base coin or coin from pool with base
@@ -65,6 +69,7 @@ export default {
             commissionListError: '',
             commissionListJson: null,
             coinList: [],
+            initialCommissionData: {},
         };
     },
     validations() {
@@ -122,8 +127,8 @@ export default {
         clearForm() {
             this.form.publicKey = '';
             this.form.height = '';
-            this.form.coin = '';
-            this.form.commissionList = '';
+            this.form.coin = this.initialCommissionData.coin;
+            this.form.commissionList = this.initialCommissionData.list;
             this.$v.$reset();
         },
     },
