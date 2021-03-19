@@ -12,6 +12,7 @@ const TX_STATUS = {
     PENDING: 'pending',
     RECEIPT: 'receipt',
     CONFIRMED: 'confirmed',
+    CONFIRMED_NOT_FINAL: 'confirmed_not_final',
     FAILED: 'failed',
 };
 
@@ -41,7 +42,7 @@ export default {
             .once('tx', (tx) => {
                 this.tx = tx;
 
-                this.getTokenInfo(tx)
+                this.tokenInfoPromise =  this.getTokenInfo(tx)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -57,20 +58,39 @@ export default {
             .then((tx) => {
                 // enough confirmations
                 this.tx = tx;
-                this.transferWatcher = subscribeTransfer(tx.hash)
-                    .on('update', (transfer) => {
-                        this.transfer = transfer;
-                    });
+
+                return tx;
             })
             .catch((error) => {
-                console.log(error);
+                if (error.message !== 'unsubscribed') {
+                    console.log(error);
+                }
             });
+
+        // subscribe on transfer for send txs
+        this.txWatcher.then((tx) => {
+            this.tokenInfoPromise
+                .then(() => {
+                    if (this.tokenInfo.type === 'Send') {
+                        this.transferWatcher = subscribeTransfer(tx.hash)
+                            .on('update', (transfer) => {
+                                this.transfer = transfer;
+                            })
+                            .catch((error) => {
+                                if (error.message !== 'unsubscribed') {
+                                    console.log(error);
+                                }
+                            });
+                    }
+                });
+        });
     },
     data() {
         return {
             isLoading: true,
             tx: null,
             tokenInfo: null,
+            tokenInfoPromise: null,
             txWatcher: null,
             transfer: null,
             transferWatcher: null,
@@ -93,10 +113,15 @@ export default {
                 return TX_STATUS.PENDING;
             } else if (this.tx.status === false) {
                 return TX_STATUS.FAILED;
-            } else if (this.tx.confirmations >= CONFIRMATION_COUNT) {
-                return TX_STATUS.CONFIRMED;
-            } else {
+            }
+            const confirmationsCount = this.tokenInfo.type === 'Send' ? CONFIRMATION_COUNT : 1;
+            const enoughConfirmations = this.tx.confirmations >= confirmationsCount;
+            if (!enoughConfirmations) {
                 return TX_STATUS.RECEIPT;
+            } else if (this.tokenInfo.type === 'Send') {
+                return TX_STATUS.CONFIRMED_NOT_FINAL;
+            } else {
+                return TX_STATUS.CONFIRMED;
             }
         },
         status() {
@@ -107,7 +132,7 @@ export default {
             }
         },
         isFinished() {
-            return (isHubTransferFinished(this.transfer?.status) && this.txStatus === TX_STATUS.CONFIRMED) || this.txStatus === TX_STATUS.FAILED || this.txStatus === TX_STATUS.NOT_FOUND;
+            return (isHubTransferFinished(this.transfer?.status) && this.txStatus === TX_STATUS.CONFIRMED_NOT_FINAL) || this.txStatus === TX_STATUS.CONFIRMED || this.txStatus === TX_STATUS.FAILED || this.txStatus === TX_STATUS.NOT_FOUND;
         },
         symbol() {
             if (!this.tokenInfo) {
@@ -188,7 +213,8 @@ export default {
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
                 <template v-if="status === $options.TX_STATUS.PENDING">Pending</template>
                 <template v-if="status === $options.TX_STATUS.RECEIPT">Received, waiting confirmations</template>
-                <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed, waiting for bridge</template>
+                <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed</template>
+                <template v-if="status === $options.TX_STATUS.CONFIRMED_NOT_FINAL">Confirmed, waiting for bridge</template>
                 <template v-if="status === $options.HUB_TRANSFER_STATUS.deposit_to_hub_received">Bridge collecting batch</template>
                 <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_created">Bridge created batch</template>
                 <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_executed">

@@ -1,11 +1,13 @@
 <script>
     import getTitle from '~/assets/get-title';
+    import HubCoinList from '@/components/HubCoinList.vue';
     import HubWithdrawForm from '~/components/HubWithdrawForm.vue';
     import HubWithdrawTxList from '~/components/HubWithdrawTxList.vue';
     import HubDepositForm from '~/components/HubDepositForm.vue';
 
     export default {
         components: {
+            HubCoinList,
             HubWithdrawForm,
             HubWithdrawTxList,
             HubDepositForm,
@@ -41,6 +43,7 @@
 
 <template>
     <section class="u-section u-container">
+        <HubCoinList/>
         <HubWithdrawForm/>
         <HubWithdrawTxList/>
         <HubDepositForm/>

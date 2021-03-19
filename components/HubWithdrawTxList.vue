@@ -50,6 +50,13 @@ export default {
                         })
                         .then(() => {
                             delete this.txPollList[hash];
+                        })
+                        .catch((error) => {
+                            if (error.message !== 'unsubscribed') {
+                                console.log(error);
+                            } else {
+                                delete this.txPollList[hash];
+                            }
                         });
                 });
             },

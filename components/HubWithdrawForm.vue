@@ -9,7 +9,6 @@ import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx, ensureNonce, replaceCoinSymbol, getCoinId} from '~/api/gate.js';
 import {getOracleEthFee, getOracleCoinList, getOraclePriceList} from '@/api/hub.js';
-import {getCoinList} from '@/api/explorer.js';
 import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
@@ -44,14 +43,7 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        const coinListPromise = Promise.all([getOracleCoinList(), getCoinList()])
-            .then(([oracleCoinList, minterCoinList]) => {
-                oracleCoinList.forEach((oracleCoin) => {
-                    const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
-                    oracleCoin.symbol = minterCoin.symbol;
-                });
-                return oracleCoinList;
-            });
+        const coinListPromise = getOracleCoinList();
 
         return Promise.all([getOracleEthFee(), coinListPromise, getOraclePriceList()])
             .then(([ethFee, coinList, priceList]) => {

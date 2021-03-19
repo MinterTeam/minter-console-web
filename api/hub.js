@@ -1,11 +1,14 @@
 import axios from 'axios';
+import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import Emitter from 'tiny-emitter';
+import {getCoinList} from '@/api/explorer.js';
 import {HUB_API_URL, HUB_TRANSFER_STATUS} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
 
 const instance = axios.create({
     baseURL: HUB_API_URL,
+    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
 });
 addToCamelInterceptor(instance);
 
@@ -20,21 +23,45 @@ export function getOracleEthFee() {
         });
 }
 
+
 /**
  * @return {Promise<Array<HubCoinItem>>}
  */
 export function getOracleCoinList() {
-    return instance.get('oracle/coins')
+    return Promise.all([_getOracleCoinList(), getCoinList()])
+        .then(([oracleCoinList, minterCoinList]) => {
+            oracleCoinList.forEach((oracleCoin) => {
+                const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
+                oracleCoin.symbol = minterCoin.symbol;
+            });
+            return oracleCoinList;
+        });
+}
+
+// 1 min cache
+const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
+
+/**
+ * @return {Promise<Array<HubCoinItem>>}
+ */
+export function _getOracleCoinList() {
+    return instance.get('oracle/coins', {
+            cache: coinsCache,
+        })
         .then((response) => {
             return response.data.result;
         });
 }
 
+const priceCache = new Cache({maxAge: 10 * 1000});
+
 /**
  * @return {Promise<Array<{name: string, value: string}>>}
  */
 export function getOraclePriceList() {
-    return instance.get('oracle/prices')
+    return instance.get('oracle/prices', {
+            cache: priceCache,
+        })
         .then((response) => {
             return response.data.result.list;
         });
@@ -136,7 +163,8 @@ function wait(time) {
 
 /**
  * @typedef {object} HubCoinItem
- * @property {string} denom
+ * @property {string} symbol - minter symbol
+ * @property {string} denom - eth symbol
  * @property {string} ethAddr
  * @property {string} minterId
  * @property {string} ethDecimals

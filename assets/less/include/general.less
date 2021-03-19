@@ -93,6 +93,11 @@ dd {overflow-wrap: break-word; margin: 0;}
         dt {width: 140px; border-right: 1px solid @c-border; background: #f6f6f6;}
         dd {width: calc(100% - 140px);}
     }
+    .table-wrap + .dl--table {
+        dt, dd {
+            &:first-of-type {border-top: none;}
+        }
+    }
 }
 @media (min-width: @breakpoint-large-up) {
     .dl--table {
