@@ -3,6 +3,7 @@ import {getProviderPoolList, getStatus} from '@/api/explorer.js';
 import {pretty, getExplorerPoolUrl} from '~/assets/utils.js';
 import Loader from '~/components/common/Loader';
 import TableLink from '@/components/common/TableLink.vue';
+import eventBus from 'assets/event-bus.js';
 
 export default {
     components: {
@@ -39,6 +40,12 @@ export default {
     methods: {
         pretty,
         getExplorerPoolUrl,
+        addLiquidity({coin0, coin1}) {
+            eventBus.emit('activate-add-liquidity', {coin0, coin1});
+        },
+        removeLiquidity({coin0, coin1}) {
+            eventBus.emit('activate-remove-liquidity', {coin0, coin1});
+        },
     },
 };
 </script>
@@ -54,6 +61,8 @@ export default {
                         <th colspan="2">Amount</th>
                         <th>Liquidity</th>
                         <th>Share</th>
+                        <!-- controls -->
+                        <th class="table__controls-cell table__controls-cell--x2"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -68,6 +77,19 @@ export default {
                         <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
                         <td>{{ pretty(pool.liquidityShare) }}%</td>
+                        <!-- controls -->
+                        <td class="table__controls-cell table__controls-cell--x2">
+                            <button class="table__controls-button u-semantic-button link--opacity"
+                                    @click="addLiquidity({coin0: pool.coin0.symbol, coin1: pool.coin1.symbol})"
+                            >
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Add liquidity">
+                            </button>
+                            <button class="table__controls-button u-semantic-button link--opacity"
+                                    @click="removeLiquidity({coin0: pool.coin0.symbol, coin1: pool.coin1.symbol})"
+                            >
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Remove liquidity">
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>

@@ -149,7 +149,7 @@
             },
         },
         mounted() {
-            eventBus.$on('activate-unbond', ({hash, coin}) => {
+            eventBus.on('activate-unbond', ({hash, coin}) => {
                 this.form.publicKey = hash;
                 this.form.coinSymbol = coin;
 
@@ -158,7 +158,7 @@
             });
         },
         destroyed() {
-            eventBus.$off('activate-unbond');
+            eventBus.off('activate-unbond');
         },
         methods: {
             prettyExact,

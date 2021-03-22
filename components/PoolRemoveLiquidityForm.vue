@@ -9,6 +9,8 @@ import maxLength from 'vuelidate/lib/validators/maxLength';
 import minValue from 'vuelidate/lib/validators/minValue.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+import eventBus from 'assets/event-bus.js';
+import focusElement from 'assets/focus-element.js';
 import {getCoinId} from '~/api/gate.js';
 import {getPoolProvider, getProviderPoolList} from '~/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
@@ -145,6 +147,18 @@ export default {
         },
         */
     },
+    mounted() {
+        eventBus.on('activate-remove-liquidity', ({coin0, coin1}) => {
+            this.form.coin0 = coin0;
+            this.form.coin1 = coin1;
+
+            const inputEl = this.$refs.fieldAmount.$el.querySelector('input');
+            focusElement(inputEl);
+        });
+    },
+    destroyed() {
+        eventBus.off('activate-remove-liquidity');
+    },
     methods: {
         pretty,
         prettyExact,
@@ -206,6 +220,7 @@ export default {
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
                 <FieldPercentage
+                    ref="fieldAmount"
                     v-model="form.liquidity"
                     :$value="$v.form.liquidity"
                     :label="$td('Liquidity', 'form.swap-remove-liquidity')"

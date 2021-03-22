@@ -1,3 +1,3 @@
-import Vue from 'vue';
-const eventBus = new Vue();
+import {TinyEmitter} from 'tiny-emitter';
+const eventBus = new TinyEmitter();
 export default eventBus;

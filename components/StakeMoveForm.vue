@@ -155,7 +155,7 @@
             },
         },
         // mounted() {
-        //     eventBus.$on('activate-move-stake', ({hash, coin}) => {
+        //     eventBus.on('activate-move-stake', ({hash, coin}) => {
         //         this.form.publicKeyFrom = hash;
         //         this.form.coinSymbol = coin;
         //
@@ -164,7 +164,7 @@
         //     });
         // },
         // destroyed() {
-        //     eventBus.$off('activate-move-stake');
+        //     eventBus.off('activate-move-stake');
         // },
         methods: {
             prettyExact,
