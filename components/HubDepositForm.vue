@@ -13,7 +13,6 @@ import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
 import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getAddressTransactionList} from '@/api/ethersacn.js';
-import {getOracleCoinList} from '@/api/hub.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -62,11 +61,14 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin],
-    fetch() {
-        return getOracleCoinList()
-            .then((oracleCoinList) => {
-                this.coinList = oracleCoinList;
-            });
+    props: {
+        /**
+         * @type Array<HubCoinItem>
+         */
+        coinList: {
+            type: Array,
+            required: true,
+        },
     },
     data() {
         return {
@@ -80,10 +82,6 @@ export default {
                 amount: "",
                 address: this.$store.getters.address,
             },
-            /**
-             * @type Array<HubCoinItem>
-             */
-            coinList: [],
             // @TODO use tx data in children components (for now only hash is used)
             transactionList: [],
             isFormSending: false,

@@ -7,8 +7,7 @@ import minLength from 'vuelidate/lib/validators/minLength.js';
 import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
-import {postTx, ensureNonce, replaceCoinSymbol, getCoinId} from '~/api/gate.js';
-import {getOracleEthFee, getOracleCoinList, getOraclePriceList} from '@/api/hub.js';
+import {postTx} from '~/api/gate.js';
 import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
@@ -42,15 +41,25 @@ export default {
         checkEmpty,
     },
     mixins: [validationMixin],
-    fetch() {
-        const coinListPromise = getOracleCoinList();
-
-        return Promise.all([getOracleEthFee(), coinListPromise, getOraclePriceList()])
-            .then(([ethFee, coinList, priceList]) => {
-                this.ethFee = ethFee;
-                this.coinList = coinList;
-                this.priceList = priceList;
-            });
+    props: {
+        ethFee: {
+            type: Object,
+            required: true,
+        },
+        /**
+         * @type Array<HubCoinItem>
+         */
+        coinList: {
+            type: Array,
+            required: true,
+        },
+        /**
+         * @type Array<{name: string, value: string}>
+         */
+        priceList: {
+            type: Array,
+            required: true,
+        },
     },
     data() {
         return {
@@ -60,18 +69,6 @@ export default {
                 address: "",
                 speed: SPEED_MIN,
             },
-            ethFee: {
-                min: 0,
-                fast: 0,
-            },
-            /**
-             * @type Array<HubCoinItem>
-             */
-            coinList: [],
-            /**
-             * @type Array<{name: string, value: string}>
-             */
-            priceList: [],
             isFormSending: false,
             serverSuccess: null,
             serverError: '',
@@ -199,6 +196,7 @@ export default {
             this.$v.$reset();
             this.form.address = '';
             this.form.amount = '';
+            this.form.coin = '';
             this.form.speed = SPEED_MIN;
         },
     },

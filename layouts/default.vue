@@ -1,7 +1,7 @@
 <script>
     import {shortHashFilter} from "~/assets/utils";
     import {support} from '~/assets/utils-support.js';
-    import {NETWORK, TESTNET} from '~/assets/variables';
+    import {NETWORK, TESTNET, EXPLORER_HOST} from '~/assets/variables';
     import TestnetNotice from '~/components/common/TestnetNotice.vue';
     import Snackbar from '~/components/common/Snackbar';
     import ConnectionNotice from '~/components/ConnectionNotice.vue';
@@ -9,6 +9,7 @@
     import Footer from '~/layouts/_footer';
 
     export default {
+        EXPLORER_HOST,
         components: {
             TestnetNotice,
             Snackbar,
@@ -218,19 +219,16 @@
                             <li class="u-cell">
                                 <a class="services__link link--hover" :href="`https://status.minter.network${isTestnet ? '/testnet' : ''}`" target="_blank">Status</a>
                             </li>
-                            <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">Explorer</a>
+                            <li class="u-cell">
+                                <a class="services__link link--hover" :href="$options.EXPLORER_HOST" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://docs.minter.network/#tag/Node-API" target="_blank">API</a>
-                            </li>
-                            <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://docs.minter.network/#section/Minter-SDKs" target="_blank">SDK</a>
+                                <a class="services__link link--hover" href="https://www.minter.network/docs#node-api" target="_blank">API</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://calculator.minter.network/" target="_blank">Calculator</a>
+                                <a class="services__link link--hover" href="https://www.minter.network/docs#minter-sdks" target="_blank">SDK</a>
                             </li>
-                            <li class="u-cell services__item--next-row">
+                            <li class="u-cell">
                                 <a class="services__link link--hover" href="https://help.minter.network" target="_blank">Help/FAQ</a>
                             </li>
                         </ul>
