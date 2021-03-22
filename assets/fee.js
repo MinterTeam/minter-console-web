@@ -4,8 +4,7 @@ import {FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {BASE_COIN, CHAIN_ID} from '~/assets/variables.js';
 import {estimateTxCommission} from '~/api/gate.js';
-import {getCoinList} from '~/api/explorer.js';
-import {getErrorText} from 'assets/server-error.js';
+import {getErrorText} from '~/assets/server-error.js';
 
 
 /**
@@ -79,6 +78,7 @@ export default function FeeBus({txParams, txType, txFeeOptions, selectedFeeCoin,
                 //@TODO always change, even if data stay the same
                 return {
                     priceCoinValue: this.priceCoinFeeValue,
+                    priceCoin: this.commissionPriceData?.coin || {},
                     baseCoinValue: this.baseCoinFeeValue,
                     isBaseCoin: this.isBaseCoinFee,
                     isBaseCoinEnough: this.isBaseCoinEnough,
@@ -123,12 +123,17 @@ export default function FeeBus({txParams, txType, txFeeOptions, selectedFeeCoin,
 
                 // wait for computed to recalculate
                 this.$nextTick(() => {
+                    // save current gasCoin to check if it will be actual after resolution
+                    const gasCoin = this.feeCoin;
                     estimateTxCommission({
                         ...this.txParams,
                         chainId: CHAIN_ID,
-                        gasCoin: this.feeCoin,
+                        gasCoin,
                     })
                         .then((feeData) => {
+                            if (gasCoin !== this.feeCoin) {
+                                return;
+                            }
                             this.priceCoinFeeValue = feeData.priceCoinCommission;
                             this.baseCoinFeeValue = feeData.baseCoinCommission;
                             this.feeValue = feeData.commission;
@@ -136,7 +141,9 @@ export default function FeeBus({txParams, txType, txFeeOptions, selectedFeeCoin,
                             this.isLoading = false;
                         })
                         .catch((error) => {
-                            console.log(error);
+                            if (gasCoin !== this.feeCoin) {
+                                return;
+                            }
                             this.feeError = getErrorText(error);
                             this.isLoading = false;
                         });
