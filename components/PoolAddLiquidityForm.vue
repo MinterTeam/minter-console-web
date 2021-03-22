@@ -119,6 +119,9 @@ export default {
                     return getPool(id0, id1);
                 });
         }, 400),
+        success() {
+            eventBus.emit('update-pool-list');
+        },
         clearForm() {
             this.form.volume0 = '';
             this.form.coin0 = '';
@@ -136,6 +139,7 @@ export default {
         :$txData="$v.form"
         :txType="$options.TX_TYPE.ADD_LIQUIDITY"
         @update:addressBalance="addressBalance = $event"
+        @success-tx="success()"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
