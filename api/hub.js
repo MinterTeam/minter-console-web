@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
-import Emitter from 'tiny-emitter';
+import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {getCoinList} from '@/api/explorer.js';
 import {HUB_API_URL, HUB_TRANSFER_STATUS} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';

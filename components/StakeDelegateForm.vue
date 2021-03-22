@@ -98,7 +98,7 @@
             },
         },
         mounted() {
-            eventBus.$on('activate-delegate', ({hash}) => {
+            eventBus.on('activate-delegate', ({hash}) => {
                 this.form.publicKey = hash;
 
                 const inputEl = this.$refs.fieldCoin.$el.querySelector('select, input');
@@ -106,7 +106,7 @@
             });
         },
         destroyed() {
-            eventBus.$off('activate-delegate');
+            eventBus.off('activate-delegate');
         },
         methods: {
             clearForm() {

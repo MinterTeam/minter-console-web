@@ -2,7 +2,7 @@ import BN from 'bn.js';
 import {Manager} from 'web3-core-requestmanager';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
-import Emitter from 'tiny-emitter';
+import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {ETHEREUM_API_URL} from '~/assets/variables.js';
 import {erc20ABI} from '~/assets/abi-data.js';
 

@@ -6,6 +6,8 @@ import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+import eventBus from '~/assets/event-bus.js';
+import focusElement from '~/assets/focus-element.js';
 import {getCoinId} from '@/api/gate.js';
 import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
@@ -91,6 +93,18 @@ export default {
             });
         },
     },
+    mounted() {
+        eventBus.on('activate-add-liquidity', ({coin0, coin1}) => {
+            this.form.coin0 = coin0;
+            this.form.coin1 = coin1;
+
+            const inputEl = this.$refs.fieldAmount.$el.querySelector('input');
+            focusElement(inputEl);
+        });
+    },
+    destroyed() {
+        eventBus.off('activate-add-liquidity');
+    },
     methods: {
         pretty,
         prettyExact,
@@ -149,6 +163,7 @@ export default {
                     </div>
                     <div class="u-cell u-cell--small--1-2">
                         <FieldUseMax
+                            ref="fieldAmount"
                             v-model="form.volume0"
                             :$value="$v.form.volume0"
                             :label="$td('Amount', 'form.swap-add-amount')"

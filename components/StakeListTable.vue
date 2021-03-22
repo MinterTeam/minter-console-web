@@ -226,10 +226,10 @@ export default {
                     },
         */
             activateDelegate({hash}) {
-                eventBus.$emit('activate-delegate', {hash});
+                eventBus.emit('activate-delegate', {hash});
             },
             activateUnbond({hash, coin}) {
-                eventBus.$emit('activate-unbond', {hash, coin});
+                eventBus.emit('activate-unbond', {hash, coin});
             },
     },
 };
