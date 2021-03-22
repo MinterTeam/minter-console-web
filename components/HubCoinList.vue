@@ -27,7 +27,7 @@ export default {
                 });
 
                 this.ethereumPrice = getPriceFromList(priceList, 'eth/0');
-                this.ethereumGas = getPriceFromList(priceList, 'eth/gas', true);
+                this.ethereumGas = getPriceFromList(priceList, 'eth/gas', true) / 10;
             });
     },
     data() {
