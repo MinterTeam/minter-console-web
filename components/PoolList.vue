@@ -4,6 +4,7 @@ import {pretty, getExplorerPoolUrl} from '~/assets/utils.js';
 import Loader from '~/components/common/Loader';
 import TableLink from '@/components/common/TableLink.vue';
 import eventBus from 'assets/event-bus.js';
+import focusElement from 'assets/focus-element.js';
 
 export default {
     components: {
@@ -36,6 +37,20 @@ export default {
                 };
             });
         },
+    },
+    mounted() {
+        eventBus.on('update-pool-list', () => {
+            // ensure explorer to update DB
+            setTimeout(() => {
+                getProviderPoolList(this.$store.getters.address)
+                    .then((poolListInfo) => {
+                        this.poolList = poolListInfo.data;
+                    });
+            }, 2000);
+        });
+    },
+    destroyed() {
+        eventBus.off('update-pool-list');
     },
     methods: {
         pretty,

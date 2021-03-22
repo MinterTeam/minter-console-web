@@ -3,6 +3,7 @@
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+    import eventBus from '~/assets/event-bus.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty, prettyExact} from "~/assets/utils.js";
     import TxForm from '~/components/common/TxForm.vue';
@@ -58,6 +59,9 @@
         methods: {
             pretty,
             prettyExact,
+            success() {
+                eventBus.emit('update-pool-list');
+            },
             clearForm() {
                 this.form.volume0 = '';
                 this.form.coin0 = '';
@@ -74,6 +78,7 @@
         :txData="form"
         :$txData="$v.form"
         :txType="$options.TX_TYPE.CREATE_SWAP_POOL"
+        @success-tx="success()"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>

@@ -4,6 +4,9 @@
     import HubWithdrawForm from '~/components/HubWithdrawForm.vue';
     import HubWithdrawTxList from '~/components/HubWithdrawTxList.vue';
     import HubDepositForm from '~/components/HubDepositForm.vue';
+    import {getOracleCoinList, getOracleEthFee, getOraclePriceList} from '@/api/hub.js';
+
+    let interval;
 
     export default {
         components: {
@@ -12,8 +15,16 @@
             HubWithdrawTxList,
             HubDepositForm,
         },
-        fetch({ app, store }) {
+        middleware({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Deposit and withdraw', 'common.page-deposit'));
+        },
+        fetch() {
+            return Promise.all([getOracleEthFee(), getOracleCoinList(), getOraclePriceList()])
+                .then(([ethFee, coinList, priceList]) => {
+                    this.ethFee = ethFee;
+                    this.coinList = coinList;
+                    this.priceList = priceList;
+                });
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);
@@ -32,9 +43,33 @@
         },
         data() {
             return {
+                ethFee: {
+                    min: 0,
+                    fast: 0,
+                },
+                /**
+                 * @type Array<HubCoinItem>
+                 */
+                coinList: [],
+                /**
+                 * @type Array<{name: string, value: string}>
+                 */
+                priceList: [],
             };
         },
         computed: {
+        },
+        mounted() {
+            interval = setInterval(() => {
+                Promise.all([getOracleEthFee(), getOraclePriceList()])
+                    .then(([ethFee, priceList]) => {
+                        this.ethFee = ethFee;
+                        this.priceList = priceList;
+                    });
+            }, 15 * 1000);
+        },
+        destroyed() {
+            clearInterval(interval);
         },
         methods: {
         },
@@ -43,9 +78,9 @@
 
 <template>
     <section class="u-section u-container">
-        <HubCoinList/>
-        <HubWithdrawForm/>
+        <HubCoinList :coin-list="coinList" :price-list="priceList" :is-loading="$fetchState.pending"/>
+        <HubWithdrawForm :eth-fee="ethFee" :coin-list="coinList" :price-list="priceList"/>
         <HubWithdrawTxList/>
-        <HubDepositForm/>
+        <HubDepositForm :coin-list="coinList"/>
     </section>
 </template>

@@ -173,6 +173,9 @@ export default {
                     return getPoolProvider(id0, id1, this.$store.getters.address);
                 });
         }, 400),
+        success() {
+            eventBus.emit('update-pool-list');
+        },
         clearForm() {
             this.form.liquidity = '';
             this.form.coin0 = '';
@@ -185,7 +188,13 @@ export default {
 
 <template>
     <!-- @TODO minimumVolume -->
-    <TxForm :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}" :$txData="$v" :txType="$options.TX_TYPE.REMOVE_LIQUIDITY" @clear-form="clearForm()">
+    <TxForm
+        :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}"
+        :$txData="$v"
+        :txType="$options.TX_TYPE.REMOVE_LIQUIDITY"
+        @success-tx="success()"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Remove liquidity from swap pool', 'swap.remove-title') }}

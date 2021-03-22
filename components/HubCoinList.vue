@@ -16,28 +16,40 @@ export default {
             type: Boolean,
             default: false,
         },
-    },
-    fetch() {
-        return Promise.all([getOracleCoinList(), getOraclePriceList()])
-            .then(([coinList, priceList]) => {
-                this.coinList = coinList.map((coin) => {
-                    coin.price = getPriceFromList(priceList, 'minter/' + coin.minterId);
-
-                    return coin;
-                });
-
-                this.ethereumPrice = getPriceFromList(priceList, 'eth/0');
-                this.ethereumGas = getPriceFromList(priceList, 'eth/gas', true) / 10;
-            });
+        /**
+         * @type Array<HubCoinItem>
+         */
+        coinList: {
+            type: Array,
+            required: true,
+        },
+        /**
+         * @type Array<{name: string, value: string}>
+         */
+        priceList: {
+            type: Array,
+            required: true,
+        },
     },
     data() {
         return {
-            coinList: [],
-            ethereumPrice: 0,
-            ethereumGas: 0,
         };
     },
     computed: {
+        coinListMapped() {
+            return this.coinList.map((coin) => {
+                return {
+                    ...coin,
+                    price: getPriceFromList(this.priceList, 'minter/' + coin.minterId),
+                };
+            });
+        },
+        ethereumPrice() {
+            return getPriceFromList(this.priceList, 'eth/0');
+        },
+        ethereumGas() {
+            return getPriceFromList(this.priceList, 'eth/gas', true) / 10;
+        },
     },
     methods: {
         pretty,
@@ -62,7 +74,7 @@ function getPriceFromList(list, name, keepDecimals) {
 
 <template>
     <section class="panel">
-        <template v-if="!$fetchState.pending">
+        <template v-if="!isLoading">
             <div class="table-wrap" v-if="coinList.length">
                 <table>
                     <thead>
@@ -73,7 +85,7 @@ function getPriceFromList(list, name, keepDecimals) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="u-text-nowrap" :key="coinItem.minterId" v-for="coinItem in coinList">
+                        <tr class="u-text-nowrap" :key="coinItem.minterId" v-for="coinItem in coinListMapped">
                             <td>
                                 <a class="link--default" :href="getExplorerCoinUrl(coinItem.symbol)" target="_blank" rel="noopener">{{ coinItem.symbol }}</a>
                             </td>
