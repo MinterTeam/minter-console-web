@@ -1,7 +1,10 @@
 <script>
     import Big from 'big.js';
+    import {isCoinId} from 'minter-js-sdk/src/utils.js';
     import checkEmpty from '~/assets/v-check-empty';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
+
+    Big.RM = 2;
 
     export default {
         components: {
@@ -60,7 +63,7 @@
                     return undefined;
                 }
                 // fee not in selected coins
-                if (selectedCoin.coin.symbol !== this.fee?.coinSymbol) {
+                if (!isSelectedCoinSameAsFeeCoin(selectedCoin.coin, this.fee?.coin)) {
                     return selectedCoin.amount;
                 }
                 // fee in selected coin (handle non-number values)
@@ -104,6 +107,24 @@
             },
         },
     };
+
+    /**
+     *
+     * @param {Coin} selectedCoinItem
+     * @param {string|number} feeCoinIdOrSymbol
+     * @return {boolean}
+     */
+    function isSelectedCoinSameAsFeeCoin(selectedCoinItem, feeCoinIdOrSymbol) {
+        const isFeeId = isCoinId(feeCoinIdOrSymbol);
+        const isFeeSymbol = !isFeeId;
+        if (isFeeSymbol && selectedCoinItem.symbol === feeCoinIdOrSymbol) {
+            return true;
+        }
+        if (isFeeId && selectedCoinItem.id === feeCoinIdOrSymbol) {
+            return true;
+        }
+        return false;
+    }
 </script>
 
 <template>

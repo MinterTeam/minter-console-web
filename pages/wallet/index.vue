@@ -8,7 +8,7 @@
     import InlineSvg from 'vue-inline-svg';
     import Modal from '~/components/common/Modal';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
-    import CoinSendForm from '~/components/CoinSendForm';
+    import CoinSendForm from '~/components/SendForm.vue';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';
 

@@ -1,12 +1,13 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
 import formatDistanceStrict from "date-fns/esm/formatDistanceStrict";
+import withParams from 'vuelidate/lib/withParams.js';
 import decode from 'entity-decode';
 import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
-import {txTypeList} from 'minterjs-tx/src/tx-types';
-import {EXPLORER_HOST} from "~/assets/variables";
+import {txTypeList} from 'minterjs-util/src/tx-types.js';
+import {EXPLORER_HOST, ETHERSCAN_HOST, HUB_TRANSFER_STATUS, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
 
 
 
@@ -42,34 +43,56 @@ export function makeAccepter(propName, isAcceptUnmasked) {
     };
 }
 
+/**
+ *
+ * @param {string|number|Date} timestamp
+ * @return {Date|null}
+ */
+function parseTime(timestamp) {
+    if (timestamp instanceof Date) {
+        return timestamp;
+    }
+    if (typeof timestamp === 'string') {
+        return parseISO(timestamp);
+    }
+    if (typeof timestamp === 'number') {
+        return new Date(timestamp);
+    }
+
+    return null;
+}
 
 export function getTimeStamp(timestamp) {
-    const time = format(parseISO(timestamp), 'dd MMM yyyy HH:mm:ss');
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
+    }
 
-    return time && time !== 'Invalid Date' ? time : false;
+    return format(parseTime(timestamp), 'dd MMM yyyy HH:mm:ss');
 }
 
 export function getTimeZone(timestamp) {
-    if (!(timestamp instanceof Date)) {
-        timestamp = parseISO(timestamp);
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
     }
-    const time = format(timestamp, 'O');
 
-    return time && time !== 'Invalid Date' ? time : false;
+    return format(timestamp, 'O');
 }
 
 export function getTimeDistance(timestamp, allowFuture) {
-    if (typeof timestamp === 'string') {
-        timestamp = parseISO(timestamp);
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
     }
+
     const now = new Date();
     // if timestamp from future
     if (timestamp > now && !allowFuture) {
         timestamp = now;
     }
-    const distance = formatDistanceStrict(timestamp, now, {roundingMethod: 'floor'});
 
-    return distance && distance !== 'Invalid Date' ? distance : false;
+    return formatDistanceStrict(timestamp, now, {roundingMethod: 'floor'});
 }
 
 export function getExplorerBlockUrl(block) {
@@ -88,6 +111,22 @@ export function getExplorerValidatorUrl(pubKey) {
     return EXPLORER_HOST + '/validator/' + pubKey;
 }
 
+export function getExplorerPoolUrl(coin0, coin1) {
+    return EXPLORER_HOST + `/pools/${coin0}/${coin1}`;
+}
+
+export function getExplorerCoinUrl(coin) {
+    return EXPLORER_HOST + `/coins/${coin}`;
+}
+
+export function getEtherscanTxUrl(hash) {
+    return ETHERSCAN_HOST + '/tx/' + hash;
+}
+
+export function getEtherscanAddressUrl(hash) {
+    return ETHERSCAN_HOST + '/address/' + hash;
+}
+
 /**
  * @param {string|number} value
  * @param {ROUNDING_MODE} [roundingMode]
@@ -95,14 +134,15 @@ export function getExplorerValidatorUrl(pubKey) {
  * @return {string}
  */
 export function pretty(value, roundingMode, skipFalsy) {
-    if (!skipFalsy && !value) {
+    const isFalsy = !value || value === Infinity;
+    if (!skipFalsy && isFalsy) {
         value = 0;
     }
-    if (skipFalsy && !value && value !== 0) {
+    if (skipFalsy && isFalsy && value !== 0) {
         return '';
     }
     const PRECISION = 2;
-    if (value >= 1 || value <= -1 || Number(value) === 0) {
+    if (value >= 0.1 || value <= -0.1 || Number(value) === 0) {
         return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&nbsp;'}));
     } else {
         value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&nbsp;'}));
@@ -162,6 +202,9 @@ export function prettyPreciseFloor(value) {
  * @return {string}
  */
 export function prettyExact(value) {
+    if (!value && value !== 0) {
+        return '';
+    }
     return decode(prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.INCREASE, thousandsSeparator: '&nbsp;'}));
 }
 
@@ -210,6 +253,10 @@ export function fromBase64(str) {
     }
 }
 
+export const coinSymbolValidator = withParams({type: 'coinName'}, function(value) {
+    return /^[A-Z0-9]{3,10}$/.test(value);
+});
+
 
 export function suggestionValidatorFilter(suggestion, query) {
     if (!query) {
@@ -253,4 +300,23 @@ function boldenSuggestion(text, query) {
     }
     const queries = query.split(/[\s-_/\\|.]/gm).filter((t) => !!t) || [''];
     return text.replace(new RegExp('(.*?)(' + queries.join('|') + ')(.*?)', 'gi'), '$1<b>$2</b>$3');
+}
+
+export function shortFilter(value, endLength = 6, minLengthToShort) {
+    const startLength = endLength + 'Mx'.length - 1;
+    minLengthToShort = minLengthToShort || startLength + endLength;
+    value = value.toString();
+    const isLong = value.length > minLengthToShort;
+
+    return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
+}
+
+export function isHubTransferFinished(status) {
+    const finishedStatus = {
+        [WITHDRAW_STATUS.not_found_long]: true,
+        [WITHDRAW_STATUS.batch_executed]: true,
+        [WITHDRAW_STATUS.refund]: true,
+    };
+
+    return !!finishedStatus[status];
 }

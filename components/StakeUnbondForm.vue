@@ -4,7 +4,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util/src/public";
     import eventBus from '~/assets/event-bus';
     import focusElement from '~/assets/focus-element';
@@ -149,7 +149,7 @@
             },
         },
         mounted() {
-            eventBus.$on('activate-unbond', ({hash, coin}) => {
+            eventBus.on('activate-unbond', ({hash, coin}) => {
                 this.form.publicKey = hash;
                 this.form.coinSymbol = coin;
 
@@ -158,7 +158,7 @@
             });
         },
         destroyed() {
-            eventBus.$off('activate-unbond');
+            eventBus.off('activate-unbond');
         },
         methods: {
             prettyExact,
@@ -258,7 +258,7 @@
             <div class="u-mt-10">
                 You stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes).
                 <br>
-                Coins will return to your address in 518&#x202F;400 blocks.
+                Coins will return to your address in 518&#x202F;400 blocks (~30 days).
             </div>
         </template>
     </TxForm>

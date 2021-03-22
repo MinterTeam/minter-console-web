@@ -13,7 +13,7 @@ export default function() {
             mainAddress: {},
         },
         userTimeStamp: 0,
-        /** @type Array<CoinItem> */
+        /** @type Array<BalanceItem> */
         balance: [],
         /** @type Array<StakeItem> */
         stakeList: [],

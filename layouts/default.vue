@@ -1,7 +1,7 @@
 <script>
     import {shortHashFilter} from "~/assets/utils";
     import {support} from '~/assets/utils-support.js';
-    import {NETWORK, TESTNET} from '~/assets/variables';
+    import {NETWORK, TESTNET, EXPLORER_HOST} from '~/assets/variables';
     import TestnetNotice from '~/components/common/TestnetNotice.vue';
     import Snackbar from '~/components/common/Snackbar';
     import ConnectionNotice from '~/components/ConnectionNotice.vue';
@@ -9,6 +9,7 @@
     import Footer from '~/layouts/_footer';
 
     export default {
+        EXPLORER_HOST,
         components: {
             TestnetNotice,
             Snackbar,
@@ -116,7 +117,19 @@
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('convert')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation">
-                                    {{ $td('Convert', 'common.page-convert') }}
+                                    {{ $td('Swap', 'common.page-convert') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('hub')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-hub.svg`" alt="" role="presentation">
+                                    {{ $td('Deposit & withdraw', 'common.page-hub') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
+                                    {{ $td('Checks', 'common.page-checks') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
@@ -126,9 +139,9 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
-                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
-                                    {{ $td('Checks', 'common.page-checks') }}
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('pool')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation">
+                                    {{ $td('Pools', 'common.page-pool') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
@@ -206,19 +219,16 @@
                             <li class="u-cell">
                                 <a class="services__link link--hover" :href="`https://status.minter.network${isTestnet ? '/testnet' : ''}`" target="_blank">Status</a>
                             </li>
-                            <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" :href="`https://${isTestnet ? 'testnet.': ''}explorer.minter.network`" target="_blank">Explorer</a>
+                            <li class="u-cell">
+                                <a class="services__link link--hover" :href="$options.EXPLORER_HOST" target="_blank">Explorer</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://docs.minter.network/#tag/Node-API" target="_blank">API</a>
-                            </li>
-                            <li class="u-cell services__item--next-row">
-                                <a class="services__link link--hover" href="https://docs.minter.network/#section/Minter-SDKs" target="_blank">SDK</a>
+                                <a class="services__link link--hover" href="https://www.minter.network/docs#node-api" target="_blank">API</a>
                             </li>
                             <li class="u-cell">
-                                <a class="services__link link--hover" href="https://calculator.minter.network/" target="_blank">Calculator</a>
+                                <a class="services__link link--hover" href="https://www.minter.network/docs#minter-sdks" target="_blank">SDK</a>
                             </li>
-                            <li class="u-cell services__item--next-row">
+                            <li class="u-cell">
                                 <a class="services__link link--hover" href="https://help.minter.network" target="_blank">Help/FAQ</a>
                             </li>
                         </ul>

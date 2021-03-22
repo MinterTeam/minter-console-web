@@ -4,7 +4,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util/src/public";
     import eventBus from '~/assets/event-bus';
     import focusElement from '~/assets/focus-element';
@@ -98,7 +98,7 @@
             },
         },
         mounted() {
-            eventBus.$on('activate-delegate', ({hash}) => {
+            eventBus.on('activate-delegate', ({hash}) => {
                 this.form.publicKey = hash;
 
                 const inputEl = this.$refs.fieldCoin.$el.querySelector('select, input');
@@ -106,7 +106,7 @@
             });
         },
         destroyed() {
-            eventBus.$off('activate-delegate');
+            eventBus.off('activate-delegate');
         },
         methods: {
             clearForm() {
@@ -148,6 +148,7 @@
                     :$value="$v.form.coinSymbol"
                     :label="$td('Coin', 'form.coin')"
                     :coin-list="addressBalance"
+                    coin-type="coin"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

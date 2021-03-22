@@ -4,23 +4,23 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import between from 'vuelidate/lib/validators/between';
-    import VueAutonumeric from 'vue-autonumeric/src/components/VueAutonumeric';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldUseMax from '~/components/common/FieldUseMax';
+    import FieldPercentage from '~/components/common/FieldPercentage.vue';
 
     export default {
         TX_TYPE,
         components: {
-            VueAutonumeric,
             TxForm,
             FieldCoin,
             FieldDomain,
             FieldUseMax,
+            FieldPercentage,
         },
         directives: {
             checkEmpty,
@@ -35,7 +35,6 @@
                     stake: '',
                     coinSymbol: '',
                 },
-                commissionFormatted: '0',
                 addressDomain: '',
                 isAddressDomainResolving: false,
                 publicKeyDomain: '',
@@ -68,15 +67,6 @@
             return {form};
         },
         computed: {
-        },
-        watch: {
-            commissionFormatted: {
-                handler(newVal) {
-                    newVal = parseFloat(newVal);
-                    this.form.commission = newVal === 0 ? null : newVal;
-                },
-                immediate: true,
-            },
         },
         methods: {
             clearForm() {
@@ -120,6 +110,7 @@
                     :$value="$v.form.coinSymbol"
                     :label="$td('Coin', 'form.coin')"
                     :coin-list="addressBalance"
+                    coin-type="coin"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -148,26 +139,13 @@
                 />
             </div>
             <div class="u-cell u-cell--xlarge--1-4">
-                <label class="form-field" :class="{'is-error': $v.form.commission.$error}">
-                    <VueAutonumeric class="form-field__input" type="text" inputmode="numeric" v-check-empty="'autoNumeric:formatted'"
-                                    v-model="commissionFormatted"
-                                    @blur.native="$v.form.commission.$touch()"
-                                    :options="{
-                                        allowDecimalPadding: false,
-                                        decimalPlaces: 0,
-                                        digitGroupSeparator: '',
-                                        emptyInputBehavior: 'press',
-                                        currencySymbol: '\u2009%',
-                                        currencySymbolPlacement: 's',
-                                        minimumValue: '0',
-                                        maximumValue: '100',
-                                        overrideMinMaxLimits: 'ignore',
-                                        unformatOnHover: false,
-                                        wheelStep: 1,
-                                    }"
-                    />
-                    <span class="form-field__label">{{ $td('Commission', 'form.masternode-commission') }}</span>
-                </label>
+                <FieldPercentage
+                    v-model="form.commission"
+                    :$value="$v.form.commission"
+                    :label="$td('Commission', 'form.masternode-commission')"
+                    min-value="0"
+                    max-value="100"
+                />
                 <span class="form-field__error" v-if="$v.form.commission.$dirty && !$v.form.commission.required">{{ $td('Enter commission', 'form.masternode-commission-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.commission.$dirty && !$v.form.commission.between">{{ $td('Must be between 0 and 100', 'form.masternode-commission-error-between') }}</span>
             </div>

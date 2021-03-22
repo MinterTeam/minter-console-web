@@ -74,16 +74,16 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy', content: `
-                    default-src 'self' ${connectCSP};
-                    script-src 'self' ${scriptCSP} 'unsafe-eval';
-                    style-src 'self' 'unsafe-inline';
-                    img-src 'self' ${imageCSP} data:;
-                    font-src 'self' data:;
-                    base-uri 'none';
-                    form-action 'none';
-                `,
-            },
+            // { 'http-equiv': 'Content-Security-Policy', content: `
+            //         default-src 'self' ${connectCSP};
+            //         script-src 'self' ${scriptCSP} 'unsafe-eval';
+            //         style-src 'self' 'unsafe-inline';
+            //         img-src 'self' ${imageCSP} data:;
+            //         font-src 'self' data:;
+            //         base-uri 'none';
+            //         form-action 'none';
+            //     `,
+            // },
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
             { hid: 'og-title', name: 'og:title', content: BASE_TITLE },
             { hid: 'og-description', name: 'og:description', content: BASE_DESCRIPTION },

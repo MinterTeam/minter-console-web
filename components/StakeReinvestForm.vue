@@ -220,7 +220,7 @@
                                        v-model="form.data.stake"
                                        @blur="$v.form.data.stake.$touch()"
                     />
-                    <span class="form-field__label">{{ $td('Stake', 'form.masternode-stake') }}</span>
+                    <span class="form-field__label">{{ $store.getters.BASE_COIN }} {{ $td('stake per tx', 'form.delegation-reinvest-stake') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.data.stake.$dirty && !$v.form.data.stake.required">{{ $td('Enter stake', 'form.masternode-stake-error-required') }}</span>
             </div>
@@ -242,7 +242,7 @@
                                         @blur="$v.form.gasPrice.$touch()"
                     />
                     <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
-                    <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                    <span class="form-field__label">{{ $td('Gas price (optional)', 'form.gas-price') }}</span>
                 </label>
                 <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
             </div>

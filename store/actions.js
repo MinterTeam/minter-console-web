@@ -1,8 +1,5 @@
 import {getProfile, getProfileAddressEncrypted} from "~/api";
-import {getBalance, getCoinList, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
-
-let activeCoinListPromise;
-let coinListTime = 0;
+import {getBalance, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
 
 export default {
     FETCH_PROFILE: ({ state, commit }) => {
@@ -53,16 +50,22 @@ export default {
     //             return txListInfo;
     //         });
     // },
-    FETCH_BALANCE: ({ commit, state, getters }) => {
+    FETCH_BALANCE({ commit, state, getters }) {
         if (getters.isOfflineMode) {
             return Promise.resolve();
         }
         // profile address fetched in the middleware
         return getBalance(getters.address)
-            .then((balanceResponse) => {
-                commit('SET_BALANCE', balanceResponse.data.balances);
+            .then(async (balanceResponse) => {
+                const balanceList = balanceResponse.data.balances;
+
+                balanceList.forEach((balanceItem) => {
+                    balanceItem.type = balanceItem.coin.type;
+                });
+
+                commit('SET_BALANCE', balanceList);
                 commit('SET_LAST_UPDATE_TIME', new Date(balanceResponse.latestBlockTime).getTime());
-                return balanceResponse.data.balances;
+                return balanceList;
             });
     },
     FETCH_STAKE_LIST: ({ commit, getters }) => {
@@ -71,13 +74,6 @@ export default {
                 commit('SET_STAKE_LIST', stakeList);
                 return stakeList;
             });
-    },
-    FETCH_COIN_LIST: () => {
-        if (Date.now() - coinListTime > 60 * 1000) {
-            activeCoinListPromise = getCoinList();
-            coinListTime = Date.now();
-        }
-        return activeCoinListPromise;
     },
     FETCH_VALIDATOR_LIST({ commit }) {
         return getValidatorList()

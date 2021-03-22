@@ -13,7 +13,7 @@ export default function focusElement(inputEl) {
 
     setTimeout(() => {
         // focus
-        inputEl.focus();
+        inputEl.focus({preventScroll:true});
         // prevent focus scroll, set initial position
         window.scrollTo(0, windowTop);
 

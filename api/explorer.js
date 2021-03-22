@@ -1,17 +1,40 @@
 import axios from 'axios';
-import {COIN_NAME, EXPLORER_API_URL} from "~/assets/variables";
+import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
+import {convertToPip} from 'minterjs-util';
+import {BASE_COIN, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 
 const instance = axios.create({
     baseURL: EXPLORER_API_URL,
+    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
 });
 addToCamelInterceptor(instance);
 addTimeInterceptor(instance);
 
 const explorer = instance;
 
+
+/**
+ * @typedef {Object} Status
+ * @property {number} marketCap - in $
+ * @property {number} bipPriceUsd
+ * @property {number} bipPriceBtc
+ * @property {number} bipPriceChange - in %
+ * @property {number} latestBlockHeight - block count
+ * @property {number} avgBlockTime - in seconds
+ * @property {number} totalTransactions - tx count
+ * @property {number} transactionsPerSecond - tps
+ */
+
+/**
+ * @return {Promise<Status>}
+ */
+export function getStatus() {
+    return explorer.get('status')
+        .then((response) => response.data.data);
+}
 
 /**
  * @typedef {Object} TransactionListInfo
@@ -46,6 +69,7 @@ export function getBalance(addressHash) {
 /**
  * @typedef {Object} BalanceItem
  * @property {number|string} amount
+ * @property {number|string} bipAmount
  * @property {Coin} coin
  */
 
@@ -58,9 +82,9 @@ export function getBalance(addressHash) {
 export function prepareBalance(balanceList) {
     return balanceList.sort((a, b) => {
             // set base coin first
-            if (a.coin.symbol === COIN_NAME) {
+            if (a.coin.symbol === BASE_COIN) {
                 return -1;
-            } else if (b.coin.symbol === COIN_NAME) {
+            } else if (b.coin.symbol === BASE_COIN) {
                 return 1;
             } else {
                 // sort coins by name, instead of reserve
@@ -75,22 +99,47 @@ export function prepareBalance(balanceList) {
         });
 }
 
+
+// 1 min cache
+const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
+
 /**
  * @return {Promise<Array<CoinItem>>}
  */
 export function getCoinList() {
-    return explorer.get('coins')
+    return explorer.get('coins', {
+            cache: coinsCache,
+        })
         // .then((response) => response.data.data);
         // @TODO don't sort, coins should already be sorted by reserve
-        .then((response) => response.data.data.sort((a, b) => {
-            if (a.symbol === COIN_NAME) {
-                return -1;
-            } else if (b.symbol === COIN_NAME) {
-                return 1;
-            } else {
-                return 0;
-                // return a.symbol.localeCompare(b.symbol);
-            }
+        .then((response) => {
+            const coinList = response.data.data;
+            return coinList.sort((a, b) => {
+                if (a.symbol === BASE_COIN) {
+                    return -1;
+                } else if (b.symbol === BASE_COIN) {
+                    return 1;
+                } else {
+                    return 0;
+                    // return a.symbol.localeCompare(b.symbol);
+                }
+            });
+        });
+}
+
+/**
+ * @param {string|number} [coin]
+ * @param {number} [depth]
+ * @return {Promise<Array<CoinItem>>}
+ */
+export function getSwapCoinList(coin, depth) {
+    const coinUrlSuffix = coin ? '/' + coin : '';
+    return explorer.get('pools/list/coins' + coinUrlSuffix, {
+            params: {depth},
+            cache: coinsCache,
+        })
+        .then((response) => response.data.sort((a, b) => {
+            return a.id - b.id;
         }));
 }
 
@@ -99,16 +148,20 @@ export function getCoinList() {
  * @typedef {Object} Coin
  * @property {number} id
  * @property {string} symbol
+ * @property {string} type
  */
 
 /**
  * @typedef {Object} CoinItem
  * @property {number} id
+ * @property {string} symbol
+ * @property {string} type
  * @property {number} crr
  * @property {number|string} volume
- * @property {number|string} reserve_balance
+ * @property {number|string} reserveBalance
  * @property {string} name
- * @property {string} symbol
+ * @property {boolean} mintable
+ * @property {boolean} burnable
  */
 
 
@@ -179,4 +232,101 @@ export function getTransaction(hash) {
             return tx;
         });
 }
+
+// 10s cache
+const poolCache = new Cache({maxAge: 10 * 1000});
+
+/**
+ * @param {string|number} coin0
+ * @param {string|number} coin1
+ * @return {Promise<Pool>}
+ */
+export function getPool(coin0, coin1) {
+    return explorer.get(`pools/coins/${coin0}/${coin1}`, {
+            cache: poolCache,
+        })
+        .then((response) => response.data.data);
+}
+
+/**
+ * @param {string} coin0
+ * @param {string} coin1
+ * @param {string} address
+ * @return {Promise<Pool>}
+ */
+export function getPoolProvider(coin0, coin1, address) {
+    return explorer.get(`pools/coins/${coin0}/${coin1}/providers/${address}`)
+        .then((response) => response.data.data);
+}
+
+/**
+ * @param {string} address
+ * @param {Object} [params]
+ * @param {number} [params.page]
+ * @param {number} [params.limit]
+ * @return {Promise<ProviderPoolListInfo>}
+ */
+export function getProviderPoolList(address, params) {
+    return explorer.get(`pools/providers/${address}`, {
+            params,
+        })
+        .then((response) => response.data);
+}
+
+/**
+ * @param {string} coin0
+ * @param {string} coin1
+ * @param {Object} amountOptions
+ * @param {number|string} [amountOptions.buyAmount]
+ * @param {number|string} [amountOptions.sellAmount]
+ * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string}>}
+ */
+export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
+    const amount = convertToPip(buyAmount || sellAmount);
+    let type;
+    if (sellAmount) {
+        type = 'input';
+    }
+    if (buyAmount) {
+        type = 'output';
+    }
+    return explorer.get(`pools/coins/${coin0}/${coin1}/route?type=${type}&amount=${amount}`)
+        .then((response) => response.data);
+}
+
+/**
+ * @typedef {Object} PoolListInfo
+ * @property {Array<Pool>} data
+ * @property {Object} meta - pagination
+ */
+
+/**
+ * @typedef {Object} ProviderPoolListInfo
+ * @property {Array<PoolProvider>} data
+ * @property {Object} meta - pagination
+ */
+
+/**
+ * @typedef {Object} Pool
+ * @property {Coin} coin0
+ * @property {Coin} coin1
+ * @property {number|string} amount0
+ * @property {number|string} amount1
+ * @property {number|string} liquidity
+ * @property {number|string} liquidityBip
+ * @property {string} token
+ */
+
+/**
+ * @typedef {Object} PoolProvider
+ * @property {string} address
+ * @property {Coin} coin0
+ * @property {Coin} coin1
+ * @property {number|string} amount0
+ * @property {number|string} amount1
+ * @property {number|string} liquidity
+ * @property {number|string} liquidityBip
+ * @property {number|string} liquidityShare
+ * @property {string} token
+ */
 

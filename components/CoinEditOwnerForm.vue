@@ -4,7 +4,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import withParams from 'vuelidate/lib/withParams';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import checkEmpty from '~/assets/v-check-empty';
     import TxForm from '~/components/common/TxForm.vue';
     import InputUppercase from '~/components/common/InputUppercase';
@@ -70,10 +70,10 @@
 </script>
 
 <template>
-    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_COIN_OWNER" @clear-form="clearForm()">
+    <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.EDIT_TICKER_OWNER" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Edit coin owner', 'coiner.edit-coin-owner-title') }}
+                {{ $td('Edit ticker owner', 'coiner.edit-coin-owner-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('', 'coiner.edit-coin-owner-description') }}
@@ -114,7 +114,7 @@
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Edit coin owner', 'coiner.edit-coin-owner-title') }}
+                {{ $td('Edit ticker owner', 'coiner.edit-coin-owner-title') }}
             </h1>
         </template>
     </TxForm>

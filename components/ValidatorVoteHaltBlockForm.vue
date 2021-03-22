@@ -1,7 +1,7 @@
 <script>
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
     import TxForm from '~/components/common/TxForm.vue';
@@ -60,7 +60,7 @@
     <TxForm :txData="form" :$txData="$v.form" :txType="$options.TX_TYPE.SET_HALT_BLOCK" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Set halt block', 'masternode.halt-block-title') }}
+                {{ $td('Vote for halt block', 'masternode.halt-block-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('', 'masternode.halt-block-description') }}

@@ -206,7 +206,7 @@
                     </div>
                 </li>
             </ul>
-<!--
+            <!--
             <hr class="hr&#45;&#45;margin-large">
             <p>{{ $td('Keep in mind that even without a Minter account, you still can use the following services and software:', 'index.links-description') }}</p>
             <ul class="services__list--horizontal no-list u-grid u-grid--vertical-margin--small">

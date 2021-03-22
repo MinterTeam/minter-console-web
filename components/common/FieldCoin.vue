@@ -2,6 +2,8 @@
     import VueSimpleSuggest from 'vue-simple-suggest/lib/vue-simple-suggest';
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty} from '~/assets/utils.js';
+    import {COIN_TYPE} from '~/assets/variables.js';
+    import {getCoinList} from '@/api/explorer.js';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
@@ -30,15 +32,22 @@
                 type: String,
                 required: true,
             },
-            /** @type Array */
+            /**
+             * Flat array or array of balance items
+             * @type Array<string>|Array<BalanceItem>
+             * */
             coinList: {
                 type: Array,
                 default: () => [],
             },
+            coinType: {
+                type: String,
+                default: COIN_TYPE.ANY,
+            },
         },
         data() {
             return {
-                /** @type Array<string> */
+                /** @type Array<CoinItem> */
                 coinListAll: [],
             };
         },
@@ -52,7 +61,14 @@
                 return this.coinList && this.coinList.length;
             },
             currentCoinList() {
-                return this.isConListSpecified ? this.coinList : this.coinListAll;
+                if (this.isConListSpecified) {
+                    return this.coinList
+                        .filter((balanceItem) => typeof balanceItem === 'object' ? ofType(balanceItem.coin.type, this.coinType) : true);
+                } else {
+                    return this.coinListAll
+                        .filter((coin) => ofType(coin.type, this.coinType))
+                        .map((item) => item.symbol);
+                }
             },
             maxSuggestions() {
                 return this.isConListSpecified ? 0 : MAX_ITEM_COUNT;
@@ -61,16 +77,24 @@
         watch: {
             // @TODO workaround for https://github.com/KazanExpress/vue-simple-suggest/issues/301 and https://github.com/KazanExpress/vue-simple-suggest/issues/302
             currentCoinList() {
-                this.$refs.vss.research();
+                const vss = this.$refs.vss;
+                if (vss.canSend) {
+                    vss.research();
+                } else {
+                    vss.getSuggestions(vss.text)
+                        .then((newList) => {
+                            vss.$set(vss, 'suggestions', newList);
+                        });
+                }
             },
         },
         mounted() {
             if (this.$store.getters.isOfflineMode) {
                 return;
             }
-            this.$store.dispatch('FETCH_COIN_LIST')
+            getCoinList()
                 .then((coinListAll) => {
-                    this.coinListAll = Object.freeze(coinListAll.map((item) => item.symbol));
+                    this.coinListAll = Object.freeze(coinListAll);
                 })
                 .catch((e) => {
                     console.log(e);
@@ -113,7 +137,15 @@
         },
     };
 
-
+    function ofType(coinType, selectedType) {
+        if (selectedType === COIN_TYPE.ANY) {
+            return true;
+        } else if (selectedType === COIN_TYPE.ANY_TOKEN) {
+            return coinType === COIN_TYPE.TOKEN || coinType === COIN_TYPE.POOL_TOKEN;
+        } else {
+            return coinType === selectedType;
+        }
+    }
 </script>
 
 <template>

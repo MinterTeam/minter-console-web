@@ -4,7 +4,7 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {prettyExact} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
@@ -67,7 +67,13 @@
 </script>
 
 <template>
-    <TxForm data-test-id="walletSend" :txData="{to: form.address, value: form.amount, coin: form.coinSymbol}" :$txData="$v.form" :txType="$options.TX_TYPE.SEND" @clear-form="clearForm()">
+    <TxForm
+        data-test-id="walletSend"
+        :txData="{to: form.address, value: form.amount, coin: form.coinSymbol}"
+        :$txData="$v.form"
+        :txType="$options.TX_TYPE.SEND"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Send Coins', 'wallet.send-title') }}

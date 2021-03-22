@@ -6,15 +6,17 @@
     import minLength from 'vuelidate/lib/validators/minLength';
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import autosize from 'v-autosize';
-    import {TX_TYPE} from 'minterjs-tx/src/tx-types';
+    import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce, replaceCoinSymbol} from '~/api/gate.js';
+    import {getSwapCoinList} from '~/api/explorer.js';
     import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
-    import {getExplorerTxUrl, pretty} from "~/assets/utils.js";
+    import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils.js";
+    import {COIN_TYPE} from '~/assets/variables.js';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
     import FieldQr from '~/components/common/FieldQr.vue';
@@ -50,6 +52,14 @@
             $txData: {
                 type: Object,
                 required: true,
+                validator(value) {
+                    // it should be vuelidate object
+                    return typeof value.$error === 'boolean' &&
+                    typeof value.$dirty === 'boolean' &&
+                    typeof value.$invalid === 'boolean' &&
+                    typeof value.$model === 'object' &&
+                    typeof value.$params === 'object';
+                },
             },
             /** @type TX_TYPE */
             txType: {
@@ -64,6 +74,12 @@
                 type: Boolean,
                 default: false,
             },
+        },
+        fetch() {
+            return getSwapCoinList(this.$store.getters.BASE_COIN, 1)
+                .then((swapCoinList) => {
+                    this.swapBaseCoinList = swapCoinList;
+                });
         },
         data() {
             return {
@@ -92,15 +108,18 @@
                 signedTx: null,
                 multisigDomain: '',
                 isMultisigDomainResolving: false,
+                swapBaseCoinList: [],
             };
         },
         validations() {
             const form = {
                 gasCoin: {
                     minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
+                    fee: () => this.$store.getters.isOfflineMode ? true : !this.fee.error,
                 },
                 payload: {
-                    maxLength: maxLength(1024),
+                    // considers unicode bytes @see https://stackoverflow.com/a/42684638/4936667
+                    maxLength: (value) => this.payloadLength <= 10000,
                     isNotMnemonic: (value) => !isValidMnemonic(value),
                 },
                 multisigAddress: {
@@ -139,6 +158,19 @@
                 this.$emit('update:addressBalance', balance);
                 return balance;
             },
+            gasSuitableBalance() {
+                return this.balance.filter((balanceItem) => {
+                    // coin with reserve
+                    if (balanceItem.coin.type === COIN_TYPE.COIN) {
+                        return true;
+                    }
+                    // swapable within pool to base coin
+                    if (this.swapBaseCoinList.find((swapCoinItem) => swapCoinItem.id === balanceItem.coin.id)) {
+                        return true;
+                    }
+                    return false;
+                });
+            },
             isShowPayload() {
                 return this.txType !== TX_TYPE.REDEEM_CHECK;
             },
@@ -154,27 +186,31 @@
             whatAffectsTxHash() {
                 return [this.form.gasCoin, this.form.gasPrice, this.form.nonce, this.form.payload, this.txData];
             },
+            payloadLength() {
+                return new Blob([this.form.payload]).size;
+            },
             feeBusParams() {
                 const txType = this.txType;
                 const txData = this.txData;
-                let selectedCoinSymbol;
-                if (txType === TX_TYPE.SEND || txType === TX_TYPE.DECLARE_CANDIDACY || txType === TX_TYPE.DELEGATE) {
-                    selectedCoinSymbol = txData.coin;
+
+                let deltaItemCount;
+                if (txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
+                    // count of pools
+                    deltaItemCount = txData.coins.length - 1;
                 }
-                if (txType === TX_TYPE.BUY || txType === TX_TYPE.SELL || txType === TX_TYPE.SELL_ALL) {
-                    selectedCoinSymbol = txData.coinToSell;
+                if (txType === TX_TYPE.MULTISEND) {
+                    // count of recipients
+                    deltaItemCount = txData.list.length;
                 }
-                let createCoinSymbol = txType === TX_TYPE.CREATE_COIN ? txData.symbol : undefined;
 
                 return {
-                    txType: txType,
-                    txFeeOptions: {
+                    txParams: {
+                        gasCoin: this.form.gasCoin,
                         payload: this.form.payload,
-                        coinSymbol: createCoinSymbol,
+                        type: txType,
+                        data: txData,
                     },
-                    selectedCoinSymbol,
-                    selectedFeeCoinSymbol: this.form.gasCoin,
-                    baseCoinAmount: this.$store.getters.baseCoin && this.$store.getters.baseCoin.amount,
+                    baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
             },
@@ -214,6 +250,7 @@
         },
         methods: {
             pretty: (val) => pretty(val, undefined, true),
+            prettyExact,
             submitConfirm() {
                 if (this.isFormSending) {
                     return;
@@ -288,7 +325,11 @@
                         ])
                         .then(([nonce]) => {
                             // private key to sign
-                            return postTx({...txParams, nonce}, {privateKey: this.$store.getters.privateKey});
+                            return postTx({...txParams, nonce}, {
+                                privateKey: this.$store.getters.privateKey,
+                                // don't increase gasPrice for high-fee tx
+                                gasRetryLimit: this.fee.isHighFee ? 0 : 2,
+                            });
                         });
                 } else {
                     let txParams = this.getTxParamsMultisigData();
@@ -360,7 +401,7 @@
                     ...clearEmptyFields(this.form),
                     data: clearEmptyFields(this.txData),
                     type: this.txType,
-                    gasCoin: this.fee.coinSymbol,
+                    gasCoin: this.fee.coin,
                     signatureType: this.form.multisigAddress ? 2 : 1,
                 };
             },
@@ -407,6 +448,7 @@
                 }
                 this.form.gasPrice = '';
                 this.$v.$reset();
+                //@TODO
                 // clear txData
                 // const cleanTxData = {};
                 // Object.keys(this.txData).forEach((key) => {
@@ -443,7 +485,7 @@
             <slot name="panel-header"></slot>
         </div>
 
-        <slot name="extra-panel"></slot>
+        <slot name="extra-panel" :fee="fee" :address-balance="balance"></slot>
 
         <!-- Form -->
         <form class="panel__section" novalidate @submit.prevent="submitConfirm">
@@ -456,16 +498,15 @@
                         v-model="form.gasCoin"
                         :$value="$v.form.gasCoin"
                         :label="$td('Coin to pay fee', 'form.fee')"
-                        :coin-list="balance"
+                        :coin-list="gasSuitableBalance"
                     />
                     <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-                    <div class="form-field__help" v-else-if="this.$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                    <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
+                    <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                     <div class="form-field__help" v-else>
-                        {{ fee.coinSymbol }} {{ pretty(fee.value) }}
+                        {{ fee.coin }} {{ pretty(fee.value) }}
                         <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
-                        <br>
-                        {{ $td('Default:', 'form.help-default') }} {{ fee.isBaseCoinEnough ? $store.getters.COIN_NAME : $td('same as coin to send', 'form.wallet-send-fee-same') }}
                     </div>
                 </div>
                 <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
@@ -477,9 +518,9 @@
                         >
                         <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                     </label>
-                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td('Max 1024 symbols', 'form.message-error-max') }}</span>
+                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td(`Max 10000 symbols, given ${payloadLength}`, 'form.message-error-max') }}</span>
                     <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
-                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone. May&nbsp;include up to 1024&nbsp;symbols.', 'form.message-help') }}</div>
+                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
                     <FieldDomain
@@ -612,6 +653,17 @@
                 </div>
                 <div class="panel__section" v-if="form.multisigAddress">
                     <SignatureList v-model="form.signatureList"/>
+                </div>
+                <div class="panel__section u-text-left">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ pretty(fee.value) }} {{ fee.coin }}
+                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
+                            <span class="u-display-ib" v-if="fee.priceCoin.id > 0">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
+                        </div>
+                        <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>
+                    </div>
+                    <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> Transaction requires high fee.</div>
                 </div>
                 <div class="panel__section">
                     <button class="button button--main button--full" type="button" data-test-id="txModalSubmitButton" data-focus-on-open

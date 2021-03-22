@@ -217,10 +217,4 @@ function markSecured(address) {
  * @property {string} [mnemonic] - Stored mnemonic (if not isServerSecured)
  */
 
-/**
- * @typedef {Object} CoinItem
- * @property {string|number} amount
- * @property {string} coin
- */
-
 
