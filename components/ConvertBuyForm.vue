@@ -79,7 +79,6 @@
                 },
                 maximumValueToSell: {
                     minValue: this.form.maximumValueToSell ? minValue(0) : () => true,
-                    maxValue: this.form.maximumValueToSell ? maxValue(COIN_MAX_AMOUNT) : () => true,
                 },
             };
 
@@ -241,7 +240,6 @@
                     <span class="form-field__label">{{ $td('Max amount to spend (optional)', 'form.convert-buy-max') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.maximumValueToSell.$dirty && !$v.form.maximumValueToSell.minValue">{{ $td(`Min value is 0`, 'form.convert-buy-max-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
-                <span class="form-field__error" v-else-if="$v.form.maximumValueToSell.$dirty && !$v.form.maximumValueToSell.maxValue">{{ $td(`Max value is 10^15`, 'form.convert-buy-max-error-max') }}</span>
                 <div class="form-field__help">
                     {{ $td('Default:', 'form.help-default') }} 10^15
                 </div>
