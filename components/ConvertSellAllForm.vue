@@ -58,6 +58,7 @@ export default {
             estimationRoute: null,
             //@TODO disable optimal in offline mode
             selectedConvertType: CONVERT_TYPE.OPTIMAL,
+            txForm: {},
             addressBalance: [],
             tradableCoinList: [],
         };
@@ -136,6 +137,8 @@ export default {
                 coinToBuy: this.form.coinTo,
                 swapFrom: this.selectedConvertType,
                 findRoute: true,
+                gasCoin: this.txForm.gasCoin || 0,
+                sellAll: true,
             })
                 .then((result) => {
                     this.estimation = result.will_get;
@@ -169,6 +172,7 @@ export default {
         :txType="txType"
         :before-confirm-modal-show="getEstimation"
         @update:addressBalance="addressBalance = $event"
+        @update:txForm="txForm = $event"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>

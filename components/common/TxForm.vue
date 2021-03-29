@@ -234,6 +234,12 @@
                     }
                 },
             },
+            form: {
+                handler(newVal) {
+                    this.$emit('update:txForm', newVal);
+                },
+                deep: true,
+            },
             whatAffectsTxHash: {
                 handler() {
                     this.clearSignatureData();
