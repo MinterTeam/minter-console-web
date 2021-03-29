@@ -11,6 +11,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {prettyExact} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
+    import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldUseMax from '~/components/common/FieldUseMax';
@@ -21,6 +22,7 @@
         prettyExact,
         components: {
             TxForm,
+            TxFormBlocksToUpdateStake,
             FieldCoin,
             FieldDomain,
             FieldUseMax,
@@ -39,7 +41,6 @@
                 },
                 domain: '',
                 isDomainResolving: false,
-                successTx: null,
             };
         },
         validations() {
@@ -79,23 +80,6 @@
 
                 return result;
             },
-            blocksToUpdate() {
-                if (!this.successTx) {
-                    return 0;
-                }
-                const currentBlockAfterPreviousUpdate = this.successTx.height % 120;
-                return (120 - currentBlockAfterPreviousUpdate) % 120;
-            },
-            timeToUpdate() {
-                if (!this.blocksToUpdate) {
-                    return;
-                }
-                const time = this.blocksToUpdate * 5;
-                const minutes = Math.floor(time / 60);
-                const seconds = (time % 60).toString().padStart(2, '0');
-
-                return `${minutes}:${seconds}`;
-            },
         },
         mounted() {
             eventBus.on('activate-delegate', ({hash}) => {
@@ -120,7 +104,12 @@
 </script>
 
 <template>
-    <TxForm :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.DELEGATE" @clear-form="clearForm()" @success-tx="successTx = $event">
+    <TxForm
+        :txData="{publicKey: form.publicKey, coin: form.coinSymbol, stake: form.stake}"
+        :$txData="$v.form"
+        :txType="$options.TX_TYPE.DELEGATE"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Delegate', 'delegation.delegate-title') }}
@@ -205,10 +194,8 @@
             <div class="u-text-left" v-html="$td('', 'form.delegation-delegate-confirm-note')"></div>
         </template>
 
-        <template v-slot:success-modal-body-extra v-if="successTx">
-            <div class="u-mt-10">
-                You stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes)
-            </div>
+        <template v-slot:success-modal-body-extra="{successTx}">
+            <TxFormBlocksToUpdateStake :success-tx="successTx" v-if="successTx"/>
         </template>
     </TxForm>
 </template>

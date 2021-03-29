@@ -34,6 +34,8 @@ export const PASSWORD_MIN_LENGTH = 6;
 export const PASSWORD_MAX_LENGTH = 100;
 export const I18N_ROUTE_NAME_SEPARATOR = '___';
 
+export const STAKE_RECALCULATE_BLOCK_COUNT = 720;
+
 export const CONVERT_TYPE = {
     BANCOR: 'bancor',
     POOL: 'pool',

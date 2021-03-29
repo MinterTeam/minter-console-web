@@ -6,6 +6,7 @@
     import {isValidPublic} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty.js';
     import TxForm from '~/components/common/TxForm.vue';
+    import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
     import FieldPercentage from '~/components/common/FieldPercentage.vue';
 
@@ -14,6 +15,7 @@
         TX_TYPE,
         components: {
             TxForm,
+            TxFormBlocksToUpdateStake,
             FieldDomain,
             FieldPercentage,
         },
@@ -106,6 +108,14 @@
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-node-management.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Edit candidate commission', 'masternode.edit-commission-title') }}
             </h1>
+        </template>
+
+        <template v-slot:success-modal-body-extra="{successTx}">
+            <TxFormBlocksToUpdateStake :success-tx="successTx" v-if="successTx">
+                <template v-slot:default="{blocksToUpdate, timeToUpdate}">
+                    Commission will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes)
+                </template>
+            </TxFormBlocksToUpdateStake>
         </template>
     </TxForm>
 </template>
