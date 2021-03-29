@@ -111,7 +111,7 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('convert')" @click.native="linkClick">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('swap')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation">
                                     {{ $td('Swap', 'common.page-convert') }}
                                 </nuxt-link>
