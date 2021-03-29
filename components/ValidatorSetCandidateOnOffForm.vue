@@ -4,12 +4,14 @@
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util/src/public";
     import TxForm from '~/components/common/TxForm.vue';
+    import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldDomain from '~/components/common/FieldDomain';
 
     export default {
         TX_TYPE,
         components: {
             TxForm,
+            TxFormBlocksToUpdateStake,
             FieldDomain,
         },
         directives: {
@@ -102,6 +104,14 @@
                 <span v-if="isTypeOn">{{ $td('Set candidate on', 'masternode.on-title') }}</span>
                 <span v-else>{{ $td('Set candidate off', 'masternode.off-title') }}</span>
             </h1>
+        </template>
+
+        <template v-slot:success-modal-body-extra="{successTx}" v-if="isTypeOn">
+            <TxFormBlocksToUpdateStake :success-tx="successTx" v-if="successTx">
+                <template v-slot:default="{blocksToUpdate, timeToUpdate}">
+                    Status will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes)
+                </template>
+            </TxFormBlocksToUpdateStake>
         </template>
     </TxForm>
 </template>

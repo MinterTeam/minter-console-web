@@ -8,6 +8,7 @@
     import {isValidPublic, isValidAddress} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty';
     import TxForm from '~/components/common/TxForm.vue';
+    import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldUseMax from '~/components/common/FieldUseMax';
@@ -17,6 +18,7 @@
         TX_TYPE,
         components: {
             TxForm,
+            TxFormBlocksToUpdateStake,
             FieldCoin,
             FieldDomain,
             FieldUseMax,
@@ -160,6 +162,10 @@
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-node-management.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Declare candidacy', 'masternode.declare-title') }}
             </h1>
+        </template>
+
+        <template v-slot:success-modal-body-extra="{successTx}">
+            <TxFormBlocksToUpdateStake :success-tx="successTx" v-if="successTx"/>
         </template>
     </TxForm>
 </template>

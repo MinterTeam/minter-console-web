@@ -58,6 +58,7 @@ export default {
             estimationRoute: null,
             //@TODO disable optimal in offline mode
             selectedConvertType: CONVERT_TYPE.OPTIMAL,
+            txForm: {},
             addressBalance: [],
             tradableCoinList: [],
         };
@@ -136,6 +137,8 @@ export default {
                 coinToBuy: this.form.coinTo,
                 swapFrom: this.selectedConvertType,
                 findRoute: true,
+                gasCoin: this.txForm.gasCoin || 0,
+                sellAll: true,
             })
                 .then((result) => {
                     this.estimation = result.will_get;
@@ -169,6 +172,7 @@ export default {
         :txType="txType"
         :before-confirm-modal-show="getEstimation"
         @update:addressBalance="addressBalance = $event"
+        @update:txForm="txForm = $event"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
@@ -229,7 +233,6 @@ export default {
                     <span class="form-field__label">{{ $td('Min amount to get (optional)', 'form.convert-sell-min') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.minValue">{{ $td(`Min value is 0`, 'form.convert-sell-min-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
-                <span class="form-field__error" v-else-if="$v.form.minimumValueToBuy.$dirty && !$v.form.minimumValueToBuy.maxValue">{{ $td(`Max value is 10^15`, 'form.convert-sell-min-error-max') }}</span>
                 <div class="form-field__help">
                     {{ $td('Default:', 'form.help-default') }} 0
                 </div>
