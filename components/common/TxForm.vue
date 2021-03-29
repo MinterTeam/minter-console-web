@@ -704,7 +704,7 @@
                         <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>
                         <a class="link--default u-text-break" :href="getExplorerTxUrl(serverSuccess.hash)" target="_blank" v-if="serverSuccess">{{ serverSuccess.hash }}</a>
                     </slot>
-                    <slot name="success-modal-body-extra" :success-tx="successTx"></slot>
+                    <slot name="success-modal-body-extra" :success-tx="serverSuccess"></slot>
                 </div>
                 <div class="panel__section">
                     <slot name="success-modal-button">
