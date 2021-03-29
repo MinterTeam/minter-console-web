@@ -11,7 +11,6 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty, prettyExact} from "~/assets/utils";
     import TxForm from '~/components/common/TxForm.vue';
-    import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldDomain from '~/components/common/FieldDomain';
     import FieldCoin from '~/components/common/FieldCoin';
     import FieldUseMax from '~/components/common/FieldUseMax';
@@ -20,7 +19,6 @@
         TX_TYPE,
         components: {
             TxForm,
-            TxFormBlocksToUpdateStake,
             FieldDomain,
             FieldCoin,
             FieldUseMax,
@@ -245,9 +243,7 @@
         </template>
 
         <template v-slot:success-modal-body-extra="{successTx}">
-            <div v-if="successTx">
-                <TxFormBlocksToUpdateStake :success-tx="successTx"/>
-
+            <div class="u-mt-10" v-if="successTx">
                 Coins will return to your address in 518&#x202F;400 blocks (~30 days).
             </div>
         </template>
