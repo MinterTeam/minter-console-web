@@ -144,7 +144,11 @@ export default function FeeBus({txParams, txType, txFeeOptions, selectedFeeCoin,
                             if (gasCoin !== this.feeCoin) {
                                 return;
                             }
-                            this.feeError = getErrorText(error);
+                            this.feeError = getErrorText(error, '');
+                            if (this.feeError.toLowerCase() === 'not possible to exchange') {
+                                this.feeError = this.feeError + ' to pay fee';
+                            }
+                            this.feeError = 'Error: ' + this.feeError;
                             this.isLoading = false;
                         });
                 });

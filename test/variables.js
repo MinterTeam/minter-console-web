@@ -9,7 +9,7 @@ export const ROUTES = {
     },
     private: {
         wallet: `${APP_URL_BASE}/wallet`,
-        convert: `${APP_URL_BASE}/convert`,
+        convert: `${APP_URL_BASE}/swap`,
     },
 };
 

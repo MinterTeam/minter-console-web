@@ -10,6 +10,7 @@
     import checkEmpty from '~/assets/v-check-empty.js';
     import {pretty, prettyExact} from "~/assets/utils.js";
     import TxForm from '~/components/common/TxForm.vue';
+    import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldUseMax from '~/components/common/FieldUseMax.vue';
@@ -18,6 +19,7 @@
         TX_TYPE,
         components: {
             TxForm,
+            TxFormBlocksToUpdateStake,
             FieldDomain,
             FieldCoin,
             FieldUseMax,
@@ -129,23 +131,6 @@
                     return [];
                 }
             },
-            blocksToUpdate() {
-                if (!this.successTx) {
-                    return 0;
-                }
-                const currentBlockAfterPreviousUpdate = this.successTx.height % 120;
-                return (120 - currentBlockAfterPreviousUpdate) % 120;
-            },
-            timeToUpdate() {
-                if (!this.blocksToUpdate) {
-                    return;
-                }
-                const time = this.blocksToUpdate * 5;
-                const minutes = Math.floor(time / 60);
-                const seconds = (time % 60).toString().padStart(2, '0');
-
-                return `${minutes}:${seconds}`;
-            },
         },
         watch: {
             'form.publicKeyFrom': function(newVal) {
@@ -180,7 +165,13 @@
 </script>
 
 <template>
-    <TxForm :txData="{from: form.publicKeyFrom, to: form.publicKeyTo, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.MOVE_STAKE" @update:isMultisigAddress="isMultisigAddress = $event" @clear-form="clearForm()" @success-tx="successTx = $event">
+    <TxForm
+        :txData="{from: form.publicKeyFrom, to: form.publicKeyTo, coin: form.coinSymbol, stake: form.stake}"
+        :$txData="$v.form"
+        :txType="$options.TX_TYPE.MOVE_STAKE"
+        @update:isMultisigAddress="isMultisigAddress = $event"
+        @clear-form="clearForm()"
+    >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Move stake', 'delegation.move-title') }}
@@ -281,11 +272,11 @@
             </div>
         </template>
 
-        <template v-slot:success-modal-body-extra v-if="successTx">
-            <div class="u-mt-10">
-                You stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes).
-                <br>
-                Coins will return to your address in 518&#x202F;400 blocks (~30 days).
+        <template v-slot:success-modal-body-extra="{successTx}">
+            <div v-if="successTx">
+                <TxFormBlocksToUpdateStake :success-tx="successTx"/>
+
+                Coins will be moved in 518&#x202F;400 blocks (~30 days).
             </div>
         </template>
     </TxForm>

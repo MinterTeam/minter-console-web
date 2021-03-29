@@ -6,12 +6,14 @@ import PostTx, {EnsureNonce} from 'minter-js-sdk/src/api/post-tx';
 import PostSignedTx from 'minter-js-sdk/src/api/post-signed-tx';
 import GetNonce from 'minter-js-sdk/src/api/get-nonce';
 import EstimateCoinSell from 'minter-js-sdk/src/api/estimate-coin-sell';
+import EstimateCoinSellAll from 'minter-js-sdk/src/api/estimate-coin-sell-all.js';
 import EstimateCoinBuy from 'minter-js-sdk/src/api/estimate-coin-buy';
 import EstimateTxCommission from 'minter-js-sdk/src/api/estimate-tx-commission.js';
+import {ESTIMATE_SWAP_TYPE} from 'minter-js-sdk/src/variables.js';
 import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath, GetCoinId} from 'minter-js-sdk/src/api/replace-coin.js';
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import GetCommissionPrice from 'minter-js-sdk/src/api/get-commission-price.js';
-import {GATE_API_URL, CHAIN_ID, CONVERT_TYPE} from '~/assets/variables.js';
+import {GATE_API_URL, CHAIN_ID} from '~/assets/variables.js';
 import {getSwapRoute} from '@/api/explorer.js';
 
 const minterApi = new MinterApi({
@@ -29,10 +31,12 @@ export const ensureNonce = EnsureNonce(minterApi);
 
 const estimateCache = new Cache({maxAge: 30 * 1000});
 // sell/buy estimates not used often (only before confirmation modal opening) so no need to cache them
-const _estimateCoinSell = (params, axiosOptions) => EstimateCoinSell(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
+const _estimateCoinSell = (params, axiosOptions) => params.sellAll
+    ? EstimateCoinSellAll(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/)
+    : EstimateCoinSell(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
 const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
 export function estimateCoinSell(params) {
-    if (params.findRoute && params.swapFrom !== CONVERT_TYPE.BANCOR) {
+    if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
         let estimateError;
         const estimatePromise = _estimateCoinSell(params)
             .catch((error) => {
@@ -52,11 +56,33 @@ export function estimateCoinSell(params) {
                 const isRouteBetter = estimateData && routeData && new Big(estimateData.will_get).lt(routeData.amountOut);
 
                 if (isRouteOnly || isRouteBetter) {
-                    estimateData = estimateData || {};
                     // swap by route is better
-                    estimateData.will_get = routeData.amountOut;
-                    estimateData.swap_from = CONVERT_TYPE.POOL;
-                    estimateData.route = routeData.coins;
+                    const idRoute = routeData.coins.map((coin) => coin.id);
+                    // remove first and last items, keep only intermediate items
+                    idRoute.pop();
+                    idRoute.shift();
+                    return Promise.all([
+                        _estimateCoinSell({
+                            ...params,
+                            route: idRoute,
+                            swapFrom: ESTIMATE_SWAP_TYPE.POOL,
+                        }),
+                        Promise.resolve(routeData.coins),
+                    ])
+                        .then(([estimateRouteData, route]) => {
+                            estimateRouteData = {
+                                ...estimateRouteData,
+                                route,
+                            };
+                            const isEstimateRouteBetter = estimateData && estimateRouteData && new Big(estimateData.will_get).lt(estimateRouteData.will_get);
+
+                            if (isRouteOnly || isEstimateRouteBetter) {
+                                return estimateRouteData;
+                            } else {
+                                // direct estimation may be better
+                                return estimateData;
+                            }
+                        });
                 }
                 return estimateData;
             });
@@ -65,7 +91,7 @@ export function estimateCoinSell(params) {
     }
 }
 export function estimateCoinBuy(params) {
-    if (params.findRoute && params.swapFrom !== CONVERT_TYPE.BANCOR) {
+    if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
         let estimateError;
         const estimatePromise = _estimateCoinBuy(params)
             .catch((error) => {
@@ -85,10 +111,32 @@ export function estimateCoinBuy(params) {
                 const isRouteBetter = estimateData && routeData && new Big(estimateData.will_pay).gt(routeData.amountIn);
 
                 if (isRouteOnly || isRouteBetter) {
-                    estimateData = estimateData || {};
-                    estimateData.will_pay = routeData.amountIn;
-                    estimateData.swap_from = CONVERT_TYPE.POOL;
-                    estimateData.route = routeData.coins;
+                    const idRoute = routeData.coins.map((coin) => coin.id);
+                    // remove first and last items, keep only intermediate items
+                    idRoute.pop();
+                    idRoute.shift();
+                    return Promise.all([
+                            _estimateCoinBuy({
+                                ...params,
+                                route: idRoute,
+                                swapFrom: ESTIMATE_SWAP_TYPE.POOL,
+                            }),
+                            Promise.resolve(routeData.coins),
+                        ])
+                        .then(([estimateRouteData, route]) => {
+                            estimateRouteData = {
+                                ...estimateRouteData,
+                                route,
+                            };
+                            const isEstimateRouteBetter = estimateData && estimateRouteData && new Big(estimateData.will_get).lt(estimateRouteData.will_get);
+
+                            if (isRouteOnly || isEstimateRouteBetter) {
+                                return estimateRouteData;
+                            } else {
+                                // direct estimation may be better
+                                return estimateData;
+                            }
+                        });
                 }
                 return estimateData;
             });

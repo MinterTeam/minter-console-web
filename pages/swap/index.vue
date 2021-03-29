@@ -11,7 +11,7 @@
             ConvertBuyForm,
         },
         fetch({ app, store }) {
-            store.commit('SET_SECTION_NAME', app.$td('Convert', 'common.page-convert'));
+            store.commit('SET_SECTION_NAME', app.$td('Swap', 'common.page-convert'));
             return Promise.resolve();
         },
         head() {
