@@ -53,7 +53,7 @@ export function estimateCoinSell(params) {
                     throw estimateError;
                 }
                 const isRouteOnly = routeData && estimateError;
-                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_get).lt(routeData.amountOut);
+                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_get).lt(routeData.amountOut) && routeData.coins.length > 2;
 
                 if (isRouteOnly || isRouteBetter) {
                     // swap by route is better
@@ -108,7 +108,7 @@ export function estimateCoinBuy(params) {
                     throw estimateError;
                 }
                 const isRouteOnly = routeData && estimateError;
-                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_pay).gt(routeData.amountIn);
+                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_pay).gt(routeData.amountIn) && routeData.coins.length > 2;
 
                 if (isRouteOnly || isRouteBetter) {
                     const idRoute = routeData.coins.map((coin) => coin.id);
