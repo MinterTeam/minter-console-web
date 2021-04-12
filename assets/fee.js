@@ -9,33 +9,31 @@ import {getErrorText} from '~/assets/server-error.js';
 
 /**
  * @typedef {Object} FeeData
+ * @property {Coin} priceCoin
  * @property {boolean} isBaseCoin
  * @property {boolean} isBaseCoinEnough
+ * @property {number|string} priceCoinValue
  * @property {number|string} baseCoinValue
  * @property {number|string} value
- * @property {string} coinSymbol
+ * @property {string|number} coin
  * @property {string} error
+ * @property {boolean} isHighFee
+ * @property {boolean} isLoading
  */
 
 /**
  *
  * @param {TxParams} txParams
- * @param {string} txType
- * @param {{payload: string, coinSymbol: string, multisendCount: number}} [txFeeOptions]
- * @param {string|number} [selectedFeeCoin]
  * @param {number} [baseCoinAmount]
  * @param {boolean} [isOffline]
  * @return {Vue}
  * @constructor
  */
 
-export default function FeeBus({txParams, txType, txFeeOptions, selectedFeeCoin, baseCoinAmount = 0, isOffline}) {
+export default function FeeBus({txParams, baseCoinAmount = 0, isOffline}) {
     return new Vue({
         data: {
             txParams,
-            txType,
-            txFeeOptions,
-            selectedFeeCoin,
             baseCoinAmount,
             priceCoinFeeValue: 0,
             baseCoinFeeValue: 0,
@@ -51,13 +49,7 @@ export default function FeeBus({txParams, txType, txFeeOptions, selectedFeeCoin,
                 return new Big(this.baseCoinAmount || 0).gte(this.baseCoinFeeValue);
             },
             isBaseCoinFee() {
-                // use selectedFeeCoin if it is defined
-                if (isCoinDefined(this.txParams.gasCoin)) {
-                    return isBaseCoin(this.txParams.gasCoin);
-                }
-
-                // base coin by default
-                return true;
+                return isBaseCoin(this.feeCoin);
             },
             feeCoin() {
                 if (isCoinDefined(this.txParams.gasCoin)) {
