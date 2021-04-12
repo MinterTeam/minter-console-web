@@ -280,7 +280,7 @@ export default {
                 </div>
             </div>
             <div class="u-cell" v-show="txType === $options.TX_TYPE.CREATE_TOKEN">
-                <div class="form-check-label">Allow edit token supply by owner</div>
+                <div class="form-check-label">Allow edit token supply</div>
                 <label class="form-check">
                     <input class="form-check__input" type="checkbox" v-model="form.mintable">
                     <span class="form-check__label form-check__label--checkbox">{{ $td('Mintable', 'form.coiner-create-token-mintable') }}</span>
