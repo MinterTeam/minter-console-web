@@ -235,7 +235,6 @@ export default {
             'minterjs-wallet',
             'bip39/src', // minterjs-wallet
             'minter-js-sdk',
-            'minter-js-org',
         ],
     },
 };

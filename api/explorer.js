@@ -1,10 +1,10 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
+import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
 import {BASE_COIN, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
-import stripZeros from 'pretty-num/src/strip-zeros.js';
 
 const instance = axios.create({
     baseURL: EXPLORER_API_URL,
@@ -56,7 +56,7 @@ export function getAddressTransactionList(address, params = {}) {
 
 /**
  * @param addressHash
- * @return {Promise<Array<BalanceItem>>}
+ * @return {Promise<{data: BalanceData, latestBlockTime: string}>}
  */
 export function getBalance(addressHash) {
     return explorer.get('addresses/' + addressHash)
@@ -65,6 +65,13 @@ export function getBalance(addressHash) {
             return response.data;
         });
 }
+
+/**
+ * @typedef {Object} BalanceData
+ * @property {string} totalBalanceSum
+ * @property {string} totalBalanceSumUsd
+ * @property {Array<BalanceItem>} balances
+ */
 
 /**
  * @typedef {Object} BalanceItem
@@ -328,5 +335,76 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
  * @property {number|string} liquidityBip
  * @property {number|string} liquidityShare
  * @property {string} token
+ */
+
+/**
+ * @typedef {Object} Transaction
+ * @property {number} txn
+ * @property {string} hash
+ * @property {string} status
+ * @property {number} nonce
+ * @property {number} height
+ * @property {string} from
+ * @property {string} timestamp
+ * @property {Coin} gasCoin
+ * @property {number} commissionInBaseCoin
+ * @property {number} commissionInGasCoin
+ * @property {number} commissionPrice
+ * @property {Coin} commissionPriceCoin
+ * @property {number} type
+ * @property {Object} data
+ * -- type: TX_TYPE.SEND
+ * @property {string} [data.to]
+ * @property {Coin} [data.coin]
+ * @property {number} [data.amount]
+ * -- type: TX_TYPE.CONVERT
+ * @property {Coin} [data.coinToSell]
+ * @property {Coin} [data.coinToBuy]
+ * @property {number} [data.valueToSell]
+ * @property {number} [data.valueToBuy]
+ * -- type: TX_TYPE.CREATE_COIN
+ * @property {number} [data.createdCoinId]
+ * @property {string} [data.name]
+ * @property {string} [data.symbol]
+ * @property {number} [data.initialAmount]
+ * @property {number} [data.initialReserve]
+ * @property {number} [data.constantReserveRatio]
+ * @property {number} [data.maxSupply]
+ * -- type: TX_TYPE.DECLARE_CANDIDACY
+ * @property {string} [data.address]
+ * @property {string} [data.pubKey]
+ * @property {number} [data.commission]
+ * @property {Coin} [data.coin]
+ * @property {number} [data.stake]
+ * -- type: TX_TYPE.EDIT_CANDIDATE
+ * @property {string} [data.pubKey]
+ * @property {string} [data.rewardAddress]
+ * @property {string} [data.ownerAddress]
+ * @property {string} [data.controlAddress]
+ * -- type: TX_TYPE.EDIT_CANDIDATE_PUBLIC_KEY
+ * @property {string} [data.pubKey]
+ * @property {string} [data.newPubKey]
+ * -- type: TX_TYPE.DELEGATE, TX_TYPE.UNBOND
+ * @property {string} [data.pubKey]
+ * @property {Coin} [data.coin]
+ * @property {number} [data.value]
+ * -- type: TX_TYPE.REDEEM_CHECK
+ * @property {string} [data.rawCheck]
+ * @property {string} [data.proof]
+ * @property {Object} [data.check]
+ * @property {string} [data.check.sender]
+ * @property {number} [data.check.nonce]
+ * @property {number|string} [data.check.value]
+ * @property {Coin} [data.check.coin]
+ * @property {number} [data.check.dueBlock]
+ * - type: TX_TYPE.SET_CANDIDATE_ON, TX_TYPE.SET_CANDIDATE_OFF
+ * @property {string} [data.pubKey]
+ * -- type: TX_TYPE.MULTISEND
+ * @property {Array<{to: string, coin: Coin}>} [data.list]
+ * -- type: TX_TYPE.CREATE_MULTISIG
+ * @property {string|number} [data.multisigAddress]
+ * @property {Array<string>} [data.addresses]
+ * @property {Array<string|number>} [data.weights]
+ * @property {string|number} [data.threshold]
  */
 
