@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.9.0-alpha.0",
+  "version": "0.9.1",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -55,8 +55,8 @@
     "json5": "^2.2.0",
     "lodash-es": "^4.17.21",
     "minter-js-org": "^0.3.3",
-    "minter-js-sdk": "^0.38.0-alpha.30",
-    "minterjs-tx": "^10.0.0-alpha.9",
+    "minter-js-sdk": "^0.38.2",
+    "minterjs-tx": "^10.0.1",
     "minterjs-util": "^0.21.0-aplha.13",
     "minterjs-wallet": "^6.0.0",
     "nuxt": "^2.15.2",
