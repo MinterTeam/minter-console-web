@@ -62,7 +62,7 @@
     "nuxt": "^2.15.4",
     "nuxt-i18n": "^6.24.0",
     "nuxt-i18n-default": "^0.0.2",
-    "nuxt-i18n-preferred": "^0.2.0",
+    "nuxt-i18n-preferred": "^0.3.0",
     "pretty-num": "^0.5.0",
     "qr-scanner": "github:shrpne/qr-scanner#build",
     "qrcode.vue": "^1.7.0",
