@@ -38,7 +38,7 @@ function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
 
-const peggyAddress = "0x43eF8BCe65253b8071bE7aF8dFA8FFA7e9911D3E";
+const peggyAddress = "0xD98DF1af9B0c3935368D7BA9343bFDd971Eea8d1";
 const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
