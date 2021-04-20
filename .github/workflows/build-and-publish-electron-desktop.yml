@@ -3,7 +3,7 @@ name: electron desktop
 on:
   push:
 #    looks like it works as OR instead of AND
-    branches: [ master, testnet ]
+#    branches: [ master, testnet ]
     tags: [ 'v*.*.*' ]
 env:
   RELEASE_NAME_master: ""
@@ -13,12 +13,13 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: set env BUILD_BRANCH
-        run: echo "BUILD_BRANCH=$(echo $GITHUB_REF | sed 's:refs/heads/::')" >> $GITHUB_ENV
+        run: echo "BUILD_BRANCH=$(echo ${{ github.event.base_ref }} | sed 's:refs/heads/::')" >> $GITHUB_ENV
         
-      - name: set env RELEASE_NAME
-        env:
-          RELEASE_NAME_KEY: RELEASE_NAME_${{ env.BUILD_BRANCH }}
-        run: echo "RELEASE_NAME=$(echo ${!RELEASE_NAME_KEY})" >> $GITHUB_ENV
+      - name: set branch prefix env to be used during docker build, .e.g. "refs/heads/testnet" => ".testnet"
+        run: echo "BUILD_BRANCH_ENV_PREFIX=$(echo .$BUILD_BRANCH)" >> $GITHUB_ENV
+        
+      - name: set env BUILD_TAG
+        run: echo "BUILD_TAG=$(echo $GITHUB_REF | sed 's:refs/tags/::')" >> $GITHUB_ENV
   
       # To build app in 32 bit from a machine with 64 bit
 #      - name: Install gcc-multilib
@@ -38,8 +39,11 @@ jobs:
 
 #      - name: Wine version
 #        run: wine --version
-
+      
+      
       - uses: actions/checkout@v2
+
+      - run: cp .env$BUILD_BRANCH_ENV_PREFIX .env
 
       - name: Setup Node
         uses: actions/setup-node@v1
@@ -48,19 +52,33 @@ jobs:
 
       - run: npm ci
 
-      - run: cp .env.master .env
-
       - name: Build
         run: npm run electron:build
 #        run: npm run electron:build-x64
+      
+      - name: Fix mac zip asset
+        run: |
+          cd tmp/electron
+          rm minter-console-$(echo ${{ env.BUILD_TAG }} | sed 's:v::')-mac.zip
+          cp -a mac/ ./
+          zip -r -y minter-console-$(echo ${{ env.BUILD_TAG }} | sed 's:v::')-mac.zip "./Minter Console.app"
 
       - name: Release
-        uses: softprops/action-gh-release@v0.1.5
+        uses: softprops/action-gh-release@35d938cf01f60fbe522917c81be1e892074f6ad6
 #        if: startsWith(github.ref, 'refs/tags/')
         with:
-          draft: true
-          tag_name: ${{ github.ref }}
-          name: ${{ github.ref }}${{ env.RELEASE_NAME }}
-          files: tmp/electron/minter-console-*.{dmg,snap,zip,exe,AppImage}
+          draft: false
+          tag_name: ${{ env.BUILD_TAG }}
+          name: ${{ env.BUILD_TAG }}
+          files: |
+            tmp/electron/minter-console-*.dmg
+            tmp/electron/minter-console-*.snap
+            tmp/electron/minter-console-*.zip
+            tmp/electron/minter-console-*.exe
+            tmp/electron/minter-console-*.AppImage
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+      - name: echo GITHUB_HEAD_REF
+        run: ls tmp/electron
