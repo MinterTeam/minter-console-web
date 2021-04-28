@@ -60,11 +60,17 @@
                 this.$emit('modal-close');
             },
             handleModalClick(e) {
+                if (this.hideCloseButton) {
+                    return;
+                }
                 if (this.$refs.modalContainer && e.target !== this.$refs.modalContainer && !this.$refs.modalContainer.contains(e.target)) {
                     this.closeModal();
                 }
             },
             handleModalKeydown(e) {
+                if (this.hideCloseButton) {
+                    return;
+                }
                 if (e.code === 'Escape' || e.keyCode === 27) {
                     e.preventDefault();
                     this.closeModal();
