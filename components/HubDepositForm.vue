@@ -13,6 +13,7 @@ import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/a
 import {getAddressTransactionList} from '@/api/ethersacn.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -36,7 +37,7 @@ function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
 
-const peggyAddress = "0x8D0B99eAE97a247B2C3E9B3dA6774B8359a37537";
+const peggyAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
