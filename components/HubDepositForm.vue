@@ -1,7 +1,5 @@
 <script>
 import BN from 'bn.js';
-import WalletConnect from "@walletconnect/client";
-import QRCodeModal from "@walletconnect/qrcode-modal";
 
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
@@ -15,10 +13,12 @@ import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/a
 import {getAddressTransactionList} from '@/api/ethersacn.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
 import TxListItem from '~/components/HubDepositTxListItem.vue';
+import Account from '~/components/HubDepositAccount.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldCoin from '@/components/common/FieldCoin.vue';
@@ -32,13 +32,12 @@ const TX_APPROVE = 'approve';
 const TX_TRANSFER = 'transfer';
 
 let timer;
-let connector;
 
 function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
 
-const peggyAddress = "0x28f49329EE5bF3D1cbB3925c7FA5Cfc4BbB6AFED";
+const peggyAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
@@ -52,6 +51,7 @@ export default {
         // QrcodeVue,
         Loader,
         TxListItem,
+        Account,
         FieldUseMax,
         FieldQr,
         FieldCoin,
@@ -188,13 +188,6 @@ export default {
         },
     },
     mounted() {
-        this.initConnector();
-
-        // Check if connection is already established
-        if (connector.connected) {
-            this.ethAddress = connector.accounts[0];
-        }
-
         timer = setInterval(() => {
             this.updateBalance();
             this.getAllowance();
@@ -206,59 +199,6 @@ export default {
     methods: {
         pretty,
         prettyExact,
-        connectEth() {
-            if (!connector) {
-                this.initConnector();
-            }
-
-            // create new session
-            connector.createSession();
-
-            // workaround to fix modal not opening after manual close
-            if (this.isConnectionStartedAndModalClosed && connector.uri) {
-                QRCodeModal.open(connector.uri, () => {
-                });
-            }
-        },
-        reconnectEth() {
-            connector.killSession()
-                .then(() => {
-                    this.$nextTick(() => {
-                        this.connectEth();
-                    });
-                });
-        },
-        initConnector() {
-            // Create a connector
-            connector = new WalletConnect({
-                bridge: "https://bridge.walletconnect.org", // Required
-                qrcodeModal: QRCodeModal,
-            });
-            // console.log('init', {connector});
-
-            // Subscribe to connection events
-            connector.on("connect", this.handleEvent);
-            connector.on("session_update", this.handleEvent);
-            connector.on("disconnect", this.handleEvent);
-            connector.on('modal_closed', () => {
-                this.isConnectionStartedAndModalClosed = true;
-            });
-        },
-        handleEvent(error, payload) {
-            if (error) {
-                throw error;
-            }
-
-            // Get provided accounts and chainId
-            const { accounts, chainId } = payload.params[0];
-            // console.log(payload.event, payload.params, accounts, chainId);
-            if (accounts) {
-                this.ethAddress = accounts[0];
-            } else {
-                this.ethAddress = '';
-                connector = null;
-            }
-        },
         updateBalance() {
             if (!this.isConnected || !this.coinContractAddress) {
                 return;
@@ -408,7 +348,7 @@ export default {
                 nonce: await web3.eth.getTransactionCount(this.ethAddress, "pending"), // Optional
             };
 
-            return connector.sendTransaction(txParams);
+            return this.$refs.ethAccount.sendTransaction(txParams);
         },
         // async sendEthTx(to, data) {
         //     let hist;
@@ -495,22 +435,6 @@ function getLatestTransactions(address) {
             </div>
 
 
-            <div class="panel__section" v-if="!isConnected">
-                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                    <div class="u-cell">
-                        Connect your Ethereum wallet with
-                        <img class="hub__icon-wc" alt="" role="presentation"
-                             :src="`${BASE_URL_PREFIX}/img/icon-walletconnect.png`"
-                             :srcset="`${BASE_URL_PREFIX}/img/icon-walletconnect@2x.png 2x`"
-                        >
-                        WalletConnect
-                    </div>
-                    <div class="u-cell">
-                        <button class="button button--main" @click="connectEth">Connect</button>
-                    </div>
-                </div>
-            </div>
-
             <form class="panel__section" v-if="isConnected" @submit.prevent="submit">
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                     <div class="u-cell u-cell--xlarge--1-2">
@@ -576,11 +500,7 @@ function getLatestTransactions(address) {
                 </div>
             </form>
 
-            <div class="panel__section panel__section--tint" v-if="isConnected">
-                Wallet connected <br>
-                <a class="link--default" :href="'https://ropsten.etherscan.io/address/' + ethAddress" target="_blank">{{ ethAddress }}</a> <br>
-                <button class="button button--ghost u-mt-10" @click="reconnectEth">Reconnect</button>
-            </div>
+            <Account @update:address="ethAddress = $event" ref="ethAccount"/>
 
             <!--          <div class="card__content card__content&#45;&#45;gray u-text-center send__qr-card" v-if="linkToBip">-->
             <!--              <div class="send__qr-wrap u-mb-10">-->

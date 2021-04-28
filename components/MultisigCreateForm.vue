@@ -263,7 +263,7 @@
 
         <template v-slot:success-modal-button v-if="successTx">
             <ButtonCopy class="button button--main button--full" :copy-text="createdMultisig">
-                <img class="button__icon" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
+                <img class="button__icon button__icon--full" :src="`${BASE_URL_PREFIX}/img/icon-copy.svg`" width="24" height="24" alt="" role="presentation"/>
                 {{ $td('Copy', 'common.copy') }}
             </ButtonCopy>
             <a class="button button--ghost-main button--full" :href="getExplorerTxUrl(successTx.hash)" target="_blank">
