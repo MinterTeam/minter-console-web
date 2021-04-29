@@ -1,4 +1,5 @@
 <script>
+import {getEtherscanAddressUrl} from '~/assets/utils.js';
 import HubDepositAccountWalletConnect from '~/components/HubDepositAccountWalletConnect.vue';
 import HubDepositAccountMetamask from '~/components/HubDepositAccountMetamask.vue';
 
@@ -21,6 +22,7 @@ export default {
         },
     },
     methods: {
+        getEtherscanAddressUrl,
         disconnectEth() {
             this.selectedAccount.disconnectEth();
         },
@@ -61,8 +63,8 @@ export default {
                 </div>
                 <div class="u-cell">
                     <div class="button-group">
-                        <HubDepositAccountWalletConnect @update:address="setEthAddress($event, 'walletconnect')" ref="ethAccountWalletconnect"/>
-                        <HubDepositAccountMetamask @update:address="setEthAddress($event, 'metamask')" ref="ethAccountMetamask"/>
+                        <HubDepositAccountWalletConnect class="button--ghost-main" @update:address="setEthAddress($event, 'walletconnect')" ref="ethAccountWalletconnect"/>
+                        <HubDepositAccountMetamask class="button--ghost-main" @update:address="setEthAddress($event, 'metamask')" ref="ethAccountMetamask"/>
                     </div>
                 </div>
             </div>
@@ -73,7 +75,7 @@ export default {
             <template v-if="selectedAccountType === 'walletconnect'">WalletConnect</template>
             <template v-if="selectedAccountType === 'metamask'">Metamask</template>
             <br>
-            <a class="link--default" :href="'https://ropsten.etherscan.io/address/' + ethAddress" target="_blank">{{ ethAddress }}</a> <br>
+            <a class="link--default" :href="getEtherscanAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a> <br>
             <button class="button button--ghost u-mt-10" @click="disconnectEth">Disconnect</button>
         </div>
     </div>

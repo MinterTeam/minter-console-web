@@ -8,7 +8,7 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getExplorerTxUrl, pretty} from '~/assets/utils.js';
+import {getExplorerTxUrl, pretty, prettyRound} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -80,6 +80,10 @@ export default {
             const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
+        hubFeeRate() {
+            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
+            return coinItem ? coinItem.customCommission : 0.01;
+        },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
             return priceItem ? priceItem.value : '0';
@@ -96,7 +100,9 @@ export default {
         // fee to HUB bridge calculated in COIN
         hubFee() {
             const amount = new Big(this.coinFee).plus(this.form.amount || 0);
-            return amount.div(0.99).minus(amount).toFixed();
+            // x / (1 - x)
+            const inverseRate = new Big(this.hubFeeRate).div(new Big(1).minus(this.hubFeeRate));
+            return amount.times(inverseRate).toFixed();
         },
         totalFee() {
             return new Big(this.coinFee).plus(this.hubFee).toFixed();
@@ -152,6 +158,7 @@ export default {
     },
     methods: {
         pretty,
+        prettyRound,
         getExplorerTxUrl,
         submit() {
             if (this.$v.$invalid) {
@@ -291,7 +298,10 @@ export default {
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
-                        <span class="form-field__label">{{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}</span>
+                        <span class="form-field__label">
+                            {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
+                            ({{ prettyRound(hubFeeRate * 100) }}%)
+                        </span>
                     </div>
                 </div>
             </div>
