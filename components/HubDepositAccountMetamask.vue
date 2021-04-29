@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-    <button class="button button--main" @click="connectEth" v-if="isAvailable">
+    <button class="button" @click="connectEth" v-if="isAvailable">
         <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-metamask.svg`">
         <span>Metamask</span>
     </button>

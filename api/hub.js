@@ -169,4 +169,5 @@ function wait(time) {
  * @property {string} ethAddr
  * @property {string} minterId
  * @property {string} ethDecimals
+ * @property {string|number} customCommission
  */

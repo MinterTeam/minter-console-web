@@ -85,7 +85,7 @@ export default {
 </script>
 
 <template>
-    <button class="button button--main" @click="connectEth">
+    <button class="button" @click="connectEth">
         <img class="button__icon" alt="" role="presentation"
              :src="`${BASE_URL_PREFIX}/img/icon-walletconnect.png`"
              :srcset="`${BASE_URL_PREFIX}/img/icon-walletconnect@2x.png 2x`"
