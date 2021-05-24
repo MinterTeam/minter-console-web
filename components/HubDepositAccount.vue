@@ -25,9 +25,11 @@ export default {
         getEtherscanAddressUrl,
         disconnectEth() {
             this.selectedAccount.disconnectEth();
+            this.selectedAccountType = '';
         },
         setEthAddress(ethAddress, type) {
-            if (this.ethAddress && ethAddress) {
+            // don't allow change from one type to another
+            if (this.selectedAccountType && this.selectedAccountType !== type && ethAddress) {
                 return;
             }
             this.ethAddress = ethAddress;
@@ -76,7 +78,7 @@ export default {
             <template v-if="selectedAccountType === 'metamask'">Metamask</template>
             <br>
             <a class="link--default" :href="getEtherscanAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a> <br>
-            <button class="button button--ghost u-mt-10" @click="disconnectEth">Disconnect</button>
+            <button class="button button--ghost u-mt-10" @click="disconnectEth">Reconnect</button>
         </div>
     </div>
 </template>
