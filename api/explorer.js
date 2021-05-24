@@ -322,6 +322,7 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
  * @property {number|string} liquidity
  * @property {number|string} liquidityBip
  * @property {string} token
+ * @property {number|string} tradeVolumeBip30d
  */
 
 /**

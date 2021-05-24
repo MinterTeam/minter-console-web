@@ -128,7 +128,7 @@ export function estimateCoinBuy(params) {
                                 ...estimateRouteData,
                                 route,
                             };
-                            const isEstimateRouteBetter = estimateData && estimateRouteData && new Big(estimateData.will_pay).lt(estimateRouteData.will_pay);
+                            const isEstimateRouteBetter = estimateData && estimateRouteData && new Big(estimateData.will_pay).gt(estimateRouteData.will_pay);
 
                             if (isRouteOnly || isEstimateRouteBetter) {
                                 return estimateRouteData;

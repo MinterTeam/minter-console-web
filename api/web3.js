@@ -106,9 +106,11 @@ export function subscribeTransaction(hash) {
                     throw new Error('unsubscribed');
                 }
 
-                emitter.emit('tx', tx);
+                if (tx) {
+                    emitter.emit('tx', tx);
+                }
 
-                if (tx.blockHash) {
+                if (tx && tx.blockHash) {
                     return tx;
                 } else {
                     return wait(10000).then(() => waitTxInBlock(hash));

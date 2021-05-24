@@ -32,9 +32,10 @@ export function getOracleCoinList() {
         .then(([oracleCoinList, minterCoinList]) => {
             oracleCoinList.forEach((oracleCoin) => {
                 const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
-                oracleCoin.symbol = minterCoin.symbol;
+                oracleCoin.symbol = minterCoin?.symbol;
             });
-            return oracleCoinList;
+            // filter out not existent coins
+            return oracleCoinList.filter((item) => item.symbol);
         });
 }
 
@@ -168,4 +169,5 @@ function wait(time) {
  * @property {string} ethAddr
  * @property {string} minterId
  * @property {string} ethDecimals
+ * @property {string|number} customCommission
  */
