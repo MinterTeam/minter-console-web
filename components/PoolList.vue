@@ -79,7 +79,7 @@ export default {
                         <th colspan="2">Amount</th>
                         <th>Liquidity</th>
                         <th>Share</th>
-                        <th>APR</th>
+<!--                        <th>APR</th>-->
                         <!-- controls -->
                         <th class="table__controls-cell table__controls-cell--x2"></th>
                     </tr>
@@ -94,7 +94,7 @@ export default {
                         <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
                         <td>{{ pretty(pool.liquidityShare) }}%</td>
-                        <td>{{ pretty(pool.apr) }}%</td>
+<!--                        <td>{{ pretty(pool.apr) }}%</td>-->
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
                             <button class="table__controls-button u-semantic-button link--opacity"
