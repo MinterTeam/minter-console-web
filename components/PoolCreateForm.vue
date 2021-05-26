@@ -83,7 +83,7 @@
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Create swap pool', 'swap.create-title') }}
+                {{ $td('Create new swap pool', 'swap.create-title') }}
             </h1>
             <p class="panel__header-description">
                 {{ $td('Choose pair of coins the coins that you own and specify the amount to create a pool.', 'swap.create-description') }}
@@ -169,7 +169,7 @@
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Create swap pool', 'swap.create-title') }}
+                {{ $td('Create new swap pool', 'swap.create-title') }}
             </h1>
         </template>
 

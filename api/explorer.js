@@ -2,6 +2,7 @@ import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
+import {_getOracleCoinList} from '@/api/hub.js';
 import {BASE_COIN, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
@@ -114,21 +115,71 @@ const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
  * @return {Promise<Array<CoinItem>>}
  */
 export function getCoinList() {
-    return explorer.get('coins', {
-            cache: coinsCache,
-        })
-        // .then((response) => response.data.data);
-        // @TODO don't sort, coins should already be sorted by reserve
+    const hubCoinListPromise = _getOracleCoinList()
+        .catch((error) => {
+            console.log(error);
+            return [];
+        });
+
+    const coinListPromise = explorer.get('coins', {
+        cache: coinsCache,
+    })
         .then((response) => {
             const coinList = response.data.data;
+            return coinList;
+        });
+
+    return Promise.all([coinListPromise, hubCoinListPromise])
+        // by default coins sorted by reserve
+        .then(([coinList, hubCoinList]) => {
+            let verifiedMap = {};
+            hubCoinList.forEach((item) => {
+                verifiedMap[Number(item.minterId)] = true;
+            });
+            coinList = coinList.map((coinItem) => {
+                let verified = false;
+                if (verifiedMap[coinItem.id]) {
+                    verified = true;
+                }
+                if (coinItem.symbol === BASE_COIN || coinItem.symbol === 'MUSD') {
+                    verified = true;
+                }
+                coinItem.verified = verified;
+                return coinItem;
+            });
+
             return coinList.sort((a, b) => {
+                // base coin goes first
                 if (a.symbol === BASE_COIN) {
                     return -1;
                 } else if (b.symbol === BASE_COIN) {
                     return 1;
-                } else {
-                    return 0;
-                    // return a.symbol.localeCompare(b.symbol);
+                }
+
+                // verified coins go second
+                if (a.verified && !b.verified) {
+                    return -1;
+                } else if (b.verified && !a.verified) {
+                    return 1;
+                }
+
+                // archived coins go last
+                const aIsArchived = isArchived(a);
+                const bIsArchived = isArchived(b);
+                if (aIsArchived && !bIsArchived) {
+                    return 1;
+                } else if (bIsArchived && !aIsArchived) {
+                    return -1;
+                }
+
+                // other coins sorted as from API (by reserve)
+                return 0;
+
+                function isArchived(coin) {
+                    if (coin.type === 'pool_token') {
+                        return false;
+                    }
+                    return /-\d+$/.test(coin.symbol);
                 }
             });
         });
@@ -155,20 +206,25 @@ export function getSwapCoinList(coin, depth) {
  * @typedef {Object} Coin
  * @property {number} id
  * @property {string} symbol
- * @property {string} type
+ * @property {CoinType} type
  */
 
 /**
  * @typedef {Object} CoinItem
  * @property {number} id
  * @property {string} symbol
- * @property {string} type
+ * @property {CoinType} type
  * @property {number} crr
  * @property {number|string} volume
  * @property {number|string} reserveBalance
  * @property {string} name
  * @property {boolean} mintable
  * @property {boolean} burnable
+ * @property {boolean} verified
+ */
+
+/**
+ * @typedef {('coin'|'token'|'pool_token')} CoinType
  */
 
 
