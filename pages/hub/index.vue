@@ -92,7 +92,6 @@
                     <h1 class="panel__header-title">
                         <span><span class="u-emoji">⚠️</span> {{ $td('Beware!', 'hub.warning-title') }} <span class="u-emoji">⚠️</span>️</span>
                     </h1>
-
                 </div>
                 <div class="panel__section">
                     <p>{{ $td('This page is intended for internal testing purposes. Cross-chain transfers through Minter Hub are currently in the alpha version. You bear sole responsibility for all operations with your assets, meaning you may lose them entirely. Use this functionality at your own risk.', 'hub.warning-description') }}</p>

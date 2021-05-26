@@ -1,5 +1,5 @@
 import MinterOrg from 'minter-js-org';
-import {ACCOUNTS_API_URL} from "~/assets/variables";
+import {ACCOUNTS_API_URL, BASE_URL_PREFIX} from "~/assets/variables";
 
 const minterOrg = new MinterOrg({
     baseURL: ACCOUNTS_API_URL,
@@ -35,5 +35,8 @@ export function hasAuthToken() {
 
 
 export function getCoinIconUrl(coinSymbol) {
+    if (coinSymbol.indexOf('LP-') === 0) {
+        return `${BASE_URL_PREFIX}/img/icon-lp-token.svg`;
+    }
     return `${ACCOUNTS_API_URL}avatar/by/coin/${coinSymbol}`;
 }
