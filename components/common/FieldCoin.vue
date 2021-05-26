@@ -3,6 +3,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty} from '~/assets/utils.js';
     import {COIN_TYPE} from '~/assets/variables.js';
+    import {getCoinIconUrl} from '~/api/accounts.js';
     import {getCoinList} from '@/api/explorer.js';
     import InputUppercase from '~/components/common/InputUppercase';
 
@@ -71,7 +72,17 @@
                 }
             },
             maxSuggestions() {
-                return this.isConListSpecified ? 0 : MAX_ITEM_COUNT;
+                return this.isConListSpecified ? 100 : MAX_ITEM_COUNT;
+            },
+            verifiedMap() {
+                let map = {};
+                this.coinListAll.forEach((item) => {
+                    if (item.verified) {
+                        map[item.symbol] = true;
+                    }
+                });
+
+                return map;
             },
         },
         watch: {
@@ -101,6 +112,7 @@
                 });
         },
         methods: {
+            getCoinIconUrl,
             suggestionOrder(query) {
                 if (!query) {
                     return this.currentCoinList;
@@ -133,6 +145,10 @@
             getSuggestionAmount(suggestion) {
                 const amount = suggestion.value || suggestion.amount;
                 return amount ? `(${pretty(amount)})` : '';
+            },
+            getIsVerified(suggestion) {
+                const symbol = this.getSuggestionCoin(suggestion);
+                return this.verifiedMap[symbol];
             },
         },
     };
@@ -173,10 +189,12 @@
             />
             <span class="form-field__label">{{ label }}</span>
 
-            <span slot="suggestion-item" slot-scope="{ suggestion }">
-                {{ getSuggestionCoin(suggestion) }}<span v-if="getSuggestionAmount(suggestion)">
-                    <!--space here --> {{ getSuggestionAmount(suggestion) }}</span>
-            </span>
+            <div slot="suggestion-item" slot-scope="{ suggestion }">
+                <img class="suggestion__coin-icon" :src="getCoinIconUrl(getSuggestionCoin(suggestion))" width="22" height="22" alt="" role="presentation">
+                <span class="suggestion__coin-symbol">{{ getSuggestionCoin(suggestion) }}</span>
+                <img class="suggestion__coin-verified" :src="`${BASE_URL_PREFIX}/img/icon-verified.svg`" alt="Verified" width="12" height="12" v-if="getIsVerified(suggestion)">
+                <span v-if="getSuggestionAmount(suggestion)">{{ getSuggestionAmount(suggestion) }}</span>
+            </div>
         </VueSimpleSuggest>
     </label>
 </template>

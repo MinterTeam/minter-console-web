@@ -76,10 +76,11 @@ export default {
                 <thead>
                     <tr>
                         <th>Your pools</th>
+                        <th><!-- LP --></th>
                         <th colspan="2">Amount</th>
                         <th>Liquidity</th>
                         <th>Share</th>
-<!--                        <th>APR</th>-->
+                        <!--                        <th>APR</th>-->
                         <!-- controls -->
                         <th class="table__controls-cell table__controls-cell--x2"></th>
                     </tr>
@@ -88,13 +89,13 @@ export default {
                     <tr v-for="pool in poolListFormatted" :key="pool.token.symbol">
                         <td>
                             <TableLink :link-text="pool.coin0.symbol + ' / ' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
-                            ({{ pool.token.symbol }})
                         </td>
+                        <td>{{ pool.token.symbol }}</td>
                         <td><span class="u-fw-500">{{ pretty(pool.amount0) }}</span> {{ pool.coin0.symbol }}</td>
                         <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
                         <td>{{ pretty(pool.liquidityShare) }}%</td>
-<!--                        <td>{{ pretty(pool.apr) }}%</td>-->
+                        <!--                        <td>{{ pretty(pool.apr) }}%</td>-->
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
                             <button class="table__controls-button u-semantic-button link--opacity"
