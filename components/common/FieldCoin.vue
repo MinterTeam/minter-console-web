@@ -190,7 +190,7 @@
             <span class="form-field__label">{{ label }}</span>
 
             <div slot="suggestion-item" slot-scope="{ suggestion }">
-                <img class="suggestion__coin-icon" :src="getCoinIconUrl(getSuggestionCoin(suggestion))" width="22" height="22" alt="" role="presentation">
+                <img class="suggestion__coin-icon" :src="getCoinIconUrl(getSuggestionCoin(suggestion))" width="20" height="20" alt="" role="presentation">
                 <span class="suggestion__coin-symbol">{{ getSuggestionCoin(suggestion) }}</span>
                 <img class="suggestion__coin-verified" :src="`${BASE_URL_PREFIX}/img/icon-verified.svg`" alt="Verified" width="12" height="12" v-if="getIsVerified(suggestion)">
                 <span v-if="getSuggestionAmount(suggestion)">{{ getSuggestionAmount(suggestion) }}</span>
