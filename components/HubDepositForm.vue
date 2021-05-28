@@ -84,6 +84,7 @@ export default {
                 coin: '',
                 amount: "",
                 address: this.$store.getters.address,
+                isInfiniteUnlock: false,
             },
             // @TODO use tx data in children components (for now only hash is used)
             transactionList: [],
@@ -176,6 +177,12 @@ export default {
             }
 
             return fromErcDecimals(this.allowance.value, this.decimals[this.form.coin] || 18);
+        },
+        selectedUnlockedInfinity() {
+            return this.selectedUnlocked > 10**18;
+        },
+        amountToUnlock() {
+            return new Big(this.amountToSpend).minus(this.selectedUnlocked).toFixed();
         },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol.toUpperCase());
@@ -336,7 +343,13 @@ export default {
             }
         },
         sendApproveTx() {
-            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin] || 18)).encodeABI();
+            let amountToUnlock;
+            if (this.form.isInfiniteUnlock) {
+                amountToUnlock = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+            } else {
+                amountToUnlock = toErcDecimals(this.amountToUnlock, this.decimals[this.form.coin] || 18);
+            }
+            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, amountToUnlock).encodeABI();
 
             return this.sendEthTx(this.coinContractAddress, data)
                 .then((hash) => {
@@ -499,14 +512,22 @@ function getLatestTransactions(address) {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-2 u-hidden-xlarge-down"></div>
+                    <div class="u-cell u-cell--xlarge--1-2">
+                        <label class="form-check" v-if="!isCoinApproved">
+                            <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
+                            <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
+                        </label>
+                    </div>
                     <div class="u-cell u-cell--xlarge--1-2">
                         <button
                             class="button button--main button--full"
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
                         >
                             <span class="button__content" v-if="isCoinApproved">Send</span>
-                            <span class="button__content" v-else>Unlock</span>
+                            <span class="button__content" v-else>
+                                <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
+                                <template v-else>Unlock <template v-if="form.coin">{{ pretty(this.amountToUnlock) }} {{ form.coin }}</template></template>
+                            </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
@@ -540,7 +561,10 @@ function getLatestTransactions(address) {
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedUnlocked) }}</div>
+                            <div class="form-field__input is-not-empty">
+                                <template v-if="selectedUnlockedInfinity">Infinity</template>
+                                <template v-else>{{ prettyPrecise(selectedUnlocked) }}</template>
+                            </div>
                             <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
                         </div>
                     </div>
