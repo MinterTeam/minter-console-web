@@ -205,12 +205,14 @@
 
                 return {
                     txParams: {
-                        gasCoin: this.form.gasCoin,
+                        // falsy value should be undefined to correct work of txParamsDecorator
+                        gasCoin: this.form.gasCoin || undefined,
                         payload: this.form.payload,
                         type: txType,
                         data: txData,
                     },
                     baseCoinAmount: this.$store.getters.baseCoin?.amount,
+                    fallbackToCoinToSpend: true,
                     isOffline: this.$store.getters.isOfflineMode,
                 };
             },
