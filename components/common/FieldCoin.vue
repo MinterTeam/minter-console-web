@@ -45,6 +45,10 @@
                 type: String,
                 default: COIN_TYPE.ANY,
             },
+            fallbackToFullList: {
+                type: Boolean,
+                default: true,
+            },
         },
         data() {
             return {
@@ -58,11 +62,14 @@
                 const { input, ...listeners } = this.$listeners;
                 return listeners;
             },
-            isConListSpecified() {
+            useSpecifiedCoinList() {
+                if (!this.fallbackToFullList) {
+                    return true;
+                }
                 return this.coinList && this.coinList.length;
             },
             currentCoinList() {
-                if (this.isConListSpecified) {
+                if (this.useSpecifiedCoinList) {
                     return this.coinList
                         .filter((balanceItem) => typeof balanceItem === 'object' ? ofType(balanceItem.coin.type, this.coinType) : true);
                 } else {
@@ -72,7 +79,7 @@
                 }
             },
             maxSuggestions() {
-                return this.isConListSpecified ? 100 : MAX_ITEM_COUNT;
+                return this.useSpecifiedCoinList ? 100 : MAX_ITEM_COUNT;
             },
             verifiedMap() {
                 let map = {};

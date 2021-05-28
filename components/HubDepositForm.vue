@@ -65,7 +65,7 @@ export default {
         /**
          * @type Array<HubCoinItem>
          */
-        coinList: {
+        hubCoinList: {
             type: Array,
             required: true,
         },
@@ -118,7 +118,7 @@ export default {
             return !!this.ethAddress;
         },
         coinContractAddress() {
-            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.ethAddr : undefined;
         },
         allowance() {
@@ -153,7 +153,7 @@ export default {
             return fromErcDecimals(this.allowance.value, this.decimals[this.form.coin] || 18);
         },
         suggestionList() {
-            return this.coinList.map((item) => item.symbol.toUpperCase());
+            return this.hubCoinList.map((item) => item.symbol.toUpperCase());
         },
     },
     watch: {
@@ -455,6 +455,7 @@ function getLatestTransactions(address) {
                             :$value="$v.form.coin"
                             :label="$td('Coin', 'form.coin')"
                             :coin-list="suggestionList"
+                            :fallback-to-full-list="false"
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -518,7 +519,7 @@ function getLatestTransactions(address) {
                 v-for="tx in transactionList"
                 :key="tx.hash"
                 :hash="tx.hash"
-                :coin-list="coinList"
+                :coin-list="hubCoinList"
             />
         </div>
     </div>

@@ -82,9 +82,9 @@
 <template>
     <section class="u-section u-container">
         <HubCoinList :coin-list="coinList" :price-list="priceList" :is-loading="$fetchState.pending"/>
-        <HubWithdrawForm :eth-fee="ethFee" :coin-list="coinList" :price-list="priceList"/>
+        <HubWithdrawForm :eth-fee="ethFee" :hub-coin-list="coinList" :price-list="priceList"/>
         <HubWithdrawTxList/>
-        <HubDepositForm :coin-list="coinList"/>
+        <HubDepositForm :hub-coin-list="coinList"/>
 
         <Modal v-bind:isOpen.sync="isWarningModalVisible" :hideCloseButton="true">
             <div class="panel u-text-left">

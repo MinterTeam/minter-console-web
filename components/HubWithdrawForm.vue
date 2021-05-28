@@ -49,7 +49,7 @@ export default {
         /**
          * @type Array<HubCoinItem>
          */
-        coinList: {
+        hubCoinList: {
             type: Array,
             required: true,
         },
@@ -67,7 +67,7 @@ export default {
                 coin: '',
                 amount: "",
                 address: "",
-                speed: SPEED_MIN,
+                speed: SPEED_FAST,
             },
             isFormSending: false,
             serverSuccess: null,
@@ -77,12 +77,12 @@ export default {
     },
     computed: {
         coinId() {
-            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
         hubFeeRate() {
-            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
-            return coinItem ? coinItem.customCommission : 0.01;
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
+            return coinItem?.customCommission || 0.01;
         },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
@@ -129,7 +129,7 @@ export default {
         // intersection of address balance and hub supported coins
         suggestionList() {
             return this.$store.getters.balance.filter((balanceItem) => {
-                return this.coinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
+                return this.hubCoinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
             });
         },
     },
@@ -204,7 +204,7 @@ export default {
             this.form.address = '';
             this.form.amount = '';
             this.form.coin = '';
-            this.form.speed = SPEED_MIN;
+            // this.form.speed = SPEED_MIN;
         },
     },
 };
@@ -242,6 +242,7 @@ export default {
                         :$value="$v.form.coin"
                         :label="$td('Coin', 'form.coin')"
                         :coin-list="suggestionList"
+                        :fallback-to-full-list="false"
                     />
                     <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -259,15 +260,17 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2">
+                    <!--
                     <div class="form-check-label">Tx speed</div>
                     <label class="form-check">
                         <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_MIN" v-model="form.speed">
-                        <span class="form-check__label form-check__label--radio">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>
+                        <span class="form-check__label form-check__label&#45;&#45;radio">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>
                     </label>
                     <label class="form-check">
                         <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_FAST" v-model="form.speed">
-                        <span class="form-check__label form-check__label--radio">{{ $td('Fast', 'form.hub-withdraw-speed-fast') }}</span>
+                        <span class="form-check__label form-check__label&#45;&#45;radio">{{ $td('Fast', 'form.hub-withdraw-speed-fast') }}</span>
                     </label>
+                    -->
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2">
                     <button
