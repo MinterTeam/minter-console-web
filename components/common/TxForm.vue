@@ -516,8 +516,8 @@
                     <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
                     <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                     <div class="form-field__help" v-else>
-                        {{ fee.coin }} {{ pretty(fee.value) }}
-                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
+                        {{ pretty(fee.value) }} {{ fee.coinSymbol }}
+                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
                     </div>
                 </div>
                 <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
@@ -668,7 +668,7 @@
                 <div class="panel__section u-text-left">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            {{ pretty(fee.value) }} {{ fee.coin }}
+                            {{ pretty(fee.value) }} {{ fee.coinSymbol }}
                             <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
                             <span class="u-display-ib" v-if="fee.priceCoin.id > 0">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
                         </div>

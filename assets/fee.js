@@ -3,8 +3,10 @@ import Big from 'big.js';
 import {FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import decorateTxParams from 'minter-js-sdk/src/tx-decorator/index.js';
+import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {BASE_COIN, CHAIN_ID} from '~/assets/variables.js';
 import {estimateTxCommission} from '~/api/gate.js';
+import {getCoinList} from '~/api/explorer.js';
 import {getErrorText} from '~/assets/server-error.js';
 
 
@@ -44,6 +46,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
             feeCoin: BASE_COIN,
             feeValue: '',
             feeError: '',
+            coinList: {},
             /** @type CommissionPriceData|null */
             commissionPriceData: null,
             isLoading: false,
@@ -62,6 +65,13 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                 const sendFee = feePrice.getFeeValue(TX_TYPE.SEND);
                 return sendFee && this.priceCoinFeeValue / sendFee >= 10000;
             },
+            feeCoinSymbol() {
+                if (isCoinId(this.feeCoin)) {
+                    return this.coinList[this.feeCoin];
+                } else {
+                    return this.feeCoin;
+                }
+            },
             fee() {
                 //@TODO always change, even if data stay the same
                 return {
@@ -72,6 +82,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                     isBaseCoinEnough: this.isBaseCoinEnough,
                     value: this.feeValue,
                     coin: this.feeCoin,
+                    coinSymbol: this.feeCoinSymbol,
                     isHighFee: this.isHighFee,
                     error: this.feeError,
                     isLoading: this.isLoading,
@@ -95,6 +106,19 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                 });
                 this.fetchCoinData();
             });
+
+
+            if (this.isOffline) {
+                return;
+            }
+            getCoinList()
+                .then((coinList) => {
+                    let result = {};
+                    coinList.forEach((coinInfo) => {
+                        result[coinInfo.id] = coinInfo.symbol;
+                    });
+                    this.coinList = Object.freeze(result);
+                });
         },
         methods: {
             getPrimaryCoinToCheck() {
@@ -173,6 +197,9 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                         this.feeCoin = isSecondarySelected ? secondaryCoinToCheck : primaryCoinToCheck;
                         this.feeValue = isSecondarySelected ? secondaryFeeData.commission : feeData.commission;
                         this.commissionPriceData = feeData.commissionPriceData;
+                        if (isCoinId(this.feeCoin)) {
+
+                        }
                         this.isLoading = false;
                     })
                     .catch((error) => {
