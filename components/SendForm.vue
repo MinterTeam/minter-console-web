@@ -145,7 +145,7 @@
                             v-autosize
                             :value="form.address + (domain ? `\n(${domain})` : '')"
                         ></textarea>
-                        <span class="form-field__label">{{ $td('To the Address', 'form.wallet-send-confirm-address') }}</span>
+                        <span class="form-field__label">{{ $td('To the address', 'form.wallet-send-confirm-address') }}</span>
                     </label>
                 </div>
             </div>

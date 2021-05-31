@@ -78,7 +78,7 @@ export default {
             <template v-if="selectedAccountType === 'metamask'">Metamask</template>
             <br>
             <a class="link--default" :href="getEtherscanAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a> <br>
-            <button class="button button--ghost u-mt-10" @click="disconnectEth">Reconnect</button>
+            <button class="button button--ghost u-mt-10" @click="disconnectEth">Change wallet</button>
         </div>
     </div>
 </template>

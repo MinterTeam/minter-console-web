@@ -526,7 +526,7 @@ function getLatestTransactions(address) {
                             <span class="button__content" v-if="isCoinApproved">Send</span>
                             <span class="button__content" v-else>
                                 <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
-                                <template v-else>Unlock <template v-if="form.coin">{{ pretty(this.amountToUnlock) }} {{ form.coin }}</template></template>
+                                <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
@@ -548,9 +548,9 @@ function getLatestTransactions(address) {
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
-                            {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
-                            ({{ prettyRound(hubFeeRate * 100) }}%)
-                        </span>
+                                {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
+                                ({{ prettyRound(hubFeeRate * 100) }}%)
+                            </span>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
