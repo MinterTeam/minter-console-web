@@ -1,10 +1,15 @@
 import BN from 'bn.js';
+import Big from 'big.js';
 import {Manager} from 'web3-core-requestmanager';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {ETHEREUM_API_URL} from '~/assets/variables.js';
 import {erc20ABI} from '~/assets/abi-data.js';
+
+Big.DP = 18;
+// ROUND_HALF_EVEN
+Big.RM = 2;
 
 export const CONFIRMATION_COUNT = 5;
 
@@ -24,6 +29,7 @@ export function fromErcDecimals(balance, decimals) {
 }
 
 export function toErcDecimals(balance, decimals) {
+    balance = new Big(balance).toFixed(Number(decimals));
     balance = utils.toWei(balance, "ether");
     const decimalsDelta = Math.max(18 - decimals, 0);
     const tens = new BN(10).pow(new BN(decimalsDelta));

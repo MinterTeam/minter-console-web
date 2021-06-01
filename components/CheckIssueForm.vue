@@ -258,7 +258,7 @@
                 <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
                 <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
                 <div class="form-field__help" v-else>
-                    {{ fee.coin }} {{ pretty(fee.value) }}
+                    {{ fee.coinSymbol }} {{ pretty(fee.value) }}
                     <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
                     <br>
                     {{ $td('Default:', 'form.help-default') }} {{ fee.isBaseCoinEnough ? $store.getters.COIN_NAME : $td('same as coin to transfer', 'form.wallet-send-fee-same') }}

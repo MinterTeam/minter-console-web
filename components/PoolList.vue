@@ -1,10 +1,9 @@
 <script>
-import {getProviderPoolList, getStatus} from '@/api/explorer.js';
+import {getPoolList, getProviderPoolList, getStatus} from '@/api/explorer.js';
 import {pretty, getExplorerPoolUrl} from '~/assets/utils.js';
 import Loader from '~/components/common/Loader';
 import TableLink from '@/components/common/TableLink.vue';
 import eventBus from 'assets/event-bus.js';
-import focusElement from 'assets/focus-element.js';
 
 export default {
     components: {
@@ -12,12 +11,11 @@ export default {
         TableLink,
     },
     fetch() {
-        const poolPromise = getProviderPoolList(this.$store.getters.address);
-        const statusPromise = getStatus();
-
-        return Promise.all([poolPromise, statusPromise])
-            .then(([poolListInfo, statusData]) => {
-                this.poolList = poolListInfo.data;
+        return Promise.all([
+                getStatus(),
+                this.fetchPoolList(),
+            ])
+            .then(([statusData]) => {
                 this.bipPriceUsd = statusData.bipPriceUsd;
             });
     },
@@ -31,8 +29,8 @@ export default {
     computed: {
         poolListFormatted() {
             return this.poolList.map((pool) => {
-                const tradeFee = pool.tradeVolumeBip30D * 0.002;
-                const apr = tradeFee / pool.liquidityBip * 12 * 100;
+                const tradeFee = pool.tradeVolumeBip1D * 0.002;
+                const apr = tradeFee / pool.totalLiquidityBip * 365 * 100;
 
                 return {
                     ...pool,
@@ -46,10 +44,7 @@ export default {
         eventBus.on('update-pool-list', () => {
             // ensure explorer to update DB
             setTimeout(() => {
-                getProviderPoolList(this.$store.getters.address)
-                    .then((poolListInfo) => {
-                        this.poolList = poolListInfo.data;
-                    });
+                this.fetchPoolList();
             }, 2000);
         });
     },
@@ -64,6 +59,24 @@ export default {
         },
         removeLiquidity({coin0, coin1}) {
             eventBus.emit('activate-remove-liquidity', {coin0, coin1});
+        },
+        fetchPoolList() {
+            return Promise.all([
+                    getProviderPoolList(this.$store.getters.address, {limit: 1000}),
+                    getPoolList({provider: this.$store.getters.address, limit: 1000}),
+                ])
+                .then(([providerListInfo, poolListInfo]) => {
+                    let volumeMap = {};
+                    poolListInfo.data.forEach((item) => {
+                        volumeMap[item.token.symbol] = item;
+                    });
+                    this.poolList = providerListInfo.data.map((item) => {
+                        // copy trade volume from pool info
+                        item.tradeVolumeBip1D = volumeMap[item.token.symbol].tradeVolumeBip1D;
+                        item.totalLiquidityBip = volumeMap[item.token.symbol].liquidityBip;
+                        return item;
+                    });
+                });
         },
     },
 };
@@ -80,7 +93,7 @@ export default {
                         <th colspan="2">Amount</th>
                         <th>Liquidity</th>
                         <th>Share</th>
-                        <!--                        <th>APR</th>-->
+                        <th>APR</th>
                         <!-- controls -->
                         <th class="table__controls-cell table__controls-cell--x2"></th>
                     </tr>
@@ -95,7 +108,7 @@ export default {
                         <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
                         <td>{{ pretty(pool.liquidityShare) }}%</td>
-                        <!--                        <td>{{ pretty(pool.apr) }}%</td>-->
+                        <td>{{ pretty(pool.apr) }}%</td>
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
                             <button class="table__controls-button u-semantic-button link--opacity"

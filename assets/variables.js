@@ -27,7 +27,7 @@ export const HUB_MINTER_MULTISIG_ADDRESS = process.env.APP_HUB_MINTER_MULTISIG_A
 export const HUB_API_URL = process.env.APP_HUB_API_URL;
 export const ETHEREUM_API_URL = process.env.APP_ETHEREUM_API_URL;
 export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
-export const ETHERSCAN_API_URL = MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-ropsten.etherscan.io/api/';
+export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-ropsten.etherscan.io/api/';
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';

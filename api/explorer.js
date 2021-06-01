@@ -59,12 +59,10 @@ export function getAddressTransactionList(address, params = {}) {
  * @param addressHash
  * @return {Promise<{data: BalanceData, latestBlockTime: string}>}
  */
-export function getBalance(addressHash) {
-    return explorer.get('addresses/' + addressHash)
-        .then((response) => {
-            response.data.data.balances = prepareBalance(response.data.data.balances);
-            return response.data;
-        });
+export async function getBalance(addressHash) {
+    const response = await explorer.get('addresses/' + addressHash);
+    response.data.data.balances = await prepareBalance(response.data.data.balances);
+    return response.data;
 }
 
 /**
@@ -85,25 +83,69 @@ export function getBalance(addressHash) {
 /**
  *
  * @param {Array<BalanceItem>} balanceList
- * @return {Array<BalanceItem>}
+ * @return {Promise<Array<BalanceItem>>}
  */
-export function prepareBalance(balanceList) {
+export async function prepareBalance(balanceList) {
+    balanceList = await markVerified(Promise.resolve(balanceList), 'balance');
+
     return balanceList.sort((a, b) => {
-            // set base coin first
+            // base coin goes first
             if (a.coin.symbol === BASE_COIN) {
                 return -1;
             } else if (b.coin.symbol === BASE_COIN) {
                 return 1;
-            } else {
-                // sort coins by name, instead of reserve
-                return a.coin.symbol.localeCompare(b.coin.symbol);
             }
+
+            // verified coins go second
+            if (a.coin.verified && !b.coin.verified) {
+                return -1;
+            } else if (b.coin.verified && !a.coin.verified) {
+                return 1;
+            }
+
+            // sort coins by name, instead of reserve
+            return a.coin.symbol.localeCompare(b.coin.symbol);
         })
         .map((coinItem) => {
             return {
                 ...coinItem,
                 amount: stripZeros(coinItem.amount),
             };
+        });
+}
+
+/**
+ *
+ * @param {Promise} coinListPromise
+ * @param {('coin','balance')} itemType
+ * @return {Promise<Array<CoinItem>|Array<BalanceItem>>}
+ */
+function markVerified(coinListPromise, itemType = 'coin') {
+    const hubCoinListPromise = _getOracleCoinList()
+        .catch((error) => {
+            console.log(error);
+            return [];
+        });
+
+    return Promise.all([coinListPromise, hubCoinListPromise])
+        .then(([coinList, hubCoinList]) => {
+            let verifiedMap = {};
+            hubCoinList.forEach((item) => {
+                verifiedMap[Number(item.minterId)] = true;
+            });
+
+            return coinList.map((coinItem) => {
+                const coinItemData = itemType === 'coin' ? coinItem : coinItem.coin;
+                let verified = false;
+                if (verifiedMap[coinItemData.id]) {
+                    verified = true;
+                }
+                if (coinItemData.symbol === BASE_COIN || coinItemData.symbol === 'MUSD') {
+                    verified = true;
+                }
+                coinItemData.verified = verified;
+                return coinItem;
+            });
         });
 }
 
@@ -115,11 +157,6 @@ const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
  * @return {Promise<Array<CoinItem>>}
  */
 export function getCoinList() {
-    const hubCoinListPromise = _getOracleCoinList()
-        .catch((error) => {
-            console.log(error);
-            return [];
-        });
 
     const coinListPromise = explorer.get('coins', {
         cache: coinsCache,
@@ -129,25 +166,9 @@ export function getCoinList() {
             return coinList;
         });
 
-    return Promise.all([coinListPromise, hubCoinListPromise])
+    return markVerified(coinListPromise)
         // by default coins sorted by reserve
-        .then(([coinList, hubCoinList]) => {
-            let verifiedMap = {};
-            hubCoinList.forEach((item) => {
-                verifiedMap[Number(item.minterId)] = true;
-            });
-            coinList = coinList.map((coinItem) => {
-                let verified = false;
-                if (verifiedMap[coinItem.id]) {
-                    verified = true;
-                }
-                if (coinItem.symbol === BASE_COIN || coinItem.symbol === 'MUSD') {
-                    verified = true;
-                }
-                coinItem.verified = verified;
-                return coinItem;
-            });
-
+        .then((coinList) => {
             return coinList.sort((a, b) => {
                 // base coin goes first
                 if (a.symbol === BASE_COIN) {
@@ -296,6 +317,22 @@ export function getTransaction(hash) {
         });
 }
 
+/**
+ * @param {Object} [params]
+ * @param {string|number} [params.coin] - search by coin
+ * @param {string} [params.provider] - search by Mx address
+ * @param {number} [params.page]
+ * @param {number} [params.limit]
+ * @return {Promise<PoolListInfo>}
+ */
+export function getPoolList(params) {
+    return explorer.get('pools', {
+            params,
+        })
+        .then((response) => response.data);
+}
+
+
 // 10s cache
 const poolCache = new Cache({maxAge: 10 * 1000});
 
@@ -332,6 +369,7 @@ export function getPoolProvider(coin0, coin1, address) {
 export function getProviderPoolList(address, params) {
     return explorer.get(`pools/providers/${address}`, {
             params,
+            cache: poolCache,
         })
         .then((response) => response.data);
 }
@@ -378,7 +416,7 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
  * @property {number|string} liquidity
  * @property {number|string} liquidityBip
  * @property {string} token
- * @property {number|string} tradeVolumeBip30d
+ * @property {number|string} tradeVolumeBip1D
  */
 
 /**

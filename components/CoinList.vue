@@ -48,6 +48,7 @@
                         <td>
                             <img class="wallet__coin-icon" :src="getCoinIconUrl(coinItem.coin.symbol)" width="28" height="28" alt="" role="presentation">
                             <span class="wallet__coin-name">{{ coinItem.coin.symbol }}</span>
+                            <img class="wallet__coin-verified" :src="`${BASE_URL_PREFIX}/img/icon-verified.svg`" width="12" height="12" alt="" role="presentation" v-if="coinItem.coin.verified">
                         </td>
                         <!-- balance -->
                         <td>
