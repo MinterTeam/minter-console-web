@@ -2,8 +2,11 @@ import Vue from 'vue';
 import Big from 'big.js';
 import {FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+import decorateTxParams from 'minter-js-sdk/src/tx-decorator/index.js';
+import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {BASE_COIN, CHAIN_ID} from '~/assets/variables.js';
 import {estimateTxCommission} from '~/api/gate.js';
+import {getCoinList} from '~/api/explorer.js';
 import {getErrorText} from '~/assets/server-error.js';
 
 
@@ -25,37 +28,33 @@ import {getErrorText} from '~/assets/server-error.js';
  *
  * @param {TxParams} txParams
  * @param {number} [baseCoinAmount]
+ * @param {boolean} [fallbackToCoinToSpend] - by default fallback to baseCoin, additionally it can try to fallback to coinToSpend, if baseCoin is not enough
  * @param {boolean} [isOffline]
  * @return {Vue}
  * @constructor
  */
 
-export default function FeeBus({txParams, baseCoinAmount = 0, isOffline}) {
+export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSpend, isOffline}) {
     return new Vue({
         data: {
             txParams,
             baseCoinAmount,
+            fallbackToCoinToSpend,
             priceCoinFeeValue: 0,
             baseCoinFeeValue: 0,
+            isBaseCoinEnough: true,
+            feeCoin: BASE_COIN,
             feeValue: '',
             feeError: '',
+            coinList: {},
             /** @type CommissionPriceData|null */
             commissionPriceData: null,
             isLoading: false,
             isOffline,
         },
         computed: {
-            isBaseCoinEnough() {
-                return new Big(this.baseCoinAmount || 0).gte(this.baseCoinFeeValue);
-            },
             isBaseCoinFee() {
                 return isBaseCoin(this.feeCoin);
-            },
-            feeCoin() {
-                if (isCoinDefined(this.txParams.gasCoin)) {
-                    return this.txParams.gasCoin;
-                }
-                return BASE_COIN;
             },
             isHighFee() {
                 if (!this.commissionPriceData) {
@@ -65,6 +64,13 @@ export default function FeeBus({txParams, baseCoinAmount = 0, isOffline}) {
 
                 const sendFee = feePrice.getFeeValue(TX_TYPE.SEND);
                 return sendFee && this.priceCoinFeeValue / sendFee >= 10000;
+            },
+            feeCoinSymbol() {
+                if (isCoinId(this.feeCoin)) {
+                    return this.coinList[this.feeCoin];
+                } else {
+                    return this.feeCoin;
+                }
             },
             fee() {
                 //@TODO always change, even if data stay the same
@@ -76,6 +82,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, isOffline}) {
                     isBaseCoinEnough: this.isBaseCoinEnough,
                     value: this.feeValue,
                     coin: this.feeCoin,
+                    coinSymbol: this.feeCoinSymbol,
                     isHighFee: this.isHighFee,
                     error: this.feeError,
                     isLoading: this.isLoading,
@@ -99,51 +106,109 @@ export default function FeeBus({txParams, baseCoinAmount = 0, isOffline}) {
                 });
                 this.fetchCoinData();
             });
+
+
+            if (this.isOffline) {
+                return;
+            }
+            getCoinList()
+                .then((coinList) => {
+                    let result = {};
+                    coinList.forEach((coinInfo) => {
+                        result[coinInfo.id] = coinInfo.symbol;
+                    });
+                    this.coinList = Object.freeze(result);
+                });
         },
         methods: {
+            getPrimaryCoinToCheck() {
+                if (isCoinDefined(this.txParams.gasCoin)) {
+                    return this.txParams.gasCoin;
+                }
+
+                return BASE_COIN;
+            },
+            // secondary it will try to check coinToSpend and use if primary coin is not enough to pay fee
+            getSecondaryCoinToCheck() {
+                // 1. only check if fallback flag activated
+                // 2. if gasCoin is defined - no need to check something else
+                if (!this.fallbackToCoinToSpend || isCoinDefined(this.txParams.gasCoin)) {
+                    return '';
+                }
+
+                try {
+                    const txParamsClone = {...this.txParams};
+                    const {gasCoin} = decorateTxParams(txParamsClone, {setGasCoinAsCoinToSpend: true});
+                    if (typeof gasCoin !== 'undefined' && !isBaseCoin(gasCoin)) {
+                        return gasCoin;
+                    }
+                } catch (e) {
+
+                }
+                return '';
+            },
             fetchCoinData() {
                 if (this.isOffline) {
                     return;
                 }
 
+                // save current coins to check if it will be actual after resolution
+                const primaryCoinToCheck = this.getPrimaryCoinToCheck();
+                const secondaryCoinToCheck = this.getSecondaryCoinToCheck();
+                const primaryEstimate = estimateTxCommission({
+                    ...this.txParams,
+                    chainId: CHAIN_ID,
+                    gasCoin: primaryCoinToCheck,
+                });
+                const secondaryEstimate = secondaryCoinToCheck && secondaryCoinToCheck !== primaryCoinToCheck ? estimateTxCommission({
+                    ...this.txParams,
+                    chainId: CHAIN_ID,
+                    gasCoin: secondaryCoinToCheck,
+                }) : Promise.reject();
+
                 this.isLoading = true;
                 this.feeError = '';
 
-                this.priceCoinFeeValue = 0;
-                this.baseCoinFeeValue = 0;
-                this.feeValue = '';
+                // this.priceCoinFeeValue = 0;
+                // this.baseCoinFeeValue = 0;
+                // this.feeCoin = primaryCoinToCheck;
+                // this.feeValue = '';
 
-                // wait for computed to recalculate
-                this.$nextTick(() => {
-                    // save current gasCoin to check if it will be actual after resolution
-                    const gasCoin = this.feeCoin;
-                    estimateTxCommission({
-                        ...this.txParams,
-                        chainId: CHAIN_ID,
-                        gasCoin,
+                Promise.allSettled([
+                        primaryEstimate,
+                        secondaryEstimate,
+                    ])
+                    .then(([primaryResult, secondaryResult]) => {
+                        if (primaryCoinToCheck !== this.getPrimaryCoinToCheck() || secondaryCoinToCheck !== this.getSecondaryCoinToCheck()) {
+                            return;
+                        }
+                        const feeData = primaryResult.value;
+                        const secondaryFeeData = secondaryResult.value;
+                        if (!feeData) {
+                            throw new Error(primaryResult.reason);
+                        }
+
+                        this.priceCoinFeeValue = feeData.priceCoinCommission;
+                        this.baseCoinFeeValue = feeData.baseCoinCommission;
+                        this.isBaseCoinEnough = new Big(this.baseCoinAmount || 0).gte(this.baseCoinFeeValue);
+                        // select between primary fallback and secondary fallback
+                        // secondaryFeeData may be defined only if primary is fallback base coin
+                        const isSecondarySelected = secondaryFeeData && !this.isBaseCoinEnough;
+                        this.feeCoin = isSecondarySelected ? secondaryCoinToCheck : primaryCoinToCheck;
+                        this.feeValue = isSecondarySelected ? secondaryFeeData.commission : feeData.commission;
+                        this.commissionPriceData = feeData.commissionPriceData;
+                        if (isCoinId(this.feeCoin)) {
+
+                        }
+                        this.isLoading = false;
                     })
-                        .then((feeData) => {
-                            if (gasCoin !== this.feeCoin) {
-                                return;
-                            }
-                            this.priceCoinFeeValue = feeData.priceCoinCommission;
-                            this.baseCoinFeeValue = feeData.baseCoinCommission;
-                            this.feeValue = feeData.commission;
-                            this.commissionPriceData = feeData.commissionPriceData;
-                            this.isLoading = false;
-                        })
-                        .catch((error) => {
-                            if (gasCoin !== this.feeCoin) {
-                                return;
-                            }
-                            this.feeError = getErrorText(error, '');
-                            if (this.feeError.toLowerCase() === 'not possible to exchange') {
-                                this.feeError = this.feeError + ' to pay fee';
-                            }
-                            this.feeError = 'Error: ' + this.feeError;
-                            this.isLoading = false;
-                        });
-                });
+                    .catch((error) => {
+                        if (primaryCoinToCheck !== this.getPrimaryCoinToCheck() || secondaryCoinToCheck !== this.getSecondaryCoinToCheck()) {
+                            return;
+                        }
+                        this.feeError = getErrorText(error);
+                        this.isLoading = false;
+                    });
             },
         },
     });

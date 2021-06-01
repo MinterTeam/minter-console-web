@@ -34,7 +34,8 @@ export default {
     },
     mixins: [validationMixin, AsyncComputedMixin],
     fetch() {
-        getProviderPoolList(this.$store.getters.address, {limit: 999})
+        //@TODO fetch all pages
+        getProviderPoolList(this.$store.getters.address, {limit: 1000})
             .then((info) => {
                 const poolList = info.data;
                 let coinList = {};

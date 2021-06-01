@@ -8,7 +8,8 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getExplorerTxUrl, pretty, prettyRound} from '~/assets/utils.js';
+import {getOracleEthFee} from '@/api/hub.js';
+import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -26,6 +27,8 @@ Big.RM = 2;
 const SPEED_MIN = 'min';
 const SPEED_FAST = 'fast';
 
+let interval;
+
 export default {
     SPEED_MIN,
     SPEED_FAST,
@@ -42,14 +45,10 @@ export default {
     },
     mixins: [validationMixin],
     props: {
-        ethFee: {
-            type: Object,
-            required: true,
-        },
         /**
          * @type Array<HubCoinItem>
          */
-        coinList: {
+        hubCoinList: {
             type: Array,
             required: true,
         },
@@ -61,28 +60,37 @@ export default {
             required: true,
         },
     },
+    fetch() {
+        return this.getEthFee();
+    },
     data() {
         return {
+            ethFee: {
+                min: 0,
+                fast: 0,
+            },
             form: {
                 coin: '',
                 amount: "",
                 address: "",
-                speed: SPEED_MIN,
+                speed: SPEED_FAST,
             },
             isFormSending: false,
             serverSuccess: null,
             serverError: '',
+            serverWarning: '',
+            isConfirmModalVisible: false,
             isSuccessModalVisible: false,
         };
     },
     computed: {
         coinId() {
-            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
         hubFeeRate() {
-            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
-            return coinItem ? coinItem.customCommission : 0.01;
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
+            return coinItem?.customCommission || 0.01;
         },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
@@ -119,7 +127,8 @@ export default {
                 return undefined;
             }
 
-            const maxAmount = new Big(selectedCoin.amount).minus(this.totalFee);
+            const maxHubFee = new Big(selectedCoin.amount).times(this.hubFeeRate);
+            const maxAmount = new Big(selectedCoin.amount).minus(maxHubFee).minus(this.coinFee);
             if (maxAmount.lt(0)) {
                 return 0;
             } else {
@@ -129,7 +138,7 @@ export default {
         // intersection of address balance and hub supported coins
         suggestionList() {
             return this.$store.getters.balance.filter((balanceItem) => {
-                return this.coinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
+                return this.hubCoinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
             });
         },
     },
@@ -156,19 +165,77 @@ export default {
             },
         };
     },
+    mounted() {
+        interval = setInterval(() => {
+            this.getEthFee();
+        }, 30 * 1000);
+    },
+    destroyed() {
+        clearInterval(interval);
+    },
     methods: {
         pretty,
+        prettyPrecise,
         prettyRound,
         getExplorerTxUrl,
-        submit() {
+        getEthFee({checkWarning} = {}) {
+            return getOracleEthFee()
+                .then((ethFee) => {
+                    if (checkWarning && new Big(ethFee.fast).gt(this.ethFee.fast)) {
+                        // don't send form, show warning to user so he has to press Submit again
+                        this.serverWarning = true;
+                    }
+                    this.ethFee = ethFee;
+                });
+        },
+        submitConfirm() {
+            if (this.isFormSending) {
+                return;
+            }
             if (this.$v.$invalid) {
                 this.$v.$touch();
                 return;
             }
 
             this.serverError = '';
+            this.serverWarning = '';
             this.serverSuccess = null;
             this.isFormSending = true;
+
+            return this.getEthFee({checkWarning: true})
+                .then(() => {
+                    this.isFormSending = false;
+                    if (!this.serverWarning) {
+                        this.isConfirmModalVisible = true;
+                    } else {
+                        // don't send form, show warning to user so he has to press Submit again
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.isFormSending = false;
+                    this.serverError = getErrorText(error);
+                });
+        },
+        async submit() {
+            this.isConfirmModalVisible = false;
+
+            if (this.$v.$invalid) {
+                this.$v.$touch();
+                return;
+            }
+
+            this.serverError = '';
+            this.serverWarning = '';
+            this.serverSuccess = null;
+            this.isFormSending = true;
+
+            await this.getEthFee({checkWarning: true});
+
+            if (this.serverWarning) {
+                this.isFormSending = false;
+                return;
+            }
 
             let txParams = {
                 type: TX_TYPE.SEND,
@@ -204,7 +271,7 @@ export default {
             this.form.address = '';
             this.form.amount = '';
             this.form.coin = '';
-            this.form.speed = SPEED_MIN;
+            // this.form.speed = SPEED_MIN;
         },
     },
 };
@@ -222,7 +289,7 @@ export default {
         </div>
 
         <!-- Form -->
-        <form class="panel__section" @submit.prevent="submit">
+        <form class="panel__section" @submit.prevent="submitConfirm">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--xlarge--1-2">
                     <FieldQr
@@ -242,6 +309,7 @@ export default {
                         :$value="$v.form.coin"
                         :label="$td('Coin', 'form.coin')"
                         :coin-list="suggestionList"
+                        :fallback-to-full-list="false"
                     />
                     <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -258,26 +326,29 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2">
+                <div class="u-cell u-cell--xlarge--1-2 u-hidden-xlarge-down">
+                    <!--
                     <div class="form-check-label">Tx speed</div>
                     <label class="form-check">
                         <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_MIN" v-model="form.speed">
-                        <span class="form-check__label form-check__label--radio">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>
+                        <span class="form-check__label form-check__label&#45;&#45;radio">{{ $td('Normal', 'form.hub-withdraw-speed-normal') }}</span>
                     </label>
                     <label class="form-check">
                         <input type="radio" class="form-check__input" name="speed" :value="$options.SPEED_FAST" v-model="form.speed">
-                        <span class="form-check__label form-check__label--radio">{{ $td('Fast', 'form.hub-withdraw-speed-fast') }}</span>
+                        <span class="form-check__label form-check__label&#45;&#45;radio">{{ $td('Fast', 'form.hub-withdraw-speed-fast') }}</span>
                     </label>
+                    -->
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2">
                     <button
                         class="button button--main button--full"
                         :class="{'is-disabled': $v.$invalid, 'is-loading': isFormSending}"
                     >
-                        <span class="button__content">Withdraw</span>
+                        <span class="button__content">{{ $td('Withdraw', 'hub.withdraw-title') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
+                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> Ethereum fee has updated</div>
                 </div>
             </div>
         </form>
@@ -285,7 +356,7 @@ export default {
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(amountToSpend) }} {{ form.coin }}</div>
+                        <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
                     </div>
                 </div>
@@ -307,15 +378,83 @@ export default {
             </div>
         </div>
 
+        <!-- Confirm Modal -->
+        <Modal v-bind:isOpen.sync="isConfirmModalVisible">
+            <div class="panel">
+                <div class="panel__header">
+                    <h1 class="panel__header-title">
+                        {{ $td('Withdraw', 'hub.withdraw-title') }}
+                    </h1>
+                </div>
+                <div class="panel__section u-text-left">
+                    <div class="u-grid u-grid--vertical-margin">
+                        <div class="u-cell">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">{{ prettyPrecise(form.amount) }} {{ form.coin }}</div>
+                                <span class="form-field__label">{{ $td('You send', 'form.wallet-send-confirm-amount') }}</span>
+                            </div>
+                        </div>
+                        <div class="u-cell">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">{{ form.address }}</div>
+                                <span class="form-field__label">{{ $td('To the address', 'form.wallet-send-confirm-address') }}</span>
+                            </div>
+                        </div>
+                        <div class="u-cell">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
+                                <span class="form-field__label">{{ $td('Ethereum fee', 'form.hub-withdraw-eth-fee') }}</span>
+                            </div>
+                        </div>
+                        <div class="u-cell">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
+                                <span class="form-field__label">
+                                    {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
+                                    ({{ prettyRound(hubFeeRate * 100) }}%)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="u-cell">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
+                                <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel__section">
+                    <button class="button button--main button--full" type="button" data-focus-on-open
+                            :class="{'is-loading': isFormSending}"
+                            @click="submit"
+                    >
+                        <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
+                        <Loader class="button__loader" :isLoading="true"/>
+                    </button>
+                    <button class="button button--ghost-main button--full" type="button" v-if="!isFormSending" @click="isConfirmModalVisible = false">
+                        {{ $td('Cancel', 'form.submit-cancel-button') }}
+                    </button>
+                </div>
+                <div class="panel__section u-text-left">
+                    <template v-if="$i18n.locale === 'en'">
+                        <span class="u-emoji">⚠️</span> <strong>DO NOT</strong> withdraw to an exchange because many do not accept deposits from smart contracts and your tokens will be lost.
+                        Withdraw to the wallet you own first (the one you <strong>have a seed phrase</strong> to).
+                    </template>
+                    <template v-if="$i18n.locale === 'ru'">
+                        <span class="u-emoji">⚠️</span> <strong>НЕ</strong> делайте вывод на биржи, так как многие не зачисляют средства из смарт-контрактов. Вы потеряете свои токены.
+                        Выводите на кошелек, которым владеете (от которого у вас <strong>есть сид-фраза</strong>).
+                    </template>
+                </div>
+            </div>
+        </Modal>
+
         <!-- Success Modal -->
         <Modal v-bind:isOpen.sync="isSuccessModalVisible">
             <div class="panel">
                 <div class="panel__header">
-                    <slot name="success-modal-header">
-                        <h1 class="panel__header-title">
-                            {{ $td('Success!', 'form.success-title') }}
-                        </h1>
-                    </slot>
+                    <h1 class="panel__header-title">
+                        {{ $td('Success!', 'form.success-title') }}
+                    </h1>
                 </div>
                 <div class="panel__section u-text-left">
                     <strong>{{ $td('Tx sent:', 'form.tx-sent') }}</strong>

@@ -5,7 +5,7 @@
     import HubWithdrawForm from '~/components/HubWithdrawForm.vue';
     import HubWithdrawTxList from '~/components/HubWithdrawTxList.vue';
     import HubDepositForm from '~/components/HubDepositForm.vue';
-    import {getOracleCoinList, getOracleEthFee, getOraclePriceList} from '@/api/hub.js';
+    import {getOracleCoinList, getOraclePriceList} from '@/api/hub.js';
 
     let interval;
 
@@ -21,9 +21,8 @@
             store.commit('SET_SECTION_NAME', app.$td('Deposit and withdraw', 'common.page-deposit'));
         },
         fetch() {
-            return Promise.all([getOracleEthFee(), getOracleCoinList(), getOraclePriceList()])
-                .then(([ethFee, coinList, priceList]) => {
-                    this.ethFee = ethFee;
+            return Promise.all([getOracleCoinList(), getOraclePriceList()])
+                .then(([coinList, priceList]) => {
                     this.coinList = coinList;
                     this.priceList = priceList;
                 });
@@ -46,10 +45,6 @@
         data() {
             return {
                 isWarningModalVisible: true,
-                ethFee: {
-                    min: 0,
-                    fast: 0,
-                },
                 /**
                  * @type Array<HubCoinItem>
                  */
@@ -64,9 +59,8 @@
         },
         mounted() {
             interval = setInterval(() => {
-                Promise.all([getOracleEthFee(), getOraclePriceList()])
-                    .then(([ethFee, priceList]) => {
-                        this.ethFee = ethFee;
+                getOraclePriceList()
+                    .then((priceList) => {
                         this.priceList = priceList;
                     });
             }, 15 * 1000);
@@ -82,9 +76,9 @@
 <template>
     <section class="u-section u-container">
         <HubCoinList :coin-list="coinList" :price-list="priceList" :is-loading="$fetchState.pending"/>
-        <HubWithdrawForm :eth-fee="ethFee" :coin-list="coinList" :price-list="priceList"/>
+        <HubWithdrawForm :hub-coin-list="coinList" :price-list="priceList"/>
         <HubWithdrawTxList/>
-        <HubDepositForm :coin-list="coinList"/>
+        <HubDepositForm :hub-coin-list="coinList"/>
 
         <Modal v-bind:isOpen.sync="isWarningModalVisible" :hideCloseButton="true">
             <div class="panel u-text-left">

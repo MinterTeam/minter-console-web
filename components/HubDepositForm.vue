@@ -1,6 +1,6 @@
 <script>
 import BN from 'bn.js';
-
+import Big from 'big.js';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
@@ -11,7 +11,7 @@ import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
 import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getAddressTransactionList} from '@/api/ethersacn.js';
-import {pretty, prettyExact} from '~/assets/utils.js';
+import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
 import {HUB_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -23,6 +23,9 @@ import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 
+Big.DP = 18;
+// ROUND_HALF_EVEN
+Big.RM = 2;
 
 const ALLOWANCE_FINISHED = 'finished';
 const ALLOWANCE_REJECTED = 'rejected';
@@ -65,7 +68,7 @@ export default {
         /**
          * @type Array<HubCoinItem>
          */
-        coinList: {
+        hubCoinList: {
             type: Array,
             required: true,
         },
@@ -81,6 +84,7 @@ export default {
                 coin: '',
                 amount: "",
                 address: this.$store.getters.address,
+                isInfiniteUnlock: true,
             },
             // @TODO use tx data in children components (for now only hash is used)
             transactionList: [],
@@ -107,7 +111,7 @@ export default {
                 amount: {
                     required,
                     validAmount: isValidAmount,
-                    maxValue: maxValue(this.selectedBalance || 0),
+                    maxValue: maxValue(this.maxAmount || 0),
                     minValue: (value) => value > 0,
                 },
             },
@@ -117,8 +121,30 @@ export default {
         isConnected() {
             return !!this.ethAddress;
         },
+        hubFeeRate() {
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
+            return coinItem?.customCommission || 0.01;
+        },
+        // fee to HUB bridge calculated in COIN
+        hubFee() {
+            // x / (1 - x)
+            const inverseRate = new Big(this.hubFeeRate).div(new Big(1).minus(this.hubFeeRate));
+            return new Big(this.form.amount || 0).times(inverseRate).toFixed();
+        },
+        amountToSpend() {
+            return new Big(this.hubFee).plus(this.form.amount || 0).toFixed();
+        },
+        maxAmount() {
+            const maxHubFee = new Big(this.selectedBalance).times(this.hubFeeRate);
+            const maxAmount = new Big(this.selectedBalance).minus(maxHubFee);
+            if (maxAmount.lt(0)) {
+                return 0;
+            } else {
+                return maxAmount.toFixed();
+            }
+        },
         coinContractAddress() {
-            const coinItem = this.coinList.find((item) => item.symbol === this.form.coin);
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.ethAddr : undefined;
         },
         allowance() {
@@ -139,7 +165,7 @@ export default {
             }
 
             const allowance = new BN(this.allowance.value, 10);
-            const amount = new BN(toErcDecimals(this.form.amount || '0', this.decimals[this.form.coin] || 18), 10);
+            const amount = new BN(toErcDecimals(this.amountToSpend || '0', this.decimals[this.form.coin] || 18), 10);
             return allowance.gt(new BN(0)) && allowance.gte(amount);
         },
         selectedBalance() {
@@ -152,8 +178,14 @@ export default {
 
             return fromErcDecimals(this.allowance.value, this.decimals[this.form.coin] || 18);
         },
+        selectedUnlockedInfinity() {
+            return this.selectedUnlocked > 10**18;
+        },
+        amountToUnlock() {
+            return new Big(this.amountToSpend).minus(this.selectedUnlocked).toFixed();
+        },
         suggestionList() {
-            return this.coinList.map((item) => item.symbol.toUpperCase());
+            return this.hubCoinList.map((item) => item.symbol.toUpperCase());
         },
     },
     watch: {
@@ -198,7 +230,8 @@ export default {
     },
     methods: {
         pretty,
-        prettyExact,
+        prettyPrecise,
+        prettyRound,
         updateBalance() {
             if (!this.isConnected || !this.coinContractAddress) {
                 return;
@@ -310,7 +343,13 @@ export default {
             }
         },
         sendApproveTx() {
-            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, toErcDecimals(this.form.amount, this.decimals[this.form.coin])).encodeABI();
+            let amountToUnlock;
+            if (this.form.isInfiniteUnlock) {
+                amountToUnlock = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+            } else {
+                amountToUnlock = toErcDecimals(this.amountToUnlock, this.decimals[this.form.coin] || 18);
+            }
+            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, amountToUnlock).encodeABI();
 
             return this.sendEthTx(this.coinContractAddress, data)
                 .then((hash) => {
@@ -322,7 +361,7 @@ export default {
         sendCoinTx() {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
-            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.form.amount, this.decimals[this.form.coin])).encodeABI();
+            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin] || 18)).encodeABI();
 
             return this.sendEthTx(peggyAddress, data)
                 .then((hash) => {
@@ -455,6 +494,7 @@ function getLatestTransactions(address) {
                             :$value="$v.form.coin"
                             :label="$td('Coin', 'form.coin')"
                             :coin-list="suggestionList"
+                            :fallback-to-full-list="false"
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -466,23 +506,17 @@ function getLatestTransactions(address) {
                             v-model="form.amount"
                             :$value="$v.form.amount"
                             :label="$td('Amount', 'form.hub-amount')"
-                            :max-value="selectedBalance"
+                            :max-value="maxAmount"
                         />
                         <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(selectedBalance) }})</span>
+                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
-                        <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">{{ prettyExact(selectedBalance) }}</div>
-                            <div class="form-field__label">{{ $td('Token balance', 'form.hub-deposit-selected-balance') }}</div>
-                        </div>
-                    </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
-                        <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">{{ prettyExact(selectedUnlocked) }}</div>
-                            <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
-                        </div>
+                    <div class="u-cell u-cell--xlarge--1-2">
+                        <label class="form-check" v-if="!isCoinApproved">
+                            <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
+                            <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
+                        </label>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-2">
                         <button
@@ -490,7 +524,10 @@ function getLatestTransactions(address) {
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
                         >
                             <span class="button__content" v-if="isCoinApproved">Send</span>
-                            <span class="button__content" v-else>Unlock</span>
+                            <span class="button__content" v-else>
+                                <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
+                                <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
+                            </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
@@ -499,6 +536,40 @@ function getLatestTransactions(address) {
                     </div>
                 </div>
             </form>
+            <div class="panel__section panel__section--tint" v-if="isConnected">
+                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
+                            <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
+                            <span class="form-field__label">
+                                {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
+                                ({{ prettyRound(hubFeeRate * 100) }}%)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedBalance) }}</div>
+                            <div class="form-field__label">{{ $td('Token balance', 'form.hub-deposit-selected-balance') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">
+                                <template v-if="selectedUnlockedInfinity">Infinity</template>
+                                <template v-else>{{ prettyPrecise(selectedUnlocked) }}</template>
+                            </div>
+                            <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <Account @update:address="ethAddress = $event" ref="ethAccount"/>
 
@@ -518,7 +589,7 @@ function getLatestTransactions(address) {
                 v-for="tx in transactionList"
                 :key="tx.hash"
                 :hash="tx.hash"
-                :coin-list="coinList"
+                :coin-list="hubCoinList"
             />
         </div>
     </div>
