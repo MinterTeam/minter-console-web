@@ -84,7 +84,7 @@ export default {
                 coin: '',
                 amount: "",
                 address: this.$store.getters.address,
-                isInfiniteUnlock: false,
+                isInfiniteUnlock: true,
             },
             // @TODO use tx data in children components (for now only hash is used)
             transactionList: [],

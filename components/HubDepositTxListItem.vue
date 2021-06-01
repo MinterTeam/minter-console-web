@@ -16,6 +16,12 @@ const TX_STATUS = {
     FAILED: 'failed',
 };
 
+const TX_PURPOSE = {
+    SEND: 'Send',
+    UNLOCK: 'Unlock',
+    OTHER: 'Other',
+};
+
 export default {
     TX_STATUS,
     HUB_TRANSFER_STATUS,
@@ -71,7 +77,7 @@ export default {
         this.txWatcher.then((tx) => {
             this.tokenInfoPromise
                 .then(() => {
-                    if (this.tokenInfo.type === 'Send') {
+                    if (this.tokenInfo.type === TX_PURPOSE.SEND) {
                         this.transferWatcher = subscribeTransfer(tx.hash)
                             .on('update', (transfer) => {
                                 this.transfer = transfer;
@@ -114,11 +120,11 @@ export default {
             } else if (this.tx.status === false) {
                 return TX_STATUS.FAILED;
             }
-            const confirmationsCount = this.tokenInfo.type === 'Send' ? CONFIRMATION_COUNT : 1;
+            const confirmationsCount = this.tokenInfo.type === TX_PURPOSE.SEND ? CONFIRMATION_COUNT : 1;
             const enoughConfirmations = this.tx.confirmations >= confirmationsCount;
             if (!enoughConfirmations) {
                 return TX_STATUS.RECEIPT;
-            } else if (this.tokenInfo.type === 'Send') {
+            } else if (this.tokenInfo.type === TX_PURPOSE.SEND) {
                 return TX_STATUS.CONFIRMED_NOT_FINAL;
             } else {
                 return TX_STATUS.CONFIRMED;
@@ -141,6 +147,17 @@ export default {
             const coinItem = this.coinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
 
             return coinItem ? coinItem.symbol : '';
+        },
+        isInfiniteUnlock() {
+            if (!this.tokenInfo) {
+                return false;
+            }
+
+            if (this.tokenInfo.type === TX_PURPOSE.UNLOCK && this.tokenInfo.amount > 10**18) {
+                return true;
+            }
+
+            return false;
         },
     },
     destroyed() {
@@ -168,15 +185,15 @@ export default {
             let type;
             let tokenContract;
             if (itemCount === 2) {
-                type = 'Unlock';
+                type = TX_PURPOSE.UNLOCK;
                 tokenContract = tx.to;
             } else if (itemCount === 3) {
-                type = 'Send';
+                type = TX_PURPOSE.SEND;
                 const tokenContractHex = '0x' + input.slice(0, 64);
                 tokenContract = web3Eth.abi.decodeParameter('address', tokenContractHex);
             } else {
                 return {
-                    type: 'Other',
+                    type: TX_PURPOSE.OTHER,
                 };
             }
 
@@ -201,7 +218,8 @@ export default {
                 <a class="link--main" :href="getEtherscanTxUrl(hash)" target="_blank">{{ formatHash(hash) }}</a>
             </div>
             <div class="u-fw-700" v-if="tokenInfo">
-                {{ tokenInfo.type }} {{ pretty(tokenInfo.amount) }} {{ symbol }}
+                <template v-if="isInfiniteUnlock">Infinite unlock {{ symbol }}</template>
+                <template v-else>{{ tokenInfo.type }} {{ pretty(tokenInfo.amount) }} {{ symbol }}</template>
             </div>
         </div>
 
