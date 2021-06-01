@@ -317,6 +317,22 @@ export function getTransaction(hash) {
         });
 }
 
+/**
+ * @param {Object} [params]
+ * @param {string|number} [params.coin] - search by coin
+ * @param {string} [params.provider] - search by Mx address
+ * @param {number} [params.page]
+ * @param {number} [params.limit]
+ * @return {Promise<PoolListInfo>}
+ */
+export function getPoolList(params) {
+    return explorer.get('pools', {
+            params,
+        })
+        .then((response) => response.data);
+}
+
+
 // 10s cache
 const poolCache = new Cache({maxAge: 10 * 1000});
 
@@ -353,6 +369,7 @@ export function getPoolProvider(coin0, coin1, address) {
 export function getProviderPoolList(address, params) {
     return explorer.get(`pools/providers/${address}`, {
             params,
+            cache: poolCache,
         })
         .then((response) => response.data);
 }
@@ -399,7 +416,7 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
  * @property {number|string} liquidity
  * @property {number|string} liquidityBip
  * @property {string} token
- * @property {number|string} tradeVolumeBip30d
+ * @property {number|string} tradeVolumeBip1D
  */
 
 /**
