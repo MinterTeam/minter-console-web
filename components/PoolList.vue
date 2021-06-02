@@ -30,12 +30,13 @@ export default {
         poolListFormatted() {
             return this.poolList.map((pool) => {
                 const tradeFee = pool.tradeVolumeBip1D * 0.002;
-                const apr = tradeFee / pool.totalLiquidityBip * 365 * 100;
+                const apr = tradeFee / pool.totalLiquidityBip * 365;
+                const apy = ((1 + apr / 365) ** 365 - 1) * 100;
 
                 return {
                     ...pool,
                     liquidityUsd: pool.liquidityBip * this.bipPriceUsd,
-                    apr,
+                    apy,
                 };
             });
         },
@@ -93,7 +94,7 @@ export default {
                         <th colspan="2">Amount</th>
                         <th>Liquidity</th>
                         <th>Share</th>
-                        <th>APR</th>
+                        <th title="Based on 24hr volume annualized">APY</th>
                         <!-- controls -->
                         <th class="table__controls-cell table__controls-cell--x2"></th>
                     </tr>
@@ -108,7 +109,7 @@ export default {
                         <td><span class="u-fw-500">{{ pretty(pool.amount1) }}</span> {{ pool.coin1.symbol }}</td>
                         <td>{{ pretty(pool.liquidityUsd) }} $</td>
                         <td>{{ pretty(pool.liquidityShare) }}%</td>
-                        <td>{{ pretty(pool.apr) }}%</td>
+                        <td>{{ pretty(pool.apy) }}%</td>
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
                             <button class="table__controls-button u-semantic-button link--opacity"
