@@ -6,6 +6,7 @@
     import eventBus from '~/assets/event-bus.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty, prettyExact} from "~/assets/utils.js";
+    import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
     import FieldUseMax from '~/components/common/FieldUseMax';
@@ -13,6 +14,7 @@
     export default {
         TX_TYPE,
         components: {
+            BaseAmount,
             TxForm,
             FieldCoin,
             FieldUseMax,
@@ -177,33 +179,25 @@
             <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">
-                            {{ prettyExact(form.volume0) + ' ' + form.coin0 }}
-                        </div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin0" :amount="form.volume0" :exact="true"/>
                         <div class="form-field__label">{{ $td('First coin', 'form.pool-create-confirm-coin0') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">
-                            {{ prettyExact(form.volume1) + ' ' + form.coin1 }}
-                        </div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin1" :amount="form.volume1" :exact="true"/>
                         <div class="form-field__label">{{ $td('Second coin', 'form.pool-create-confirm-coin1') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">
-                            {{ pretty(form.volume1 / form.volume0) }} {{ form.coin1 }}
-                        </div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin1" :amount="form.volume1 / form.volume0"/>
                         <div class="form-field__label">{{ form.coin0 }} {{ $td('price', 'form.pool-create-coin-price') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">
-                            {{ pretty(form.volume0 / form.volume1) }} {{ form.coin0 }}
-                        </div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin0" :amount="form.volume0 / form.volume1"/>
                         <div class="form-field__label">{{ form.coin1 }} {{ $td('price', 'form.pool-create-coin-price') }}</div>
                     </div>
                 </div>

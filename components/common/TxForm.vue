@@ -17,6 +17,7 @@
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils.js";
     import {COIN_TYPE} from '~/assets/variables.js';
+    import BaseAmount from '~/components/common/BaseAmount.vue';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
     import FieldQr from '~/components/common/FieldQr.vue';
@@ -30,6 +31,7 @@
         feeBus: null,
         components: {
             QrcodeVue,
+            BaseAmount,
             FieldCoin,
             FieldDomain,
             FieldQr,
@@ -668,8 +670,7 @@
                 <div class="panel__section u-text-left">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            {{ pretty(fee.value) }} {{ fee.coinSymbol }}
-                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
+                            <BaseAmount :coin="fee.coinSymbol" :amount="fee.value" :base-coin-amount="fee.baseCoinValue"/>
                             <span class="u-display-ib" v-if="fee.priceCoin.id > 0">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
                         </div>
                         <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>

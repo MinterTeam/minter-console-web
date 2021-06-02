@@ -12,6 +12,7 @@
     import {getErrorText} from "~/assets/server-error";
     import {pretty, prettyExact} from "~/assets/utils";
     import {CONVERT_TYPE, COIN_TYPE} from '~/assets/variables.js';
+    import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
@@ -20,6 +21,7 @@
         TX_TYPE,
         CONVERT_TYPE,
         components: {
+            BaseAmount,
             TxForm,
             FieldCoin,
             InputMaskedAmount,
@@ -262,38 +264,30 @@
         <template v-slot:confirm-modal-body>
             <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="prettyExact(form.buyAmount) + ' ' + form.coinTo"
-                        >
-                        <span class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</span>
-                    </label>
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinTo" :amount="form.buyAmount" :exact="true"/>
+                        <div class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</div>
+                    </div>
                 </div>
                 <template v-if="estimation">
                     <div class="u-cell">
-                        <label class="form-field form-field--dashed">
-                            <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="pretty(estimation) + ' ' + form.coinFrom"
-                            >
-                            <span class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</span>
-                        </label>
+                        <div class="form-field form-field--dashed">
+                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation"/>
+                            <div class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</div>
+                        </div>
                         <div class="form-field__help u-text-left">
                             {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
                         </div>
                     </div>
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">
-                                {{ pretty(estimation / form.buyAmount) + ' ' + form.coinFrom }}
-                            </div>
+                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation / form.buyAmount"/>
                             <div class="form-field__label">1 {{ form.coinTo }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
                     </div>
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">
-                                {{ pretty(form.buyAmount / estimation) + ' ' + form.coinTo }}
-                            </div>
+                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinTo" :amount="form.buyAmount / estimation"/>
                             <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
                     </div>
