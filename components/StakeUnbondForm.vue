@@ -10,6 +10,7 @@
     import focusElement from '~/assets/focus-element';
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty, prettyExact} from "~/assets/utils";
+    import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldDomain from '~/components/common/FieldDomain';
@@ -19,6 +20,7 @@
     export default {
         TX_TYPE,
         components: {
+            BaseAmount,
             TxForm,
             TxFormBlocksToUpdateStake,
             FieldDomain,
@@ -221,15 +223,13 @@
         </template>
 
         <template v-slot:confirm-modal-body>
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-unbond-confirm-description')"></div>
                 <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
-                        >
-                        <span class="form-field__label">{{ $td('You unbond', 'form.delegation-unbond-confirm-amount') }}</span>
-                    </label>
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinSymbol" :amount="form.stake" :exact="true"/>
+                        <div class="form-field__label">{{ $td('You unbond', 'form.delegation-unbond-confirm-amount') }}</div>
+                    </div>
                 </div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">

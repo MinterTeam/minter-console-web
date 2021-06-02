@@ -88,5 +88,9 @@
                 {{ $td('Redeem check', 'checks.redeem-title') }}
             </h1>
         </template>
+
+<!--        @TODO parse check-->
+<!--        <template v-slot:confirm-modal-body>-->
+<!--        </template>-->
     </TxForm>
 </template>

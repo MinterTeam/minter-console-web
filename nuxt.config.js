@@ -107,8 +107,9 @@ export default {
         linkExactActiveClass: 'is-active',
         middleware: [
             'profile',
-            'balance',
             'auth',
+            'balance',
+            'status-data',
         ],
     },
     plugins: [

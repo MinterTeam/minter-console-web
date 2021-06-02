@@ -12,6 +12,7 @@ import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
 import {pretty, prettyExact} from "~/assets/utils";
 import {CONVERT_TYPE, COIN_TYPE} from '~/assets/variables.js';
+import BaseAmount from '~/components/common/BaseAmount.vue';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
@@ -20,6 +21,7 @@ export default {
     TX_TYPE,
     CONVERT_TYPE,
     components: {
+        BaseAmount,
         TxForm,
         FieldCoin,
         InputMaskedAmount,
@@ -85,11 +87,22 @@ export default {
             const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
             return coinSellItem && coinSellItem.amount;
         },
-        convertType() {
-            if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
-                return this.estimationType;
+        // replace invalid POOL_DIRECT with POOL
+        // used for estimate
+        preConvertType() {
+            if (this.selectedConvertType === CONVERT_TYPE.POOL_DIRECT) {
+                return CONVERT_TYPE.POOL;
             } else {
                 return this.selectedConvertType;
+            }
+        },
+        // POOL or BANCOR
+        // used for tx type
+        convertType() {
+            if (this.preConvertType === CONVERT_TYPE.OPTIMAL) {
+                return this.estimationType;
+            } else {
+                return this.preConvertType;
             }
         },
         txType() {
@@ -135,8 +148,8 @@ export default {
                 coinToSell: this.form.coinFrom,
                 valueToSell: this.sellAmount,
                 coinToBuy: this.form.coinTo,
-                swapFrom: this.selectedConvertType,
-                findRoute: true,
+                swapFrom: this.preConvertType,
+                findRoute: this.selectedConvertType !== CONVERT_TYPE.POOL_DIRECT,
                 gasCoin: this.txForm.gasCoin || 0,
                 sellAll: true,
             })
@@ -199,6 +212,10 @@ export default {
                     <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL" v-model="selectedConvertType">
                     <span class="form-check__label form-check__label--radio">{{ $td('Pools', 'form.convert-type-pool') }}</span>
                 </label>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL_DIRECT" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Direct pool', 'form.convert-type-pool-direct') }}</span>
+                </label>
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
@@ -253,38 +270,30 @@ export default {
         <template v-slot:confirm-modal-body>
             <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="prettyExact(sellAmount) + ' ' + form.coinFrom"
-                        >
-                        <span class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</span>
-                    </label>
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="sellAmount" :exact="true"/>
+                        <div class="form-field__label">{{ $td('You will send', 'form.convert-sell-confirm-send') }}</div>
+                    </div>
                 </div>
                 <template v-if="estimation">
                     <div class="u-cell">
-                        <label class="form-field form-field--dashed">
-                            <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="pretty(estimation) + ' ' + form.coinTo"
-                            >
-                            <span class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive-estimation') }}</span>
-                        </label>
+                        <div class="form-field form-field--dashed">
+                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinTo" :amount="estimation"/>
+                            <div class="form-field__label">{{ $td('You will get approximately *', 'form.convert-sell-confirm-receive-estimation') }}</div>
+                        </div>
                         <div class="form-field__help u-text-left">
                             {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
                         </div>
                     </div>
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">
-                                {{ pretty(estimation / sellAmount) + ' ' + form.coinTo }}
-                            </div>
+                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinTo" :amount="estimation / sellAmount"/>
                             <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
                     </div>
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">
-                                {{ pretty(sellAmount / estimation) + ' ' + form.coinFrom }}
-                            </div>
+                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="sellAmount / estimation"/>
                             <div class="form-field__label">1 {{ form.coinTo }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
                     </div>

@@ -13,6 +13,7 @@ import {FeePrice} from 'minterjs-util/src/fee.js';
 import {getCommissionPrice} from '~/api/gate.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {prettyExact, prettyExactDecrease, prettyPreciseFloor, prettyRound, coinSymbolValidator} from "~/assets/utils.js";
+import BaseAmount from '~/components/common/BaseAmount.vue';
 import TxForm from '~/components/common/TxForm.vue';
 import InputUppercase from '~/components/common/InputUppercase.vue';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
@@ -69,6 +70,7 @@ export default {
     prettyExact,
     prettyExactDecrease,
     components: {
+        BaseAmount,
         FieldPercentage,
         TxForm,
         InputUppercase,
@@ -347,14 +349,12 @@ export default {
         </template>
 
         <template v-slot:confirm-modal-body>
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" spellcheck="false" readonly tabindex="-1"
-                               :value="form.symbol + ' ' + $options.prettyExact(form.initialAmount)"
-                        />
-                        <span class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</span>
-                    </label>
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.symbol" :amount="form.initialAmount" :exact="true"/>
+                        <div class="form-field__label">{{ $td('You issue', 'form.coiner-create-confirm-amount') }}</div>
+                    </div>
                 </div>
                 <div class="u-cell" v-if="txType === $options.TX_TYPE.CREATE_COIN">
                     <label class="form-field form-field--dashed">
@@ -365,12 +365,10 @@ export default {
                     </label>
                 </div>
                 <div class="u-cell" v-if="txType === $options.TX_TYPE.CREATE_COIN">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
-                               :value="$store.getters.COIN_NAME + ' ' + $options.prettyExact(form.initialReserve)"
-                        />
-                        <span class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</span>
-                    </label>
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="$store.getters.COIN_NAME" :amount="form.initialReserve" :exact="true"/>
+                        <div class="form-field__label">{{ $td('By reserving', 'form.coiner-create-confirm-reserve') }}</div>
+                    </div>
                 </div>
                 <div class="u-cell u-text-left" v-if="txType === $options.TX_TYPE.CREATE_TOKEN">
                     <div>
