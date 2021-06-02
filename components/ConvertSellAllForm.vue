@@ -87,11 +87,22 @@ export default {
             const coinSellItem = this.addressBalance.find((item) => item.coin.symbol === this.form.coinFrom);
             return coinSellItem && coinSellItem.amount;
         },
-        convertType() {
-            if (this.selectedConvertType === CONVERT_TYPE.OPTIMAL) {
-                return this.estimationType;
+        // replace invalid POOL_DIRECT with POOL
+        // used for estimate
+        preConvertType() {
+            if (this.selectedConvertType === CONVERT_TYPE.POOL_DIRECT) {
+                return CONVERT_TYPE.POOL;
             } else {
                 return this.selectedConvertType;
+            }
+        },
+        // POOL or BANCOR
+        // used for tx type
+        convertType() {
+            if (this.preConvertType === CONVERT_TYPE.OPTIMAL) {
+                return this.estimationType;
+            } else {
+                return this.preConvertType;
             }
         },
         txType() {
@@ -137,8 +148,8 @@ export default {
                 coinToSell: this.form.coinFrom,
                 valueToSell: this.sellAmount,
                 coinToBuy: this.form.coinTo,
-                swapFrom: this.selectedConvertType,
-                findRoute: true,
+                swapFrom: this.preConvertType,
+                findRoute: this.selectedConvertType !== CONVERT_TYPE.POOL_DIRECT,
                 gasCoin: this.txForm.gasCoin || 0,
                 sellAll: true,
             })
@@ -200,6 +211,10 @@ export default {
                 <label class="form-check">
                     <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL" v-model="selectedConvertType">
                     <span class="form-check__label form-check__label--radio">{{ $td('Pools', 'form.convert-type-pool') }}</span>
+                </label>
+                <label class="form-check">
+                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL_DIRECT" v-model="selectedConvertType">
+                    <span class="form-check__label form-check__label--radio">{{ $td('Direct pool', 'form.convert-type-pool-direct') }}</span>
                 </label>
             </div>
             <div class="u-cell u-cell--medium--1-3">
