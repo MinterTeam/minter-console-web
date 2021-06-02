@@ -42,6 +42,7 @@ export const STAKE_RECALCULATE_BLOCK_COUNT = 720;
 export const CONVERT_TYPE = {
     BANCOR: 'bancor',
     POOL: 'pool',
+    POOL_DIRECT: 'pool_direct',
     OPTIMAL: 'optimal',
 };
 export const COIN_TYPE = {
