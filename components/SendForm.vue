@@ -7,6 +7,7 @@
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {prettyExact} from "~/assets/utils";
+    import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain';
@@ -15,6 +16,7 @@
     export default {
         TX_TYPE,
         components: {
+            BaseAmount,
             TxForm,
             FieldCoin,
             FieldDomain,
@@ -129,14 +131,12 @@
         </template>
 
         <template v-slot:confirm-modal-body>
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinSymbol + ' ' + prettyExact(form.amount)"
-                        >
-                        <span class="form-field__label">{{ $td('You send', 'form.wallet-send-confirm-amount') }}</span>
-                    </label>
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinSymbol" :amount="form.amount" :exact="true"/>
+                        <div class="form-field__label">{{ $td('You send', 'form.wallet-send-confirm-amount') }}</div>
+                    </div>
                 </div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
