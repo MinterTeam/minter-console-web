@@ -12,11 +12,12 @@
     import debounce from '~/assets/lodash5-debounce.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
-    import {pretty, prettyExact} from "~/assets/utils";
-    import {CONVERT_TYPE, COIN_TYPE} from '~/assets/variables.js';
+    import {pretty, prettyExact, decreasePrecisionSignificant, decreasePrecisionFixed} from "~/assets/utils.js";
+    import {CONVERT_TYPE, COIN_TYPE, SLIPPAGE_INPUT_TYPE} from '~/assets/variables.js';
     import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
+    import FieldPercentage from '~/components/common/FieldPercentage.vue';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
     import Loader from '~/components/common/Loader';
 
@@ -26,10 +27,12 @@
     export default {
         TX_TYPE,
         CONVERT_TYPE,
+        SLIPPAGE_INPUT_TYPE,
         components: {
             BaseAmount,
             TxForm,
             FieldCoin,
+            FieldPercentage,
             InputMaskedAmount,
             Loader,
         },
@@ -63,6 +66,8 @@
                     coinTo: '',
                     maximumValueToSell: '',
                 },
+                formSlippagePercent: '5',
+                selectedSlippageInput: SLIPPAGE_INPUT_TYPE.PERCENT,
                 estimation: null,
                 estimationType: null,
                 estimationRoute: null,
@@ -94,8 +99,7 @@
 
             return {
                 form,
-                isEstimationWaiting: {
-                    nothingToWait: (value) => !value,
+                formSlippagePercent: {
                 },
             };
         },
@@ -135,7 +139,7 @@
                             : [this.form.coinFrom, this.form.coinTo],
                     }),
                     valueToBuy: this.form.buyAmount,
-                    maximumValueToSell: this.form.maximumValueToSell || this.slippageAmount || 10**15,
+                    maximumValueToSell: this.form.maximumValueToSell || 10**15,
                 };
             },
             tradableAddressBalance() {
@@ -143,17 +147,13 @@
                     return this.tradableCoinList.find((coinSymbol) => balanceItem.coin.symbol === coinSymbol);
                 });
             },
-            //@TODO percent slippage
-            // slippage: {
-            //     get() {
-            //
-            //     },
-            //     set() {
-            //
-            //     },
-            // },
-            slippageAmount() {
-                return this.currentEstimation * 1.05;
+            whatAffectsSlippage() {
+                return {
+                    selectedSlippageInput: this.selectedSlippageInput,
+                    currentEstimation: this.currentEstimation,
+                    formSlippagePercent: this.formSlippagePercent,
+                    maximumValueToSell: this.form.maximumValueToSell,
+                };
             },
             currentEstimation() {
                 if (this.$v.form.$invalid || !this.estimation || this.isEstimationWaiting || this.estimationError) {
@@ -182,6 +182,28 @@
             'selectedConvertType': function() {
                 this.forceEstimation();
             },
+            whatAffectsSlippage: {
+                handler() {
+                    if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.AMOUNT && this.currentEstimation) {
+                        const slippageAmount = this.form.maximumValueToSell;
+                        let slippagePercent;
+                        if (!slippageAmount || slippageAmount < this.currentEstimation) {
+                            slippagePercent = 0;
+                        } else {
+                            slippagePercent = (slippageAmount / this.currentEstimation - 1) * 100;
+                        }
+                        this.formSlippagePercent = decreasePrecisionFixed(slippagePercent);
+                    }
+                    if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.currentEstimation) {
+                        const slippage = (this.formSlippagePercent || 0) / 100 + 1;
+                        this.form.maximumValueToSell = decreasePrecisionSignificant(this.currentEstimation * slippage);
+                    }
+                    if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.estimationError) {
+                        this.form.maximumValueToSell = 0;
+                    }
+                },
+                deep: true,
+            },
         },
         created() {
             this.debouncedGetEstimation = debounce(this.getEstimation, 1000);
@@ -193,6 +215,13 @@
                 // force estimation after blur if estimation was delayed
                 if (this.debouncedGetEstimation.pending()) {
                     this.debouncedGetEstimation.flush();
+                }
+            },
+            slippageAmountBlur() {
+                // reset to percent if no amount
+                if (!this.form.maximumValueToSell && (!this.formSlippagePercent || this.formSlippagePercent <= 0)) {
+                    this.selectedSlippageInput = SLIPPAGE_INPUT_TYPE.PERCENT;
+                    this.formSlippagePercent = 5;
                 }
             },
             watchForm() {
@@ -254,14 +283,14 @@
                 txFormContext.isFormSending = true;
                 txFormContext.serverError = '';
                 txFormContext.serverSuccess = '';
+                //@TODO in case if last estimation still loading we can use it instead of forcing new estimation
                 return this.forceEstimation()
                     .then(() => {
                         txFormContext.isFormSending = false;
-                    })
-                    .catch((error) => {
-                        txFormContext.isFormSending = false;
-                        txFormContext.serverError = getErrorText(error);
-                        throw error;
+                        // error already caught, it can be checked in estimationError
+                        if (this.estimationError) {
+                            return Promise.reject(this.estimationError);
+                        }
                     });
             },
             clearForm() {
@@ -281,7 +310,7 @@
     <TxForm
         data-test-id="convertBuy"
         :txData="txData"
-        :$txData="$v"
+        :$txData="$v.form"
         :txType="txType"
         :before-confirm-modal-show="beforeConfirm"
         @update:addressBalance="addressBalance = $event"
@@ -355,26 +384,40 @@
                 <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
-            <div class="u-cell u-cell--medium--1-2">
-                <div class="form-field form-field--dashed" :class="{'is-error': isEstimationErrorVisible}" v-if="!$store.getters.isOfflineMode">
+            <div class="u-cell u-cell--medium--1-2" v-if="!$store.getters.isOfflineMode">
+                <div class="form-field form-field--dashed" :class="{'is-error': isEstimationErrorVisible}">
                     <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="currentEstimation" prefix="≈ "/>
                     <div class="form-field__label">{{ $td('You will pay approximately', 'form.convert-buy-pay-estimation') }}</div>
                     <Loader class="form-field__icon form-field__icon--loader" :isLoading="isEstimationWaiting"/>
                     <span class="form-field__error" v-if="isEstimationErrorVisible">{{ estimationError }}</span>
                 </div>
             </div>
+            <div class="u-cell u-cell--medium--1-2" v-if="!$store.getters.isOfflineMode">
+                <FieldPercentage
+                    v-model="formSlippagePercent"
+                    :$value="$v.formSlippagePercent"
+                    :label="$td('Slippage tolerance', 'form.swap-slippage')"
+                    :class="{'is-error': formSlippagePercent > 100}"
+                    min-value="0"
+                    max-value="100"
+                    :allow-decimal="true"
+                    @input.native="selectedSlippageInput = $options.SLIPPAGE_INPUT_TYPE.PERCENT"
+                />
+                <span class="form-field__error" v-if="formSlippagePercent > 100">{{ $td('Slippage to high', 'form.swap-slippage-error-high') }}</span>
+            </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                        v-model="form.maximumValueToSell"
+                                       @input.native="selectedSlippageInput = $options.SLIPPAGE_INPUT_TYPE.AMOUNT"
+                                       @blur="slippageAmountBlur"
                     />
                     <span class="form-field__label">{{ $td('Max amount to spend (optional)', 'form.convert-buy-max') }}</span>
                 </label>
                 <div class="form-field__help">
-                    {{ $td('Default:', 'form.help-default') }} {{ slippageAmount ? pretty(slippageAmount) : '10^15' }}
+                    {{ $td('Default:', 'form.help-default') }} 10^15
                 </div>
             </div>
-            <div class="u-cell u-cell--medium--1-2 u-hidden-medium-down"></div>
         </template>
 
         <template v-slot:submit-title>

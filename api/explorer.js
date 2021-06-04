@@ -380,9 +380,10 @@ export function getProviderPoolList(address, params) {
  * @param {Object} amountOptions
  * @param {number|string} [amountOptions.buyAmount]
  * @param {number|string} [amountOptions.sellAmount]
+ * @param {AxiosRequestConfig} [axiosOptions]
  * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string}>}
  */
-export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
+export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions) {
     const amount = convertToPip(buyAmount || sellAmount);
     let type;
     if (sellAmount) {
@@ -391,7 +392,7 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}) {
     if (buyAmount) {
         type = 'output';
     }
-    return explorer.get(`pools/coins/${coin0}/${coin1}/route?type=${type}&amount=${amount}`)
+    return explorer.get(`pools/coins/${coin0}/${coin1}/route?type=${type}&amount=${amount}`, axiosOptions)
         .then((response) => response.data);
 }
 
