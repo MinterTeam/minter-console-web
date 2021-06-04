@@ -476,18 +476,14 @@
                         </div>
                     </div>
                 </template>
-                <div class="u-cell" v-if="convertType === $options.CONVERT_TYPE.POOL">
-                    <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="estimationRoute ? estimationRoute.map((coin) => coin.symbol).join(' > ') : form.coinFrom + ' > ' + form.coinTo"
-                        >
-                        <span class="form-field__label">{{ $td('Swap route', 'form.convert-route') }}</span>
-                    </label>
-                </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            {{ convertType === $options.CONVERT_TYPE.POOL ? 'Pools' : 'Reserves' }}
+                            <template v-if="convertType === $options.CONVERT_TYPE.POOL">
+                                Pools:
+                                {{ estimationRoute ? estimationRoute.map((coin) => coin.symbol).join(' > ') : form.coinFrom + ' > ' + form.coinTo }}
+                            </template>
+                            <template v-else>Reserves</template>
                         </div>
                         <div class="form-field__label">{{ $td('Swap type', 'form.convert-type') }}</div>
                     </div>
