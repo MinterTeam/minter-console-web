@@ -85,10 +85,10 @@
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Create new swap pool', 'swap.create-title') }}
+                {{ $td('Create new swap pool', 'pool.create-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Choose pair of coins the coins that you own and specify the amount to create a pool.', 'swap.create-description') }}
+                {{ $td('Choose pair of coins the coins that you own and specify the amount to create a pool.', 'pool.create-description') }}
             </p>
         </template>
 
@@ -99,7 +99,7 @@
                         <FieldCoin
                             v-model="form.coin0"
                             :$value="$v.form.coin0"
-                            :label="$td('Coin', 'form.swap-create-coin')"
+                            :label="$td('Coin', 'form.pool-create-coin')"
                             :coin-list="addressBalance"
                         />
                         <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -110,7 +110,7 @@
                         <FieldUseMax
                             v-model="form.volume0"
                             :$value="$v.form.volume0"
-                            :label="$td('Amount', 'form.swap-create-amount')"
+                            :label="$td('Amount', 'form.pool-create-amount')"
                             :selected-coin-symbol="form.coin0"
                             :fee="fee"
                             :address-balance="addressBalance"
@@ -125,7 +125,7 @@
                         <FieldCoin
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
-                            :label="$td('Coin', 'form.swap-create-coin-pair')"
+                            :label="$td('Coin', 'form.pool-create-coin-pair')"
                             :coin-list="addressBalance"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -136,7 +136,7 @@
                         <FieldUseMax
                             v-model="form.volume1"
                             :$value="$v.form.volume1"
-                            :label="$td('Amount', 'form.swap-create-amount')"
+                            :label="$td('Amount', 'form.pool-create-amount')"
                             :selected-coin-symbol="form.coin1"
                             :fee="fee"
                             :address-balance="addressBalance"
@@ -148,7 +148,7 @@
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Create', 'form.swap-create-button') }}
+            {{ $td('Create', 'form.pool-create-button') }}
         </template>
 
         <template v-slot:panel-footer>
@@ -171,7 +171,7 @@
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Create new swap pool', 'swap.create-title') }}
+                {{ $td('Create new swap pool', 'pool.create-title') }}
             </h1>
         </template>
 

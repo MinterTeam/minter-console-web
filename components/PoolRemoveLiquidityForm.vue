@@ -198,7 +198,7 @@ export default {
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Remove liquidity from swap pool', 'swap.remove-title') }}
+                {{ $td('Remove liquidity from swap pool', 'pool.remove-title') }}
             </h1>
             <!--            <p class="panel__header-description">-->
             <!--                {{ $td('Choose one of the coins that you own and specify the amount you would like to add.', 'swap.remove-description') }}-->
@@ -210,7 +210,7 @@ export default {
                 <FieldCoin
                     v-model="form.coin0"
                     :$value="$v.form.coin0"
-                    :label="$td('Coin', 'form.swap-remove-coin')"
+                    :label="$td('Coin', 'form.pool-remove-coin')"
                     :coin-list="poolCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -221,7 +221,7 @@ export default {
                 <FieldCoin
                     v-model="form.coin1"
                     :$value="$v.form.coin1"
-                    :label="$td('Coin', 'form.swap-remove-coin')"
+                    :label="$td('Coin', 'form.pool-remove-coin')"
                     :coin-list="poolCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -233,23 +233,23 @@ export default {
                     ref="fieldAmount"
                     v-model="form.liquidity"
                     :$value="$v.form.liquidity"
-                    :label="$td('Liquidity', 'form.swap-remove-liquidity')"
+                    :label="$td('Liquidity', 'form.pool-remove-liquidity')"
                     min-value="0"
                     max-value="100"
                     :allow-decimal="true"
                 />
-                <span class="form-field__error" v-if="$v.form.liquidity.$dirty && !$v.form.liquidity.required">{{ $td('Enter percentage', 'form.swap-remove-liquidity-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.minValue">{{ $td('Min value 0', 'form.swap-remove-liquidity-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.maxValue">{{ $td('Maximum 100%', 'form.swap-remove-liquidity-error-max') }}</span>
+                <span class="form-field__error" v-if="$v.form.liquidity.$dirty && !$v.form.liquidity.required">{{ $td('Enter percentage', 'form.pool-remove-liquidity-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.minValue">{{ $td('Min value 0%', 'form.percent-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
                 <span class="form-field__help" v-else>Percentage of your pool liquidity</span>
             </div>
             <div class="u-cell">
-                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.addressLiquidityData.$dirty && !$v.addressLiquidityData.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.swap-remove-liquidity-error-pool') }}</span>
+                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.addressLiquidityData.$dirty && !$v.addressLiquidityData.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.pool-remove-liquidity-error-pool') }}</span>
             </div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Remove', 'form.swap-remove-button') }}
+            {{ $td('Remove', 'form.pool-remove-button') }}
         </template>
 
         <template v-slot:panel-footer>
@@ -257,19 +257,19 @@ export default {
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coin0Amount) }}</div>
-                        <span class="form-field__label">{{ form.coin0 || 'Coin' }} {{ $td('to return', 'form.swap-remove-coin-amount') }}</span>
+                        <span class="form-field__label">{{ form.coin0 || 'Coin' }} {{ $td('to return', 'form.pool-remove-coin-amount') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coin1Amount) }}</div>
-                        <span class="form-field__label">{{ form.coin1 || 'Coin' }} {{ $td('to return', 'form.swap-remove-coin-amount') }}</span>
+                        <span class="form-field__label">{{ form.coin1 || 'Coin' }} {{ $td('to return', 'form.pool-remove-coin-amount') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(liquidityAmount) }}</div>
-                        <span class="form-field__label">{{ $td('Liquidity to remove', 'form.swap-remove-liquidity-amount') }}</span>
+                        <span class="form-field__label">{{ $td('Liquidity to remove', 'form.pool-remove-liquidity-amount') }}</span>
                     </div>
                 </div>
             </div>
@@ -278,7 +278,7 @@ export default {
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Remove liquidity from swap pool', 'swap.remove-title') }}
+                {{ $td('Remove liquidity from swap pool', 'pool.remove-title') }}
             </h1>
         </template>
 

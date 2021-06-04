@@ -293,7 +293,7 @@ export default {
                 {{ $td('Sell all coins', 'convert.sell-all-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Sell all of the coins that you possess in a single click.', 'convert.sell-all-description') }}
+                {{ $td('Sell all of the coins that you possess in a single click and pay fee with the same coin you sell.', 'convert.sell-all-description') }}
             </p>
         </template>
 
