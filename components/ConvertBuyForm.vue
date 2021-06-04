@@ -138,10 +138,6 @@
                     maximumValueToSell: this.form.maximumValueToSell || this.slippageAmount || 10**15,
                 };
             },
-            //@TODO always show route for pools
-            // route() {
-            //
-            // },
             tradableAddressBalance() {
                 return this.addressBalance.filter((balanceItem) => {
                     return this.tradableCoinList.find((coinSymbol) => balanceItem.coin.symbol === coinSymbol);
@@ -437,10 +433,10 @@
                         </div>
                     </div>
                 </template>
-                <div class="u-cell" v-if="estimationRoute">
+                <div class="u-cell" v-if="convertType === $options.CONVERT_TYPE.POOL">
                     <label class="form-field form-field--dashed">
                         <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="estimationRoute.map((coin) => coin.symbol).join(' > ')"
+                               :value="estimationRoute ? estimationRoute.map((coin) => coin.symbol).join(' > ') : form.coinFrom + ' > ' + form.coinTo"
                         >
                         <span class="form-field__label">{{ $td('Swap route', 'form.convert-route') }}</span>
                     </label>
