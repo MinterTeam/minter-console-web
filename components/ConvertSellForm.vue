@@ -188,9 +188,7 @@
                 this.watchForm();
             },
             'selectedConvertType': function() {
-                // force new estimation without delay
-                this.debouncedGetEstimation();
-                this.debouncedGetEstimation.flush();
+                this.forceEstimation();
             },
         },
         created() {
@@ -252,6 +250,28 @@
                         this.estimationError = getErrorText(error, 'Estimation error: ');
                     });
             },
+            forceEstimation() {
+                // force new estimation without delay
+                this.debouncedGetEstimation();
+                return this.debouncedGetEstimation.flush();
+            },
+            beforeConfirm(txFormContext) {
+                if (this.$store.getters.isOfflineMode) {
+                    return;
+                }
+                txFormContext.isFormSending = true;
+                txFormContext.serverError = '';
+                txFormContext.serverSuccess = '';
+                return this.forceEstimation()
+                    .then(() => {
+                        txFormContext.isFormSending = false;
+                    })
+                    .catch((error) => {
+                        txFormContext.isFormSending = false;
+                        txFormContext.serverError = getErrorText(error);
+                        throw error;
+                    });
+            },
             clearForm() {
                 this.form.sellAmount = '';
                 this.form.coinFrom = '';
@@ -271,6 +291,7 @@
         :txData="txData"
         :$txData="$v"
         :txType="txType"
+        :before-confirm-modal-show="beforeConfirm"
         @update:addressBalance="addressBalance = $event"
         @update:txForm="txForm = $event"
         @clear-form="clearForm()"
