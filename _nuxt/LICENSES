@@ -102,6 +102,16 @@
  */
 
 
+/**
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ *
+ * @typedef {Object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ */
+
+
 /*!
  * v2.1.4-104-gc868b3a
  * 
@@ -125,16 +135,6 @@
  * @author Chen, Yi-Cyuan [emn178@gmail.com]
  * @copyright Chen, Yi-Cyuan 2015-2018
  * @license MIT
- */
-
-
-/**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
- *
- * @typedef {Object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
  */
 
 
