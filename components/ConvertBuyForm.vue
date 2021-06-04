@@ -1,4 +1,5 @@
 <script>
+    import axios from 'axios';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -8,6 +9,7 @@
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {estimateCoinBuy} from '~/api/gate';
     import {getCoinList, getSwapCoinList} from '@/api/explorer.js';
+    import debounce from '~/assets/lodash5-debounce.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {pretty, prettyExact} from "~/assets/utils";
@@ -16,6 +18,10 @@
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
+    import Loader from '~/components/common/Loader';
+
+    let estimationCancel;
+    const CANCEL_MESSAGE = 'Cancel previous request';
 
     export default {
         TX_TYPE,
@@ -25,6 +31,7 @@
             TxForm,
             FieldCoin,
             InputMaskedAmount,
+            Loader,
         },
         directives: {
             checkEmpty,
@@ -59,6 +66,10 @@
                 estimation: null,
                 estimationType: null,
                 estimationRoute: null,
+                isEstimationLoading: false,
+                estimationError: false,
+                isEstimationPending: false,
+                debouncedGetEstimation: null,
                 //@TODO disable optimal in offline mode
                 selectedConvertType: CONVERT_TYPE.OPTIMAL,
                 txForm: {},
@@ -79,12 +90,14 @@
                     required,
                     minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
                 },
-                maximumValueToSell: {
-                    minValue: this.form.maximumValueToSell ? minValue(0) : () => true,
-                },
             };
 
-            return {form};
+            return {
+                form,
+                isEstimationWaiting: {
+                    nothingToWait: (value) => !value,
+                },
+            };
         },
         computed: {
             // replace invalid POOL_DIRECT with POOL
@@ -122,25 +135,95 @@
                             : [this.form.coinFrom, this.form.coinTo],
                     }),
                     valueToBuy: this.form.buyAmount,
-                    maximumValueToSell: this.form.maximumValueToSell,
+                    maximumValueToSell: this.form.maximumValueToSell || this.slippageAmount || 10**15,
                 };
             },
+            //@TODO always show route for pools
+            // route() {
+            //
+            // },
             tradableAddressBalance() {
                 return this.addressBalance.filter((balanceItem) => {
                     return this.tradableCoinList.find((coinSymbol) => balanceItem.coin.symbol === coinSymbol);
                 });
             },
+            //@TODO percent slippage
+            // slippage: {
+            //     get() {
+            //
+            //     },
+            //     set() {
+            //
+            //     },
+            // },
+            slippageAmount() {
+                return this.currentEstimation * 1.05;
+            },
+            currentEstimation() {
+                if (this.$v.form.$invalid || !this.estimation || this.isEstimationWaiting || this.estimationError) {
+                    return 0;
+                }
+
+                return this.estimation;
+            },
+            isEstimationWaiting() {
+                return this.isEstimationPending || this.isEstimationLoading;
+            },
+            isEstimationErrorVisible() {
+                return this.estimationError && !this.isEstimationWaiting;
+            },
+        },
+        watch: {
+            'form.buyAmount': function() {
+                this.watchForm();
+            },
+            'form.coinFrom': function() {
+                this.watchForm();
+            },
+            'form.coinTo': function() {
+                this.watchForm();
+            },
+            'selectedConvertType': function() {
+                // force new estimation without delay
+                this.debouncedGetEstimation();
+                this.debouncedGetEstimation.flush();
+            },
+        },
+        created() {
+            this.debouncedGetEstimation = debounce(this.getEstimation, 1000);
         },
         methods: {
             pretty,
             prettyExact,
-            getEstimation(txFormContext) {
+            inputBlur() {
+                // force estimation after blur if estimation was delayed
+                if (this.debouncedGetEstimation.pending()) {
+                    this.debouncedGetEstimation.flush();
+                }
+            },
+            watchForm() {
                 if (this.$store.getters.isOfflineMode) {
                     return;
                 }
-                txFormContext.isFormSending = true;
-                txFormContext.serverError = '';
-                txFormContext.serverSuccess = '';
+                if (this.$v.form.$invalid) {
+                    return;
+                }
+                this.debouncedGetEstimation();
+                this.isEstimationPending = true;
+            },
+            getEstimation() {
+                this.isEstimationPending = false;
+                if (this.isEstimationLoading && typeof estimationCancel === 'function') {
+                    estimationCancel(CANCEL_MESSAGE);
+                }
+                if (this.$store.getters.isOfflineMode) {
+                    return;
+                }
+                if (this.$v.form.$invalid) {
+                    return;
+                }
+                this.isEstimationLoading = true;
+                this.estimationError = false;
                 return estimateCoinBuy({
                     coinToBuy: this.form.coinTo,
                     valueToBuy: this.form.buyAmount,
@@ -148,17 +231,21 @@
                     swapFrom: this.preConvertType,
                     findRoute: this.selectedConvertType !== CONVERT_TYPE.POOL_DIRECT,
                     gasCoin: this.txForm.gasCoin || 0,
+                }, {
+                    cancelToken: new axios.CancelToken((cancelFn) => estimationCancel = cancelFn),
                 })
                     .then((result) => {
                         this.estimation = result.will_pay;
                         this.estimationType = result.swap_from;
                         this.estimationRoute = result.route;
-                        txFormContext.isFormSending = false;
+                        this.isEstimationLoading = false;
                     })
                     .catch((error) => {
-                        txFormContext.isFormSending = false;
-                        txFormContext.serverError = getErrorText(error);
-                        throw error;
+                        if (error.message === CANCEL_MESSAGE) {
+                            return;
+                        }
+                        this.isEstimationLoading = false;
+                        this.estimationError = getErrorText(error, 'Estimation error: ');
                     });
             },
             clearForm() {
@@ -178,9 +265,8 @@
     <TxForm
         data-test-id="convertBuy"
         :txData="txData"
-        :$txData="$v.form"
+        :$txData="$v"
         :txType="txType"
-        :before-confirm-modal-show="getEstimation"
         @update:addressBalance="addressBalance = $event"
         @update:txForm="txForm = $event"
         @clear-form="clearForm()"
@@ -221,6 +307,7 @@
                     :$value="$v.form.coinTo"
                     :label="$td('Coin to buy', 'form.convert-buy-coin-buy')"
                     :coin-list="tradableCoinList"
+                    @blur="inputBlur()"
                 />
                 <span class="form-field__error" v-if="$v.form.coinTo.$dirty && !$v.form.coinTo.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinTo.$dirty && !$v.form.coinTo.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -232,7 +319,7 @@
                         data-test-id="convertBuyInputBuyAmount"
                         class="form-field__input" v-check-empty
                         v-model="form.buyAmount"
-                        @blur="$v.form.buyAmount.$touch()"
+                        @blur="$v.form.buyAmount.$touch(); inputBlur()"
                     />
                     <span class="form-field__label">{{ $td('Buy amount', 'form.convert-buy-amount') }}</span>
                 </label>
@@ -245,24 +332,32 @@
                     :$value="$v.form.coinFrom"
                     :label="$td('Coin to spend', 'form.convert-buy-coin-spend')"
                     :coin-list="tradableAddressBalance"
+                    @blur="inputBlur()"
                 />
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--medium--1-2">
-                <label class="form-field" :class="{'is-error': $v.form.maximumValueToSell.$error}">
+                <div class="form-field form-field--dashed" :class="{'is-error': isEstimationErrorVisible}" v-if="!$store.getters.isOfflineMode">
+                    <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="currentEstimation" prefix="≈ "/>
+                    <div class="form-field__label">{{ $td('You will pay approximately', 'form.convert-buy-pay-estimation') }}</div>
+                    <Loader class="form-field__icon form-field__icon--loader" :isLoading="isEstimationWaiting"/>
+                    <span class="form-field__error" v-if="isEstimationErrorVisible">{{ estimationError }}</span>
+                </div>
+            </div>
+            <div class="u-cell u-cell--medium--1-2">
+                <label class="form-field">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                        v-model="form.maximumValueToSell"
-                                       @blur.native="$v.form.maximumValueToSell.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Max amount to spend (optional)', 'form.convert-buy-max') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.maximumValueToSell.$dirty && !$v.form.maximumValueToSell.minValue">{{ $td(`Min value is 0`, 'form.convert-buy-max-error-min', {value: $options.COIN_MIN_MAX_SUPPLY}) }}</span>
                 <div class="form-field__help">
-                    {{ $td('Default:', 'form.help-default') }} 10^15
+                    {{ $td('Default:', 'form.help-default') }} {{ slippageAmount ? pretty(slippageAmount) : '10^15' }}
                 </div>
             </div>
+            <div class="u-cell u-cell--medium--1-2 u-hidden-medium-down"></div>
         </template>
 
         <template v-slot:submit-title>
@@ -284,16 +379,30 @@
                         <div class="form-field__label">{{ $td('You buy', 'form.convert-buy-confirm-get') }}</div>
                     </div>
                 </div>
-                <template v-if="estimation">
-                    <div class="u-cell">
-                        <div class="form-field form-field--dashed">
-                            <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation"/>
-                            <div class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</div>
-                        </div>
-                        <div class="form-field__help u-text-left">
-                            {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
-                        </div>
+                <div class="u-cell" v-if="estimation">
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation" prefix="≈ "/>
+                        <div class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</div>
                     </div>
+                    <div class="form-field__help u-text-left">
+                        {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.convert-confirm-note') }}
+                    </div>
+                </div>
+                <div class="u-cell" v-else>
+                    <label class="form-field form-field--dashed">
+                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
+                               :value="form.coinFrom"
+                        >
+                        <span class="form-field__label">{{ $td('You will pay', 'form.convert-buy-confirm-pay') }}</span>
+                    </label>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="txData.maximumValueToSell" :exact="true"/>
+                        <div class="form-field__label">{{ $td('Max amount to spend', 'form.convert-buy-confirm-max') }}</div>
+                    </div>
+                </div>
+                <template v-if="estimation">
                     <div class="u-cell">
                         <div class="form-field form-field--dashed">
                             <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation / form.buyAmount"/>
@@ -305,16 +414,6 @@
                             <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinTo" :amount="form.buyAmount / estimation"/>
                             <div class="form-field__label">1 {{ form.coinFrom }} {{ $td('rate', 'form.convert-rate') }}</div>
                         </div>
-                    </div>
-                </template>
-                <template v-else>
-                    <div class="u-cell">
-                        <label class="form-field form-field--dashed">
-                            <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                   :value="form.coinFrom"
-                            >
-                            <span class="form-field__label">{{ $td('You will pay', 'form.convert-buy-confirm-pay') }}</span>
-                        </label>
                     </div>
                 </template>
                 <div class="u-cell" v-if="estimationRoute">

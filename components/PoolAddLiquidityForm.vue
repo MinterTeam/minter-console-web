@@ -229,7 +229,7 @@ export default {
             </h1>
         </template>
 
-<!--        @TODO-->
+        <!--        @TODO-->
         <!--        <template v-slot:confirm-modal-body>
             <div class="u-grid u-grid&#45;&#45;small u-grid&#45;&#45;vertical-margin">
                 <div class="u-cell">

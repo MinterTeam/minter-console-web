@@ -126,7 +126,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                     return this.txParams.gasCoin;
                 }
 
-                return BASE_COIN;
+                return this.isOffline ? 0 : BASE_COIN;
             },
             // secondary it will try to check coinToSpend and use if primary coin is not enough to pay fee
             getSecondaryCoinToCheck() {
@@ -149,6 +149,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
             },
             fetchCoinData() {
                 if (this.isOffline) {
+                    this.feeCoin = this.getPrimaryCoinToCheck();
                     return;
                 }
 
@@ -160,6 +161,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                     chainId: CHAIN_ID,
                     gasCoin: primaryCoinToCheck,
                 });
+                //@TODO secondary check may be redundant
                 const secondaryEstimate = secondaryCoinToCheck && secondaryCoinToCheck !== primaryCoinToCheck ? estimateTxCommission({
                     ...this.txParams,
                     chainId: CHAIN_ID,
@@ -197,9 +199,6 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                         this.feeCoin = isSecondarySelected ? secondaryCoinToCheck : primaryCoinToCheck;
                         this.feeValue = isSecondarySelected ? secondaryFeeData.commission : feeData.commission;
                         this.commissionPriceData = feeData.commissionPriceData;
-                        if (isCoinId(this.feeCoin)) {
-
-                        }
                         this.isLoading = false;
                     })
                     .catch((error) => {
