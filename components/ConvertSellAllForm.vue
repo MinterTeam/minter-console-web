@@ -305,6 +305,8 @@ export default {
             this.$v.$reset();
 
             this.selectedConvertType = CONVERT_TYPE.OPTIMAL;
+            this.selectedSlippageInput = SLIPPAGE_INPUT_TYPE.PERCENT;
+            this.formSlippagePercent = 5;
         },
     },
 };
