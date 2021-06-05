@@ -6,14 +6,6 @@
 
 
 /*!
- * qrcode.vue v1.7.0
- * A Vue component to generate QRCode.
- * © 2017-2019 @scopewu(https://github.com/scopewu)
- * MIT License.
- */
-
-
-/*!
   * vue-router v3.5.1
   * (c) 2021 Evan You
   * @license MIT
@@ -47,11 +39,22 @@
  */
 
 
+/**
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ *
+ * @typedef {Object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ */
+
+
 /*!
-	autosize 4.0.2
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
+ * qrcode.vue v1.7.0
+ * A Vue component to generate QRCode.
+ * © 2017-2019 @scopewu(https://github.com/scopewu)
+ * MIT License.
+ */
 
 
 /**
@@ -102,16 +105,6 @@
  */
 
 
-/**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
- *
- * @typedef {Object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
- */
-
-
 /*!
  * v2.1.4-104-gc868b3a
  * 
@@ -136,6 +129,20 @@
  * @copyright Chen, Yi-Cyuan 2015-2018
  * @license MIT
  */
+
+
+/*!
+	autosize 4.0.2
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+
+/*!
+	autosize 4.0.2
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
 
 
 /*
