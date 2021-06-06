@@ -177,7 +177,7 @@
                 return this.txType !== TX_TYPE.REDEEM_CHECK;
             },
             isShowGasCoin() {
-                return this.txType !== TX_TYPE.REDEEM_CHECK && this.txType !== TX_TYPE.SELL_ALL;
+                return this.txType !== TX_TYPE.REDEEM_CHECK && this.txType !== TX_TYPE.SELL_ALL && this.txType !== TX_TYPE.SELL_ALL_SWAP_POOL;
             },
             showAdvanced() {
                 return this.alwaysAdvanced || this.isModeAdvanced || this.$store.getters.isOfflineMode;
