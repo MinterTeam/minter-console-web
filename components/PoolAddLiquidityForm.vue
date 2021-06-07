@@ -144,10 +144,10 @@ export default {
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Add liquidity to swap pool', 'swap.add-title') }}
+                {{ $td('Add liquidity to swap pool', 'pool.add-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Choose pair of coins the coins that you own and specify the amount you would like to add.', 'swap.add-description') }}
+                {{ $td('Choose pair of coins the coins that you own and specify the amount you would like to add.', 'pool.add-description') }}
             </p>
         </template>
 
@@ -158,7 +158,7 @@ export default {
                         <FieldCoin
                             v-model="form.coin0"
                             :$value="$v.form.coin0"
-                            :label="$td('Coin', 'form.swap-add-coin')"
+                            :label="$td('Coin', 'form.pool-add-coin')"
                             :coin-list="availableCoinList"
                         />
                         <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -170,7 +170,7 @@ export default {
                             ref="fieldAmount"
                             v-model="form.volume0"
                             :$value="$v.form.volume0"
-                            :label="$td('Amount', 'form.swap-add-amount')"
+                            :label="$td('Amount', 'form.pool-add-amount')"
                             :selected-coin-symbol="form.coin0"
                             :fee="fee"
                             :address-balance="addressBalance"
@@ -185,7 +185,7 @@ export default {
                         <FieldCoin
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
-                            :label="$td('Coin', 'form.swap-add-coin-pair')"
+                            :label="$td('Coin', 'form.pool-add-coin-pair')"
                             :coin-list="availableCoinList"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
@@ -196,7 +196,7 @@ export default {
                         <FieldUseMax
                             v-model="form.maximumVolume1"
                             :$value="$v.form.maximumVolume1"
-                            :label="$td('Maximum amount (optional)', 'form.swap-add-max-amount')"
+                            :label="$td('Maximum amount (optional)', 'form.pool-add-max-amount')"
                         />
                         <!--                        <span class="form-field__error" v-if="$v.form.maximumVolume1.$dirty && !$v.form.maximumVolume1.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>-->
                     </div>
@@ -208,7 +208,7 @@ export default {
         <!--        </template>-->
 
         <template v-slot:submit-title>
-            {{ $td('Add', 'form.swap-add-button') }}
+            {{ $td('Add', 'form.pool-add-button') }}
         </template>
 
         <template v-slot:panel-footer>
@@ -216,7 +216,7 @@ export default {
                 <div class="u-cell u-cell--medium--1-2">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coin1Amount) }}</div>
-                        <span class="form-field__label">{{ $td('Second coin amount estimation', 'form.swap-add-coin-estimation') }}</span>
+                        <span class="form-field__label">{{ $td('Second coin amount estimation', 'form.pool-add-coin-estimation') }}</span>
                     </div>
                 </div>
             </div>
@@ -225,7 +225,7 @@ export default {
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Add liquidity to swap pool', 'swap.add-title') }}
+                {{ $td('Add liquidity to swap pool', 'pool.add-title') }}
             </h1>
         </template>
 

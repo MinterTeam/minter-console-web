@@ -49,7 +49,7 @@ export default {
                 maximumValue: this.maxValue,
                 overrideMinMaxLimits: 'ignore',
                 unformatOnHover: false,
-                wheelStep: 1,
+                modifyValueOnWheel: false,
             };
         },
     },

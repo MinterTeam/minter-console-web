@@ -46,7 +46,7 @@ export default {
             // ensure explorer to update DB
             setTimeout(() => {
                 this.fetchPoolList();
-            }, 2000);
+            }, 5000);
         });
     },
     destroyed() {

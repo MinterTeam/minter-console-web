@@ -217,6 +217,14 @@ export function prettyExactDecrease(value) {
     return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&nbsp;'}));
 }
 
+export function decreasePrecisionSignificant(value) {
+    return prettyNum(value, {precision: 4, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT});
+}
+
+export function decreasePrecisionFixed(value) {
+    return prettyNum(value, {precision: 2, precisionSetting: PRECISION_SETTING.FIXED});
+}
+
 /**
  * @param {string} value
  * @param {number} [endLength]
