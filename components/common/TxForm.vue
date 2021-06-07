@@ -495,151 +495,153 @@
             <slot name="panel-header"></slot>
         </div>
 
-        <slot name="extra-panel" :fee="fee" :address-balance="balance"></slot>
-
         <!-- Form -->
-        <form class="panel__section" novalidate @submit.prevent="submitConfirm">
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
-                <!-- Tx Data Fields -->
-                <slot :fee="fee" :address-balance="balance"></slot>
+        <form class="panel__section panel__section--wrap" novalidate @submit.prevent="submitConfirm">
+            <slot name="extra-panel" :fee="fee" :address-balance="balance"></slot>
 
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced && isShowGasCoin">
-                    <FieldCoin
-                        v-model="form.gasCoin"
-                        :$value="$v.form.gasCoin"
-                        :label="$td('Coin to pay fee', 'form.fee')"
-                        :coin-list="gasSuitableBalance"
-                    />
-                    <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-                    <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
-                    <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
-                    <div class="form-field__help" v-else>
-                        {{ pretty(fee.value) }} {{ fee.coinSymbol }}
-                        <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
-                    </div>
-                </div>
-                <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
-                    <label class="form-field" :class="{'is-error': $v.form.payload.$error}">
-                        <input class="form-field__input" type="text" v-check-empty
-                               data-test-id="walletTxFormInputPayload"
-                               v-model.trim="form.payload"
-                               @blur="$v.form.payload.$touch()"
-                        >
-                        <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
-                    </label>
-                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td(`Max 10000 symbols, given ${payloadLength}`, 'form.message-error-max') }}</span>
-                    <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
-                    <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
-                    <FieldDomain
-                        v-model.trim="form.multisigAddress"
-                        :$value="$v.form.multisigAddress"
-                        valueType="address"
-                        :label="$td('Multisig address', 'form.multisig-address')"
-                        @update:domain="multisigDomain = $event"
-                        @update:resolving="isMultisigDomainResolving = $event"
-                    />
-                </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2 u-hidden-xlarge-down" v-show="showAdvanced && !$store.getters.isOfflineMode"></div>
+            <div class="panel__section">
+                <div class="u-grid u-grid--small u-grid--vertical-margin">
+                    <!-- Tx Data Fields -->
+                    <slot :fee="fee" :address-balance="balance"></slot>
 
-                <!-- Generation -->
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <FieldQr v-model="form.nonce"
-                             :$value="$v.form.nonce"
-                             :label="$td('Nonce', 'form.checks-issue-nonce')"
-                             :isInteger="true"
-                    />
-                    <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
-                    <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                    <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                        <InputMaskedInteger class="form-field__input" v-check-empty
-                                            v-model="form.gasPrice"
-                                            @blur="$v.form.gasPrice.$touch()"
+                    <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced && isShowGasCoin">
+                        <FieldCoin
+                            v-model="form.gasCoin"
+                            :$value="$v.form.gasCoin"
+                            :label="$td('Coin to pay fee', 'form.fee')"
+                            :coin-list="gasSuitableBalance"
                         />
-                        <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
-                        <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
-                    </label>
-                    <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
-                </div>
+                        <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                        <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
+                        <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
+                        <div class="form-field__help" v-else>
+                            {{ pretty(fee.value) }} {{ fee.coinSymbol }}
+                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
+                        </div>
+                    </div>
+                    <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
+                        <label class="form-field" :class="{'is-error': $v.form.payload.$error}">
+                            <input class="form-field__input" type="text" v-check-empty
+                                   data-test-id="walletTxFormInputPayload"
+                                   v-model.trim="form.payload"
+                                   @blur="$v.form.payload.$touch()"
+                            >
+                            <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
+                        </label>
+                        <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td(`Max 10000 symbols, given ${payloadLength}`, 'form.message-error-max') }}</span>
+                        <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
+                        <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
+                    </div>
+                    <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2" v-show="showAdvanced">
+                        <FieldDomain
+                            v-model.trim="form.multisigAddress"
+                            :$value="$v.form.multisigAddress"
+                            valueType="address"
+                            :label="$td('Multisig address', 'form.multisig-address')"
+                            @update:domain="multisigDomain = $event"
+                            @update:resolving="isMultisigDomainResolving = $event"
+                        />
+                    </div>
+                    <div class="u-cell u-cell--xlarge--1-2 u-cell--xlarge--order-2 u-hidden-xlarge-down" v-show="showAdvanced && !$store.getters.isOfflineMode"></div>
+
+                    <!-- Generation -->
+                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                        <FieldQr v-model="form.nonce"
+                                 :$value="$v.form.nonce"
+                                 :label="$td('Nonce', 'form.checks-issue-nonce')"
+                                 :isInteger="true"
+                        />
+                        <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
+                        <div class="form-field__help">{{ $td('Tx\'s unique ID. Should be: current user\'s tx count + 1', 'form.generate-nonce-help') }}</div>
+                    </div>
+                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
+                        <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
+                            <InputMaskedInteger class="form-field__input" v-check-empty
+                                                v-model="form.gasPrice"
+                                                @blur="$v.form.gasPrice.$touch()"
+                            />
+                            <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
+                            <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
+                        </label>
+                        <div class="form-field__help">{{ $td('Default:', 'form.help-default') }} 1</div>
+                    </div>
 
 
-                <!-- Controls -->
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!showSwitcherAdvanced">
-                    <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced" data-test-id="walletTxFormHideAdvanced">
-                        {{ $td('Simple mode', 'form.toggle-simple-mode') }}
-                    </button>
-                    <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced" data-test-id="walletTxFormShowAdvanced">
-                        {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
-                    </button>
-                </div>
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="showSwitcherAdvanced"><!--placeholder--></div>
-                <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2">
-                    <button
-                        class="button button--ghost-main button--full"
-                        type="button"
-                        v-show="showAdvanced"
-                        :class="{'is-disabled': $v.form.multisigAddress.$invalid, 'is-loading': isSigning}"
-                        @click="signTx"
-                    >
-                        <span class="button__content">{{ $td('Sign', 'form.multisig-sign') }}</span>
-                        <Loader class="button__loader" :isLoading="true"/>
-                    </button>
-                </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
-                    <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}" v-if="$store.getters.isOfflineMode">
-                        {{ $td('Generate', 'form.generate-button') }}
-                    </button>
-                    <button
-                        class="button button--main button--full"
-                        data-test-id="txSubmitButton"
-                        :class="{
+                    <!-- Controls -->
+                    <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-cell--align-center" v-if="!showSwitcherAdvanced">
+                        <button class="link--default u-semantic-button" type="button" @click="switchToSimple" v-if="showAdvanced" data-test-id="walletTxFormHideAdvanced">
+                            {{ $td('Simple mode', 'form.toggle-simple-mode') }}
+                        </button>
+                        <button class="link--default u-semantic-button" type="button" @click="switchToAdvanced" v-if="!showAdvanced" data-test-id="walletTxFormShowAdvanced">
+                            {{ $td('Advanced mode', 'form.toggle-advanced-mode') }}
+                        </button>
+                    </div>
+                    <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2 u-hidden-xlarge-down" v-if="showSwitcherAdvanced"><!--placeholder--></div>
+                    <div class="u-cell u-cell--1-2 u-cell--xlarge--1-4 u-cell--order-2">
+                        <button
+                            class="button button--ghost-main button--full"
+                            type="button"
+                            v-show="showAdvanced"
+                            :class="{'is-disabled': $v.form.multisigAddress.$invalid, 'is-loading': isSigning}"
+                            @click="signTx"
+                        >
+                            <span class="button__content">{{ $td('Sign', 'form.multisig-sign') }}</span>
+                            <Loader class="button__loader" :isLoading="true"/>
+                        </button>
+                    </div>
+                    <div class="u-cell u-cell--xlarge--1-2 u-cell--order-2">
+                        <button class="button button--main button--full" :class="{'is-disabled': $v.$invalid}" v-if="$store.getters.isOfflineMode">
+                            {{ $td('Generate', 'form.generate-button') }}
+                        </button>
+                        <button
+                            class="button button--main button--full"
+                            data-test-id="txSubmitButton"
+                            :class="{
                             'is-loading': isFormSending,
                             'is-disabled': $v.$invalid
                         }"
-                        v-if="!$store.getters.isOfflineMode"
-                    >
+                            v-if="!$store.getters.isOfflineMode"
+                        >
                         <span class="button__content">
                             <slot name="submit-title">
                                 {{ $td('Send', 'form.wallet-send-button') }}
                             </slot>
                         </span>
-                        <Loader class="button__loader" :isLoading="true"/>
-                    </button>
-                    <div class="form-field__error" data-test-id="txErrorMessage" v-if="serverError">{{ serverError }}</div>
-                </div>
+                            <Loader class="button__loader" :isLoading="true"/>
+                        </button>
+                        <div class="form-field__error" data-test-id="txErrorMessage" v-if="serverError">{{ serverError }}</div>
+                    </div>
 
 
-                <div class="u-cell u-cell--order-2" v-if="signature">
-                    <dl>
-                        <dt>{{ $td('Signature', 'form.multisig-result-signature') }}</dt>
-                        <dd class="u-icon-wrap">
+                    <div class="u-cell u-cell--order-2" v-if="signature">
+                        <dl>
+                            <dt>{{ $td('Signature', 'form.multisig-result-signature') }}</dt>
+                            <dd class="u-icon-wrap">
                             <span class="u-select-all u-icon-text">
                                 {{ signature }}
                             </span>
-                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signature"/>
-                        </dd>
-                    </dl>
-                    <!--                    <br>-->
-                    <!--                    <qrcode-vue :value="signature" :size="200" level="L"></qrcode-vue>-->
-                </div>
+                                <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signature"/>
+                            </dd>
+                        </dl>
+                        <!--                    <br>-->
+                        <!--                    <qrcode-vue :value="signature" :size="200" level="L"></qrcode-vue>-->
+                    </div>
 
-                <div class="u-cell u-cell--order-2" v-if="signedTx">
-                    <dl>
-                        <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
-                        <dd class="u-icon-wrap">
+                    <div class="u-cell u-cell--order-2" v-if="signedTx">
+                        <dl>
+                            <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
+                            <dd class="u-icon-wrap">
                             <span class="u-select-all u-icon-text">
                                 {{ signedTx }}
                             </span>
-                            <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
-                        </dd>
-                    </dl>
-                    <br>
-                    <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
+                                <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
+                            </dd>
+                        </dl>
+                        <br>
+                        <qrcode-vue :value="signedTx" :size="200" level="L"></qrcode-vue>
+                    </div>
                 </div>
             </div>
         </form>

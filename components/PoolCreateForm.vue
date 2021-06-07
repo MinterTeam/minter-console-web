@@ -155,14 +155,14 @@
             <div class="u-grid">
                 <div class="u-cell u-cell--medium--1-2">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(form.volume1 / form.volume0) }} {{ form.coin1 || 'coin1' }}</div>
-                        <span class="form-field__label">{{ form.coin0 || 'coin0' }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
+                        <div class="form-field__input is-not-empty">{{ pretty(form.volume1 / form.volume0) }} {{ form.coin1 }}</div>
+                        <span class="form-field__label">{{ form.coin0 || $td('First coin', 'form.pool-coin0') }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(form.volume0 / form.volume1) }} {{ form.coin0 || 'coin0' }}</div>
-                        <span class="form-field__label">{{ form.coin1 || 'coin1' }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
+                        <div class="form-field__input is-not-empty">{{ pretty(form.volume0 / form.volume1) }} {{ form.coin0 }}</div>
+                        <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'form.pool-coin1') }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
                     </div>
                 </div>
             </div>

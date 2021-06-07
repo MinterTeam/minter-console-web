@@ -15,19 +15,34 @@ import {getCoinId} from '~/api/gate.js';
 import {getPoolProvider, getProviderPoolList} from '~/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {getErrorText} from "~/assets/server-error";
-import {pretty, prettyExact} from "~/assets/utils";
+import {decreasePrecisionFixed, decreasePrecisionSignificant, pretty, prettyExact} from "~/assets/utils";
+import BaseAmount from '~/components/common/BaseAmount.vue';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
 import FieldPercentage from '~/components/common/FieldPercentage.vue';
+import FieldUseMax from '~/components/common/FieldUseMax';
 
+Big.DP = 18;
 Big.RM = 2;
+
+let watcherTimer;
+
+const INPUT_TYPE = {
+    AMOUNT0: 'amount0',
+    AMOUNT1: 'amount1',
+    LIQUIDITY_AMOUNT: 'liquidity_amount',
+    LIQUIDITY_PERCENT: 'liquidity_percent',
+};
 
 export default {
     TX_TYPE,
+    INPUT_TYPE,
     components: {
+        BaseAmount,
         TxForm,
         FieldCoin,
         FieldPercentage,
+        FieldUseMax,
     },
     directives: {
         checkEmpty,
@@ -60,19 +75,22 @@ export default {
                 coin0: '',
                 coin1: '',
             },
+            formLiquidityPercent: '',
+            formAmount0: '',
+            formAmount1: '',
+            formSlippagePercent0: '5',
+            formSlippagePercent1: '5',
+            selectedInput: INPUT_TYPE.LIQUIDITY_PERCENT,
             estimation: null,
             // list of own pools' coins
             poolCoinList: [],
+            debouncedFetchAddressLiquidity: null,
         };
     },
     validations() {
         const form = {
             liquidity: {
-                //@TODO maxValue
-                //@TODO validAmount
                 required,
-                minValue: minValue(0),
-                maxValue: maxValue(100),
             },
             coin0: {
                 required,
@@ -86,6 +104,23 @@ export default {
 
         return {
             form,
+            formLiquidityPercent: {
+                //@TODO maxValue
+                //@TODO validAmount
+                required,
+                minValue: minValue(0),
+                maxValue: maxValue(100),
+            },
+            formAmount0: {
+            },
+            formAmount1: {
+            },
+            formSlippagePercent0: {
+                maxValue: maxValue(100),
+            },
+            formSlippagePercent1: {
+                maxValue: maxValue(100),
+            },
             addressLiquidityData: {
                 success: () => this.isPoolLoaded,
             },
@@ -93,33 +128,44 @@ export default {
     },
     asyncComputed: {
         addressLiquidityData() {
-            return this.fetchAddressLiquidity(this.form.coin0, this.form.coin1);
+            return this.debouncedFetchAddressLiquidity?.(this.form.coin0, this.form.coin1);
         },
     },
     computed: {
         isPoolLoaded() {
             return this.$asyncComputed.addressLiquidityData.success && this.addressLiquidityData?.liquidity;
         },
-        liquidityAmount() {
-            if (!this.isPoolLoaded || !this.form.liquidity) {
-                return 0;
-            }
-
-            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.liquidity).toFixed();
+        whatAffectsLiquidity() {
+            return {
+                addressLiquidityData: this.addressLiquidityData,
+                selectedInput: this.selectedInput,
+                liquidity: this.form.liquidity,
+                formLiquidityPercent: this.formLiquidityPercent,
+                formAmount0: this.formAmount0,
+                formAmount1: this.formAmount1,
+            };
         },
-        coin0Amount() {
-            if (!this.isPoolLoaded || !this.form.liquidity) {
+        minimumVolume0() {
+            if (!this.formAmount0) {
                 return 0;
             }
+            let slippage = 1 - (this.formSlippagePercent0 || 0) / 100;
+            if (slippage < 0) {
+                slippage = 0;
+            }
 
-            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount0).toFixed();
+            return decreasePrecisionSignificant(this.formAmount0 * slippage);
         },
-        coin1Amount() {
-            if (!this.isPoolLoaded || !this.form.liquidity) {
+        minimumVolume1() {
+            if (!this.formAmount1) {
                 return 0;
             }
+            let slippage = 1 - (this.formSlippagePercent1 || 0) / 100;
+            if (slippage < 0) {
+                slippage = 0;
+            }
 
-            return new Big(this.form.liquidity).div(100).times(this.addressLiquidityData.amount1).toFixed();
+            return decreasePrecisionSignificant(this.formAmount1 * slippage);
         },
         /*
         maxAmount() {
@@ -148,10 +194,66 @@ export default {
         },
         */
     },
+    watch: {
+        whatAffectsLiquidity: {
+            handler() {
+                // @input and @input.native may fire in different time so timer needed to wait all events
+                clearTimeout(watcherTimer);
+                watcherTimer = setTimeout(() => {
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT0 && this.isPoolLoaded) {
+                        const amount0 = Math.min(this.formAmount0 || 0, this.addressLiquidityData.amount0);
+                        this.formLiquidityPercent = liquidityPercentFromAmount(amount0, this.addressLiquidityData.amount0);
+                        this.form.liquidity = poolTokenFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.liquidity);
+                        this.formAmount1 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount1);
+                    }
+
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT1 && this.isPoolLoaded) {
+                        const amount1 = Math.min(this.formAmount1 || 0, this.addressLiquidityData.amount1);
+                        this.formLiquidityPercent = liquidityPercentFromAmount(amount1, this.addressLiquidityData.amount1);
+                        this.form.liquidity = poolTokenFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.liquidity);
+                        this.formAmount0 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount0);
+                    }
+
+                    if (this.selectedInput === INPUT_TYPE.LIQUIDITY_PERCENT && this.isPoolLoaded) {
+                        const liquidityPercent = Math.max(Math.min(this.formLiquidityPercent || 0, 100), 0);
+                        this.form.liquidity = poolTokenFromLiquidityPercent(liquidityPercent, this.addressLiquidityData.liquidity);
+                        this.formAmount0 = amountFromLiquidityPercent(liquidityPercent, this.addressLiquidityData.amount0);
+                        this.formAmount1 = amountFromLiquidityPercent(liquidityPercent, this.addressLiquidityData.amount1);
+                    }
+
+                    if (this.selectedInput === INPUT_TYPE.LIQUIDITY_AMOUNT && this.isPoolLoaded) {
+                        this.formLiquidityPercent = new Big(this.form.liquidity || 0).div(this.addressLiquidityData.liquidity).times(100).toFixed(2);
+                        this.formAmount0 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount0);
+                        this.formAmount1 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount1);
+                    }
+
+                    function poolTokenFromLiquidityPercent(liquidityPercent, providerLiquidity) {
+                        return new Big(liquidityPercent).div(100).times(providerLiquidity).toFixed();
+                    }
+
+                    function liquidityPercentFromAmount(inputAmount, providerAmount) {
+                        return decreasePrecisionFixed(inputAmount / providerAmount * 100);
+                    }
+
+                    function amountFromLiquidityPercent(liquidityPercent, providerAmount) {
+                        // don't put 0 into amount field, as it will be not convenient to edit later
+                        if (!liquidityPercent) {
+                            return '';
+                        }
+                        return decreasePrecisionSignificant(liquidityPercent / 100 * providerAmount);
+                    }
+                }, 20);
+            },
+            deep: true,
+        },
+    },
     mounted() {
+        this.debouncedFetchAddressLiquidity = debounce(this.fetchAddressLiquidity, 400);
+
         eventBus.on('activate-remove-liquidity', ({coin0, coin1}) => {
             this.form.coin0 = coin0;
             this.form.coin1 = coin1;
+            this.formLiquidityPercent = 100;
 
             const inputEl = this.$refs.fieldAmount.$el.querySelector('input');
             focusElement(inputEl);
@@ -163,24 +265,46 @@ export default {
     methods: {
         pretty,
         prettyExact,
-        fetchAddressLiquidity: debounce(function() {
+        fetchAddressLiquidity() {
             // no pair entered
             if (!this.form.coin0 || !this.form.coin1 || this.form.coin0 === this.form.coin1) {
                 return;
             }
 
-            return getCoinId([this.form.coin0, this.form.coin1])
-                .then(([id0, id1]) => {
-                    return getPoolProvider(id0, id1, this.$store.getters.address);
-                });
-        }, 400),
+            return getPoolProvider(this.form.coin0, this.form.coin1, this.$store.getters.address);
+        },
         success() {
             eventBus.emit('update-pool-list');
+        },
+        beforeConfirm(txFormContext) {
+            if (this.$store.getters.isOfflineMode) {
+                return;
+            }
+            txFormContext.isFormSending = true;
+            txFormContext.serverError = '';
+            txFormContext.serverSuccess = '';
+            return this.fetchAddressLiquidity()
+                .then(() => {
+                    txFormContext.isFormSending = false;
+                })
+                .catch((error) => {
+                    txFormContext.isFormSending = false;
+                    txFormContext.serverError = getErrorText(error);
+                    throw error;
+                });
         },
         clearForm() {
             this.form.liquidity = '';
             this.form.coin0 = '';
             this.form.coin1 = '';
+
+            this.formLiquidityPercent = '';
+            this.formAmount0 = '';
+            this.formAmount1 = '';
+            this.formSlippagePercent0 = 5;
+            this.formSlippagePercent1 = 5;
+            this.selectedInput = INPUT_TYPE.LIQUIDITY_PERCENT;
+
             this.$v.$reset();
         },
     },
@@ -190,9 +314,10 @@ export default {
 <template>
     <!-- @TODO minimumVolume -->
     <TxForm
-        :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: liquidityAmount}"
+        :txData="{coin0: form.coin0, coin1: form.coin1, liquidity: form.liquidity, minimumVolume0: minimumVolume0, minimumVolume1: minimumVolume1}"
         :$txData="$v"
         :txType="$options.TX_TYPE.REMOVE_LIQUIDITY"
+        :before-confirm-modal-show="beforeConfirm"
         @success-tx="success()"
         @clear-form="clearForm()"
     >
@@ -205,43 +330,126 @@ export default {
             <!--            </p>-->
         </template>
 
+        <template v-slot:extra-panel="{fee, addressBalance}">
+            <div class="panel__section panel__section--medium">
+                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+                        <FieldCoin
+                            v-model="form.coin0"
+                            :$value="$v.form.coin0"
+                            :label="$td('First coin', 'form.pool-coin0')"
+                            :coin-list="poolCoinList"
+                        />
+                        <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                    </div>
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
+                        <FieldUseMax
+                            v-model="formAmount0"
+                            :$value="$v.formAmount0"
+                            :label="(form.coin0 || $td('First coin', 'form.pool-coin0')) + ' ' + $td('amount', 'form.pool-remove-amount')"
+                            :max-value="isPoolLoaded ? addressLiquidityData.amount0 : undefined"
+                            @input.native="selectedInput = $options.INPUT_TYPE.AMOUNT0"
+                            @use-max="selectedInput = $options.INPUT_TYPE.AMOUNT0"
+                        />
+                        <div class="form-field__help">
+                            {{ $td('Estimated, depends on the pool ratio', 'form.pool-remove-amount-help') }}
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
+                        <FieldPercentage
+                            v-model="formSlippagePercent0"
+                            :$value="$v.formSlippagePercent0"
+                            :label="(form.coin0 || $td('First coin', 'form.pool-coin0')) + ' ' + $td('slippage tolerance', 'form.pool-remove-slippage')"
+                            min-value="0"
+                            max-value="100"
+                            :allow-decimal="true"
+                        />
+                        <span class="form-field__error" v-if="!$v.formSlippagePercent0.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
+                    </div>
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyExact(minimumVolume0) }}</div>
+                            <span class="form-field__label">{{ form.coin0 || $td('First coin', 'form.pool-coin0') }} {{ $td('minimum amount to return', 'form.pool-remove-min') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel__section panel__section--medium">
+                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4">
+                        <FieldCoin
+                            v-model="form.coin1"
+                            :$value="$v.form.coin1"
+                            :label="$td('Second coin', 'form.pool-coin1')"
+                            :coin-list="poolCoinList"
+                        />
+                        <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                    </div>
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
+                        <FieldUseMax
+                            v-model="formAmount1"
+                            :$value="$v.formAmount1"
+                            :label="(form.coin1 || $td('Second coin', 'form.pool-coin1')) + ' ' + $td('amount', 'form.pool-remove-amount')"
+                            :max-value="isPoolLoaded ? addressLiquidityData.amount1 : undefined"
+                            @input.native="selectedInput = $options.INPUT_TYPE.AMOUNT1"
+                            @use-max="selectedInput = $options.INPUT_TYPE.AMOUNT1"
+                        />
+                        <div class="form-field__help">
+                            {{ $td('Estimated, depends on the pool ratio', 'form.pool-remove-amount-help') }}
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
+                        <FieldPercentage
+                            v-model="formSlippagePercent1"
+                            :$value="$v.formSlippagePercent1"
+                            :label="(form.coin1 || $td('Second coin', 'form.pool-coin1')) + ' ' + $td('slippage tolerance', 'form.pool-remove-slippage')"
+                            min-value="0"
+                            max-value="100"
+                            :allow-decimal="true"
+                        />
+                        <span class="form-field__error" v-if="!$v.formSlippagePercent1.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
+                    </div>
+                    <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyExact(minimumVolume1) }}</div>
+                            <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'form.pool-coin0') }} {{ $td('minimum amount to return', 'form.pool-remove-min') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <template v-slot:default="{fee, addressBalance}">
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
-                <FieldCoin
-                    v-model="form.coin0"
-                    :$value="$v.form.coin0"
-                    :label="$td('Coin', 'form.pool-remove-coin')"
-                    :coin-list="poolCoinList"
-                />
-                <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <!--<span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-            </div>
-            <div class="u-cell u-cell--xlarge--1-3">
-                <FieldCoin
-                    v-model="form.coin1"
-                    :$value="$v.form.coin1"
-                    :label="$td('Coin', 'form.pool-remove-coin')"
-                    :coin-list="poolCoinList"
-                />
-                <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <!--<span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-            </div>
-            <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-3">
+            <div class="u-cell u-cell--small--1-2" v-if="!$store.getters.isOfflineMode">
                 <FieldPercentage
                     ref="fieldAmount"
-                    v-model="form.liquidity"
-                    :$value="$v.form.liquidity"
-                    :label="$td('Liquidity', 'form.pool-remove-liquidity')"
+                    v-model="formLiquidityPercent"
+                    :$value="$v.formLiquidityPercent"
+                    :label="$td('Liquidity', 'form.pool-remove-liquidity-percent')"
                     min-value="0"
                     max-value="100"
                     :allow-decimal="true"
+                    @input.native="selectedInput = $options.INPUT_TYPE.LIQUIDITY_PERCENT"
                 />
-                <span class="form-field__error" v-if="$v.form.liquidity.$dirty && !$v.form.liquidity.required">{{ $td('Enter percentage', 'form.pool-remove-liquidity-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.minValue">{{ $td('Min value 0%', 'form.percent-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.liquidity.$dirty && !$v.form.liquidity.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
+                <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Enter percentage', 'form.pool-remove-liquidity-percent-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.minValue">{{ $td('Min value 0%', 'form.percent-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
                 <span class="form-field__help" v-else>Percentage of your pool liquidity</span>
+            </div>
+            <div class="u-cell u-cell--small--1-2">
+                <FieldUseMax
+                    v-model="form.liquidity"
+                    :$value="$v.form.liquidity"
+                    :label="$td('Pool tokens amount', 'form.pool-remove-liquidity')"
+                    :max-value="isPoolLoaded ? addressLiquidityData.liquidity : undefined"
+                    @input.native="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
+                    @use-max="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
+                />
+                <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Required', 'form.pool-remove-liquidity-error-required') }}</span>
             </div>
             <div class="u-cell">
                 <span class="form__error" v-if="form.coin0 && form.coin1 && $v.addressLiquidityData.$dirty && !$v.addressLiquidityData.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.pool-remove-liquidity-error-pool') }}</span>
@@ -252,29 +460,6 @@ export default {
             {{ $td('Remove', 'form.pool-remove-button') }}
         </template>
 
-        <template v-slot:panel-footer>
-            <div class="u-grid u-grid--small">
-                <div class="u-cell u-cell--medium--1-3">
-                    <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(coin0Amount) }}</div>
-                        <span class="form-field__label">{{ form.coin0 || 'Coin' }} {{ $td('to return', 'form.pool-remove-coin-amount') }}</span>
-                    </div>
-                </div>
-                <div class="u-cell u-cell--medium--1-3">
-                    <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(coin1Amount) }}</div>
-                        <span class="form-field__label">{{ form.coin1 || 'Coin' }} {{ $td('to return', 'form.pool-remove-coin-amount') }}</span>
-                    </div>
-                </div>
-                <div class="u-cell u-cell--medium--1-3">
-                    <div class="form-field form-field--dashed">
-                        <div class="form-field__input is-not-empty">{{ pretty(liquidityAmount) }}</div>
-                        <span class="form-field__label">{{ $td('Liquidity to remove', 'form.pool-remove-liquidity-amount') }}</span>
-                    </div>
-                </div>
-            </div>
-        </template>
-
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation" width="40" height="40">
@@ -282,39 +467,35 @@ export default {
             </h1>
         </template>
 
-        <!--        @TODO-->
-        <!--        <template v-slot:confirm-modal-body>
-                    <div class="u-grid u-grid&#45;&#45;small u-grid&#45;&#45;vertical-margin">
-                        <div class="u-cell">
-                            <label class="form-field form-field&#45;&#45;dashed">
-                                <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                       :value="form.coin0 + ' ' + prettyExact(form.liquidity)"
-                                >
-                                <span class="form-field__label">{{ $td('You will send', 'form.swap-sell-confirm-send') }}</span>
-                            </label>
+        <template v-slot:confirm-modal-body>
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            {{ formLiquidityPercent }}%
                         </div>
-                        <div class="u-cell">
-                            <template v-if="estimation">
-                                <label class="form-field form-field&#45;&#45;dashed">
-                                    <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                           :value="form.coin1 + ' ' + pretty(estimation)"
-                                    >
-                                    <span class="form-field__label">{{ $td('You will get approximately *', 'form.swap-sell-confirm-receive-estimation') }}</span>
-                                </label>
-                                <div class="form-field__help u-text-left">
-                                    {{ $td('* The result amount depends on the current rate at the time of the exchange and may differ from the above.', 'form.swap-confirm-note') }}
-                                </div>
-                            </template>
-                            <template v-else>
-                                <label class="form-field form-field&#45;&#45;dashed">
-                                    <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                                           :value="form.coin1"
-                                    >
-                                    <span class="form-field__label">{{ $td('You will get', 'form.swap-sell-confirm-receive') }}</span>
-                                </label>
-                            </template>
-                        </div>
+                        <div class="form-field__label">{{ $td('Liquidity', 'form.pool-remove-liquidity-percent') }}</div>
                     </div>
-                </template>-->
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            ≈ <BaseAmount :coin="form.coin0" :amount="formAmount0"/>
+                            <span class="u-text-muted">({{ minimumVolume0 }} minimum)</span>
+                        </div>
+                        <div class="form-field__label">{{ $td('First coin', 'form.pool-coin0') }}</div>
+                    </div>
+                </div>
+                <div class="u-cell">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">
+                            ≈ <BaseAmount :coin="form.coin1" :amount="formAmount1"/>
+                            <span class="u-text-muted">({{ minimumVolume1 }} minimum)</span>
+                        </div>
+                        <div class="form-field__label">{{ $td('Second coin', 'form.pool-coin1') }}</div>
+                    </div>
+                </div>
+            </div>
+        </template>
     </TxForm>
 </template>

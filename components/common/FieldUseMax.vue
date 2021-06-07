@@ -31,14 +31,17 @@
                 type: [String, Number],
                 default: undefined,
             },
+            // if no maxValue specified
             addressBalance: {
                 type: Array,
                 default: () => [],
             },
+            // if no maxValue specified
             selectedCoinSymbol: {
                 type: String,
                 default: '',
             },
+            // if no maxValue specified
             fee: {
                 type: [Object, null],
                 default: null,
@@ -103,6 +106,7 @@
                 }
                 this.isUseMax = true;
                 this.$emit('input', this.maxValueComputed);
+                this.$emit('use-max');
                 this.$value.$touch();
             },
         },

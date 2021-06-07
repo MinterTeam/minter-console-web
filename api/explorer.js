@@ -349,8 +349,8 @@ export function getPool(coin0, coin1) {
 }
 
 /**
- * @param {string} coin0
- * @param {string} coin1
+ * @param {string|number} coin0
+ * @param {string|number} coin1
  * @param {string} address
  * @return {Promise<Pool>}
  */

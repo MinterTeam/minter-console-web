@@ -22,6 +22,7 @@
     import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
     import Loader from '~/components/common/Loader';
 
+    let watcherTimer;
     let estimationCancel;
     const CANCEL_MESSAGE = 'Cancel previous request';
 
@@ -189,26 +190,30 @@
             },
             whatAffectsSlippage: {
                 handler() {
-                    if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.AMOUNT && this.currentEstimation) {
-                        const slippageAmount = this.form.minimumValueToBuy;
-                        let slippagePercent;
-                        if (!slippageAmount || Number(slippageAmount) > Number(this.currentEstimation)) {
-                            slippagePercent = 0;
-                        } else {
-                            slippagePercent = (1 - slippageAmount / this.currentEstimation) * 100;
+                    // @input and @input.native may fire in different time so timer needed to wait all events
+                    clearTimeout(watcherTimer);
+                    watcherTimer = setTimeout(() => {
+                        if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.AMOUNT && this.currentEstimation) {
+                            const slippageAmount = this.form.minimumValueToBuy;
+                            let slippagePercent;
+                            if (!slippageAmount || Number(slippageAmount) > Number(this.currentEstimation)) {
+                                slippagePercent = 0;
+                            } else {
+                                slippagePercent = (1 - slippageAmount / this.currentEstimation) * 100;
+                            }
+                            this.formSlippagePercent = decreasePrecisionFixed(slippagePercent);
                         }
-                        this.formSlippagePercent = decreasePrecisionFixed(slippagePercent);
-                    }
-                    if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.currentEstimation) {
-                        let slippage = 1 - (this.formSlippagePercent || 0) / 100;
-                        if (slippage < 0) {
-                            slippage = 0;
+                        if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.currentEstimation) {
+                            let slippage = 1 - (this.formSlippagePercent || 0) / 100;
+                            if (slippage < 0) {
+                                slippage = 0;
+                            }
+                            this.form.minimumValueToBuy = decreasePrecisionSignificant(this.currentEstimation * slippage);
                         }
-                        this.form.minimumValueToBuy = decreasePrecisionSignificant(this.currentEstimation * slippage);
-                    }
-                    if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.estimationError) {
-                        this.form.minimumValueToBuy = 0;
-                    }
+                        if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.estimationError) {
+                            this.form.minimumValueToBuy = 0;
+                        }
+                    }, 20);
                 },
                 deep: true,
             },
