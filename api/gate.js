@@ -32,17 +32,17 @@ export const ensureNonce = EnsureNonce(minterApi);
 const estimateCache = new Cache({maxAge: 30 * 1000});
 // sell/buy estimates not used often (only before confirmation modal opening) so no need to cache them
 const _estimateCoinSell = (params, axiosOptions) => params.sellAll
-    ? EstimateCoinSellAll(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/)
-    : EstimateCoinSell(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
-const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params/*, {...axiosOptions, cache: estimateCache}*/);
-export function estimateCoinSell(params) {
+    ? EstimateCoinSellAll(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/})
+    : EstimateCoinSell(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/});
+const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/});
+export function estimateCoinSell(params, axiosOptions) {
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
         let estimateError;
-        const estimatePromise = _estimateCoinSell(params)
+        const estimatePromise = _estimateCoinSell(params, axiosOptions)
             .catch((error) => {
                 estimateError = error;
             });
-        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell})
+        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell}, axiosOptions)
             // ignore route errors
             .catch((error) => {
                 console.log(error);
@@ -66,7 +66,7 @@ export function estimateCoinSell(params) {
                             ...params,
                             route: idRoute,
                             swapFrom: ESTIMATE_SWAP_TYPE.POOL,
-                        }),
+                        }, axiosOptions),
                         Promise.resolve(routeData.coins),
                     ])
                         .then(([estimateRouteData, route]) => {
@@ -87,17 +87,17 @@ export function estimateCoinSell(params) {
                 return estimateData;
             });
     } else {
-        return _estimateCoinSell(params);
+        return _estimateCoinSell(params, axiosOptions);
     }
 }
-export function estimateCoinBuy(params) {
+export function estimateCoinBuy(params, axiosOptions) {
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
         let estimateError;
-        const estimatePromise = _estimateCoinBuy(params)
+        const estimatePromise = _estimateCoinBuy(params, axiosOptions)
             .catch((error) => {
                 estimateError = error;
             });
-        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy})
+        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy}, axiosOptions)
             // ignore route errors
             .catch((error) => {
                 console.log(error);
@@ -120,7 +120,7 @@ export function estimateCoinBuy(params) {
                                 ...params,
                                 route: idRoute,
                                 swapFrom: ESTIMATE_SWAP_TYPE.POOL,
-                            }),
+                            }, axiosOptions),
                             Promise.resolve(routeData.coins),
                         ])
                         .then(([estimateRouteData, route]) => {
@@ -141,7 +141,7 @@ export function estimateCoinBuy(params) {
                 return estimateData;
             });
     } else {
-        return _estimateCoinBuy(params);
+        return _estimateCoinBuy(params, axiosOptions);
     }
 }
 

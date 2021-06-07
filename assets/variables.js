@@ -52,6 +52,10 @@ export const COIN_TYPE = {
     TOKEN: 'token',
     POOL_TOKEN: 'pool_token',
 };
+export const SLIPPAGE_INPUT_TYPE = {
+    AMOUNT: 'amount',
+    PERCENT: 'percent',
+};
 
 export const HUB_TRANSFER_STATUS = {
     not_found_long: 'not_found_long', // custom status
