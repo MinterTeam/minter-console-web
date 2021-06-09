@@ -20,7 +20,7 @@ export const getters = {
         return function(coinSymbol) {
             // BIP
             if (coinSymbol.toUpperCase() === 'BIP') {
-                return `${BASE_URL_PREFIX}/img/icon-coin-bip.svg`;
+                return `${BASE_URL_PREFIX}/img/icon-coin-bip.png`;
             }
             // LP
             if (coinSymbol.indexOf('LP-') === 0) {
