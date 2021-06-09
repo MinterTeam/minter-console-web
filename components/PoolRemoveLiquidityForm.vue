@@ -145,6 +145,7 @@ export default {
                 formAmount1: this.formAmount1,
             };
         },
+        //@TODO allow edit minimum (required for offline mode)
         minimumVolume0() {
             if (!this.formAmount0) {
                 return 0;
@@ -167,32 +168,6 @@ export default {
 
             return decreasePrecisionSignificant(this.formAmount1 * slippage);
         },
-        /*
-        maxAmount() {
-            if (!this.addressLiquidityData) {
-                return;
-            }
-            return this.addressLiquidityData.liquidity;
-
-            // @TODO select from list
-            // no pool liquidity
-            if (!this.poolList.length) {
-                return;
-            }
-            // no pair entered
-            if (!this.form.coin0 || !this.form.coin1) {
-                return;
-            }
-            const selectedCoin = this.poolList.find((coin) => {
-                return coin.coin.symbol === this.form.coinSymbol;
-            });
-            // coin not selected
-            if (!selectedCoin) {
-                return undefined;
-            }
-            return selectedCoin.value;
-        },
-        */
     },
     watch: {
         whatAffectsLiquidity: {

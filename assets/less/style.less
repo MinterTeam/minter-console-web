@@ -84,6 +84,13 @@
 }
 .u-icon--copy--right {margin-left: 16px;}
 .u-icon--qr--right {margin-left: 8px;}
+.icon-divider {overflow: hidden;}
+.icon-divider__icon {
+    position: relative; margin: auto; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+    &::before, &::after {content: ''; position: absolute; width: 100vw; height: 1px; top: 50%;}
+    &::before {right: 100%; margin-right: 8px; background: @c-border;}
+    &::after {left: 100%; margin-left: 8px; background: @c-border;}
+}
 
 .error {font-size: 16px;}
 
