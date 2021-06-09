@@ -109,7 +109,7 @@ export default {
             'profile',
             'auth',
             'balance',
-            'status-data',
+            'explorer',
         ],
     },
     plugins: [

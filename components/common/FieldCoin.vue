@@ -3,8 +3,6 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty} from '~/assets/utils.js';
     import {COIN_TYPE} from '~/assets/variables.js';
-    import {getCoinIconUrl} from '~/api/accounts.js';
-    import {getCoinList} from '@/api/explorer.js';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
@@ -52,8 +50,6 @@
         },
         data() {
             return {
-                /** @type Array<CoinItem> */
-                coinListAll: [],
             };
         },
         computed: {
@@ -73,7 +69,7 @@
                     return this.coinList
                         .filter((balanceItem) => typeof balanceItem === 'object' ? ofType(balanceItem.coin.type, this.coinType) : true);
                 } else {
-                    return this.coinListAll
+                    return this.$store.state.explorer.coinList
                         .filter((coin) => ofType(coin.type, this.coinType))
                         .map((item) => item.symbol);
                 }
@@ -83,7 +79,7 @@
             },
             verifiedMap() {
                 let map = {};
-                this.coinListAll.forEach((item) => {
+                this.$store.state.explorer.coinList.forEach((item) => {
                     if (item.verified) {
                         map[item.symbol] = true;
                     }
@@ -106,20 +102,10 @@
                 }
             },
         },
-        mounted() {
-            if (this.$store.getters.isOfflineMode) {
-                return;
-            }
-            getCoinList()
-                .then((coinListAll) => {
-                    this.coinListAll = Object.freeze(coinListAll);
-                })
-                .catch((e) => {
-                    console.log(e);
-                });
-        },
         methods: {
-            getCoinIconUrl,
+            getCoinIconUrl(coin) {
+                return this.$store.getters['explorer/getCoinIcon'](coin);
+            },
             suggestionOrder(query) {
                 if (!query) {
                     return this.currentCoinList;

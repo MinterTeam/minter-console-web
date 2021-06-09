@@ -35,8 +35,5 @@ export function hasAuthToken() {
 
 
 export function getCoinIconUrl(coinSymbol) {
-    if (coinSymbol.indexOf('LP-') === 0) {
-        return `${BASE_URL_PREFIX}/img/icon-lp-token.svg`;
-    }
     return `${ACCOUNTS_API_URL}avatar/by/coin/${coinSymbol}`;
 }

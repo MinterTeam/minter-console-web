@@ -8,7 +8,7 @@
     import maxValue from 'vuelidate/lib/validators/maxValue.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {estimateCoinBuy} from '~/api/gate';
-    import {getCoinList, getSwapCoinList} from '@/api/explorer.js';
+    import {getSwapCoinList} from '@/api/explorer.js';
     import debounce from '~/assets/lodash5-debounce.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -42,21 +42,14 @@
         },
         mixins: [validationMixin],
         fetch() {
-            return Promise.all([getCoinList(), getSwapCoinList()])
-                .then(([coinList, swapCoinList]) => {
-                    const tradableCoinList = coinList.filter((coinItem) => {
-                        // coin with reserve
-                        if (coinItem.type === COIN_TYPE.COIN) {
-                            return true;
-                        }
-                        // swapable within pool
-                        if (swapCoinList.find((swapCoinItem) => swapCoinItem.id === coinItem.id)) {
-                            return true;
-                        }
-                        return false;
+            return getSwapCoinList()
+                .then((swapCoinList) => {
+                    let poolSwapableMap = {};
+                    swapCoinList.forEach((item) => {
+                        poolSwapableMap[item.id] = true;
                     });
 
-                    this.tradableCoinList = tradableCoinList.map((coinItem) => coinItem.symbol);
+                    this.poolSwapableMap = Object.freeze(poolSwapableMap);
                 });
         },
         data() {
@@ -80,7 +73,7 @@
                 selectedConvertType: CONVERT_TYPE.OPTIMAL,
                 txForm: {},
                 addressBalance: [],
-                tradableCoinList: [],
+                poolSwapableMap: {},
             };
         },
         validations() {
@@ -142,6 +135,21 @@
                     valueToBuy: this.form.buyAmount,
                     maximumValueToSell: this.form.maximumValueToSell || 10**15,
                 };
+            },
+            tradableCoinList() {
+                return this.$store.state.explorer.coinList
+                    .filter((coinItem) => {
+                        // coin with reserve
+                        if (coinItem.type === COIN_TYPE.COIN) {
+                            return true;
+                        }
+                        // swapable within pool
+                        if (this.poolSwapableMap[coinItem.id]) {
+                            return true;
+                        }
+                        return false;
+                    })
+                    .map((coinItem) => coinItem.symbol);
             },
             tradableAddressBalance() {
                 return this.addressBalance.filter((balanceItem) => {

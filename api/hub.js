@@ -28,7 +28,7 @@ export function getOracleEthFee() {
  * @return {Promise<Array<HubCoinItem>>}
  */
 export function getOracleCoinList() {
-    return Promise.all([_getOracleCoinList(), getCoinList()])
+    return Promise.all([_getOracleCoinList(), getCoinList({skipMeta: true})])
         .then(([oracleCoinList, minterCoinList]) => {
             oracleCoinList.forEach((oracleCoin) => {
                 const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));

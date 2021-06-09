@@ -1,6 +1,5 @@
 <script>
     import {pretty} from '~/assets/utils';
-    import {getCoinIconUrl} from '~/api/accounts';
     import Loader from '~/components/common/Loader';
 
     export default {
@@ -28,7 +27,9 @@
         },
         methods: {
             pretty,
-            getCoinIconUrl,
+            getCoinIconUrl(coin) {
+                return this.$store.getters['explorer/getCoinIcon'](coin);
+            },
         },
     };
 </script>

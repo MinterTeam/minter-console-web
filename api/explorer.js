@@ -3,6 +3,7 @@ import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
 import {_getOracleCoinList} from '@/api/hub.js';
+import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
@@ -29,11 +30,13 @@ const explorer = instance;
  * @property {number} transactionsPerSecond - tps
  */
 
+const statusCache = new Cache({maxAge: 5 * 1000});
+
 /**
  * @return {Promise<Status>}
  */
 export function getStatus() {
-    return explorer.get('status')
+    return explorer.get('status', {cache: statusCache})
         .then((response) => response.data.data);
 }
 
@@ -154,11 +157,11 @@ function markVerified(coinListPromise, itemType = 'coin') {
 const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
 
 /**
+ * @param {boolean} [skipMeta]
  * @return {Promise<Array<CoinItem>>}
  */
-export function getCoinList() {
-
-    const coinListPromise = explorer.get('coins', {
+export function getCoinList({skipMeta} = {}) {
+    let coinListPromise = explorer.get('coins', {
         cache: coinsCache,
     })
         .then((response) => {
@@ -166,7 +169,28 @@ export function getCoinList() {
             return coinList;
         });
 
-    return markVerified(coinListPromise)
+    if (!skipMeta) {
+        const chainikIconMapPromise = getChainikIconList()
+            .catch((error) => {
+                console.log(error);
+                return {};
+            });
+
+        // fill icons
+        coinListPromise = Promise.all([coinListPromise, chainikIconMapPromise])
+            .then(([coinList, chainikIconMap]) => {
+                return coinList.map((coin) => {
+                    const icon = chainikIconMap[coin.id];
+                    coin.icon = icon;
+                    return coin;
+                });
+            });
+
+        // fill verified
+        coinListPromise = markVerified(coinListPromise);
+    }
+
+    return coinListPromise
         // by default coins sorted by reserve
         .then((coinList) => {
             return coinList.sort((a, b) => {
@@ -241,7 +265,8 @@ export function getSwapCoinList(coin, depth) {
  * @property {string} name
  * @property {boolean} mintable
  * @property {boolean} burnable
- * @property {boolean} verified
+ * @property {boolean} [verified] - filled from hub api
+ * @property {boolean} [icon] - filled from chainik app
  */
 
 /**
