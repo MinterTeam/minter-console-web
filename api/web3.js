@@ -1,14 +1,10 @@
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {Manager} from 'web3-core-requestmanager';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {ETHEREUM_API_URL} from '~/assets/variables.js';
 import erc20ABI from '~/assets/abi-erc20.js';
-
-Big.DP = 18;
-// ROUND_HALF_EVEN
-Big.RM = 2;
 
 export const CONFIRMATION_COUNT = 5;
 

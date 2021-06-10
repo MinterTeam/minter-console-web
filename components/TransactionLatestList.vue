@@ -1,12 +1,10 @@
 <script>
     import {mapGetters} from 'vuex';
-    import Big from 'big.js';
+    import Big from '~/assets/big.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
     import Loader from '~/components/common/Loader';
     import TableLink from '~/components/common/TableLink';
-
-    Big.RM = 2;
 
     export default {
         components: {
@@ -171,7 +169,7 @@
                 if (this.isMultisendMultipleCoin(tx)) {
                     return '...';
                 } else {
-                    return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(new Big(delivery.value)), new Big(0)).toFixed();
+                    return currentUserDeliveryList.reduce((accumulator, delivery) => accumulator.plus(delivery.value), new Big(0)).toString();
                 }
             },
             getValidatorName(tx) {

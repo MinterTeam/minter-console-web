@@ -1,13 +1,10 @@
 import Vue from 'vue';
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {TX_TYPE, normalizeTxType} from 'minterjs-util/src/tx-types.js';
 import {getAddressTransactionList} from '@/api/explorer.js';
 import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
 import {fromBase64} from '~/assets/utils.js';
-
-Big.DP = 18;
-Big.RM = 2;
 
 export const state = () => ({
     /** @type {Object.<string, HubWithdraw>} */
@@ -23,8 +20,8 @@ export const mutations = {
     },
     saveWithdraw(state, tx) {
         const hubNetworkFee = convertFromPip(tx.hubPayload.fee);
-        const hubBridgeFee = new Big(tx.data.value).times(0.01).toFixed(18);
-        const amount = new Big(tx.data.value).minus(hubBridgeFee).minus(hubNetworkFee).toFixed(18);
+        const hubBridgeFee = new Big(tx.data.value).times(0.01).toString();
+        const amount = new Big(tx.data.value).minus(hubBridgeFee).minus(hubNetworkFee).toString();
 
         Vue.set(state.minterList, tx.hash, {
             tx,
