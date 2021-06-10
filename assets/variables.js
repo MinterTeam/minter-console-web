@@ -31,6 +31,7 @@ export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
 export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-ropsten.etherscan.io/api/';
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
+export const WETH_ETHEREUM_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0xc778417e063141139fce010982780140aa0cd5ab';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';
 export const USERNAME_MIN_LENGTH = 5;
 export const USERNAME_MAX_LENGTH = 16;

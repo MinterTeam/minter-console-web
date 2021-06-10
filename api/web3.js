@@ -1,11 +1,10 @@
-import BN from 'bn.js';
 import Big from 'big.js';
 import {Manager} from 'web3-core-requestmanager';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {ETHEREUM_API_URL} from '~/assets/variables.js';
-import {erc20ABI} from '~/assets/abi-data.js';
+import erc20ABI from '~/assets/abi-erc20.js';
 
 Big.DP = 18;
 // ROUND_HALF_EVEN
@@ -16,24 +15,29 @@ export const CONFIRMATION_COUNT = 5;
 export const utils = Utils;
 export const eth = new Eth(new Manager.providers.HttpProvider(ETHEREUM_API_URL));
 
+const WEI_DECIMALS = 18;
 /**
- *
- * @param balance - balance in erc20 decimals
- * @param decimals
+ * @param {number|string} balance - balance in erc20 decimals
+ * @param {number} [ercDecimals=18]
  * @return {string}
  */
-export function fromErcDecimals(balance, decimals) {
-    const decimalsDelta = Math.max(18 - decimals, 0);
-    balance = new BN(10).pow(new BN(decimalsDelta)).mul(new BN(balance)).toString();
+export function fromErcDecimals(balance, ercDecimals = 18) {
+    const decimalsDelta = Math.max(WEI_DECIMALS - ercDecimals, 0);
+    balance = new Big(10).pow(decimalsDelta).times(balance).toFixed(0);
     return utils.fromWei(balance, "ether");
 }
 
-export function toErcDecimals(balance, decimals) {
-    balance = new Big(balance).toFixed(Number(decimals));
+/**
+ * @param {number|string} balance
+ * @param {number} [ercDecimals=18]
+ * @return {string}
+ */
+export function toErcDecimals(balance, ercDecimals = 18) {
+    balance = new Big(balance).toFixed(Number(ercDecimals));
     balance = utils.toWei(balance, "ether");
-    const decimalsDelta = Math.max(18 - decimals, 0);
-    const tens = new BN(10).pow(new BN(decimalsDelta));
-    return new BN(balance).div(tens).toString();
+    const decimalsDelta = Math.max(WEI_DECIMALS - ercDecimals, 0);
+    const tens = new Big(10).pow(decimalsDelta);
+    return new Big(balance).div(tens).toFixed(0);
 }
 
 /**
@@ -216,7 +220,7 @@ export function getTokenDecimals(tokenContractAddress) {
         .catch((error) => {
             console.log(error);
             delete decimalsPromiseCache[tokenContractAddress];
-            return 18;
+            return WEI_DECIMALS;
         });
     decimalsPromiseCache[tokenContractAddress] = decimalsPromise;
 

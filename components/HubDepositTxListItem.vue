@@ -1,9 +1,9 @@
 <script>
-import {subscribeTransaction, fromErcDecimals, getTokenDecimals, getBlockNumber, eth as web3Eth, CONFIRMATION_COUNT} from '@/api/web3.js';
+import {subscribeTransaction, fromErcDecimals, getTokenDecimals, getBlockNumber, eth as web3Eth, utils as web3Utils, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
 import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import Loader from '@/components/common/Loader.vue';
-import {HUB_TRANSFER_STATUS} from 'assets/variables.js';
+import {HUB_TRANSFER_STATUS, HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -19,6 +19,7 @@ const TX_STATUS = {
 const TX_PURPOSE = {
     SEND: 'Send',
     UNLOCK: 'Unlock',
+    WRAP: 'Wrap',
     OTHER: 'Other',
 };
 
@@ -184,22 +185,33 @@ export default {
             // last item (2nd for `unlock`, 3rd for `sendToMinter`)
             let type;
             let tokenContract;
+            let amount;
             if (itemCount === 2) {
                 type = TX_PURPOSE.UNLOCK;
                 tokenContract = tx.to;
-            } else if (itemCount === 3) {
+                amount = await getAmountFromInputData(input.slice((itemCount - 1) * 64), tokenContract);
+            } else if (tx.to.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 3) {
                 type = TX_PURPOSE.SEND;
                 const tokenContractHex = '0x' + input.slice(0, 64);
                 tokenContract = web3Eth.abi.decodeParameter('address', tokenContractHex);
+                amount = await getAmountFromInputData(input.slice((itemCount - 1) * 64), tokenContract);
+            } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
+                type = TX_PURPOSE.WRAP;
+                tokenContract = tx.to;
+                amount = web3Utils.fromWei(tx.value);
             } else {
                 return {
                     type: TX_PURPOSE.OTHER,
                 };
             }
 
-            const amountHex = '0x' + input.slice((itemCount - 1) * 64);
-            const decimals = await getTokenDecimals(tokenContract);
-            const amount = fromErcDecimals(web3Eth.abi.decodeParameter('uint256', amountHex), decimals);
+            async function getAmountFromInputData(hex, tokenContract) {
+                const amountHex = '0x' + hex;
+                const decimals = await getTokenDecimals(tokenContract);
+                const amount = fromErcDecimals(web3Eth.abi.decodeParameter('uint256', amountHex), decimals);
+
+                return amount;
+            }
 
             return {
                 type,
