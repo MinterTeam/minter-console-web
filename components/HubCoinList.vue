@@ -1,11 +1,7 @@
 <script>
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {pretty, getExplorerCoinUrl, getEtherscanAddressUrl} from '~/assets/utils.js';
-import {getOracleCoinList, getOraclePriceList} from '~/api/hub.js';
 import Loader from '~/components/common/Loader.vue';
-
-Big.DP = 18;
-Big.RM = 2;
 
 export default {
     components: {
@@ -68,7 +64,7 @@ export default {
 function getPriceFromList(list, name, keepDecimals) {
     const priceItem = list.find((item) => item.name === name);
     const coinPrice = priceItem ? priceItem.value : '0';
-    return keepDecimals ? coinPrice : new Big(coinPrice).div(10 ** 10).toFixed(18);
+    return keepDecimals ? coinPrice : new Big(coinPrice).div(10 ** 10).toString();
 }
 </script>
 

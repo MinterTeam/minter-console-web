@@ -1,6 +1,5 @@
 <script>
     import {pretty} from '~/assets/utils';
-    import {getCoinIconUrl} from '~/api/accounts';
     import Loader from '~/components/common/Loader';
 
     export default {
@@ -28,7 +27,9 @@
         },
         methods: {
             pretty,
-            getCoinIconUrl,
+            getCoinIconUrl(coin) {
+                return this.$store.getters['explorer/getCoinIcon'](coin);
+            },
         },
     };
 </script>
@@ -39,7 +40,7 @@
             <table v-if="coinList.length">
                 <thead>
                     <tr class="u-text-nowrap">
-                        <th>{{ $td('My Coins', 'wallet.coin-table-name') }}</th>
+                        <th>{{ $td('My coins', 'wallet.coin-table-name') }}</th>
                         <th width="30%">{{ $td('Balance', 'wallet.coin-table-balance') }}</th>
                     </tr>
                 </thead>
@@ -63,7 +64,7 @@
             <div class="panel__content panel__section u-text-center" v-else>No Coins</div>
         </div>
         <div class="panel__section u-text-center" v-if="coinList.length < $store.state.balance.length">
-            <button class="button button--ghost-main" @click="isFullListActive = true">{{ $td('Show All Coins', 'wallet.coin-show-all') }}</button>
+            <button class="button button--ghost-main" @click="isFullListActive = true">{{ $td('Show all coins', 'wallet.coin-show-all') }}</button>
         </div>
     </section>
 </template>

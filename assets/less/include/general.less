@@ -273,6 +273,10 @@ dd {overflow-wrap: break-word; margin: 0;}
 // checkbox & radio
 .form-check-label {margin-bottom: 8px; font-size: 16px;}
 .form-check-error {.error-text(); margin-top: 4px;}
+.form-check-group {
+    margin-left: -20px; margin-top: -10px;
+    .form-check {margin-left: 20px; margin-top: 10px;}
+}
 .form-check {
     position: relative; display: inline-block; user-select: none; cursor: pointer; font-weight: 400; margin: 0; line-height: 0;
     &.is-disabled {opacity: 0.5; cursor: default;}

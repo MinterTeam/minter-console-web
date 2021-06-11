@@ -1,6 +1,4 @@
 <script>
-import BN from 'bn.js';
-import Big from 'big.js';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
@@ -11,9 +9,12 @@ import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
 import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getAddressTransactionList} from '@/api/ethersacn.js';
+import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
-import {erc20ABI, peggyABI} from '~/assets/abi-data.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
+import erc20ABI from '~/assets/abi-erc20.js';
+import peggyABI from '~/assets/abi-hub.js';
+import wethAbi from '~/assets/abi-weth.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -23,14 +24,12 @@ import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 
-Big.DP = 18;
-// ROUND_HALF_EVEN
-Big.RM = 2;
+window.Big = Big;
+const PROMISE_FINISHED = 'finished';
+const PROMISE_REJECTED = 'rejected';
+const PROMISE_PENDING = 'pending';
 
-const ALLOWANCE_FINISHED = 'finished';
-const ALLOWANCE_REJECTED = 'rejected';
-const ALLOWANCE_PENDING = 'pending';
-
+const TX_WRAP = 'wrap';
 const TX_APPROVE = 'approve';
 const TX_TRANSFER = 'transfer';
 
@@ -43,11 +42,15 @@ function coinContract(coinContractAddress) {
 const peggyAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
+const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
+const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
+
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
 });
 
 export default {
+    TX_WRAP,
     TX_APPROVE,
     TX_TRANSFER,
     components: {
@@ -78,8 +81,10 @@ export default {
             ethAddress: "",
             balances: {},
             decimals: {},
+            balanceRequest: null,
             //@TODO update after tx confirmation instead of long polling
             allowanceList: {},
+            allowanceRequest: null,
             form: {
                 coin: '',
                 amount: "",
@@ -90,6 +95,7 @@ export default {
             transactionList: [],
             isFormSending: false,
             serverError: '',
+            waitWrapConfirmation: false,
             waitApproveConfirmation: false,
             isConnectionStartedAndModalClosed: false,
         };
@@ -129,10 +135,10 @@ export default {
         hubFee() {
             // x / (1 - x)
             const inverseRate = new Big(this.hubFeeRate).div(new Big(1).minus(this.hubFeeRate));
-            return new Big(this.form.amount || 0).times(inverseRate).toFixed();
+            return new Big(this.form.amount || 0).times(inverseRate).toString();
         },
         amountToSpend() {
-            return new Big(this.hubFee).plus(this.form.amount || 0).toFixed();
+            return new Big(this.hubFee).plus(this.form.amount || 0).toString();
         },
         maxAmount() {
             const maxHubFee = new Big(this.selectedBalance).times(this.hubFeeRate);
@@ -140,52 +146,83 @@ export default {
             if (maxAmount.lt(0)) {
                 return 0;
             } else {
-                return maxAmount.toFixed();
+                return maxAmount.toString();
             }
         },
         coinContractAddress() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.ethAddr : undefined;
         },
-        allowance() {
-            const allowance = this.allowanceList[this.form.coin];
-            if (allowance) {
-                return allowance;
-            } else {
-                return {
-                    value: null,
-                    promiseStatus: null,
-                    promise: null,
-                };
-            }
+        isEthSelected() {
+            return (this.coinContractAddress || '').toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
         },
-        isCoinApproved() {
-            if (!this.allowance.value) {
+        isWrappingRequired() {
+            if (!this.isEthSelected) {
                 return false;
             }
 
-            const allowance = new BN(this.allowance.value, 10);
-            const amount = new BN(toErcDecimals(this.amountToSpend || '0', this.decimals[this.form.coin] || 18), 10);
-            return allowance.gt(new BN(0)) && allowance.gte(amount);
+            return Number(this.selectedWrapped) === 0 || this.amountToWrap > 0;
+        },
+        isCoinApproved() {
+            const selectedUnlocked = new Big(this.selectedUnlocked);
+            return selectedUnlocked.gt(0) && selectedUnlocked.gte(this.amountToSpend);
         },
         selectedBalance() {
-            return this.balances[this.form.coin] || 0;
+            if (this.isEthSelected) {
+                return new Big(this.balances[this.form.coin] || 0).plus(this.balances[0] || 0).toString();
+            } else {
+                return this.balances[this.form.coin] || 0;
+            }
+        },
+        selectedWrapped() {
+            if (this.isEthSelected) {
+                return this.balances[this.form.coin] || 0;
+            }
+
+            return 0;
+        },
+        amountToWrap() {
+            return new Big(this.amountToSpend).minus(this.selectedWrapped).toString();
+        },
+        currentBalanceRequest() {
+            if (this.balanceRequest?.coin === this.form.coin) {
+                return this.balanceRequest;
+            } else {
+                return null;
+            }
+        },
+        currentAllowanceRequest() {
+            if (this.allowanceRequest?.coin === this.form.coin) {
+                return this.allowanceRequest;
+            } else {
+                return null;
+            }
         },
         selectedUnlocked() {
-            if (!this.allowance.value) {
+            const allowance = this.allowanceList[this.form.coin];
+            if (!allowance) {
                 return 0;
             }
 
-            return fromErcDecimals(this.allowance.value, this.decimals[this.form.coin] || 18);
+            return fromErcDecimals(allowance, this.decimals[this.form.coin]);
         },
         selectedUnlockedInfinity() {
             return this.selectedUnlocked > 10**18;
         },
         amountToUnlock() {
-            return new Big(this.amountToSpend).minus(this.selectedUnlocked).toFixed();
+            return new Big(this.amountToSpend).minus(this.selectedUnlocked).toString();
         },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol.toUpperCase());
+        },
+        stage() {
+            if (this.isWrappingRequired) {
+                return TX_WRAP;
+            }
+            if (!this.isCoinApproved) {
+                return TX_APPROVE;
+            }
+            return TX_TRANSFER;
         },
     },
     watch: {
@@ -203,10 +240,19 @@ export default {
                 }
             },
         },
-        'form.coin': {
+        coinContractAddress: {
             handler() {
                 this.updateBalance();
                 this.getAllowance();
+            },
+        },
+        isWrappingRequired: {
+            handler(newVal) {
+                // stop form sending loader after wrapping tx confirmed
+                if (!newVal && this.waitWrapConfirmation) {
+                    this.waitWrapConfirmation = false;
+                    this.isFormSending = false;
+                }
             },
         },
         isCoinApproved: {
@@ -237,18 +283,112 @@ export default {
                 return;
             }
 
+            if (this.currentBalanceRequest?.promiseStatus === PROMISE_PENDING) {
+                return;
+            }
+
             const coinSymbol = this.form.coin;
-            Promise.all([
+            const balancePromise = Promise.all([
                 coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call(),
                 coinContract(this.coinContractAddress).methods.decimals().call(),
+                this.isEthSelected ? web3.eth.getBalance(this.ethAddress) : Promise.resolve(),
             ])
-                .then(([balance, decimals]) => {
+                .then(([balance, decimals, ethBalance]) => {
                     this.$set(this.balances, coinSymbol, fromErcDecimals(balance, decimals));
                     this.$set(this.decimals, coinSymbol, decimals);
+                    if (ethBalance) {
+                        this.$set(this.balances, 0, web3.utils.fromWei(ethBalance));
+                    }
+                    if (this.form.coin === coinSymbol) {
+                        this.balanceRequest = {
+                            coin: coinSymbol,
+                            promiseStatus: PROMISE_FINISHED,
+                            promise: balancePromise,
+                        };
+                    }
                 })
-                .catch(console.error);
+                .catch((error) => {
+                    console.log(error);
+                    // coin not changed
+                    if (this.form.coin === coinSymbol) {
+                        this.balanceRequest = {
+                            coin: coinSymbol,
+                            promiseStatus: PROMISE_REJECTED,
+                            promise: balancePromise,
+                        };
+                        this.serverError = 'Can\'t get balance';
+                    }
+                });
+        },
+        ensureBalancePromiseFinished() {
+            return this.ensureRequest(this.currentBalanceRequest, 'Can\'t get balance');
+        },
+        getAllowance() {
+            let selectedCoin = this.form.coin;
+
+            if (!this.isConnected || !this.coinContractAddress) {
+                return;
+            }
+            if (this.currentAllowanceRequest?.promiseStatus === PROMISE_PENDING) {
+                return;
+            }
+
+            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, peggyAddress).call()
+                .then((allowanceValue) => {
+                    this.$set(this.allowanceList, selectedCoin, allowanceValue);
+                    // coin not changed
+                    if (this.form.coin === selectedCoin) {
+                        this.allowanceRequest = {
+                            coin: selectedCoin,
+                            promiseStatus: PROMISE_FINISHED,
+                            promise: allowancePromise,
+                        };
+                    }
+
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.$set(this.allowanceList, selectedCoin, null);
+                    // coin not changed
+                    if (this.form.coin === selectedCoin) {
+                        this.allowanceRequest = {
+                            coin: selectedCoin,
+                            promiseStatus: PROMISE_REJECTED,
+                            promise: allowancePromise,
+                        };
+                        this.serverError = 'Can\'t get allowance';
+                    }
+                });
+
+            this.allowanceRequest = {
+                coin: selectedCoin,
+                promiseStatus: PROMISE_PENDING,
+                promise: allowancePromise,
+            };
+
+            return allowancePromise;
+        },
+        ensureRequest(request, errorMessage) {
+            if (request?.promiseStatus === PROMISE_FINISHED) {
+                return Promise.resolve();
+            }
+            if (request?.promiseStatus === PROMISE_PENDING) {
+                return request.promise
+                    .then(() => {
+                        // promisify $nextTick
+                        return new Promise((resolve) => {
+                            this.$nextTick(resolve);
+                        });
+                    });
+            }
+            if (request?.promise === PROMISE_REJECTED) {
+                return Promise.reject(errorMessage);
+            }
         },
         submit() {
+            if (this.isFormSending) {
+                return;
+            }
             if (this.$v.$invalid) {
                 this.$v.$touch();
                 return;
@@ -257,14 +397,21 @@ export default {
             this.isFormSending = true;
             this.serverError = '';
 
-            let isApproveTx;
-            return this.getIsCoinApproved()
-                .then((isCoinApproved) => {
-                    isApproveTx = !isCoinApproved;
+            let stage;
+            return Promise.all([
+                    this.ensureRequest(this.currentAllowanceRequest, 'Can\'t get allowance'),
+                    this.ensureRequest(this.currentBalanceRequest, 'Can\'t get balance'),
+                ])
+                .then(() => {
+                    stage = this.stage;
 
-                    if (isApproveTx) {
+                    if (stage === TX_WRAP) {
+                        return this.wrapEther();
+                    }
+                    if (stage === TX_APPROVE) {
                         return this.sendApproveTx();
-                    } else {
+                    }
+                    if (stage === TX_TRANSFER)  {
                         return this.sendCoinTx();
                     }
                 })
@@ -272,7 +419,7 @@ export default {
                     // Returns transaction hash
                     this.transactionList.unshift({
                         hash,
-                        type: isApproveTx ? TX_APPROVE : TX_TRANSFER,
+                        type: stage,
                         timestamp: (new Date()).toISOString(),
                     });
                 })
@@ -284,74 +431,28 @@ export default {
                     this.isFormSending = false;
                 });
         },
-        getAllowance() {
-            let selectedCoin = this.form.coin;
-
-            let allowance = {...this.allowance};
-            if (!this.isConnected || !this.coinContractAddress) {
-                return;
-            }
-            if (allowance.promiseStatus === ALLOWANCE_PENDING) {
-                return;
-            }
-
-            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, peggyAddress).call()
-                .then((allowanceValue) => {
-                    this.$set(this.allowanceList, selectedCoin, {
-                        value: allowanceValue,
-                        promiseStatus: ALLOWANCE_FINISHED,
-                        // not needed here, but keep for consistency
-                        promise: allowancePromise,
-                    });
+        wrapEther() {
+            return this.sendEthTx({
+                    to: WETH_ETHEREUM_CONTRACT_ADDRESS,
+                    value: this.amountToWrap,
+                    data: wethDepositAbiData,
                 })
-                .catch((error) => {
-                    console.log(error);
-                    this.$set(this.allowanceList, selectedCoin, {
-                        value: null,
-                        promiseStatus: ALLOWANCE_REJECTED,
-                        // not needed here, but keep for consistency
-                        promise: allowancePromise,
-                    });
-                    this.serverError = 'Can\'t get allowance';
+                .then((hash) => {
+                    this.waitWrapConfirmation = true;
+
+                    return hash;
                 });
-
-            this.$set(this.allowanceList, selectedCoin, {
-                promiseStatus: ALLOWANCE_PENDING,
-                promise: allowancePromise,
-                // old value
-                value: allowance.value,
-            });
-
-            return allowancePromise;
-        },
-        getIsCoinApproved() {
-            if (this.allowance.promiseStatus === ALLOWANCE_FINISHED) {
-                return Promise.resolve(this.isCoinApproved);
-            }
-            if (this.allowance.promiseStatus === ALLOWANCE_PENDING) {
-                return this.allowance.promise
-                    .then(() => {
-                        return new Promise((resolve) => {
-                            this.$nextTick(() => {
-                                resolve(this.isCoinApproved);
-                            });
-                        });
-                    });
-            }
-            if (this.allowance.promiseStatus === ALLOWANCE_REJECTED) {
-                return Promise.reject('Can\'t get allowance');
-            }
         },
         sendApproveTx() {
             let amountToUnlock;
             if (this.form.isInfiniteUnlock) {
                 amountToUnlock = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
             } else {
-                amountToUnlock = toErcDecimals(this.amountToUnlock, this.decimals[this.form.coin] || 18);
+                amountToUnlock = toErcDecimals(this.amountToUnlock, this.decimals[this.form.coin]);
             }
             let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, amountToUnlock).encodeABI();
 
-            return this.sendEthTx(this.coinContractAddress, data)
+            return this.sendEthTx({to: this.coinContractAddress, data})
                 .then((hash) => {
                     this.waitApproveConfirmation = true;
 
@@ -361,9 +462,9 @@ export default {
         sendCoinTx() {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
-            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin] || 18)).encodeABI();
+            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin])).encodeABI();
 
-            return this.sendEthTx(peggyAddress, data)
+            return this.sendEthTx({to: peggyAddress, data})
                 .then((hash) => {
                     this.$v.$reset();
                     // reset form
@@ -376,14 +477,14 @@ export default {
                     return hash;
                 });
         },
-        async sendEthTx(to, data) {
+        async sendEthTx({to, value, data}) {
             const txParams = {
                 from: this.ethAddress, // Required
                 to, // Required (for non contract deployments)
                 data, // Required
                 // gasPrice: "0x02540be400", // Optional
                 // gas: "0x9c40", // Optional
-                value: "0x00", // Optional
+                value: value ? toErcDecimals(value) : "0x00", // Optional
                 nonce: await web3.eth.getTransactionCount(this.ethAddress, "pending"), // Optional
             };
 
@@ -446,11 +547,14 @@ function getLatestTransactions(address) {
                     // approve erc20
                     const bridgeAddressHex = '0x' + input.slice(0, 64);
                     const bridgeAddress = web3.eth.abi.decodeParameter('address', bridgeAddressHex);
-                    return bridgeAddress === peggyAddress;
+                    return bridgeAddress.toLowerCase() === peggyAddress.toLowerCase();
                 } else if (itemCount === 3) {
                     // sentToMinter
                     const bridgeAddress = tx.to;
                     return bridgeAddress.toLowerCase() === peggyAddress.toLowerCase();
+                } else if (itemCount === 0) {
+                    // wrap eth
+                    return tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
                 }
 
                 return false;
@@ -513,7 +617,11 @@ function getLatestTransactions(address) {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-2">
-                        <label class="form-check" v-if="!isCoinApproved">
+                        <div class="form-field form-field--dashed" v-if="stage === $options.TX_WRAP">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
+                            <div class="form-field__label">{{ $td('Wrapped ETH balance', 'form.hub-deposit-weth-balance') }}</div>
+                        </div>
+                        <label class="form-check" v-if="stage === $options.TX_APPROVE">
                             <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
                         </label>
@@ -523,10 +631,13 @@ function getLatestTransactions(address) {
                             class="button button--main button--full"
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
                         >
-                            <span class="button__content" v-if="isCoinApproved">Send</span>
-                            <span class="button__content" v-else>
+                            <span class="button__content" v-if="stage === $options.TX_TRANSFER">Send</span>
+                            <span class="button__content" v-if="stage === $options.TX_APPROVE">
                                 <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
                                 <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
+                            </span>
+                            <span class="button__content" v-if="stage === $options.TX_WRAP">
+                                Wrap <template v-if="amountToWrap > 0">{{ pretty(amountToWrap) }}</template> ETH
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>

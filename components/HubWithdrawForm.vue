@@ -1,5 +1,5 @@
 <script>
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
@@ -18,10 +18,6 @@ import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
-
-Big.DP = 18;
-// ROUND_HALF_EVEN
-Big.RM = 2;
 
 
 const SPEED_MIN = 'min';
@@ -103,20 +99,20 @@ export default {
             }
             const ethFee = this.form.speed === SPEED_MIN ? this.ethFee.min : this.ethFee.fast;
 
-            return new Big(ethFee).div(this.coinPrice).toFixed();
+            return new Big(ethFee).div(this.coinPrice).toString();
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
             const amount = new Big(this.coinFee).plus(this.form.amount || 0);
             // x / (1 - x)
             const inverseRate = new Big(this.hubFeeRate).div(new Big(1).minus(this.hubFeeRate));
-            return amount.times(inverseRate).toFixed();
+            return amount.times(inverseRate).toString();
         },
         totalFee() {
-            return new Big(this.coinFee).plus(this.hubFee).toFixed();
+            return new Big(this.coinFee).plus(this.hubFee).toString();
         },
         amountToSpend() {
-            return new Big(this.totalFee).plus(this.form.amount || 0).toFixed();
+            return new Big(this.totalFee).plus(this.form.amount || 0).toString();
         },
         maxAmount() {
             const selectedCoin = this.$store.getters.balance.find((coin) => {
@@ -132,7 +128,7 @@ export default {
             if (maxAmount.lt(0)) {
                 return 0;
             } else {
-                return maxAmount.toFixed();
+                return maxAmount.toString();
             }
         },
         // intersection of address balance and hub supported coins

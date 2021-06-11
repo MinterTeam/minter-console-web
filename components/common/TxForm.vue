@@ -599,16 +599,16 @@
                             class="button button--main button--full"
                             data-test-id="txSubmitButton"
                             :class="{
-                            'is-loading': isFormSending,
-                            'is-disabled': $v.$invalid
-                        }"
+                                'is-loading': isFormSending,
+                                'is-disabled': $v.$invalid
+                            }"
                             v-if="!$store.getters.isOfflineMode"
                         >
-                        <span class="button__content">
-                            <slot name="submit-title">
-                                {{ $td('Send', 'form.wallet-send-button') }}
-                            </slot>
-                        </span>
+                            <span class="button__content">
+                                <slot name="submit-title">
+                                    {{ $td('Send', 'form.wallet-send-button') }}
+                                </slot>
+                            </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                         <div class="form-field__error" data-test-id="txErrorMessage" v-if="serverError">{{ serverError }}</div>
@@ -619,9 +619,9 @@
                         <dl>
                             <dt>{{ $td('Signature', 'form.multisig-result-signature') }}</dt>
                             <dd class="u-icon-wrap">
-                            <span class="u-select-all u-icon-text">
-                                {{ signature }}
-                            </span>
+                                <span class="u-select-all u-icon-text">
+                                    {{ signature }}
+                                </span>
                                 <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signature"/>
                             </dd>
                         </dl>
@@ -633,9 +633,9 @@
                         <dl>
                             <dt>{{ $td('Signed tx:', 'form.generate-result-tx') }}</dt>
                             <dd class="u-icon-wrap">
-                            <span class="u-select-all u-icon-text">
-                                {{ signedTx }}
-                            </span>
+                                <span class="u-select-all u-icon-text">
+                                    {{ signedTx }}
+                                </span>
                                 <ButtonCopyIcon class="u-icon--copy--right" :copy-text="signedTx"/>
                             </dd>
                         </dl>

@@ -3,8 +3,17 @@ export default function({store}) {
         return Promise.resolve();
     }
 
+    if (store.getters.isOfflineMode) {
+        return;
+    }
+
     // don't wait
     store.dispatch('explorer/FETCH_STATUS')
+        .catch((e) => {
+            console.log(e);
+        });
+
+    store.dispatch('explorer/FETCH_COIN_LIST')
         .catch((e) => {
             console.log(e);
         });

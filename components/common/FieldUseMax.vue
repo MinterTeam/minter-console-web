@@ -1,10 +1,8 @@
 <script>
-    import Big from 'big.js';
+    import Big from '~/assets/big.js';
     import {isCoinId} from 'minter-js-sdk/src/utils.js';
     import checkEmpty from '~/assets/v-check-empty';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
-
-    Big.RM = 2;
 
     export default {
         components: {
@@ -72,7 +70,7 @@
                 // fee in selected coin (handle non-number values)
                 const feeValue = this.fee?.value || 0;
                 // subtract fee
-                const amount = new Big(selectedCoin.amount).minus(feeValue).toFixed();
+                const amount = new Big(selectedCoin.amount).minus(feeValue).toString();
                 return amount > 0 ? amount : '0';
             },
             isMaxValueDefined() {
@@ -89,7 +87,7 @@
                     this.isUseMax = false;
                     return;
                 }
-                if (new Big(newVal).toFixed() !== new Big(this.maxValueComputed).toFixed()) {
+                if (!new Big(newVal).eq(this.maxValueComputed)) {
                     this.isUseMax = false;
                 }
             },
