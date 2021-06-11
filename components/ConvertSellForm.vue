@@ -8,7 +8,7 @@
     import maxValue from 'vuelidate/lib/validators/maxValue.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {estimateCoinSell} from '~/api/gate';
-    import {getCoinList, getSwapCoinList} from '@/api/explorer.js';
+    import {getSwapCoinList} from '@/api/explorer.js';
     import debounce from '~/assets/lodash5-debounce.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -44,21 +44,14 @@
         },
         mixins: [validationMixin],
         fetch() {
-            return Promise.all([getCoinList(), getSwapCoinList()])
-                .then(([coinList, swapCoinList]) => {
-                    const tradableCoinList = coinList.filter((coinItem) => {
-                        // coin with reserve
-                        if (coinItem.type === COIN_TYPE.COIN) {
-                            return true;
-                        }
-                        // swapable within pool
-                        if (swapCoinList.find((swapCoinItem) => swapCoinItem.id === coinItem.id)) {
-                            return true;
-                        }
-                        return false;
+            return getSwapCoinList()
+                .then((swapCoinList) => {
+                    let poolSwapableMap = {};
+                    swapCoinList.forEach((item) => {
+                        poolSwapableMap[item.id] = true;
                     });
 
-                    this.tradableCoinList = tradableCoinList.map((coinItem) => coinItem.symbol);
+                    this.poolSwapableMap = Object.freeze(poolSwapableMap);
                 });
         },
         data() {
@@ -82,7 +75,7 @@
                 selectedConvertType: CONVERT_TYPE.OPTIMAL,
                 txForm: {},
                 addressBalance: [],
-                tradableCoinList: [],
+                poolSwapableMap: {},
             };
         },
         validations() {
@@ -147,6 +140,21 @@
                     valueToSell: this.form.sellAmount,
                     minimumValueToBuy: this.form.minimumValueToBuy || 0,
                 };
+            },
+            tradableCoinList() {
+                return this.$store.state.explorer.coinList
+                    .filter((coinItem) => {
+                        // coin with reserve
+                        if (coinItem.type === COIN_TYPE.COIN) {
+                            return true;
+                        }
+                        // swapable within pool
+                        if (this.poolSwapableMap[coinItem.id]) {
+                            return true;
+                        }
+                        return false;
+                    })
+                    .map((coinItem) => coinItem.symbol);
             },
             tradableAddressBalance() {
                 return this.addressBalance.filter((balanceItem) => {
@@ -344,22 +352,24 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell">
                 <div class="form-check-label">Swap type</div>
-                <label class="form-check">
-                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.OPTIMAL" v-model="selectedConvertType">
-                    <span class="form-check__label form-check__label--radio">{{ $td('Auto', 'form.convert-type-auto') }}</span>
-                </label>
-                <label class="form-check">
-                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.BANCOR" v-model="selectedConvertType">
-                    <span class="form-check__label form-check__label--radio">{{ $td('Reserves', 'form.convert-type-bancor') }}</span>
-                </label>
-                <label class="form-check">
-                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL" v-model="selectedConvertType">
-                    <span class="form-check__label form-check__label--radio">{{ $td('Pools', 'form.convert-type-pool') }}</span>
-                </label>
-                <label class="form-check">
-                    <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL_DIRECT" v-model="selectedConvertType">
-                    <span class="form-check__label form-check__label--radio">{{ $td('Direct pool', 'form.convert-type-pool-direct') }}</span>
-                </label>
+                <div class="form-check-group">
+                    <label class="form-check">
+                        <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.OPTIMAL" v-model="selectedConvertType">
+                        <span class="form-check__label form-check__label--radio">{{ $td('Auto', 'form.convert-type-auto') }}</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.BANCOR" v-model="selectedConvertType">
+                        <span class="form-check__label form-check__label--radio">{{ $td('Reserves', 'form.convert-type-bancor') }}</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL" v-model="selectedConvertType">
+                        <span class="form-check__label form-check__label--radio">{{ $td('Pools', 'form.convert-type-pool') }}</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" class="form-check__input" name="convert-type" :value="$options.CONVERT_TYPE.POOL_DIRECT" v-model="selectedConvertType">
+                        <span class="form-check__label form-check__label--radio">{{ $td('Direct pool', 'form.convert-type-pool-direct') }}</span>
+                    </label>
+                </div>
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <FieldCoin

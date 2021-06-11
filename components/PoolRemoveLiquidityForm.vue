@@ -1,5 +1,5 @@
 <script>
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
 import debounce from 'debounce-promise';
 import {validationMixin} from 'vuelidate';
@@ -21,9 +21,6 @@ import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin';
 import FieldPercentage from '~/components/common/FieldPercentage.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
-
-Big.DP = 18;
-Big.RM = 2;
 
 let watcherTimer;
 
@@ -203,7 +200,7 @@ export default {
                     }
 
                     function poolTokenFromLiquidityPercent(liquidityPercent, providerLiquidity) {
-                        return new Big(liquidityPercent).div(100).times(providerLiquidity).toFixed();
+                        return new Big(liquidityPercent).div(100).times(providerLiquidity).toString();
                     }
 
                     function liquidityPercentFromAmount(inputAmount, providerAmount) {

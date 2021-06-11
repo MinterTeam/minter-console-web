@@ -1,4 +1,4 @@
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import MinterApi from "minter-js-sdk/src/api";

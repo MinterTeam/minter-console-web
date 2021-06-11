@@ -1,5 +1,5 @@
 <script>
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
 import debounce from 'debounce-promise';
 import stripZeros from 'pretty-num/src/pretty-num.js';
@@ -22,9 +22,6 @@ import FieldPercentage from '~/components/common/FieldPercentage.vue';
 import FieldUseMax from '~/components/common/FieldUseMax.vue';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 import {getErrorText} from 'assets/server-error.js';
-
-Big.DP = 18;
-Big.RM = 2;
 
 let watcherTimer;
 let slippageWatcherTimer;
@@ -149,7 +146,7 @@ export default {
                         if (!this.form.volume0) {
                             this.formAmount1 = '';
                         } else {
-                            this.formAmount1 = decreasePrecisionSignificant(new Big(this.form.volume0).div(this.poolData.amount0).times(this.poolData.amount1).toFixed());
+                            this.formAmount1 = decreasePrecisionSignificant(new Big(this.form.volume0).div(this.poolData.amount0).times(this.poolData.amount1).toString());
                         }
                     }
 
@@ -157,7 +154,7 @@ export default {
                         if (!this.formAmount1) {
                             this.form.volume0 = '';
                         } else {
-                            this.form.volume0 = stripZeros(new Big(this.formAmount1).div(this.poolData.amount1).times(this.poolData.amount0).toFixed(18));
+                            this.form.volume0 = stripZeros(new Big(this.formAmount1).div(this.poolData.amount1).times(this.poolData.amount0).toString());
                         }
                     }
                 }, 20);

@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Big from 'big.js';
+import Big from '~/assets/big.js';
 import {FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import decorateTxParams from 'minter-js-sdk/src/tx-decorator/index.js';
@@ -111,7 +111,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
             if (this.isOffline) {
                 return;
             }
-            getCoinList()
+            getCoinList({skipMeta: true})
                 .then((coinList) => {
                     let result = {};
                     coinList.forEach((coinInfo) => {
@@ -187,7 +187,7 @@ export default function FeeBus({txParams, baseCoinAmount = 0, fallbackToCoinToSp
                         const feeData = primaryResult.value;
                         const secondaryFeeData = secondaryResult.value;
                         if (!feeData) {
-                            throw new Error(primaryResult.reason);
+                            return Promise.reject(primaryResult.reason);
                         }
 
                         this.priceCoinFeeValue = feeData.priceCoinCommission;
