@@ -270,7 +270,8 @@ export default {
                 coinToBuy: this.form.coinTo,
                 swapFrom: this.preConvertType,
                 findRoute: this.selectedConvertType !== CONVERT_TYPE.POOL_DIRECT,
-                gasCoin: this.txForm.gasCoin || 0,
+                // gasCoin not used in sellAll
+                // gasCoin: this.txForm.gasCoin || 0,
                 sellAll: true,
             }, {
                 cancelToken: new axios.CancelToken((cancelFn) => estimationCancel = cancelFn),

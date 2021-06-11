@@ -191,6 +191,10 @@
             'selectedConvertType': function() {
                 this.forceEstimation();
             },
+            // don't watch gasCoin because the effect is small and final estimation will be made in beforeConfirm
+            // 'txForm.gasCoin': function() {
+            //     this.watchForm();
+            // },
             whatAffectsSlippage: {
                 handler() {
                     // @input and @input.native may fire in different time so timer needed to wait all events

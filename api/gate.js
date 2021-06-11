@@ -36,6 +36,10 @@ const _estimateCoinSell = (params, axiosOptions) => params.sellAll
     : EstimateCoinSell(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/});
 const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/});
 export function estimateCoinSell(params, axiosOptions) {
+    // 0, '0', false, undefined
+    if (!params.valueToSell || !Number(params.valueToSell)) {
+        return Promise.reject(new Error('Value to sell not specified'));
+    }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
         let estimateError;
         const estimatePromise = _estimateCoinSell(params, axiosOptions)
@@ -91,6 +95,10 @@ export function estimateCoinSell(params, axiosOptions) {
     }
 }
 export function estimateCoinBuy(params, axiosOptions) {
+    // 0, '0', false, undefined
+    if (!params.valueToSell || !Number(params.valueToSell)) {
+        return Promise.reject(new Error('Value to buy not specified'));
+    }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
         let estimateError;
         const estimatePromise = _estimateCoinBuy(params, axiosOptions)
