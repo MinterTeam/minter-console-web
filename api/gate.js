@@ -96,7 +96,7 @@ export function estimateCoinSell(params, axiosOptions) {
 }
 export function estimateCoinBuy(params, axiosOptions) {
     // 0, '0', false, undefined
-    if (!params.valueToSell || !Number(params.valueToSell)) {
+    if (!params.valueToBuy || !Number(params.valueToBuy)) {
         return Promise.reject(new Error('Value to buy not specified'));
     }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
