@@ -55,6 +55,9 @@ export default {
     methods: {
         pretty,
         getExplorerPoolUrl,
+        getCoinIconUrl(coin) {
+            return this.$store.getters['explorer/getCoinIcon'](coin);
+        },
         addLiquidity({coin0, coin1}) {
             eventBus.emit('activate-add-liquidity', {coin0, coin1});
         },
@@ -102,7 +105,13 @@ export default {
                 <tbody>
                     <tr v-for="pool in poolListFormatted" :key="pool.token.symbol">
                         <td>
-                            <TableLink :link-text="pool.coin0.symbol + ' / ' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
+                            <div class="pool-pair">
+                                <div class="pool-pair__figure">
+                                    <img class="pool-pair__icon" :src="getCoinIconUrl(pool.coin0.symbol)" width="24" height="24" alt="" role="presentation">
+                                    <img class="pool-pair__icon pool-pair__icon1" :src="getCoinIconUrl(pool.coin1.symbol)" width="24" height="24" alt="" role="presentation">
+                                </div>
+                                <TableLink :link-text="pool.coin0.symbol + ' / ' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
+                            </div>
                         </td>
                         <td>{{ pool.token.symbol }}</td>
                         <td><span class="u-fw-500">{{ pretty(pool.amount0) }}</span> {{ pool.coin0.symbol }}</td>
