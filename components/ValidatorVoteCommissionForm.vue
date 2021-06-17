@@ -99,7 +99,12 @@ export default {
     },
     computed: {
         suggestionList() {
-            return [this.$store.getters.BASE_COIN].concat(this.coinList.map((item) => item.symbol));
+            const coinList = this.coinList.map((item) => item.symbol);
+            if (coinList.includes(this.$store.getters.BASE_COIN)) {
+                return coinList;
+            } else {
+                return [this.$store.getters.BASE_COIN].concat(coinList);
+            }
         },
     },
     watch: {
