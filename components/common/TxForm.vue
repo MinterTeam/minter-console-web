@@ -328,6 +328,7 @@
                 let postTxPromise;
                 if (!this.form.multisigAddress) {
                     let txParams = this.getTxParams();
+                    //@TODO can be simplified
                     postTxPromise = Promise.all([
                             ensureNonce(txParams, {address: this.$store.getters.address}),
                             replaceCoinSymbol(txParams),

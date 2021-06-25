@@ -70,8 +70,8 @@ export function getOraclePriceList() {
 
 /**
  *
- * @param hash
- * @return {Promise<{status: string, txHash: string}>}
+ * @param {string} hash
+ * @return {Promise<HubTransfer>}
  */
 export function getMinterTxStatus(hash) {
     return instance.get(`minter/tx_status/${hash}`)
@@ -80,7 +80,16 @@ export function getMinterTxStatus(hash) {
         });
 }
 
+/**
+ *
+ * @param {string} hash
+ * @param [timestamp]
+ * @return {Promise<HubTransfer>}
+ */
 export function subscribeTransfer(hash, timestamp) {
+    if (!hash) {
+        throw new Error('Tx hash not specified');
+    }
     let isUnsubscribed = false;
     let lastStatus;
     const emitter = new Emitter();
@@ -170,4 +179,11 @@ function wait(time) {
  * @property {string} minterId
  * @property {string} ethDecimals
  * @property {string|number} customCommission
+ */
+
+/**
+ * @typedef {object} HubTransfer
+ * @property {HUB_TRANSFER_STATUS} status
+ * @property {string} inTxHash
+ * @property {string} outTxHash
  */

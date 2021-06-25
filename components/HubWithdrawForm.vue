@@ -371,6 +371,30 @@ export default {
                         </span>
                     </div>
                 </div>
+                <div class="u-cell">
+                    <template v-if="$i18n.locale === 'en'">
+                        <p class="u-mb-05"><span class="u-emoji">⚠️</span> <strong>Withdrawal notice</strong></p>
+                        <ul class="list-simple">
+                            <li>Withdraw to the wallet you own first (the one you have a seed phrase to);</li>
+                            <li>Do not withdraw to an exchange because many do not accept deposits from smart contracts and your tokens will be lost;</li>
+                            <li>Pay attention to Ethereum a Minter Hub fees;</li>
+                            <li>
+                                {{ $td('Minter Hub is', 'hub.warning-description-2') }}
+                                <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">{{ $td('open-source', 'hub.warning-description-3') }}</a>.
+                                {{ $td('If needed, you may investigate its code before making use of the features offered on this page.', 'hub.warning-description-4') }}
+                            </li>
+                        </ul>
+                    </template>
+                    <template v-if="$i18n.locale === 'ru'">
+                        <p class="u-mb-05"><span class="u-emoji">⚠️</span> <strong>Внимание</strong></p>
+                        <ul class="list-simple">
+                            <li>Вывод средств возможен только на ваш персональный адрес;</li>
+                            <li>Не допускается вывод средств на смарт-контракты, адреса бирж или адреса, к которым у вас нет прямого доступа;</li>
+                            <li>Всегда обращайте внимание на комиссии Ethereum и Minter Hub;</li>
+                            <li>Minter Hub имеет открытый <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">исходный код</a>, изучите его при необходимости.</li>
+                        </ul>
+                    </template>
+                </div>
             </div>
         </div>
 
