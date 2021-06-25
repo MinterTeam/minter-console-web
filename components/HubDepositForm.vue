@@ -24,7 +24,6 @@ import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 
-window.Big = Big;
 const PROMISE_FINISHED = 'finished';
 const PROMISE_REJECTED = 'rejected';
 const PROMISE_PENDING = 'pending';
@@ -290,7 +289,7 @@ export default {
             const coinSymbol = this.form.coin;
             const balancePromise = Promise.all([
                 coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call(),
-                coinContract(this.coinContractAddress).methods.decimals().call(),
+                this.decimals[coinSymbol] ? Promise.resolve(this.decimals[coinSymbol]) : coinContract(this.coinContractAddress).methods.decimals().call(),
                 this.isEthSelected ? web3.eth.getBalance(this.ethAddress) : Promise.resolve(),
             ])
                 .then(([balance, decimals, ethBalance]) => {
@@ -319,9 +318,6 @@ export default {
                         this.serverError = 'Can\'t get balance';
                     }
                 });
-        },
-        ensureBalancePromiseFinished() {
-            return this.ensureRequest(this.currentBalanceRequest, 'Can\'t get balance');
         },
         getAllowance() {
             let selectedCoin = this.form.coin;
