@@ -2,6 +2,7 @@
     import Big from '~/assets/big.js';
     import {isCoinId} from 'minter-js-sdk/src/utils.js';
     import checkEmpty from '~/assets/v-check-empty';
+    import {pretty} from '~/assets/utils.js';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
 
     export default {
@@ -74,7 +75,7 @@
                 return amount > 0 ? amount : '0';
             },
             isMaxValueDefined() {
-                return typeof this.maxValueComputed !== 'undefined';
+                return typeof this.maxValueComputed !== 'undefined' && this.maxValueComputed > 0;
             },
         },
         watch: {
@@ -98,6 +99,7 @@
             },
         },
         methods: {
+            pretty,
             useMax() {
                 if (!this.isMaxValueDefined) {
                     return false;
@@ -139,6 +141,7 @@
             @blur="$value.$touch(); $emit('blur', $event)"
         />
         <button class="form-field__use-max link--main link--opacity u-semantic-button" type="button" @click="useMax" v-if="isMaxValueDefined">Use max</button>
+        <span class="form-field__max-available" v-if="isMaxValueDefined && !isUseMax">≈{{ pretty(maxValueComputed) }}</span>
         <span class="form-field__label">{{ label }}</span>
     </label>
 </template>

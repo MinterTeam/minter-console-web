@@ -14,6 +14,7 @@
 
 // vendor
 // mdc
+.mdc-snackbar {z-index: 16; /* higher than modal */}
 .mdc-snackbar__surface {min-width: 300px;}
 .mdc-snackbar__label {font: inherit; font-size: 1rem; color: #fff;}
 .mdc-snackbar__dismiss {
@@ -117,6 +118,7 @@
 .panel__header {padding-top: 18px; padding-bottom: 18px; /*display: flex; justify-content: space-between; align-items: center;*/}
 .panel__header-title {.panel-title(); display: flex; align-items: center;}
 .panel__header-title-icon {margin-right: 8px; margin-left: -8px; margin-top: -8px; margin-bottom: -8px;}
+.panel__header-loader {margin-left: 0; margin-right: 16px; margin-top: -8px; margin-bottom: -8px;}
 .panel__header-description {margin-top: 4px;}
 @media (min-width: @breakpoint-small-up) {
     .panel__section, .panel__header {padding-left: 24px; padding-right: 24px;}
