@@ -452,7 +452,7 @@ export default {
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            ≈ <BaseAmount :coin="form.coin0" :amount="formAmount0"/>
+                            ≈<BaseAmount :coin="form.coin0" :amount="formAmount0"/>
                             <span class="u-text-muted">({{ minimumVolume0 }} minimum)</span>
                         </div>
                         <div class="form-field__label">{{ $td('First coin', 'form.pool-coin0') }}</div>
@@ -461,7 +461,7 @@ export default {
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            ≈ <BaseAmount :coin="form.coin1" :amount="formAmount1"/>
+                            ≈<BaseAmount :coin="form.coin1" :amount="formAmount1"/>
                             <span class="u-text-muted">({{ minimumVolume1 }} minimum)</span>
                         </div>
                         <div class="form-field__label">{{ $td('Second coin', 'form.pool-coin1') }}</div>

@@ -31,8 +31,6 @@
     "precommit"
   ],
   "dependencies": {
-    "@ethereumjs/common": "^2.3.1",
-    "@ethereumjs/tx": "^3.2.1",
     "@ethersproject/contracts": "^5.3.0",
     "@ethersproject/providers": "^5.3.1",
     "@ethersproject/solidity": "^5.3.0",

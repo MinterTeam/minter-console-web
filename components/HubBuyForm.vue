@@ -1,22 +1,25 @@
 <script>
+import axios from 'axios';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import withParams from 'vuelidate/lib/withParams.js';
-import QrcodeVue from 'qrcode.vue';
-import autosize from 'v-autosize';
+import { ChainId, Token, WETH, Fetcher, Route, Trade, TokenAmount, TradeType } from '@uniswap/sdk';
+import IUniswapV2Router from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
 import {CloudflareProvider, JsonRpcProvider} from '@ethersproject/providers';
-import {toBuffer} from 'minterjs-util/src/prefix.js';
+import autosize from 'v-autosize';
+import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import * as web3 from '@/api/web3.js';
-import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
-import {getAddressTransactionList} from '@/api/ethersacn.js';
+import {fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hub.js';
 import {getTransaction} from '@/api/explorer.js';
+import {estimateCoinSell, postTx} from '@/api/gate.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEtherscanTxUrl, shortHashFilter} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
+import debounce from '~/assets/lodash5-debounce.js';
 import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, HUB_MINTER_MULTISIG_ADDRESS, SWAP_TYPE, SLIPPAGE_INPUT_TYPE} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
@@ -27,17 +30,6 @@ import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 
-
-import Common from '@ethereumjs/common';
-//@TODO replace with web3.eth.accounts.signTransaction
-import {Transaction} from '@ethereumjs/tx';
-import { ChainId, Token, WETH, Fetcher, Route, Trade, TokenAmount, TradeType } from '@uniswap/sdk';
-import IUniswapV2Router from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
-import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
-import {convertToPip} from 'minterjs-util/src/converter.js';
-import {estimateCoinSell, postTx} from '@/api/gate.js';
-import axios from 'axios';
-import debounce from 'assets/lodash5-debounce.js';
 
 const uniswapV2Abi = IUniswapV2Router.abi;
 
@@ -585,43 +577,23 @@ export default {
 
             return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE});
         },
-        // async sendEthTx({to, value, data}) {
-        //     const txParams = {
-        //         from: this.ethAddress, // Required
-        //         to, // Required (for non contract deployments)
-        //         data, // Required
-        //         // gasPrice: "0x02540be400", // Optional
-        //         // gas: "0x9c40", // Optional
-        //         value: value ? toErcDecimals(value) : "0x00", // Optional
-        //         nonce: await web3.eth.getTransactionCount(this.ethAddress, "pending"), // Optional
-        //     };
-        //
-        //     // return this.$refs.ethAccount.sendTransaction(txParams);
-        // },
         async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}) {
+            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
             gasLimit = gasLimit || await this.estimateTxGas({to, value, data});
             const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
             const txParams = {
                 to,
-                value: value ? web3.utils.toHex(toErcDecimals(value, 18)) : "0x00",
+                value: value ? toErcDecimals(value, 18) : "0x00",
                 data,
-                nonce: nonce || await web3.eth.getTransactionCount(this.ethAddress, "pending"),
-                gasPrice: web3.utils.toHex(web3.utils.toWei(gasPriceGwei, 'gwei')),
-                gasLimit: web3.utils.toHex(gasLimit),
+                nonce,
+                gasPrice: web3.utils.toWei(gasPriceGwei, 'gwei'),
+                gas: gasLimit,
+                chainId: ETHEREUM_CHAIN_ID,
             };
-            console.log('send', {
-                to,
-                value,
-                data,
-                nonce: txParams.nonce,
-                gasPrice: gasPriceGwei,
-                gasLimit,
-            });
-            let tx = new Transaction(txParams, {common: new Common({chain: NETWORK === MAINNET ? 'mainnet' : 'ropsten'})});
-            tx = tx.sign(toBuffer(this.$store.getters.privateKey));
-            let serializedTx = "0x" + tx.serialize().toString('hex');
+            console.log('send', txParams);
+            const { rawTransaction } = await web3.eth.accounts.signTransaction(txParams, this.$store.getters.privateKey);
 
-            return web3.eth.sendSignedTransaction(serializedTx)
+            return web3.eth.sendSignedTransaction(rawTransaction)
                 .on('transactionHash', (txHash) => {
                     console.log(txHash);
                     // hist = {time: new Date, hash: txHash, note: "transferToHub", confirmed: false};
@@ -742,47 +714,6 @@ function wait(time) {
         setTimeout(resolve, time);
     });
 }
-
-// function getLatestTransactions(address) {
-//     return Promise.all([
-//         // check last 1000 txs
-//         getAddressTransactionList(address, {page: 1, offset: 1000}),
-//         //@TODO store pending txs in localStorage
-//         Promise.resolve([]),
-//         // getAddressPendingTransactions(address),
-//     ])
-//         .then(([etherscanTxList, pendingTxList]) => {
-//             // assume web3 pending status is more correct and filter out such etherscan txs
-//             etherscanTxList = etherscanTxList.filter((tx) => {
-//                 const isPending = pendingTxList.find((pendingTx) => pendingTx.hash.toLowerCase() === tx.hash.toLowerCase());
-//
-//                 return !isPending;
-//             });
-//
-//             let txList = pendingTxList.concat(etherscanTxList);
-//
-//             // keep only hub bridge transactions
-//             txList = txList.filter((tx) => {
-//                 // remove 0x and function selector
-//                 const input = tx.input.slice(2 + 8);
-//                 const itemCount = input.length / 64;
-//                 if (itemCount === 2) {
-//                     // approve erc20
-//                     const bridgeAddressHex = '0x' + input.slice(0, 64);
-//                     const bridgeAddress = web3.eth.abi.decodeParameter('address', bridgeAddressHex);
-//                     return bridgeAddress.toLowerCase() === hubBridgeAddress.toLowerCase();
-//                 } else if (itemCount === 3) {
-//                     // sentToMinter
-//                     const bridgeAddress = tx.to;
-//                     return bridgeAddress.toLowerCase() === hubBridgeAddress.toLowerCase();
-//                 }
-//
-//                 return false;
-//             });
-//
-//             return txList.slice(0, 5);
-//         });
-// }
 
 function _fetchUniswapPair(coinContractAddress, coinDecimals) {
     // const token = new Token(ETHEREUM_CHAIN_ID, '0xdbc941fec34e8965ebc4a25452ae7519d6bdfc4e', 6)

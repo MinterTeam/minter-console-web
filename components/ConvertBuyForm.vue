@@ -407,7 +407,7 @@
             </div>
             <div class="u-cell u-cell--medium--1-2" v-if="!$store.getters.isOfflineMode">
                 <div class="form-field form-field--dashed" :class="{'is-error': isEstimationErrorVisible}">
-                    <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="currentEstimation" prefix="≈ "/>
+                    <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="currentEstimation" prefix="≈"/>
                     <div class="form-field__label">{{ $td('You will pay approximately', 'form.convert-buy-pay-estimation') }}</div>
                     <Loader class="form-field__icon form-field__icon--loader" :isLoading="isEstimationWaiting"/>
                     <span class="form-field__error" v-if="isEstimationErrorVisible">{{ estimationError }}</span>
@@ -462,7 +462,7 @@
                 </div>
                 <div class="u-cell" v-if="estimation">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation" prefix="≈ "/>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="estimation" prefix="≈"/>
                         <div class="form-field__label">{{ $td('You will pay approximately *', 'form.convert-buy-confirm-pay-estimation') }}</div>
                     </div>
                     <div class="form-field__help u-text-left">

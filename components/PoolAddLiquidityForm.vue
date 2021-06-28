@@ -404,7 +404,7 @@ export default {
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            ≈ <BaseAmount :coin="form.coin1" :amount="formAmount1"/>
+                            ≈<BaseAmount :coin="form.coin1" :amount="formAmount1"/>
                             <span class="u-text-muted">({{ form.maximumVolume1 }} maximum)</span>
                         </div>
                         <div class="form-field__label">{{ $td('Second coin', 'form.pool-coin1') }}</div>
