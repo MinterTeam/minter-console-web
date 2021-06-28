@@ -226,6 +226,7 @@ export function decreasePrecisionFixed(value) {
 }
 
 /**
+ * //@TODO clean shortFilter
  * @param {string} value
  * @param {number} [endLength]
  * @param {number} [minLengthToShort]

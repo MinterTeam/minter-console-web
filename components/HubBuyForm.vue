@@ -14,18 +14,18 @@ import {getAddressTransactionList} from '@/api/ethersacn.js';
 import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hub.js';
 import {getTransaction} from '@/api/explorer.js';
 import Big from '~/assets/big.js';
-import {pretty, prettyPrecise, prettyRound, prettyExact} from '~/assets/utils.js';
+import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEtherscanTxUrl, shortHashFilter} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, HUB_MINTER_MULTISIG_ADDRESS, SWAP_TYPE, SLIPPAGE_INPUT_TYPE} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
+import BaseAmount from '@/components/common/BaseAmount.vue';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '@/components/common/Modal.vue';
 import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
-import TxListItem from '~/components/HubDepositTxListItem.vue';
 
 
 import Common from '@ethereumjs/common';
@@ -52,6 +52,7 @@ const LOADING_STAGE = {
     SEND_BRIDGE: 'send_bridge',
     WAIT_BRIDGE: 'wait_bridge',
     SWAP_MINTER: 'swap_minter',
+    FINISH: 'finish',
 };
 
 const TX_WRAP = 'wrap';
@@ -90,13 +91,12 @@ export default {
     DEPOSIT_SYMBOL,
     LOADING_STAGE,
     components: {
-        // QrcodeVue,
+        BaseAmount,
         Loader,
         Modal,
         ButtonCopyIcon,
         FieldUseMax,
         FieldCoin,
-        // TxListItem,
     },
     directives: {
         autosize,
@@ -140,12 +140,11 @@ export default {
             /** @type Array<HubCoinItem> */
             hubCoinList: [],
             priceList: [],
-            //@TODO show txs
             transactionList: [],
             loadingStage: '',
             isFormSending: false,
             serverError: '',
-            isConnectionStartedAndModalClosed: false,
+            isConfirmModalVisible: false,
 
             // just `estimation` refers to minter swap estimation
             estimation: null,
@@ -182,11 +181,14 @@ export default {
         // @TODO gasPrice not updated during isFormSending and may be too low/high after waiting pin gasPrice on submit
         ethGasPriceGwei() {
             const priceItem = this.priceList.find((item) => item.name === 'eth/gas');
+            let gasPriceGwei;
             if (!priceItem) {
-                return 100;
+                gasPriceGwei = 100;
             } else {
-                return priceItem.value / 10;
+                gasPriceGwei = priceItem.value / 10;
             }
+
+            return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
         },
         ethTotalFee() {
             const unlockGasLimit = this.isCoinApproved ? 0 : GAS_LIMIT_UNLOCK;
@@ -195,6 +197,12 @@ export default {
             const gasPrice = web3.utils.fromWei(web3.utils.toWei(this.ethGasPriceGwei.toString(), 'gwei'), 'ether');
 
             return new Big(gasPrice).times(totalGasLimit).toString();
+        },
+        ethFeeImpact() {
+            if (!(this.form.amountEth > 0)) {
+                return 0;
+            }
+            return new Big(this.ethTotalFee).div(this.form.amountEth).times(100);
         },
         ethToTopUp() {
             let amount = new Big(this.form.amountEth || 0).minus(this.ethBalance);
@@ -244,6 +252,10 @@ export default {
         },
         maxAmount() {
             return this.ethBalance;
+        },
+        coinEthereumName() {
+            const coinItem = this.hubCoinList.find((item) => item.symbol === DEPOSIT_SYMBOL);
+            return coinItem ? coinItem.denom.toUpperCase() : DEPOSIT_SYMBOL;
         },
         coinContractAddress() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === DEPOSIT_SYMBOL);
@@ -329,6 +341,9 @@ export default {
         prettyPrecise,
         prettyExact,
         prettyRound,
+        getExplorerTxUrl,
+        getEtherscanTxUrl,
+        shortHashFilter,
         updateBalance() {
             if (!this.coinContractAddress) {
                 return Promise.reject();
@@ -436,24 +451,7 @@ export default {
                     }
                 });
         },
-        // ensureRequest(request, errorMessage) {
-        //     if (request?.promiseStatus === PROMISE_FINISHED) {
-        //         return Promise.resolve();
-        //     }
-        //     if (request?.promiseStatus === PROMISE_PENDING) {
-        //         return request.promise
-        //             .then(() => {
-        //                 // promisify $nextTick
-        //                 return new Promise((resolve) => {
-        //                     this.$nextTick(resolve);
-        //                 });
-        //             });
-        //     }
-        //     if (request?.promise === PROMISE_REJECTED) {
-        //         return Promise.reject(errorMessage);
-        //     }
-        // },
-        submit() {
+        submitConfirm() {
             if (this.isFormSending) {
                 return;
             }
@@ -462,8 +460,23 @@ export default {
                 return;
             }
 
+            if (this.ethToTopUp > 0) {
+                // confirm not needed because user action required here
+                this.submit();
+            } else {
+                this.isConfirmModalVisible = true;
+            }
+        },
+        submit() {
+            if (this.$v.$invalid) {
+                this.$v.$touch();
+                return;
+            }
+
+            this.isConfirmModalVisible = false;
             this.isFormSending = true;
             this.serverError = '';
+            this.transactionList = [];
 
             return this.waitEnoughEth()
                 .then(() => this.depositFromEthereum())
@@ -477,6 +490,7 @@ export default {
                 .then((minterTx) => {
                     console.log('minterTx');
                     console.log(minterTx);
+                    this.transactionList.unshift(Object.freeze({...minterTx}));
 
                     if (!minterTx.data.list) {
                         throw new Error('Minter tx transfer has invalid data');
@@ -498,7 +512,10 @@ export default {
                     this.form.coinToGet = '';
                     this.form.amountToGet = '';
 
-                    this.finishSending();
+                    this.loadingStage = LOADING_STAGE.FINISH;
+
+                    // don't close modal, it will be closed by user click on 'Close' button
+                    // this.finishSending();
                 })
                 .catch((error) => {
                     if (error.message !== CANCEL_MESSAGE) {
@@ -509,37 +526,6 @@ export default {
 
                     this.finishSending();
                 });
-
-            // let stage;
-            // return Promise.all([
-            //         this.ensureRequest(this.allowanceRequest, 'Can\'t get allowance'),
-            //         this.ensureRequest(this.balanceRequest, 'Can\'t get balance'),
-            //     ])
-            //     .then(() => {
-            //         stage = this.stage;
-            //
-            //         if (stage === TX_APPROVE) {
-            //             return this.sendApproveTx();
-            //         }
-            //         if (stage === TX_TRANSFER)  {
-            //             return this.sendCoinTx();
-            //         }
-            //     })
-            //     .then((hash) => {
-            //         // Returns transaction hash
-            //         this.transactionList.unshift({
-            //             hash,
-            //             type: stage,
-            //             timestamp: (new Date()).toISOString(),
-            //         });
-            //     })
-            //     .catch((error) => {
-            //         this.serverError = getErrorText(error);
-            //         // Error returned when rejected
-            //         console.error(error);
-            //
-            //         this.isFormSending = false;
-            //     });
         },
         finishSending() {
             this.isFormSending = false;
@@ -612,19 +598,25 @@ export default {
         //
         //     // return this.$refs.ethAccount.sendTransaction(txParams);
         // },
-        async sendEthTx({to, value, data, nonce, gasPrice}) {
-            let test = await this.estimateTxGas({to, value, data});
-            console.log('gas', test, {nonce, to, value});
-            // const gasLimit = await this.estimateTxGas({to, value, data});
-            const gasLimit = 200000;
+        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}) {
+            gasLimit = gasLimit || await this.estimateTxGas({to, value, data});
+            const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
             const txParams = {
                 to,
                 value: value ? web3.utils.toHex(toErcDecimals(value, 18)) : "0x00",
                 data,
                 nonce: nonce || await web3.eth.getTransactionCount(this.ethAddress, "pending"),
-                gasPrice: web3.utils.toHex(web3.utils.toWei((gasPrice || 1).toString(), 'gwei')),
+                gasPrice: web3.utils.toHex(web3.utils.toWei(gasPriceGwei, 'gwei')),
                 gasLimit: web3.utils.toHex(gasLimit),
             };
+            console.log('send', {
+                to,
+                value,
+                data,
+                nonce: txParams.nonce,
+                gasPrice: gasPriceGwei,
+                gasLimit,
+            });
             let tx = new Transaction(txParams, {common: new Common({chain: NETWORK === MAINNET ? 'mainnet' : 'ropsten'})});
             tx = tx.sign(toBuffer(this.$store.getters.privateKey));
             let serializedTx = "0x" + tx.serialize().toString('hex');
@@ -635,9 +627,15 @@ export default {
                     // hist = {time: new Date, hash: txHash, note: "transferToHub", confirmed: false};
                     // hist = {time: new Date, hash: txHash, note: "approve"};
                     // this.transactions.push(hist)
+                    this.transactionList.unshift(Object.freeze({
+                        hash: txHash,
+                        timestamp: (new Date()).toISOString(),
+                    }));
                 })
-                .on('receipt', function(receipt) {
+                .on('receipt', (receipt) => {
                     console.log("receipt:", receipt);
+                    const index = this.transactionList.findIndex((item) => item.hash === receipt.transactionHash);
+                    this.$set(this.transactionList, index, Object.freeze({...this.transactionList[index], ...receipt}));
                 })
                 // .on('confirmation', function (confirmationNumber, receipt) {
                 //     if (confirmationNumber < 2) {
@@ -673,6 +671,10 @@ export default {
                     };
 
                     return postTx(txParams, {privateKey: this.$store.getters.privateKey});
+                })
+                .then((tx) => {
+                    this.transactionList.unshift(Object.freeze({...tx}));
+                    return tx;
                 });
         },
         inputBlur() {
@@ -808,12 +810,12 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
             </div>
 
 
-            <form class="panel__section" @submit.prevent="submit">
+            <form class="panel__section" @submit.prevent="submitConfirm()">
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">ETH</div>
-                            <span class="form-field__label">{{ $td('Send', 'form.buy-send') }}</span>
+                            <span class="form-field__label">Spend</span>
                         </div>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
@@ -821,7 +823,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             :readonly="isFormSending"
                             v-model="form.amountEth"
                             :$value="$v.form.amountEth"
-                            :label="$td('Amount', 'form.hub-amount')"
+                            :label="'Amount to spend'"
                             :max-value="maxAmount"
                         />
                         <span class="form-field__error" v-if="$v.form.amountEth.$dirty && !$v.form.amountEth.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
@@ -852,11 +854,12 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">≈{{ pretty(currentEstimation) }}</div>
                             <div class="form-field__label">Estimated amount to get</div>
+                            <Loader class="form-field__icon form-field__icon--loader" :isLoading="isEstimationWaiting"/>
+                            <div class="form-field__help" v-if="!isEstimationErrorVisible">
+                                {{ $td('Depends on the network state and is subject to change', 'form.buy-amount-get-help') }}
+                            </div>
+                            <span class="form-field__error" v-else>{{ estimationError }}</span>
                         </div>
-                        <div class="form-field__help" v-if="!estimationError">
-                            {{ $td('Depends on the network state and is subject to change', 'form.buy-amount-get-help') }}
-                        </div>
-                        <span class="form-field__error" v-else>{{ estimationError }}</span>
                     </div>
 
                     <div class="u-cell u-cell--xlarge--1-2">
@@ -866,7 +869,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             class="button button--main button--full"
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
                         >
-                            <span class="button__content">Send</span>
+                            <span class="button__content">Buy</span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
@@ -879,13 +882,25 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">≈{{ pretty(uniswapEstimation.price) }} {{ $options.DEPOSIT_SYMBOL }}</div>
+                            <div class="form-field__input is-not-empty">≈{{ pretty(ethTotalFee) }} ETH</div>
+                            <div class="form-field__label">Ethereum fee</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ pretty(ethToSwap) }} ETH</div>
+                            <div class="form-field__label">ETH to swap</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">≈{{ pretty(uniswapEstimation.price) }} {{ coinEthereumName }}</div>
                             <div class="form-field__label">ETH rate</div>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">≈{{ pretty(uniswapEstimation.output) }} {{ $options.DEPOSIT_SYMBOL }}</div>
+                            <div class="form-field__input is-not-empty">≈{{ pretty(uniswapEstimation.output) }} {{ coinEthereumName }}</div>
                             <div class="form-field__label">Uniswap output</div>
                         </div>
                     </div>
@@ -899,7 +914,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">≈{{ pretty(hubFee) }} {{ $options.DEPOSIT_SYMBOL }}</div>
                             <span class="form-field__label">
-                                {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
+                                {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
                                 ({{ prettyRound(hubFeeRate * 100) }}%)
                             </span>
                         </div>
@@ -919,34 +934,60 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                     </div>-->
                 </div>
             </div>
-
-            <!--          <div class="card__content card__content&#45;&#45;gray u-text-center send__qr-card" v-if="linkToBip">-->
-            <!--              <div class="send__qr-wrap u-mb-10">-->
-            <!--                  <QrcodeVue class="send__qr" :value="linkToBip" :size="240" level="L"></QrcodeVue>-->
-            <!--              </div>-->
-            <!--              Scan this QR with your Bip Wallet or-->
-            <!--              <a class="link&#45;&#45;default u-text-break" :href="linkToBip">follow the link</a>-->
-            <!--          </div>-->
         </div>
 
-        <!--        <div class="panel" v-if="transactionList.length">
-            <div class="panel__header panel__header-title">Latest transactions</div>
-            <TxListItem
-                class="panel__section"
-                v-for="tx in transactionList"
-                :key="tx.hash"
-                :hash="tx.hash"
-                :coin-list="hubCoinList"
-            />
-        </div>-->
-
-        <!-- Loading modal -->
-        <Modal v-bind:isOpen.sync="isFormSending" :hide-close-button="true">
-            <div class="panel">
+        <!-- Confirm modal -->
+        <Modal v-bind:isOpen.sync="isConfirmModalVisible">
+            <div class="panel u-text-left">
                 <div class="panel__header">
                     <slot name="confirm-modal-header">
                         <h1 class="panel__header-title">
-                            <Loader class="panel__header-loader" :is-loading="true"/>
+                            Buy {{ form.coinToGet }}
+                        </h1>
+                    </slot>
+                </div>
+                <div class="panel__section">
+                    <div class="form-row">
+                        <div class="form-field form-field--dashed">
+                            <BaseAmount class="form-field__input is-not-empty" coin="ETH" :amount="form.amountEth"/>
+                            <div class="form-field__label">You will spend</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field form-field--dashed">
+                            <BaseAmount class="form-field__input is-not-empty" :coin="form.coinToGet" :amount="currentEstimation" prefix="≈"/>
+                            <div class="form-field__label">You will get</div>
+                            <Loader class="form-field__icon form-field__icon--loader" :isLoading="isEstimationWaiting"/>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field form-field--dashed">
+                            <BaseAmount class="form-field__input is-not-empty" coin="ETH" :amount="ethTotalFee"/>
+                            <div class="form-field__label">Ethereum fee</div>
+                        </div>
+                        <div class="u-mt-10 u-fw-700" v-if="ethFeeImpact > 10"><span class="u-emoji">⚠️</span> High Ethereum fee, it consumes {{ prettyRound(ethFeeImpact) }}% of your ETH</div>
+                    </div>
+                </div>
+                <div class="panel__section">
+                    <button class="button button--main button--full" type="button" data-focus-on-open
+                            @click="submit()"
+                    >
+                        {{ $td('Confirm', 'form.submit-confirm-button') }}
+                    </button>
+                    <button class="button button--ghost-main button--full" type="button" @click="isConfirmModalVisible = false">
+                        {{ $td('Cancel', 'form.submit-cancel-button') }}
+                    </button>
+                </div>
+            </div>
+        </Modal>
+
+        <!-- Loading modal -->
+        <Modal v-bind:isOpen.sync="isFormSending" :hide-close-button="true">
+            <div class="panel u-text-left">
+                <div class="panel__header">
+                    <slot name="confirm-modal-header">
+                        <h1 class="panel__header-title">
+                            <Loader class="panel__header-loader" :is-loading="true" v-if="loadingStage !== $options.LOADING_STAGE.FINISH"/>
                             <template v-if="loadingStage === $options.LOADING_STAGE.WAIT_ETH">
                                 Waiting ETH deposit
                             </template>
@@ -962,12 +1003,15 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             <template v-if="loadingStage === $options.LOADING_STAGE.SWAP_MINTER">
                                 Swapping {{ $options.DEPOSIT_SYMBOL }} for {{ form.coinToGet }}
                             </template>
+                            <template v-if="loadingStage === $options.LOADING_STAGE.FINISH">
+                                {{ $td('Success!', 'form.success-title') }}
+                            </template>
                         </h1>
                     </slot>
                 </div>
                 <template v-if="loadingStage === $options.LOADING_STAGE.WAIT_ETH">
                     <div class="panel__section">
-                        <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
+                        <div class="u-grid u-grid--small u-grid--vertical-margin">
                             <div class="u-cell">
                                 <div class="form-field form-field--dashed form-field--with-icon">
                                     <div class="form-field__input is-not-empty">{{ prettyExact(ethToTopUp) }} ETH</div>
@@ -984,8 +1028,8 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             </div>
                         </div>
                     </div>
-<!--                    <div class="panel__section" v-if="ethBalance > 0">
-                        <div class="u-grid u-grid&#45;&#45;small u-grid&#45;&#45;vertical-margin u-text-left">
+                    <!--                    <div class="panel__section" v-if="ethBalance > 0">
+                        <div class="u-grid u-grid&#45;&#45;small u-grid&#45;&#45;vertical-margin">
                             <div class="u-cell">
                                 <div class="form-field form-field&#45;&#45;dashed">
                                     <div class="form-field__input is-not-empty">{{ prettyExact(ethBalance) }} ETH</div>
@@ -1006,6 +1050,17 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         </button>
                     </div>
                 </template>
+                <div class="panel__section" v-else>
+                    <p v-for="tx in transactionList" :key="tx.hash">
+                        <a v-if="tx.hash.indexOf('0x') === 0" :href="getEtherscanTxUrl(tx.hash)" class="link--default" target="_blank">{{ shortHashFilter(tx.hash) }}</a>
+                        <a v-if="tx.hash.indexOf('Mt') === 0" :href="getExplorerTxUrl(tx.hash)" class="link--default" target="_blank">{{ shortHashFilter(tx.hash) }}</a>
+                    </p>
+                </div>
+                <div class="panel__section" v-if="loadingStage === $options.LOADING_STAGE.FINISH">
+                    <button class="button button--ghost-main button--full" type="button" @click="finishSending">
+                        {{ $td('Close', 'form.success-close-button') }}
+                    </button>
+                </div>
             </div>
         </Modal>
     </div>

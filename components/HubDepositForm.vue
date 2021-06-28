@@ -655,7 +655,7 @@ function getLatestTransactions(address) {
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
-                                {{ $td('HUB fee', 'form.hub-withdraw-hub-fee') }}
+                                {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
                                 ({{ prettyRound(hubFeeRate * 100) }}%)
                             </span>
                         </div>
