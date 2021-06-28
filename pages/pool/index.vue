@@ -38,8 +38,8 @@
     <section class="u-section u-container">
         <PoolList/>
 
-        <PoolCreateForm/>
         <PoolAddLiquidityForm/>
         <PoolRemoveLiquidityForm/>
+        <PoolCreateForm/>
     </section>
 </template>

@@ -77,6 +77,9 @@
             isMaxValueDefined() {
                 return typeof this.maxValueComputed !== 'undefined' && this.maxValueComputed > 0;
             },
+            isMaxValueRounded() {
+                return this.isMaxValueDefined && !(new Big(this.maxValueComputed).eq(pretty(this.maxValueComputed).replace(/\s/g, '')));
+            },
         },
         watch: {
             value(newVal) {
@@ -141,7 +144,9 @@
             @blur="$value.$touch(); $emit('blur', $event)"
         />
         <button class="form-field__use-max link--main link--opacity u-semantic-button" type="button" @click="useMax" v-if="isMaxValueDefined">Use max</button>
-        <span class="form-field__max-available" v-if="isMaxValueDefined && !isUseMax">≈{{ pretty(maxValueComputed) }}</span>
+        <span class="form-field__max-available" v-if="isMaxValueDefined && !isUseMax">
+            {{ isMaxValueRounded ? '≈' : '' }}{{ pretty(maxValueComputed) }}
+        </span>
         <span class="form-field__label">{{ label }}</span>
     </label>
 </template>
