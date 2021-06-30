@@ -10,6 +10,7 @@ import IUniswapV2Router from '@uniswap/v2-periphery/build/IUniswapV2Router02.jso
 import {CloudflareProvider, JsonRpcProvider} from '@ethersproject/providers';
 import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+import {convertFromPip} from 'minterjs-util/src/converter.js';
 import * as web3 from '@/api/web3.js';
 import {fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hub.js';
@@ -20,7 +21,7 @@ import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEt
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import debounce from '~/assets/lodash5-debounce.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, HUB_MINTER_MULTISIG_ADDRESS, SWAP_TYPE, SLIPPAGE_INPUT_TYPE} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import BaseAmount from '@/components/common/BaseAmount.vue';
@@ -29,6 +30,7 @@ import Modal from '@/components/common/Modal.vue';
 import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
+import HubBuyTxListItem from '@/components/HubBuyTxListItem.vue';
 
 
 const uniswapV2Abi = IUniswapV2Router.abi;
@@ -36,16 +38,6 @@ const uniswapV2Abi = IUniswapV2Router.abi;
 const PROMISE_FINISHED = 'finished';
 const PROMISE_REJECTED = 'rejected';
 const PROMISE_PENDING = 'pending';
-
-const LOADING_STAGE = {
-    WAIT_ETH: 'wait_eth',
-    SWAP_ETH: 'swap_eth',
-    APPROVE_BRIDGE: 'approve_bridge',
-    SEND_BRIDGE: 'send_bridge',
-    WAIT_BRIDGE: 'wait_bridge',
-    SWAP_MINTER: 'swap_minter',
-    FINISH: 'finish',
-};
 
 const TX_WRAP = 'wrap';
 const TX_APPROVE = 'approve';
@@ -89,6 +81,7 @@ export default {
         ButtonCopyIcon,
         FieldUseMax,
         FieldCoin,
+        HubBuyTxListItem,
     },
     directives: {
         autosize,
@@ -133,6 +126,7 @@ export default {
             hubCoinList: [],
             priceList: [],
             transactionList: [],
+            steps: {},
             loadingStage: '',
             isFormSending: false,
             serverError: '',
@@ -289,6 +283,17 @@ export default {
         },
         isEstimationErrorVisible() {
             return this.estimationError && !this.isEstimationWaiting;
+        },
+        stepsOrdered() {
+            const stages = Object.values(LOADING_STAGE).reverse();
+            let result = [];
+            stages.forEach((stageName) => {
+                if (this.steps[stageName]) {
+                    result.push({step: this.steps[stageName], loadingStage: stageName});
+                }
+            });
+
+            return result;
         },
     },
     watch: {
@@ -493,9 +498,17 @@ export default {
                     }
 
                     const outputAmount = multisendItem.value;
+                    this.addStepData(LOADING_STAGE.WAIT_BRIDGE, {amount: outputAmount, tx: minterTx, finished: true});
 
                     this.loadingStage = LOADING_STAGE.SWAP_MINTER;
-                    return this.sendMinterSwapTx(outputAmount);
+                    this.addStepData(LOADING_STAGE.SWAP_MINTER, {coin0: DEPOSIT_SYMBOL, amount0: outputAmount, coin1: this.form.coinToGet});
+                    return this.sendMinterSwapTx(outputAmount)
+                        .then((tx) => {
+                            this.addStepData(LOADING_STAGE.SWAP_MINTER, {tx, amount1: convertFromPip(tx.tags['tx.return']), finished: true});
+
+                            this.loadingStage = LOADING_STAGE.FINISH;
+                            this.addStepData(LOADING_STAGE.FINISH, {coin: this.form.coinToGet, amount: convertFromPip(tx.tags['tx.return']), finished: true});
+                        });
                 })
                 .then(() => {
                     this.$v.$reset();
@@ -503,8 +516,6 @@ export default {
                     this.form.amountEth = '';
                     this.form.coinToGet = '';
                     this.form.amountToGet = '';
-
-                    this.loadingStage = LOADING_STAGE.FINISH;
 
                     // don't close modal, it will be closed by user click on 'Close' button
                     // this.finishSending();
@@ -529,10 +540,12 @@ export default {
         },
         async depositFromEthereum() {
             this.loadingStage = LOADING_STAGE.SWAP_ETH;
+            this.addStepData(LOADING_STAGE.SWAP_ETH, {coin0: 'ETH', amount0: this.ethToSwap, coin1: this.coinEthereumName});
             let nonce = await web3.eth.getTransactionCount(this.ethAddress, "pending");
 
             const swapPromise = this.sendUniswapTx({nonce, gasPrice: this.ethGasPriceGwei});
             if (!this.isCoinApproved) {
+                this.addStepData(LOADING_STAGE.APPROVE_BRIDGE, {coin: this.coinEthereumName});
                 nonce = nonce + 1;
                 this.sendApproveTx({nonce, gasPrice: this.ethGasPriceGwei + 1});
             }
@@ -545,12 +558,17 @@ export default {
                     const amountHex = receipt.logs[logIndex].data.slice(startIndex, startIndex + 64);
                     return web3.eth.abi.decodeParameter('uint256', '0x' + amountHex);
                 });
+            const outputAmountHumanReadable = fromErcDecimals(outputAmount, this.coinDecimals);
+            this.addStepData(LOADING_STAGE.SWAP_ETH, {amount1: outputAmountHumanReadable});
+
             // console.log(outputAmount);
 
             this.loadingStage = LOADING_STAGE.SEND_BRIDGE;
+            this.addStepData(LOADING_STAGE.SEND_BRIDGE, {coin: this.coinEthereumName, amount: outputAmountHumanReadable});
             const depositReceipt = await this.sendCoinTx({amount: outputAmount, nonce: nonce + 1});
 
             this.loadingStage = LOADING_STAGE.WAIT_BRIDGE;
+            this.addStepData(LOADING_STAGE.WAIT_BRIDGE, {coin: DEPOSIT_SYMBOL /* calculate receive amount? */});
             return subscribeTransfer(depositReceipt.transactionHash);
         },
         sendUniswapTx({nonce, gasPrice} = {}) {
@@ -562,22 +580,22 @@ export default {
             const deadline = Math.floor(Date.now() / 1000) + 60 * 30; // 30min
             const data = poolContract.methods.swapExactETHForTokens(amountOutMin, [wethToken.address, this.coinContractAddress], this.ethAddress, deadline).encodeABI();
 
-            return this.sendEthTx({to: routerAddress, data, value: this.ethToSwap, nonce, gasPrice, gasLimit: GAS_LIMIT_SWAP});
+            return this.sendEthTx({to: routerAddress, data, value: this.ethToSwap, nonce, gasPrice, gasLimit: GAS_LIMIT_SWAP}, LOADING_STAGE.SWAP_ETH);
         },
         sendApproveTx({nonce, gasPrice} = {}) {
             let amountToUnlock = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
             let data = coinContract(this.coinContractAddress).methods.approve(hubBridgeAddress, amountToUnlock).encodeABI();
 
-            return this.sendEthTx({to: this.coinContractAddress, data, nonce, gasPrice, gasLimit: GAS_LIMIT_UNLOCK});
+            return this.sendEthTx({to: this.coinContractAddress, data, nonce, gasPrice, gasLimit: GAS_LIMIT_UNLOCK}, LOADING_STAGE.APPROVE_BRIDGE);
         },
         sendCoinTx({amount, nonce}) {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.$store.getters.address.replace("Mx", "0x")))]);
             let data = hubBridgeContract.methods.sendToMinter(this.coinContractAddress, address, amount).encodeABI();
 
-            return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE});
+            return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE}, LOADING_STAGE.SEND_BRIDGE);
         },
-        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}) {
+        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}, loadingStage) {
             nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
             gasLimit = gasLimit || await this.estimateTxGas({to, value, data});
             const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
@@ -596,18 +614,23 @@ export default {
             return web3.eth.sendSignedTransaction(rawTransaction)
                 .on('transactionHash', (txHash) => {
                     console.log(txHash);
-                    // hist = {time: new Date, hash: txHash, note: "transferToHub", confirmed: false};
-                    // hist = {time: new Date, hash: txHash, note: "approve"};
-                    // this.transactions.push(hist)
-                    this.transactionList.unshift(Object.freeze({
+                    const tx = Object.freeze({
                         hash: txHash,
                         timestamp: (new Date()).toISOString(),
-                    }));
+                    });
+                    this.transactionList.unshift(tx);
+                    if (loadingStage) {
+                        this.addStepData(loadingStage, {tx});
+                    }
                 })
                 .on('receipt', (receipt) => {
                     console.log("receipt:", receipt);
                     const index = this.transactionList.findIndex((item) => item.hash === receipt.transactionHash);
-                    this.$set(this.transactionList, index, Object.freeze({...this.transactionList[index], ...receipt}));
+                    const tx = Object.freeze({...this.transactionList[index], ...receipt});
+                    this.$set(this.transactionList, index, tx);
+                    if (loadingStage) {
+                        this.addStepData(loadingStage, {tx, finished: true});
+                    }
                 })
                 // .on('confirmation', function (confirmationNumber, receipt) {
                 //     if (confirmationNumber < 2) {
@@ -645,7 +668,8 @@ export default {
                     return postTx(txParams, {privateKey: this.$store.getters.privateKey});
                 })
                 .then((tx) => {
-                    this.transactionList.unshift(Object.freeze({...tx}));
+                    tx = Object.freeze({...tx, timestamp: (new Date()).toISOString()});
+                    this.transactionList.unshift(tx);
                     return tx;
                 });
         },
@@ -705,6 +729,9 @@ export default {
             // force new estimation without delay
             this.debouncedGetEstimation();
             return this.debouncedGetEstimation.flush();
+        },
+        addStepData(loadingStage, data) {
+            this.$set(this.steps, loadingStage, {...this.steps[loadingStage], ...data});
         },
     },
 };
@@ -918,25 +945,14 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                 <div class="panel__header">
                     <slot name="confirm-modal-header">
                         <h1 class="panel__header-title">
-                            <Loader class="panel__header-loader" :is-loading="true" v-if="loadingStage !== $options.LOADING_STAGE.FINISH"/>
                             <template v-if="loadingStage === $options.LOADING_STAGE.WAIT_ETH">
+                                <Loader class="panel__header-loader" :is-loading="true"/>
                                 Waiting ETH deposit
                             </template>
-                            <template v-if="loadingStage === $options.LOADING_STAGE.SWAP_ETH">
-                                Swapping ETH for {{ $options.DEPOSIT_SYMBOL }}
-                            </template>
-                            <template v-if="loadingStage === $options.LOADING_STAGE.SEND_BRIDGE">
-                                Sending {{ $options.DEPOSIT_SYMBOL }} to bridge
-                            </template>
-                            <template v-if="loadingStage === $options.LOADING_STAGE.WAIT_BRIDGE">
-                                Waiting {{ $options.DEPOSIT_SYMBOL }} from bridge
-                            </template>
-                            <template v-if="loadingStage === $options.LOADING_STAGE.SWAP_MINTER">
-                                Swapping {{ $options.DEPOSIT_SYMBOL }} for {{ form.coinToGet }}
-                            </template>
-                            <template v-if="loadingStage === $options.LOADING_STAGE.FINISH">
+                            <template v-else-if="loadingStage === $options.LOADING_STAGE.FINISH">
                                 {{ $td('Success!', 'form.success-title') }}
                             </template>
+                            <template v-else>Buy {{ form.coinToGet }}</template>
                         </h1>
                     </slot>
                 </div>
@@ -982,10 +998,16 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                     </div>
                 </template>
                 <div class="panel__section" v-else>
-                    <p v-for="tx in transactionList" :key="tx.hash">
-                        <a v-if="tx.hash.indexOf('0x') === 0" :href="getEtherscanTxUrl(tx.hash)" class="link--default" target="_blank">{{ shortHashFilter(tx.hash) }}</a>
-                        <a v-if="tx.hash.indexOf('Mt') === 0" :href="getExplorerTxUrl(tx.hash)" class="link--default" target="_blank">{{ shortHashFilter(tx.hash) }}</a>
+                    <p class="u-mb-10 u-fw-500" v-if="loadingStage !== $options.LOADING_STAGE.FINISH">
+                        <span class="u-emoji">⚠️</span> Please keep this page active, otherwise progress will&nbsp;be&nbsp;lost.
                     </p>
+                    <HubBuyTxListItem
+                        class="hub__buy-stage"
+                        v-for="item in stepsOrdered"
+                        :key="item.loadingStage"
+                        :step="item.step"
+                        :loadingStage="item.loadingStage"
+                    />
                 </div>
                 <div class="panel__section" v-if="loadingStage === $options.LOADING_STAGE.FINISH">
                     <button class="button button--ghost-main button--full" type="button" @click="finishSending">

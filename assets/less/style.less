@@ -378,6 +378,16 @@ td, th {
     .hub__preview-transaction-row {display: flex;justify-content: space-between;}
 }
 
+.hub__buy-stage {
+    &+& {margin-top: 12px;}
+}
+.hub__buy-transaction-row {/*font-size: 14px;*/font-weight: 500;line-height: 20px;}
+.hub__buy-time {margin-left: 8px;}
+.hub__buy-loader {width: 22px; height: 22px; display: inline-block; vertical-align: middle; margin-top: -4px; margin-left: 5px;}
+@media (min-width: @breakpoint-medium-up) {
+    .hub__buy-transaction-row {display: flex;}
+}
+
 .pool-pair {display: flex; align-items: center;}
 .pool-pair__figure {margin-right: 8px; margin-top: -4px; margin-bottom: -4px; display: flex;}
 .pool-pair__figure--farming {margin-top: 0; margin-bottom: 0;}
