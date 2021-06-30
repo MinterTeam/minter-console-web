@@ -71,6 +71,15 @@ export function getTimeStamp(timestamp) {
     return format(parseTime(timestamp), 'dd MMM yyyy HH:mm:ss');
 }
 
+export function getTime(timestamp) {
+    timestamp = parseTime(timestamp);
+    if (!timestamp) {
+        return false;
+    }
+
+    return format(parseTime(timestamp), 'HH:mm:ss');
+}
+
 export function getTimeZone(timestamp) {
     timestamp = parseTime(timestamp);
     if (!timestamp) {
@@ -226,7 +235,6 @@ export function decreasePrecisionFixed(value) {
 }
 
 /**
- * //@TODO clean shortFilter
  * @param {string} value
  * @param {number} [endLength]
  * @param {number} [minLengthToShort]
@@ -240,6 +248,12 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
 
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
+
+/**
+ * @deprecated
+ * @type {function(string, number=, number=): string}
+ */
+export const shortFilter = shortHashFilter;
 
 /**
  * @param {number} value
@@ -309,15 +323,6 @@ function boldenSuggestion(text, query) {
     }
     const queries = query.split(/[\s-_/\\|.]/gm).filter((t) => !!t) || [''];
     return text.replace(new RegExp('(.*?)(' + queries.join('|') + ')(.*?)', 'gi'), '$1<b>$2</b>$3');
-}
-
-export function shortFilter(value, endLength = 6, minLengthToShort) {
-    const startLength = endLength + 'Mx'.length - 1;
-    minLengthToShort = minLengthToShort || startLength + endLength;
-    value = value.toString();
-    const isLong = value.length > minLengthToShort;
-
-    return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
 
 export function isHubTransferFinished(status) {

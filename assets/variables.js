@@ -71,3 +71,17 @@ export const HUB_TRANSFER_STATUS = {
     batch_executed: "TX_STATUS_BATCH_EXECUTED",
     refund: "TX_STATUS_REFUNDED",
 };
+
+/**
+ * Order matters
+ * @enum
+ */
+export const HUB_BUY_STAGE = {
+    WAIT_ETH: 'wait_eth',
+    SWAP_ETH: 'swap_eth',
+    APPROVE_BRIDGE: 'approve_bridge',
+    SEND_BRIDGE: 'send_bridge',
+    WAIT_BRIDGE: 'wait_bridge',
+    SWAP_MINTER: 'swap_minter',
+    FINISH: 'finish',
+};
