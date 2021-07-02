@@ -56,6 +56,9 @@ export default {
                 <template v-if="loadingStage === $options.LOADING_STAGE.SWAP_ETH">
                     Swap {{ pretty(step.amount0) }} {{ step.coin0 }} for {{ step.coin1 }}
                 </template>
+                <template v-if="loadingStage === $options.LOADING_STAGE.APPROVE_BRIDGE">
+                    Approve {{ step.coin }}
+                </template>
                 <template v-if="loadingStage === $options.LOADING_STAGE.SEND_BRIDGE">
                     Send {{ pretty(step.amount) }} {{ step.coin }} to bridge
                 </template>

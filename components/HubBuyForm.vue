@@ -12,7 +12,7 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import * as web3 from '@/api/web3.js';
-import {fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {fromErcDecimals, subscribeTransaction, toErcDecimals} from '@/api/web3.js';
 import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hub.js';
 import {getTransaction} from '@/api/explorer.js';
 import {estimateCoinSell, postTx} from '@/api/gate.js';
@@ -89,11 +89,6 @@ export default {
     },
     mixins: [validationMixin],
     fetch() {
-        // getLatestTransactions(this.ethAddress)
-        //     .then((txList) => {
-        //         this.transactionList = txList;
-        //     });
-
         return Promise.all([getOracleCoinList(), getOraclePriceList()])
             .then(([coinList, priceList]) => {
                 this.hubCoinList = coinList;
@@ -125,12 +120,12 @@ export default {
             /** @type Array<HubCoinItem> */
             hubCoinList: [],
             priceList: [],
-            transactionList: [],
             steps: {},
             loadingStage: '',
             isFormSending: false,
             serverError: '',
             isConfirmModalVisible: false,
+            recovery: null,
 
             // just `estimation` refers to minter swap estimation
             estimation: null,
@@ -311,6 +306,18 @@ export default {
     mounted() {
         this.debouncedGetEstimation = debounce(this.getEstimation, 1000);
 
+        const recoveryJson = window.localStorage.getItem('hub-buy-recovery');
+        if (recoveryJson) {
+            try {
+                const recovery = JSON.parse(recoveryJson);
+                if (recovery?.address === this.$store.getters.address) {
+                    this.recovery = recovery;
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         timer = setInterval(() => {
             if (this.isFormSending) {
                 return;
@@ -417,6 +424,16 @@ export default {
                     this.uniswapPair = pair;
                 });
         },
+        recoverPurchase() {
+            this.form = this.recovery.form;
+            this.steps = this.recovery.steps;
+            this.recovery = null;
+
+            //@TODO consider saving old gasPrice to recovery and use it later
+            //@TODO check if current gasPrice differ from recovery gasPrice
+            //@TODO txs may be forked
+            this.submit({fromRecovery: true});
+        },
         waitEnoughEth() {
             // save request if balance already enough
             if (this.ethBalance >= this.form.amountEth) {
@@ -464,7 +481,7 @@ export default {
                 this.isConfirmModalVisible = true;
             }
         },
-        submit() {
+        submit({fromRecovery} = {}) {
             if (this.$v.$invalid) {
                 this.$v.$touch();
                 return;
@@ -473,9 +490,14 @@ export default {
             this.isConfirmModalVisible = false;
             this.isFormSending = true;
             this.serverError = '';
-            this.transactionList = [];
+            if (!fromRecovery) {
+                this.steps = {};
+            }
 
-            return this.waitEnoughEth()
+            // don't wait eth if next steps already exists
+            const waitEnoughEthPromise = fromRecovery ? Promise.resolve() : this.waitEnoughEth();
+
+            return waitEnoughEthPromise
                 .then(() => this.depositFromEthereum())
                 .then((transfer) => {
                     if (transfer.status !== HUB_TRANSFER_STATUS.batch_executed) {
@@ -487,7 +509,6 @@ export default {
                 .then((minterTx) => {
                     console.log('minterTx');
                     console.log(minterTx);
-                    this.transactionList.unshift(Object.freeze({...minterTx}));
 
                     if (!minterTx.data.list) {
                         throw new Error('Minter tx transfer has invalid data');
@@ -527,13 +548,18 @@ export default {
                         console.error(error);
                     }
 
-                    this.finishSending();
+                    // keep recovery, because page reload and network errors will lead to `finishSending()` call
+                    this.finishSending({keepRecovery: true});
                 });
         },
-        finishSending() {
+        finishSending({keepRecovery} = {}) {
             this.isFormSending = false;
             if (typeof waitingCancel === 'function') {
                 waitingCancel();
+            }
+            this.steps = {};
+            if (!keepRecovery) {
+                window.localStorage.removeItem('hub-buy-recovery');
             }
             // reload everything, because polling was stopped during isFormSending
             this.$fetch();
@@ -544,12 +570,14 @@ export default {
             let nonce = await web3.eth.getTransactionCount(this.ethAddress, "pending");
 
             const swapPromise = this.sendUniswapTx({nonce, gasPrice: this.ethGasPriceGwei});
-            if (!this.isCoinApproved) {
+            // if `approve` step exists, then process sendApproveTx to ensure it finished
+            if (!this.isCoinApproved || this.steps[LOADING_STAGE.APPROVE_BRIDGE]) {
                 this.addStepData(LOADING_STAGE.APPROVE_BRIDGE, {coin: this.coinEthereumName});
                 nonce = nonce + 1;
                 this.sendApproveTx({nonce, gasPrice: this.ethGasPriceGwei + 1});
             }
 
+            const swapReceipt = await swapPromise;
             const outputAmount = await swapPromise
                 .then((receipt) => {
                     const logIndex = 5 - 1;
@@ -565,7 +593,8 @@ export default {
 
             this.loadingStage = LOADING_STAGE.SEND_BRIDGE;
             this.addStepData(LOADING_STAGE.SEND_BRIDGE, {coin: this.coinEthereumName, amount: outputAmountHumanReadable});
-            const depositReceipt = await this.sendCoinTx({amount: outputAmount, nonce: nonce + 1});
+            const depositNonce = this.steps[LOADING_STAGE.APPROVE_BRIDGE] ? swapReceipt.nonce + 2 : swapReceipt.nonce + 1;
+            const depositReceipt = await this.sendCoinTx({amount: outputAmount, nonce: depositNonce});
 
             this.loadingStage = LOADING_STAGE.WAIT_BRIDGE;
             this.addStepData(LOADING_STAGE.WAIT_BRIDGE, {coin: DEPOSIT_SYMBOL /* calculate receive amount? */});
@@ -596,6 +625,19 @@ export default {
             return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE}, LOADING_STAGE.SEND_BRIDGE);
         },
         async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}, loadingStage) {
+            // @TODO check recovery earlier
+            const currentStep = this.steps[loadingStage];
+            if (currentStep?.finished) {
+                return currentStep.tx;
+            } else if (currentStep?.tx) {
+                return subscribeTransaction(currentStep.tx.hash, 0)
+                    .then((receipt) => {
+                        const tx = Object.freeze({...this.steps[loadingStage]?.tx, ...receipt});
+                        this.addStepData(loadingStage, {tx, finished: true});
+                        return tx;
+                    });
+            }
+
             nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
             gasLimit = gasLimit || await this.estimateTxGas({to, value, data});
             const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
@@ -618,19 +660,12 @@ export default {
                         hash: txHash,
                         timestamp: (new Date()).toISOString(),
                     });
-                    this.transactionList.unshift(tx);
-                    if (loadingStage) {
-                        this.addStepData(loadingStage, {tx});
-                    }
+                    this.addStepData(loadingStage, {tx});
                 })
                 .on('receipt', (receipt) => {
                     console.log("receipt:", receipt);
-                    const index = this.transactionList.findIndex((item) => item.hash === receipt.transactionHash);
-                    const tx = Object.freeze({...this.transactionList[index], ...receipt});
-                    this.$set(this.transactionList, index, tx);
-                    if (loadingStage) {
-                        this.addStepData(loadingStage, {tx, finished: true});
-                    }
+                    const tx = Object.freeze({...this.steps[loadingStage]?.tx, ...receipt});
+                    this.addStepData(loadingStage, {tx, finished: true});
                 })
                 // .on('confirmation', function (confirmationNumber, receipt) {
                 //     if (confirmationNumber < 2) {
@@ -654,8 +689,12 @@ export default {
         sendMinterSwapTx(amount) {
             return this.forceEstimation()
                 .then(() => {
+                    const coinBalanceItem = this.$store.getters.balance.find((item) => item.coin.symbol === DEPOSIT_SYMBOL);
+                    const balanceAmount = coinBalanceItem?.amount || 0;
+
                     let txParams = {
-                        type: TX_TYPE.SELL_SWAP_POOL,
+                        // sell all usdt if user has no or very small amount of it
+                        type: balanceAmount - amount < 0.1 ? TX_TYPE.SELL_ALL_SWAP_POOL : TX_TYPE.SELL_SWAP_POOL,
                         data: {
                             coins: this.estimationRoute
                                 ? this.estimationRoute.map((coin) => coin.id)
@@ -663,13 +702,13 @@ export default {
                             valueToSell: amount,
                             minimumValueToBuy: 0,
                         },
+                        gasCoin: DEPOSIT_SYMBOL,
                     };
 
                     return postTx(txParams, {privateKey: this.$store.getters.privateKey});
                 })
                 .then((tx) => {
                     tx = Object.freeze({...tx, timestamp: (new Date()).toISOString()});
-                    this.transactionList.unshift(tx);
                     return tx;
                 });
         },
@@ -732,6 +771,17 @@ export default {
         },
         addStepData(loadingStage, data) {
             this.$set(this.steps, loadingStage, {...this.steps[loadingStage], ...data});
+            const needSaveRecovery = loadingStage !== LOADING_STAGE.SWAP_MINTER && loadingStage !== LOADING_STAGE.FINISH;
+            console.log({loadingStage, needSaveRecovery, data});
+            if (needSaveRecovery) {
+                window.localStorage.setItem('hub-buy-recovery', JSON.stringify({
+                    steps: this.steps,
+                    form: this.form,
+                    address: this.$store.getters.address,
+                }));
+            } else {
+                window.localStorage.removeItem('hub-buy-recovery');
+            }
         },
     },
 };
@@ -767,6 +817,17 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                 </p>
             </div>
 
+            <div class="panel__section" v-if="recovery">
+                <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                    <div class="u-cell">You have unfinished purchase, do you want to continue?</div>
+                    <div class="u-cell u-cell--medium--1-4">
+                        <button class="button button--main button--full" type="button" @click="recoverPurchase()">Continue</button>
+                    </div>
+                    <div class="u-cell u-cell--medium--1-4">
+                        <button class="button button--ghost button--full" type="button" @click="recovery = null">Cancel</button>
+                    </div>
+                </div>
+            </div>
 
             <form class="panel__section" @submit.prevent="submitConfirm()">
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
@@ -998,9 +1059,6 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                     </div>
                 </template>
                 <div class="panel__section" v-else>
-                    <p class="u-mb-10 u-fw-500" v-if="loadingStage !== $options.LOADING_STAGE.FINISH">
-                        <span class="u-emoji">⚠️</span> Please keep this page active, otherwise progress will&nbsp;be&nbsp;lost.
-                    </p>
                     <HubBuyTxListItem
                         class="hub__buy-stage"
                         v-for="item in stepsOrdered"
@@ -1008,6 +1066,9 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         :step="item.step"
                         :loadingStage="item.loadingStage"
                     />
+                </div>
+                <div class="panel__section panel__section--tint u-fw-500" v-if="loadingStage !== $options.LOADING_STAGE.WAIT_ETH && loadingStage !== $options.LOADING_STAGE.FINISH && loadingStage !== $options.LOADING_STAGE.SWAP_MINTER">
+                    <span class="u-emoji">⚠️</span> Please keep this page active, otherwise progress will&nbsp;be&nbsp;lost.
                 </div>
                 <div class="panel__section" v-if="loadingStage === $options.LOADING_STAGE.FINISH">
                     <button class="button button--ghost-main button--full" type="button" @click="finishSending">
