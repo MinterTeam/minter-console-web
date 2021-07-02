@@ -106,7 +106,7 @@
                         <menu class="menu no-list u-grid u-grid--vertical-margin--small">
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('wallet')" @click.native="linkClick">
-                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-transfer.svg`" alt="" role="presentation">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-wallet.svg`" alt="" role="presentation">
                                     {{ $td('Wallet', 'common.page-wallet') }}
                                 </nuxt-link>
                             </li>
@@ -123,6 +123,18 @@
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('buy')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-transfer.svg`" alt="" role="presentation">
+                                    {{ $td('Buy BIP & HUB', 'common.page-buy') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('pool')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation">
+                                    {{ $td('Pools', 'common.page-pool') }}
+                                </nuxt-link>
+                            </li>
+                            <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
                                     {{ $td('Checks', 'common.page-checks') }}
@@ -132,12 +144,6 @@
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('coiner')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
                                     {{ $td('Coiner', 'common.page-coiner') }}
-                                </nuxt-link>
-                            </li>
-                            <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('pool')" @click.native="linkClick">
-                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pool.svg`" alt="" role="presentation">
-                                    {{ $td('Pools', 'common.page-pool') }}
                                 </nuxt-link>
                             </li>
                             <li class="menu__item u-cell">

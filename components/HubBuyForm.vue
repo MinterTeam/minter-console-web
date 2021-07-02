@@ -114,7 +114,7 @@ export default {
             allowanceRequest: null,
             form: {
                 amountEth: '',
-                coinToGet: '',
+                coinToGet: this.$route.query.coin || '',
                 amountToGet: '',
             },
             /** @type Array<HubCoinItem> */
@@ -792,6 +792,10 @@ export default {
                 window.localStorage.removeItem('hub-buy-recovery');
             }
         },
+        cancelRecovery() {
+            this.recovery = null;
+            window.localStorage.removeItem('hub-buy-recovery');
+        },
     },
 };
 
@@ -833,7 +837,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         <button class="button button--main button--full" type="button" @click="recoverPurchase()">Continue</button>
                     </div>
                     <div class="u-cell u-cell--medium--1-4">
-                        <button class="button button--ghost button--full" type="button" @click="recovery = null">Cancel</button>
+                        <button class="button button--ghost button--full" type="button" @click="cancelRecovery()">Cancel</button>
                     </div>
                 </div>
             </div>

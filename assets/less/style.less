@@ -328,20 +328,27 @@ td, th {
 }
 .wallet__address-icon {margin-right: 24px; flex-shrink: 0; margin-top: 4px;}
 .wallet__address-content {overflow: hidden;}
-.wallet__balance {flex-grow: 2;}
+.wallet__balance {width: max-content;}
+.wallet__balance-caption {display: flex; justify-content: space-between;}
 .wallet__coin-icon {margin-right: 10px; margin-top: -6px; margin-bottom: -5px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); vertical-align: middle;}
 .wallet__coin-name {font-weight: 700; vertical-align: middle;}
 .wallet__coin-verified {vertical-align: middle; margin-left: 4px;}
 .wallet__time {margin-top: 4px; line-height: 0;}
 .wallet__time-icon {vertical-align: middle; margin-right: 6px;}
-.wallet__time-text {vertical-align: middle; font-size: 12px; min-width: 160px; display: inline-block;}
+.wallet__time-text {vertical-align: middle; font-size: 12px; min-width: 160px; display: inline-block; color: #a4a4a4;}
 
-@media (min-width: @breakpoint-xlarge-up) {
+@media (min-width: @breakpoint-large-up) {
     .wallet__info {display: flex; justify-content: space-between;}
     .wallet__address {
-        flex-grow: 1; margin-right: 24px; margin-bottom: 0;
+        margin-right: 24px; margin-bottom: 0; width: 50%; flex-grow: 2;
         &:only-child {margin-right: 0;}
+
     }
+    .wallet__balance {min-width: 180px; flex-shrink: 0;}
+}
+@media (min-width: @breakpoint-xlarge-up) {
+    .wallet__address {width: 645px; flex-grow: 0;}
+    .wallet__balance {margin-right: auto;}
 }
 
 
