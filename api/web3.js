@@ -39,9 +39,10 @@ export function toErcDecimals(balance, ercDecimals = 18) {
 /**
  *
  * @param {string} hash
+ * @param {number} [confirmationCoin = CONFIRMATION_COUNT]
  * @return {Promise<Object>}
  */
-export function subscribeTransaction(hash) {
+export function subscribeTransaction(hash, confirmationCoin = CONFIRMATION_COUNT) {
     let isUnsubscribed = false;
     const emitter = new Emitter();
 
@@ -64,7 +65,7 @@ export function subscribeTransaction(hash) {
                 throw new Error('Transaction failed');
             }
 
-            if (confirmations >= CONFIRMATION_COUNT) {
+            if (confirmations >= confirmationCoin) {
                 return tx;
             } else {
                 return waitConfirmations(tx);
@@ -139,7 +140,7 @@ export function subscribeTransaction(hash) {
                 };
                 emitter.emit('confirmation', tx);
 
-                if (confirmations >= CONFIRMATION_COUNT) {
+                if (confirmations >= confirmationCoin) {
                     return tx;
                 } else {
                     return waitConfirmations(tx);
