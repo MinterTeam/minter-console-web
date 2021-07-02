@@ -57,8 +57,10 @@ export default {
 
 <template>
     <component :is="tag">
-        <template v-if="prefix">{{ prefix }}</template>
-        <template v-if="coinFirst">{{ coin }}</template> <span class="" :title="exact ? '' : prettyExact(amount)">{{ prettyAmount(amount) }}</span> <template v-if="!coinFirst">{{ coin }}</template>
+        <template v-if="prefix">{{ prefix }}</template><!--
+     --><template v-if="coinFirst">{{ coin }} </template><!--
+     --><span class="" :title="exact ? '' : prettyExact(amount)">{{ prettyAmount(amount) }}</span><!--
+     --><template v-if="!coinFirst"> {{ coin }}</template>
         <span class="u-display-ib" v-if="baseCoinAmount && coin !== $store.getters.BASE_COIN">({{ pretty(baseCoinAmount) }} {{ $store.getters.BASE_COIN }})</span>
         <span class="u-text-muted" v-if="amountUsd">(${{ pretty(amountUsd) }})</span>
         <template v-if="suffix">{{ suffix }}</template>
