@@ -114,7 +114,7 @@ export default {
             allowanceRequest: null,
             form: {
                 amountEth: '',
-                coinToGet: '',
+                coinToGet: this.$route.query.coin || '',
                 amountToGet: '',
             },
             /** @type Array<HubCoinItem> */
@@ -582,10 +582,19 @@ export default {
                 .then((receipt) => {
                     const logIndex = 5 - 1;
                     const dataIndex = 3 - 1;
-                    const startIndex = 2 + 64 * dataIndex;
-                    const amountHex = receipt.logs[logIndex].data.slice(startIndex, startIndex + 64);
-                    return web3.eth.abi.decodeParameter('uint256', '0x' + amountHex);
+                    const amount0StartIndex = 2 + 64 * dataIndex;
+                    const amount1StartIndex = 2 + 64 * (dataIndex + 1);
+                    const amount0OutHex = receipt.logs[logIndex].data.slice(amount0StartIndex, amount0StartIndex + 64);
+                    const amount1OutHex = receipt.logs[logIndex].data.slice(amount1StartIndex, amount1StartIndex + 64);
+                    const amount0Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount0OutHex);
+                    const amount1Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount1OutHex);
+
+                    // received coin maybe 0 or 1, depending on position in uniswap pair
+                    return Math.max(amount0Out, amount1Out);
                 });
+            if (!(outputAmount > 0)) {
+                throw new Error(`Received 0 ${this.coinEthereumName} from uniswap`);
+            }
             const outputAmountHumanReadable = fromErcDecimals(outputAmount, this.coinDecimals);
             this.addStepData(LOADING_STAGE.SWAP_ETH, {amount1: outputAmountHumanReadable});
 
@@ -783,6 +792,10 @@ export default {
                 window.localStorage.removeItem('hub-buy-recovery');
             }
         },
+        cancelRecovery() {
+            this.recovery = null;
+            window.localStorage.removeItem('hub-buy-recovery');
+        },
     },
 };
 
@@ -824,7 +837,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         <button class="button button--main button--full" type="button" @click="recoverPurchase()">Continue</button>
                     </div>
                     <div class="u-cell u-cell--medium--1-4">
-                        <button class="button button--ghost button--full" type="button" @click="recovery = null">Cancel</button>
+                        <button class="button button--ghost button--full" type="button" @click="cancelRecovery()">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -1033,6 +1046,9 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                                     <span class="form-field__label">To the address</span>
                                     <ButtonCopyIcon class="form-field__icon form-field__icon--copy" :copy-text="ethAddress"/>
                                 </div>
+                            </div>
+                            <div class="u-cell u-fw-700" v-if="ethFeeImpact > 10">
+                                <span class="u-emoji">⚠️</span> High Ethereum fee, it consumes {{ prettyRound(ethFeeImpact) }}% of your ETH
                             </div>
                         </div>
                     </div>

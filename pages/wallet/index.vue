@@ -115,7 +115,7 @@
             <div class="wallet__address">
                 <img class="wallet__address-icon u-hidden-small-down" :src="`${BASE_URL_PREFIX}/img/icon-wallet.svg`" width="40" height="40" alt="" role="presentation">
                 <div class="wallet__address-content">
-                    <div>{{ $td('Your address:', 'wallet.address') }}</div>
+                    <div>{{ $td('Wallet address', 'wallet.address') }}</div>
                     <div class="wallet__value u-icon-wrap">
                         <a class="link--default u-icon-text" :href="addressUrl" target="_blank" data-test-id="walletAddressLink">{{ address }}</a>
                         <ButtonCopyIcon class="u-icon--copy--right u-text-white" :copy-text="address"/>
@@ -126,7 +126,10 @@
                 </div>
             </div>
             <div class="wallet__balance" v-if="!$store.getters.isOfflineMode">
-                <div>{{ $td('Your balance:', 'wallet.balance') }}</div>
+                <div class="wallet__balance-caption">
+                    <div>{{ $td('Balance', 'wallet.balance') }}</div>
+                    <nuxt-link class="link--default" :to="$i18nGetPreferredPath({name: 'buy', query: {coin: $store.getters.BASE_COIN}})">{{ $td('Top-up with ETH', 'wallet.top-up') }}</nuxt-link>
+                </div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
                 </div>
