@@ -1,5 +1,6 @@
 <script>
 import axios from 'axios';
+import QrcodeVue from 'qrcode.vue';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
@@ -75,6 +76,7 @@ export default {
     DEPOSIT_SYMBOL,
     LOADING_STAGE,
     components: {
+        QrcodeVue,
         BaseAmount,
         Loader,
         Modal,
@@ -287,6 +289,10 @@ export default {
             });
 
             return result;
+        },
+        deepLink() {
+            // eip-681
+            return `ethereum:${this.ethAddress}?value=${this.ethToTopUp*1e18}&amount=${this.ethToTopUp}`;
         },
     },
     watch: {
@@ -1066,6 +1072,10 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             </div>
                             <div class="u-cell u-fw-700" v-if="ethFeeImpact > 10">
                                 <span class="u-emoji">⚠️</span> High Ethereum fee, it consumes {{ prettyRound(ethFeeImpact) }}% of your ETH
+                            </div>
+                            <div class="u-cell">
+                                <QrcodeVue class="u-mb-10 u-text-center" :value="deepLink" :size="160" level="L"/>
+                                <a class="link--default u-text-break-all" :href="deepLink" target="_blank">{{ deepLink }}</a>
                             </div>
                         </div>
                     </div>
