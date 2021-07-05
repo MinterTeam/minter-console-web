@@ -94,14 +94,13 @@ export default {
                 this.hubCoinList = coinList;
                 this.priceList = priceList;
             })
-            .then(() => {
-                // wait for computed coinContractAddress to recalculate
-                this.$nextTick(() => {
-                    this.updateBalance();
-                    this.getAllowance();
-                    this.fetchUniswapPair();
-                });
-            });
+            // wait for computed coinContractAddress to recalculate
+            .then(() => wait(1))
+            .then(() => Promise.all([
+                this.updateBalance(),
+                this.getAllowance(),
+                this.fetchUniswapPair(),
+            ]));
     },
     data() {
         return {
@@ -110,7 +109,6 @@ export default {
             uniswapPair: null,
             balanceRequest: null,
             coinToDepositUnlocked: 0,
-            //@TODO replace with isLoading
             allowanceRequest: null,
             form: {
                 amountEth: '',
@@ -419,12 +417,25 @@ export default {
             if (!this.coinContractAddress || ! this.coinDecimals) {
                 return;
             }
-            _fetchUniswapPair(this.coinContractAddress, this.coinDecimals)
+            return _fetchUniswapPair(this.coinContractAddress, this.coinDecimals)
                 .then((pair) => {
                     this.uniswapPair = pair;
                 });
         },
+        ensureNetworkData() {
+            if (!this.hubCoinList.length || !this.priceList.length) {
+                return this.$fetch();
+            }
+
+            const uniswapPairPromise = this.uniswapPair ? Promise.resolve() : this.fetchUniswapPair();
+            const allowancePromise = this.allowanceRequest && this.allowanceRequest.promiseStatus !== PROMISE_REJECTED ? this.allowanceRequest.promise : this.getAllowance();
+
+            return Promise.all([uniswapPairPromise, allowancePromise]);
+        },
         recoverPurchase() {
+            if (!this.$store.state.onLine) {
+                return;
+            }
             this.form = this.recovery.form;
             this.steps = this.recovery.steps;
             this.recovery = null;
@@ -466,7 +477,7 @@ export default {
                 });
         },
         submitConfirm() {
-            if (this.isFormSending) {
+            if (this.isFormSending || !this.$store.state.onLine) {
                 return;
             }
             if (this.$v.$invalid) {
@@ -482,7 +493,10 @@ export default {
             }
         },
         submit({fromRecovery} = {}) {
-            if (this.$v.$invalid) {
+            if (!this.$store.state.onLine) {
+                return;
+            }
+            if (!fromRecovery && this.$v.$invalid) {
                 this.$v.$touch();
                 return;
             }
@@ -497,7 +511,7 @@ export default {
             // don't wait eth if next steps already exists
             const waitEnoughEthPromise = fromRecovery ? Promise.resolve() : this.waitEnoughEth();
 
-            return waitEnoughEthPromise
+            return Promise.all([waitEnoughEthPromise, this.ensureNetworkData()])
                 .then(() => this.depositFromEthereum())
                 .then((transfer) => {
                     if (transfer.status !== HUB_TRANSFER_STATUS.batch_executed) {
@@ -548,19 +562,23 @@ export default {
                         console.error(error);
                     }
 
-                    // keep recovery, because page reload and network errors will lead to `finishSending()` call
-                    this.finishSending({keepRecovery: true});
+                    // don't close modal, user will decide if he wants retry or finish
+                    if (this.loadingStage === LOADING_STAGE.WAIT_ETH) {
+                        // only close for WAIT_ETH because there is no recovery for such loadingStage
+                        this.finishSending();
+                    }
                 });
         },
-        finishSending({keepRecovery} = {}) {
+        retrySending() {
+            this.submit({fromRecovery: true});
+        },
+        finishSending() {
             this.isFormSending = false;
             if (typeof waitingCancel === 'function') {
                 waitingCancel();
             }
             this.steps = {};
-            if (!keepRecovery) {
-                window.localStorage.removeItem('hub-buy-recovery');
-            }
+            window.localStorage.removeItem('hub-buy-recovery');
             // reload everything, because polling was stopped during isFormSending
             this.$fetch();
         },
@@ -742,7 +760,7 @@ export default {
             if (this.isEstimationLoading && typeof estimationCancel === 'function') {
                 estimationCancel(CANCEL_MESSAGE);
             }
-            if (this.$store.getters.isOfflineMode) {
+            if (!this.$store.state.onLine) {
                 return;
             }
             if (this.$v.form.$invalid) {
@@ -780,7 +798,7 @@ export default {
         },
         addStepData(loadingStage, data) {
             this.$set(this.steps, loadingStage, {...this.steps[loadingStage], ...data});
-            const needSaveRecovery = loadingStage !== LOADING_STAGE.SWAP_MINTER && loadingStage !== LOADING_STAGE.FINISH;
+            const needSaveRecovery = loadingStage !== LOADING_STAGE.FINISH;
             console.log({loadingStage, needSaveRecovery, data});
             if (needSaveRecovery) {
                 window.localStorage.setItem('hub-buy-recovery', JSON.stringify({
@@ -895,18 +913,17 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                     </div>
 
                     <div class="u-cell u-cell--xlarge--1-2">
-                    </div>
-                    <div class="u-cell u-cell--xlarge--1-2">
                         <button
                             class="button button--main button--full"
-                            :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
+                            :class="{'is-loading': isFormSending, 'is-disabled': ($v.$invalid || !$store.state.onLine)}"
                         >
                             <span class="button__content">Buy</span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
-                    <div class="u-cell form__error send__text" v-if="serverError">
-                        {{ serverError }}
+                    <div class="u-cell form__error send__text" v-if="serverError || !$store.state.onLine">
+                        <template v-if="!$store.state.onLine">No internet connection</template>
+                        <template v-else>{{ serverError }}</template>
                     </div>
                 </div>
             </form>
@@ -1069,7 +1086,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         </div>
                     </div>-->
                     <div class="panel__section">
-                        <button class="button button--ghost-main button--full" type="button" @click="finishSending">
+                        <button class="button button--ghost-main button--full" type="button" @click="finishSending()">
                             Cancel
                         </button>
                     </div>
@@ -1083,11 +1100,29 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                         :loadingStage="item.loadingStage"
                     />
                 </div>
-                <div class="panel__section panel__section--tint u-fw-500" v-if="loadingStage !== $options.LOADING_STAGE.WAIT_ETH && loadingStage !== $options.LOADING_STAGE.FINISH && loadingStage !== $options.LOADING_STAGE.SWAP_MINTER">
-                    <span class="u-emoji">⚠️</span> Please keep this page active, otherwise progress will&nbsp;be&nbsp;lost.
+                <div class="panel__section" v-if="serverError || !$store.state.onLine">
+                    <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                        <div class="u-cell u-text-error u-fw-500">
+                            <template v-if="!$store.state.onLine">No internet connection</template>
+                            <template v-else>{{ serverError }}</template>
+                        </div>
+                        <div class="u-cell u-cell--1-2">
+                            <button class="button button--main button--full" type="button" :class="{'is-disabled': !$store.state.onLine}" @click="retrySending()">
+                                Retry
+                            </button>
+                        </div>
+                        <div class="u-cell u-cell--1-2">
+                            <button class="button button--ghost button--full" type="button" @click="finishSending()">
+                                Finish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel__section panel__section--tint u-fw-500" v-if="loadingStage !== $options.LOADING_STAGE.WAIT_ETH && loadingStage !== $options.LOADING_STAGE.FINISH">
+                    <span class="u-emoji">⚠️</span> Please keep this page active, otherwise progress may&nbsp;be&nbsp;lost.
                 </div>
                 <div class="panel__section" v-if="loadingStage === $options.LOADING_STAGE.FINISH">
-                    <button class="button button--ghost-main button--full" type="button" @click="finishSending">
+                    <button class="button button--ghost-main button--full" type="button" @click="finishSending()">
                         {{ $td('Close', 'form.success-close-button') }}
                     </button>
                 </div>
