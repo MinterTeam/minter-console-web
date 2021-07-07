@@ -7,14 +7,14 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getAddressPendingTransactions, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {getTokenDecimals, getDepositTxInfo, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getAddressTransactionList} from '@/api/ethersacn.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -230,7 +230,7 @@ export default {
                 if (newVal) {
                     this.updateBalance();
                     this.getAllowance();
-                    getLatestTransactions(newVal)
+                    getLatestTransactions(newVal, this.hubCoinList)
                         .then((txList) => {
                             this.transactionList = txList;
                         });
@@ -289,7 +289,7 @@ export default {
             const coinSymbol = this.form.coin;
             const balancePromise = Promise.all([
                 coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call(),
-                this.decimals[coinSymbol] ? Promise.resolve(this.decimals[coinSymbol]) : coinContract(this.coinContractAddress).methods.decimals().call(),
+                getTokenDecimals(this.coinContractAddress, this.hubCoinList),
                 this.isEthSelected ? web3.eth.getBalance(this.ethAddress) : Promise.resolve(),
             ])
                 .then(([balance, decimals, ethBalance]) => {
@@ -516,10 +516,10 @@ export default {
     },
 };
 
-function getLatestTransactions(address) {
+function getLatestTransactions(address, hubCoinList) {
     return Promise.all([
-        // check last 1000 txs
-        getAddressTransactionList(address, {page: 1, offset: 1000}),
+        // check last 100 txs
+        getAddressTransactionList(address, {page: 1, offset: 100}),
         //@TODO store pending txs in localStorage
         Promise.resolve([]),
         // getAddressPendingTransactions(address),
@@ -534,29 +534,20 @@ function getLatestTransactions(address) {
 
             let txList = pendingTxList.concat(etherscanTxList);
 
-            // keep only hub bridge transactions
-            txList = txList.filter((tx) => {
-                // remove 0x and function selector
-                const input = tx.input.slice(2 + 8);
-                const itemCount = input.length / 64;
-                if (itemCount === 2) {
-                    // approve erc20
-                    const bridgeAddressHex = '0x' + input.slice(0, 64);
-                    const bridgeAddress = web3.eth.abi.decodeParameter('address', bridgeAddressHex);
-                    return bridgeAddress.toLowerCase() === peggyAddress.toLowerCase();
-                } else if (itemCount === 3) {
-                    // sentToMinter
-                    const bridgeAddress = tx.to;
-                    return bridgeAddress.toLowerCase() === peggyAddress.toLowerCase();
-                } else if (itemCount === 0) {
-                    // wrap eth
-                    return tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
-                }
-
-                return false;
+            const promiseList = txList.map((item) => {
+                return getDepositTxInfo(item, hubCoinList, true)
+                    .then((txInfo) => {
+                        return {info: txInfo, tx: item};
+                    });
             });
+            return Promise.all(promiseList);
 
-            return txList.slice(0, 5);
+        })
+        .then((infoList) => {
+            // keep only hub bridge transactions
+            infoList = infoList.filter(({info}) => info.type !== HUB_DEPOSIT_TX_PURPOSE.OTHER);
+
+            return infoList.slice(0, 5).map((item) => item.tx);
         });
 }
 </script>

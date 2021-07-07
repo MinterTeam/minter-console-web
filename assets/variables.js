@@ -72,6 +72,13 @@ export const HUB_TRANSFER_STATUS = {
     refund: "TX_STATUS_REFUNDED",
 };
 
+export const HUB_DEPOSIT_TX_PURPOSE = {
+    SEND: 'Send',
+    UNLOCK: 'Unlock',
+    WRAP: 'Wrap',
+    OTHER: 'Other',
+};
+
 /**
  * Order matters
  * @enum
