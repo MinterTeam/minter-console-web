@@ -287,8 +287,15 @@ export async function getDepositTxInfo(tx, hubCoinList, skipAmount) {
         };
     }
 
-    const coinItem = hubCoinList.find((item) => item.ethAddr === tokenContract);
-    const tokenName = coinItem ? coinItem.denom.toUpperCase() : '';
+    let tokenName = '';
+    if (type === HUB_DEPOSIT_TX_PURPOSE.WRAP) {
+        tokenName = 'ETH';
+    } else {
+        const coinItem = hubCoinList.find((item) => item.ethAddr === tokenContract);
+        if (coinItem) {
+            tokenName = coinItem.denom.toUpperCase();
+        }
+    }
 
     return {
         type,

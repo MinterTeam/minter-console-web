@@ -74,6 +74,13 @@ export default {
             type: Array,
             required: true,
         },
+        /**
+         * @type Array<{name: string, value: string}>
+         */
+        priceList: {
+            type: Array,
+            required: true,
+        },
     },
     data() {
         return {
@@ -669,7 +676,8 @@ function getLatestTransactions(address, hubCoinList) {
                 </div>
             </div>
 
-            <Account @update:address="ethAddress = $event" ref="ethAccount"/>
+            <Account @update:address="ethAddress = $event" ref="ethAccount" :hub-coin-list="hubCoinList" :price-list="priceList"/>
+            <portal-target name="account-minter-confirm-modal"/>
 
             <!--          <div class="card__content card__content&#45;&#45;gray u-text-center send__qr-card" v-if="linkToBip">-->
             <!--              <div class="send__qr-wrap u-mb-10">-->

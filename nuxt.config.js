@@ -154,6 +154,7 @@ export default {
             seo: false,
             detectBrowserLanguage: false,
         }],
+        'portal-vue/nuxt',
     ],
     modern: 'client',
     /*
