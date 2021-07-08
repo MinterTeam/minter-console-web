@@ -22,12 +22,14 @@ export default {
 
         this.isAvailable = true;
         // set account on page load if some was set previously
-        window.ethereum.request({method: 'eth_accounts'})
-            .then((accounts) => {
-                if (accounts.length) {
-                    this.setEthAddress(accounts[0]);
-                }
-            });
+        if (window.localStorage.getItem('hub-deposit-connected-account') === 'metamask') {
+            window.ethereum.request({method: 'eth_accounts'})
+                .then((accounts) => {
+                    if (accounts.length) {
+                        this.setEthAddress(accounts[0]);
+                    }
+                });
+        }
         // update on change, handles changes from metamask interface
         window.ethereum.on('accountsChanged', (accounts) => {
             this.setEthAddress(accounts[0] || '');

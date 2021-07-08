@@ -1,7 +1,7 @@
 <script>
 import {ETHEREUM_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
 import * as web3 from '@/api/web3.js';
-import {getDepositTxInfo, toErcDecimals} from '@/api/web3.js';
+import {getDepositTxInfo} from '@/api/web3.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import Modal from '@/components/common/Modal.vue';
 
@@ -54,6 +54,12 @@ export default {
 
             return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
         },
+    },
+    mounted() {
+        // set account on page load if some was set previously
+        if (window.localStorage.getItem('hub-deposit-connected-account') === 'minter') {
+            this.connectEth();
+        }
     },
     methods: {
         pretty,

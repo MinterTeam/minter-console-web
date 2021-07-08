@@ -43,7 +43,9 @@ export default {
         getEtherscanAddressUrl,
         disconnectEth() {
             this.selectedAccount.disconnectEth();
+            this.selectedAccount = null;
             this.selectedAccountType = '';
+            window.localStorage.removeItem('hub-deposit-connected-account');
         },
         setEthAddress(ethAddress, type) {
             // don't allow change from one type to another
@@ -65,9 +67,12 @@ export default {
                     this.selectedAccount = this.$refs.ethAccountMinter;
                 }
                 this.selectedAccountType = type;
+                window.localStorage.setItem('hub-deposit-connected-account', type);
             } else {
                 // disconnect
+                this.selectedAccountType = '';
                 this.selectedAccount = null;
+                window.localStorage.removeItem('hub-deposit-connected-account');
             }
         },
         sendTransaction(txParams) {
