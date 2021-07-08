@@ -20,7 +20,7 @@ export default {
         this.initConnector();
 
         // Check if connection is already established
-        if (connector.connected) {
+        if (connector.connected && window.localStorage.getItem('hub-deposit-connected-account') === 'walletconnect') {
             this.setEthAddress(connector.accounts[0]);
         }
     },
