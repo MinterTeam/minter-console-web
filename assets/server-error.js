@@ -81,7 +81,7 @@ export function getErrorText(error, startErrorText = 'Error: ') {
         }
         return bothHasError ? errorText : startErrorText + errorText;
     } else if (error.message) {
-        // network error
+        // network error or application error
         return error.message;
     } else {
         return 'Something went wrong';

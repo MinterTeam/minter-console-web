@@ -75,9 +75,16 @@ function getPriceFromList(list, name, keepDecimals) {
                 <table>
                     <thead>
                         <tr class="u-text-nowrap">
-                            <th width="37.5%">{{ $td('Available tokens', 'hub.coin-table-name') }}</th>
-                            <th width="37.5%">{{ $td('Contract', 'hub.coin-table-contract') }}</th>
+                            <th width="30%">
+                                <span class="u-hidden-small-down">{{ $td('Available tokens', 'hub.coin-table-name') }}</span>
+                                <span class="u-hidden-small-up">{{ $td('Tokens', 'hub.coin-table-name-mobile') }}</span>
+                            </th>
+                            <th width="30%">{{ $td('Contract', 'hub.coin-table-contract') }}</th>
                             <th width="25%">{{ $td('Price', 'hub.coin-table-price') }}</th>
+                            <th width="15%">
+                                <span class="u-hidden-small-down">{{ $td('Hub fee', 'hub.coin-table-fee') }}</span>
+                                <span class="u-hidden-small-up">{{ $td('Fee', 'hub.coin-table-fee-mobile') }}</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -91,6 +98,10 @@ function getPriceFromList(list, name, keepDecimals) {
                             <!-- price -->
                             <td>
                                 ${{ pretty(coinItem.price) }}
+                            </td>
+                            <!-- fee -->
+                            <td>
+                                {{ pretty(coinItem.customCommission * 100) }}%
                             </td>
                         </tr>
                     </tbody>

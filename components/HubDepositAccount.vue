@@ -2,11 +2,29 @@
 import {getEtherscanAddressUrl} from '~/assets/utils.js';
 import HubDepositAccountWalletConnect from '~/components/HubDepositAccountWalletConnect.vue';
 import HubDepositAccountMetamask from '~/components/HubDepositAccountMetamask.vue';
+import HubDepositAccountMinter from '~/components/HubDepositAccountMinter.vue';
 
 export default {
     components: {
         HubDepositAccountWalletConnect,
         HubDepositAccountMetamask,
+        HubDepositAccountMinter,
+    },
+    props: {
+        /**
+         * @type Array<HubCoinItem>
+         */
+        hubCoinList: {
+            type: Array,
+            required: true,
+        },
+        /**
+         * @type Array<{name: string, value: string}>
+         */
+        priceList: {
+            type: Array,
+            required: true,
+        },
     },
     data() {
         return {
@@ -25,7 +43,9 @@ export default {
         getEtherscanAddressUrl,
         disconnectEth() {
             this.selectedAccount.disconnectEth();
+            this.selectedAccount = null;
             this.selectedAccountType = '';
+            window.localStorage.removeItem('hub-deposit-connected-account');
         },
         setEthAddress(ethAddress, type) {
             // don't allow change from one type to another
@@ -43,10 +63,16 @@ export default {
                 if (type === 'metamask') {
                     this.selectedAccount = this.$refs.ethAccountMetamask;
                 }
+                if (type === 'minter') {
+                    this.selectedAccount = this.$refs.ethAccountMinter;
+                }
                 this.selectedAccountType = type;
+                window.localStorage.setItem('hub-deposit-connected-account', type);
             } else {
                 // disconnect
+                this.selectedAccountType = '';
                 this.selectedAccount = null;
+                window.localStorage.removeItem('hub-deposit-connected-account');
             }
         },
         sendTransaction(txParams) {
@@ -67,6 +93,7 @@ export default {
                     <div class="button-group">
                         <HubDepositAccountWalletConnect class="button--ghost-main" @update:address="setEthAddress($event, 'walletconnect')" ref="ethAccountWalletconnect"/>
                         <HubDepositAccountMetamask class="button--ghost-main" @update:address="setEthAddress($event, 'metamask')" ref="ethAccountMetamask"/>
+                        <HubDepositAccountMinter class-custom="button--ghost-main" @update:address="setEthAddress($event, 'minter')" ref="ethAccountMinter" :hub-coin-list="hubCoinList" :price-list="priceList"/>
                     </div>
                 </div>
             </div>
@@ -76,6 +103,7 @@ export default {
             Wallet connected with
             <template v-if="selectedAccountType === 'walletconnect'">WalletConnect</template>
             <template v-if="selectedAccountType === 'metamask'">Metamask</template>
+            <template v-if="selectedAccountType === 'minter'">Console seed phrase</template>
             <br>
             <a class="link--default" :href="getEtherscanAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a> <br>
             <button class="button button--ghost u-mt-10" @click="disconnectEth">Change wallet</button>

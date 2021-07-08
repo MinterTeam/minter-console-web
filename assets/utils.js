@@ -154,7 +154,7 @@ export function pretty(value, roundingMode, skipFalsy) {
     if (value >= 0.1 || value <= -0.1 || Number(value) === 0) {
         return decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.FIXED, roundingMode, thousandsSeparator: '&nbsp;'}));
     } else {
-        value = decode(prettyNum(value, {precision: PRECISION, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&nbsp;'}));
+        value = decode(prettyNum(value, {precision: PRECISION + 1, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode, thousandsSeparator: '&nbsp;'}));
         value = value.substr(0, 10);
         if (value === '0.00000000') {
             return '0.00';
