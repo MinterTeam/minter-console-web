@@ -836,7 +836,6 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
 
     return Fetcher.fetchPairData(token, wethToken, provider)
         .then((pair) => {
-            window.pr = pair;
             return Object.freeze(pair);
         });
 }
