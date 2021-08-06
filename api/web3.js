@@ -3,7 +3,7 @@ import {Manager} from 'web3-core-requestmanager';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
-import {ETHEREUM_API_URL} from '~/assets/variables.js';
+import {ETHEREUM_API_URL, HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 
 export const CONFIRMATION_COUNT = 5;
@@ -202,11 +202,19 @@ const decimalsPromiseCache = {};
 
 /**
  * @param {string} tokenContractAddress
+ * @param {Array<HubCoinItem>} [hubCoinList]
  * @return {Promise<number>}
  */
-export function getTokenDecimals(tokenContractAddress) {
+export function getTokenDecimals(tokenContractAddress, hubCoinList = []) {
+    // search from cache
     if (decimalsPromiseCache[tokenContractAddress]) {
         return decimalsPromiseCache[tokenContractAddress];
+    }
+
+    // search from hubCoinList
+    const coinItem = hubCoinList.find((item) => item.ethAddr === tokenContractAddress);
+    if (coinItem) {
+        return Promise.resolve(Number(coinItem.ethDecimals));
     }
 
     const contract = new eth.Contract(erc20ABI, tokenContractAddress);
@@ -234,4 +242,80 @@ export function getAddressPendingTransactions(address) {
         .then((txList) => {
             return txList.filter((tx) => tx.from === address);
         });
+}
+
+/**
+ *
+ * @param {Object} tx
+ * @param {Array<HubCoinItem>} [hubCoinList]
+ * @param {boolean} [skipAmount]
+ * @return {Promise<{amount: string, tokenContract: string, type: string}|{type: string}>}
+ */
+export async function getDepositTxInfo(tx, hubCoinList, skipAmount) {
+    // remove 0x and function selector
+    const input = tx.input.slice(2 + 8);
+    const itemCount = input.length / 64;
+    // last item (2nd for `unlock`, 3rd for `sendToMinter`)
+    let type;
+    let tokenContract;
+    let amount;
+    if (itemCount === 2) {
+        const beneficiaryHex = '0x' + input.slice(0, 64);
+        const beneficiaryAddress = eth.abi.decodeParameter('address', beneficiaryHex);
+        const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
+        if (isUnlockedForBridge) {
+            type = HUB_DEPOSIT_TX_PURPOSE.UNLOCK;
+            tokenContract = tx.to;
+            amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 1) * 64), tokenContract, hubCoinList);
+        } else {
+            return {
+                type: HUB_DEPOSIT_TX_PURPOSE.OTHER,
+            };
+        }
+    } else if (tx.to.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 3) {
+        type = HUB_DEPOSIT_TX_PURPOSE.SEND;
+        const tokenContractHex = '0x' + input.slice(0, 64);
+        tokenContract = eth.abi.decodeParameter('address', tokenContractHex);
+        amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 1) * 64), tokenContract, hubCoinList);
+    } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
+        type = HUB_DEPOSIT_TX_PURPOSE.WRAP;
+        tokenContract = tx.to;
+        amount = Utils.fromWei(tx.value);
+    } else {
+        return {
+            type: HUB_DEPOSIT_TX_PURPOSE.OTHER,
+        };
+    }
+
+    let tokenName = '';
+    if (type === HUB_DEPOSIT_TX_PURPOSE.WRAP) {
+        tokenName = 'ETH';
+    } else {
+        const coinItem = hubCoinList.find((item) => item.ethAddr === tokenContract);
+        if (coinItem) {
+            tokenName = coinItem.denom.toUpperCase();
+        }
+    }
+
+    return {
+        type,
+        tokenContract,
+        tokenName,
+        amount,
+    };
+}
+
+/**
+ *
+ * @param {strong} hex
+ * @param {string} tokenContract
+ * @param {Array<HubCoinItem>} [hubCoinList]
+ * @return {Promise<string>}
+ */
+async function getAmountFromInputValue(hex, tokenContract, hubCoinList) {
+    const amountHex = '0x' + hex;
+    const decimals = await getTokenDecimals(tokenContract, hubCoinList);
+    const amount = fromErcDecimals(eth.abi.decodeParameter('uint256', amountHex), decimals);
+
+    return amount;
 }

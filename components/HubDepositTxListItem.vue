@@ -1,9 +1,9 @@
 <script>
-import {subscribeTransaction, fromErcDecimals, getTokenDecimals, getBlockNumber, eth as web3Eth, utils as web3Utils, CONFIRMATION_COUNT} from '@/api/web3.js';
+import {subscribeTransaction, getDepositTxInfo, getBlockNumber, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
 import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import Loader from '@/components/common/Loader.vue';
-import {HUB_TRANSFER_STATUS, HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
+import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE} from '~/assets/variables.js';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -16,12 +16,6 @@ const TX_STATUS = {
     FAILED: 'failed',
 };
 
-const TX_PURPOSE = {
-    SEND: 'Send',
-    UNLOCK: 'Unlock',
-    WRAP: 'Wrap',
-    OTHER: 'Other',
-};
 
 export default {
     TX_STATUS,
@@ -34,6 +28,9 @@ export default {
             type: String,
             required: true,
         },
+        /**
+         * @type Array<HubCoinItem>
+         */
         coinList: {
             type: Array,
             default: () => [],
@@ -49,7 +46,7 @@ export default {
             .once('tx', (tx) => {
                 this.tx = tx;
 
-                this.tokenInfoPromise =  this.getTokenInfo(tx)
+                this.tokenInfoPromise =  getDepositTxInfo(tx, this.coinList)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -121,11 +118,11 @@ export default {
             } else if (this.tx.status === false) {
                 return TX_STATUS.FAILED;
             }
-            const confirmationsCount = this.tokenInfo.type === TX_PURPOSE.SEND ? CONFIRMATION_COUNT : 1;
+            const confirmationsCount = this.tokenInfo?.type === TX_PURPOSE.SEND ? CONFIRMATION_COUNT : 1;
             const enoughConfirmations = this.tx.confirmations >= confirmationsCount;
             if (!enoughConfirmations) {
                 return TX_STATUS.RECEIPT;
-            } else if (this.tokenInfo.type === TX_PURPOSE.SEND) {
+            } else if (this.tokenInfo?.type === TX_PURPOSE.SEND) {
                 return TX_STATUS.CONFIRMED_NOT_FINAL;
             } else {
                 return TX_STATUS.CONFIRMED;
@@ -174,51 +171,6 @@ export default {
         getEtherscanTxUrl,
         getExplorerTxUrl,
         formatHash: (value) => shortFilter(value, 13),
-        /**
-         * @param tx
-         * @return {Promise<{amount: string, tokenContract: string, type: string}>}
-         */
-        async getTokenInfo(tx) {
-            // remove 0x and function selector
-            const input = tx.input.slice(2 + 8);
-            const itemCount = input.length / 64;
-            // last item (2nd for `unlock`, 3rd for `sendToMinter`)
-            let type;
-            let tokenContract;
-            let amount;
-            if (itemCount === 2) {
-                type = TX_PURPOSE.UNLOCK;
-                tokenContract = tx.to;
-                amount = await getAmountFromInputData(input.slice((itemCount - 1) * 64), tokenContract);
-            } else if (tx.to.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 3) {
-                type = TX_PURPOSE.SEND;
-                const tokenContractHex = '0x' + input.slice(0, 64);
-                tokenContract = web3Eth.abi.decodeParameter('address', tokenContractHex);
-                amount = await getAmountFromInputData(input.slice((itemCount - 1) * 64), tokenContract);
-            } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
-                type = TX_PURPOSE.WRAP;
-                tokenContract = tx.to;
-                amount = web3Utils.fromWei(tx.value);
-            } else {
-                return {
-                    type: TX_PURPOSE.OTHER,
-                };
-            }
-
-            async function getAmountFromInputData(hex, tokenContract) {
-                const amountHex = '0x' + hex;
-                const decimals = await getTokenDecimals(tokenContract);
-                const amount = fromErcDecimals(web3Eth.abi.decodeParameter('uint256', amountHex), decimals);
-
-                return amount;
-            }
-
-            return {
-                type,
-                tokenContract,
-                amount,
-            };
-        },
     },
 };
 </script>

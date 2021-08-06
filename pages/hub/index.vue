@@ -75,6 +75,6 @@ export default {
         <HubCoinList :coin-list="coinList" :price-list="priceList" :is-loading="$fetchState.pending"/>
         <HubWithdrawForm :hub-coin-list="coinList" :price-list="priceList"/>
         <HubWithdrawTxList/>
-        <HubDepositForm :hub-coin-list="coinList"/>
+        <HubDepositForm :hub-coin-list="coinList" :price-list="priceList"/>
     </section>
 </template>
