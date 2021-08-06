@@ -30,8 +30,16 @@ export default {
                 this.initConnector();
             }
 
-            // create new session
-            connector.createSession();
+            // if (connector.connected) {
+            //     await connector.killSession()
+            // }
+
+            if (connector.connected) {
+                this.setEthAddress(connector.accounts[0]);
+            } else {
+                // create new session
+                connector.createSession();
+            }
 
             // workaround to fix modal not opening after manual close
             if (this.isConnectionStartedAndModalClosed && connector.uri) {
@@ -48,6 +56,7 @@ export default {
                 bridge: "https://bridge.walletconnect.org", // Required
                 qrcodeModal: QRCodeModal,
             });
+            // window.connector = connector
             // console.log('init', {connector});
 
             // Subscribe to connection events
