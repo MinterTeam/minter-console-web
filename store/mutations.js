@@ -1,29 +1,29 @@
 import Vue from 'vue';
-import {setAuthToken, resetAuthToken} from "~/api/accounts";
+// import {setAuthToken, resetAuthToken} from "~/api/accounts";
 import {getTimeOffset} from '~/assets/time-offset.js';
 
 export default {
     SET_SECTION_NAME: (state, sectionName) => {
         state.sectionName = sectionName;
     },
-    SET_AUTH_PROFILE: (state, {user, token, password}) => {
-        LOGOUT(state);
-        state.auth.password = password;
-        setAuthToken(token);
-        SET_PROFILE_USER(state, user);
-    },
+    // SET_AUTH_PROFILE: (state, {user, token, password}) => {
+    //     LOGOUT(state);
+    //     state.auth.password = password;
+    //     setAuthToken(token);
+    //     SET_PROFILE_USER(state, user);
+    // },
     SET_AUTH_ADVANCED: (state, address) => {
         LOGOUT(state);
         state.auth.advanced = address;
     },
     LOGOUT,
-    SET_PROFILE_USER,
-    SET_PROFILE_ADDRESS: (state, address) => {
-        Vue.set(state.user, 'mainAddress', address);
-    },
-    UPDATE_PROFILE_PASSWORD: (state, password) => {
-        state.auth.password = password;
-    },
+    // SET_PROFILE_USER,
+    // SET_PROFILE_ADDRESS: (state, address) => {
+    //     Vue.set(state.user, 'mainAddress', address);
+    // },
+    // UPDATE_PROFILE_PASSWORD: (state, password) => {
+    //     state.auth.password = password;
+    // },
     // SET_PROFILE_ADDRESS_LIST: (state, addressList) => {
     //     state.profileAddressList = addressList;
     // },
@@ -66,17 +66,17 @@ export default {
 };
 
 function LOGOUT(state) {
-    state.user = {};
-    state.auth.password = null;
+    // state.user = {};
+    // state.auth.password = null;
     state.auth.advanced = null;
-    resetAuthToken();
+    // resetAuthToken();
 }
 
-function SET_PROFILE_USER(state, profile) {
-    // save encrypted data on refresh
-    if (!profile.mainAddress.encrypted && state.user.mainAddress && state.user.mainAddress.address === profile.mainAddress.address) {
-        profile.mainAddress.encrypted = state.user.mainAddress.encrypted;
-    }
-    state.user = profile;
-    state.userTimeStamp = Date.now();
-}
+// function SET_PROFILE_USER(state, profile) {
+//     // save encrypted data on refresh
+//     if (!profile.mainAddress.encrypted && state.user.mainAddress && state.user.mainAddress.address === profile.mainAddress.address) {
+//         profile.mainAddress.encrypted = state.user.mainAddress.encrypted;
+//     }
+//     state.user = profile;
+//     state.userTimeStamp = Date.now();
+// }

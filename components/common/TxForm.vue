@@ -332,7 +332,7 @@
                     postTxPromise = Promise.all([
                             ensureNonce(txParams, {address: this.$store.getters.address}),
                             replaceCoinSymbol(txParams),
-                            this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                            // this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
                         ])
                         .then(([nonce]) => {
                             // private key to sign
@@ -388,7 +388,7 @@
                 Promise.all([
                         ensureNonce(txParams, {address: this.form.multisigAddress}),
                         replaceCoinSymbol(txParams),
-                        this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                        // this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
                     ])
                     .then(([nonce]) => {
                         // address to make proof for RedeemCheck

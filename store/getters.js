@@ -1,7 +1,6 @@
 // Uint8Array.fill needed for wallet
 // import 'core-js/modules/es6.typed.uint8-array';
 import {walletFromMnemonic, isValidMnemonic} from 'minterjs-wallet';
-import {decryptMnemonic} from 'minter-js-org';
 import {getNameLetter, getExplorerAddressUrl} from "~/assets/utils";
 import {CHAIN_ID, BASE_COIN} from '~/assets/variables';
 
@@ -11,7 +10,7 @@ export default {
      * @return {boolean}
      */
     isAuthorized(state, getters) {
-        return getters.isUserAdvanced || getters.isUserWithProfile;
+        return getters.isUserAdvanced;
     },
     /**
      * Checks if user is authorized by private key
@@ -20,19 +19,9 @@ export default {
     isUserAdvanced(state) {
         return !!(state.auth.advanced && isValidMnemonic(state.auth.advanced));
     },
-    /**
-     * Checks if user is authorized by server
-     * @return {boolean}
-     */
-    isUserWithProfile(state) {
-        return !!state.auth.password;
-    },
     wallet(state, getters) {
         if (getters.isUserAdvanced) {
             return walletFromMnemonic(state.auth.advanced);
-        } else if (getters.isUserWithProfile && state.user.mainAddress?.encrypted) {
-            const profileMnemonic = decryptMnemonic(state.user.mainAddress.encrypted, state.auth.password);
-            return walletFromMnemonic(profileMnemonic);
         }
         return null;
     },
@@ -41,7 +30,7 @@ export default {
             return getters.wallet.getAddressString();
         }
 
-        return state.user.mainAddress?.address || '';
+        return '';
     },
     addressUrl(state, getters) {
         return getExplorerAddressUrl(getters.address);
@@ -52,17 +41,8 @@ export default {
     privateKey(state, getters) {
         return getters.wallet ? getters.wallet.getPrivateKeyString() : '';
     },
-    publicKey(state, getters) {
-        return getters.wallet ? getters.wallet.getPublicKeyString() : '';
-    },
     username(state, getters) {
-        return getters.isUserWithProfile ? '@' + state.user.username : getters.address;
-    },
-    usernameLetter(state, getters) {
-        return getNameLetter(getters.username);
-    },
-    avatar(state) {
-        return state.user && state.user.avatar && state.user.avatar.src;
+        return getters.address;
     },
     COIN_NAME() {
         return BASE_COIN;

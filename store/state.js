@@ -4,15 +4,8 @@ export default function() {
         auth: {
             /** @type string|null - mnemonic */
             advanced: null,
-            /** @type string|null - stored password */
-            password: null,
         },
-        /** @type User */
-        user: {
-            /** @type Address */
-            mainAddress: {},
-        },
-        userTimeStamp: 0,
+        // userTimeStamp: 0,
         /** @type Array<BalanceItem> */
         balance: [],
         /** @type Array<StakeItem> */

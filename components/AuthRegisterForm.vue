@@ -1,5 +1,5 @@
 <script>
-
+/*
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -101,11 +101,13 @@
             },
         },
     };
+    */
 </script>
 
 <template>
-    <form class="panel__section" novalidate @submit.prevent="submit">
-        <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+    <div></div>
+<!--    <form class="panel__section" novalidate @submit.prevent="submit">
+        <div class="u-grid u-grid&#45;&#45;small u-grid&#45;&#45;vertical-margin&#45;&#45;small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.form.username.$error}">
                     <InputMaskedName class="form-field__input" v-check-empty data-test-id="authRegisterInputName"
@@ -120,7 +122,7 @@
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.maxLength">{{ $td('Username is too long', 'index.auth-error-username-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.username.$dirty && !$v.form.username.server">{{ sve.username.message }}</span>
             </div>
-            <!--<div class="u-cell u-cell&#45;&#45;small&#45;&#45;1-2">
+            &lt;!&ndash;<div class="u-cell u-cell&#45;&#45;small&#45;&#45;1-2">
                 <label class="form-field" :class="{'is-error': $v.form.email.$error}">
                     <input class="form-field__input" type="email" v-check-empty
                            v-model="form.email"
@@ -131,8 +133,8 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.email">{{ $td('Not valid email', 'index.auth-error-email-invalid') }}</span>
                 <span class="form-field__error" v-if="$v.form.email.$dirty && !$v.form.email.server">{{ sve.email.message }}</span>
-            </div>-->
-            <div class="u-cell u-cell--small--1-2">
+            </div>&ndash;&gt;
+            <div class="u-cell u-cell&#45;&#45;small&#45;&#45;1-2">
                 <label class="form-field" :class="{'is-error': $v.form.password.$error}">
                     <input class="form-field__input" type="password" autocomplete="new-password" v-check-empty data-test-id="authRegisterInputPassword"
                            v-model="form.password"
@@ -146,7 +148,7 @@
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.maxLength">{{ $td('Password is too long', 'index.auth-error-password-max') }}</span>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.server">{{ sve.password.message }}</span>
             </div>
-            <div class="u-cell u-cell--small--1-2">
+            <div class="u-cell u-cell&#45;&#45;small&#45;&#45;1-2">
                 <label class="form-field" :class="{'is-error': $v.form.passwordConfirm.$error}">
                     <input class="form-field__input" type="password" autocomplete="new-password" v-check-empty data-test-id="authRegisterInputPasswordRepeat"
                            v-model="form.passwordConfirm"
@@ -158,13 +160,13 @@
                 <span class="form-field__error" v-if="$v.form.passwordConfirm.$dirty && $v.form.passwordConfirm.required && !$v.form.passwordConfirm.sameAsPassword">{{ $td('Passwords don\'t match', 'index.auth-error-confirm-match') }}</span>
             </div>
             <div class="u-cell">
-                <button class="button button--main button--full" data-test-id="authRegisterSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
+                <button class="button button&#45;&#45;main button&#45;&#45;full" data-test-id="authRegisterSubmitButton" :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}">
                     <span class="button__content">{{ $td('Register', 'index.auth-sign-up-button') }}</span>
                     <Loader class="button__loader" :isLoading="true"/>
                 </button>
                 <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
             </div>
         </div>
-    </form>
+    </form>-->
 </template>
 
