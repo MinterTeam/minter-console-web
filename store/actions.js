@@ -1,23 +1,23 @@
-import {getProfile, getProfileAddressEncrypted} from "~/api";
+// import {getProfile, getProfileAddressEncrypted} from "~/api";
 import {getBalance, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
 
 export default {
-    FETCH_PROFILE: ({ state, commit }) => {
-        // don't fetch more often than 10s
-        if (Date.now() - state.userTimeStamp < 10000) {
-            return Promise.resolve();
-        }
-        return getProfile()
-            .then((profile) => commit('SET_PROFILE_USER', profile));
-    },
-    FETCH_ADDRESS_ENCRYPTED: ({ state, commit, getters }) => {
-        if (getters.isUserAdvanced || state.user.mainAddress.encrypted) {
-            return Promise.resolve();
-        }
-        // profile address fetched in the middleware
-        return getProfileAddressEncrypted(state.user.mainAddress.id)
-            .then((address) => commit('SET_PROFILE_ADDRESS', address));
-    },
+    // FETCH_PROFILE: ({ state, commit }) => {
+    //     // don't fetch more often than 10s
+    //     if (Date.now() - state.userTimeStamp < 10000) {
+    //         return Promise.resolve();
+    //     }
+    //     return getProfile()
+    //         .then((profile) => commit('SET_PROFILE_USER', profile));
+    // },
+    // FETCH_ADDRESS_ENCRYPTED: ({ state, commit, getters }) => {
+    //     if (getters.isUserAdvanced || state.user.mainAddress.encrypted) {
+    //         return Promise.resolve();
+    //     }
+    //     // profile address fetched in the middleware
+    //     return getProfileAddressEncrypted(state.user.mainAddress.id)
+    //         .then((address) => commit('SET_PROFILE_ADDRESS', address));
+    // },
     // FETCH_PROFILE_ADDRESS_LIST: ({ commit, getters }) => {
     //     if (getters.isUserWithProfile) {
     //         return getProfileAddressList().then((addressList) => {

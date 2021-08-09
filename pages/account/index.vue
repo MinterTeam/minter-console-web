@@ -14,10 +14,7 @@
             ButtonCopyIcon,
         },
         fetch({ app, store }) {
-            return store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                .then(() => {
-                    store.commit('SET_SECTION_NAME', app.$td('Account', 'common.page-account'));
-                });
+            store.commit('SET_SECTION_NAME', app.$td('Account', 'common.page-account'));
         },
         head() {
             const title = getTitle(this.$store.state.sectionName, this.$i18n.locale);

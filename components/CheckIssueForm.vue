@@ -143,7 +143,7 @@
                 };
                 Promise.all([
                         replaceCoinSymbolByPath(params, ['gasCoin', 'coin']),
-                        this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
+                        // this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
                     ])
                     .then(() => {
                         try {

@@ -1,3 +1,4 @@
+/*
 import {hasAuthToken} from "~/api/accounts";
 
 export default function({app, store, redirect}) {
@@ -28,3 +29,4 @@ export default function({app, store, redirect}) {
 
     return Promise.resolve();
 }
+*/
