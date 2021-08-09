@@ -2,7 +2,7 @@
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import FileInput from 'v-file-input/src/FileInput';
-    import {postAutoDelegationTxList} from '~/api';
+    import {postAutoDelegationTxList} from '~/api/auto-delegation.js';
     import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";

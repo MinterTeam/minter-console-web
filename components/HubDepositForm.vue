@@ -216,7 +216,9 @@ export default {
             return this.selectedUnlocked > 10**18;
         },
         amountToUnlock() {
-            return new Big(this.amountToSpend).minus(this.selectedUnlocked).toString();
+            return this.amountToSpend;
+            // don't unlock delta, it will overwrite total unlocked
+            // return new Big(this.amountToSpend).minus(this.selectedUnlocked).toString();
         },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol.toUpperCase());

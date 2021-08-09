@@ -106,7 +106,7 @@ export default {
         linkActiveClass: '',
         linkExactActiveClass: 'is-active',
         middleware: [
-            'profile',
+            // 'profile',
             'auth',
             'balance',
             'explorer',
@@ -213,19 +213,44 @@ export default {
             'secp256k1',
             'asn1.js',
             'keccak/lib',
+            'ethereumjs-util',
+            'axios-extensions',
+            'lru-cache',
+            'web3-core',
+            'web3-core-helpers',
+            'web3-core-method',
+            'web3-core-requestmanager',
+            'web3-eth',
+            'web3-eth-abi',
+            'web3-eth-accounts',
+            'web3-eth-',
+            'web3-net',
+            'web3-providers-http',
+            'content-hash', // web3-eth-ens
+            'cids', // web3-eth-ens
+            'multicodec', // web3-eth-ens
+            'ethereum-bloom-filters', // web3-utils
             '@material/',
             'date-fns/esm',
             'lodash-es',
+            'nanoid',
+            'json5',
             'centrifuge/src',
             'autonumeric/src',
             'vue-autonumeric/src',
+            'vue-async-computed/src',
             'vue-simple-suggest/lib',
             'nuxt-i18n/src',
             'qr-scanner',
+            'query-string',
+            'split-on-first',
             'camelcase-keys/',
             'camelcase/', // camelcase-keys
             'map-obj/', // camelcase-keys
             'quick-lru/', // camelcase-keys
+            '@walletconnect/',
+            '@ethersproject/',
+            'jsbi', // @uniswap/sdk
             'v-autosize/src',
             'v-file-input/src',
             'vue-inline-svg/src/',
@@ -237,7 +262,6 @@ export default {
             'minterjs-wallet',
             'bip39/src', // minterjs-wallet
             'minter-js-sdk',
-            'minter-js-org',
         ],
     },
 };

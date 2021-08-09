@@ -320,7 +320,9 @@ export default {
 
             this.selectedConvertType = CONVERT_TYPE.OPTIMAL;
             this.selectedSlippageInput = SLIPPAGE_INPUT_TYPE.PERCENT;
-            this.formSlippagePercent = 5;
+            if (this.formSlippagePercent > 5) {
+                this.formSlippagePercent = 5;
+            }
         },
     },
 };

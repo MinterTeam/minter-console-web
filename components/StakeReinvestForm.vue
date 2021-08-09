@@ -5,7 +5,7 @@
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {privateToAddressString, toBuffer, TX_TYPE} from 'minterjs-util';
-    import {postAutoDelegationTxList} from '~/api';
+    import {postAutoDelegationTxList} from '~/api/auto-delegation.js';
     import {getNonce} from '~/api/gate';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
@@ -123,8 +123,7 @@
                 this.signedTxList = null;
                 this.serverError = '';
                 this.serverSuccess = false;
-                this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED')
-                    .then(() => this.generateBatchTx())
+                this.generateBatchTx()
                     .then(([signedTxList]) => postAutoDelegationTxList(signedTxList))
                     .then(() => {
                         this.isFormSending = false;
