@@ -120,14 +120,12 @@
                                     {{ $td('Swap', 'common.page-convert') }}
                                 </nuxt-link>
                             </li>
-                            <!--
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('hub')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-hub.svg`" alt="" role="presentation">
                                     {{ $td('Deposit & withdraw', 'common.page-hub') }}
                                 </nuxt-link>
                             </li>
-                            -->
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('buy')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-transfer.svg`" alt="" role="presentation">
