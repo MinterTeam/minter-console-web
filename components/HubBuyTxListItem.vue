@@ -53,6 +53,9 @@ export default {
             <div>
                 <Loader class="hub__buy-loader" :is-loading="!step.finished"/>
 
+                <template v-if="loadingStage === $options.LOADING_STAGE.WRAP_ETH">
+                    Wrap {{ pretty(step.amount) }} ETH
+                </template>
                 <template v-if="loadingStage === $options.LOADING_STAGE.SWAP_ETH">
                     Swap {{ pretty(step.amount0) }} {{ step.coin0 }} for {{ step.coin1 }}
                 </template>

@@ -6,7 +6,7 @@ import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import withParams from 'vuelidate/lib/withParams.js';
-import { ChainId, Token, WETH, Fetcher, Route, Trade, TokenAmount, TradeType } from '@uniswap/sdk';
+import { ChainId, Token, WETH as WETH_TOKEN_DATA, Fetcher, Route, Trade, TokenAmount, TradeType } from '@uniswap/sdk';
 import IUniswapV2Router from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
 import {CloudflareProvider, JsonRpcProvider} from '@ethersproject/providers';
 import autosize from 'v-autosize';
@@ -22,7 +22,7 @@ import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEt
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import debounce from '~/assets/lodash5-debounce.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import BaseAmount from '@/components/common/BaseAmount.vue';
@@ -32,6 +32,7 @@ import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 import HubBuyTxListItem from '@/components/HubBuyTxListItem.vue';
+import wethAbi from 'assets/abi-weth.js';
 
 
 const uniswapV2Abi = IUniswapV2Router.abi;
@@ -45,6 +46,7 @@ const TX_APPROVE = 'approve';
 const TX_TRANSFER = 'transfer';
 
 const GAS_LIMIT_SWAP = 200000;
+const GAS_LIMIT_WRAP = 50000;
 const GAS_LIMIT_UNLOCK = 75000;
 const GAS_LIMIT_BRIDGE = 75000;
 
@@ -62,8 +64,22 @@ function coinContract(coinContractAddress) {
 const hubBridgeAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const hubBridgeContract = new web3.eth.Contract(peggyABI, hubBridgeAddress);
 
-const wethToken = WETH[ETHEREUM_CHAIN_ID];
-const DEPOSIT_SYMBOL = NETWORK === MAINNET ? 'USDTE' : 'USDC';
+const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
+const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
+
+const wethToken = WETH_TOKEN_DATA[ETHEREUM_CHAIN_ID];
+const DEPOSIT_COIN_DATA = {
+    ETH: {
+        testnetSymbol: 'TESTWETH',
+        smallAmount: 0.0001,
+    },
+    USDTE: {
+        testnetSymbol: 'USDC',
+        smallAmount: 0.1,
+    },
+};
+const DEPOSIT_SYMBOL_MAINNET = 'ETH';
+const DEPOSIT_SYMBOL = NETWORK === MAINNET ? DEPOSIT_SYMBOL_MAINNET : DEPOSIT_COIN_DATA[DEPOSIT_SYMBOL_MAINNET].testnetSymbol;
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
@@ -101,7 +117,7 @@ export default {
             .then(() => Promise.all([
                 this.updateBalance(),
                 this.getAllowance(),
-                this.fetchUniswapPair(),
+                // this.fetchUniswapPair(),
             ]));
     },
     data() {
@@ -173,7 +189,7 @@ export default {
         },
         ethTotalFee() {
             const unlockGasLimit = this.isCoinApproved ? 0 : GAS_LIMIT_UNLOCK;
-            const totalGasLimit = GAS_LIMIT_SWAP + unlockGasLimit + GAS_LIMIT_BRIDGE;
+            const totalGasLimit = /*GAS_LIMIT_SWAP + */GAS_LIMIT_WRAP + unlockGasLimit + GAS_LIMIT_BRIDGE;
             // gwei to ether
             const gasPrice = web3.utils.fromWei(web3.utils.toWei(this.ethGasPriceGwei.toString(), 'gwei'), 'ether');
 
@@ -190,6 +206,12 @@ export default {
             amount = amount.gt(0) ? amount.toString() : 0;
             return amount;
         },
+        ethToWrap() {
+            let amount = new Big(this.form.amountEth || 0).minus(this.ethTotalFee);
+            amount = amount.gt(0) ? amount.toString() : 0;
+            return amount;
+        },
+        /*
         ethToSwap() {
             let amount = new Big(this.form.amountEth || 0).minus(this.ethTotalFee);
             amount = amount.gt(0) ? amount.toString() : 0;
@@ -220,16 +242,21 @@ export default {
                 };
             }
         },
+        */
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === DEPOSIT_SYMBOL);
             return coinItem?.customCommission || 0.01;
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
-            return new Big(this.uniswapEstimation?.output || 0).times(this.hubFeeRate).toString();
+            // const input = this.uniswapEstimation?.output;
+            const input = this.ethToWrap;
+            return new Big(input || 0).times(this.hubFeeRate).toString();
         },
         coinAmountAfterBridge() {
-            return new Big(this.uniswapEstimation?.output || 0).minus(this.hubFee).toString();
+            // const input = this.uniswapEstimation?.output;
+            const input = this.ethToWrap;
+            return new Big(input || 0).minus(this.hubFee).toString();
         },
         maxAmount() {
             return this.ethBalance;
@@ -252,7 +279,10 @@ export default {
         },
         isCoinApproved() {
             const selectedUnlocked = new Big(this.coinToDepositUnlocked);
+            // uniswap not used anymore
+            return selectedUnlocked.gt(0) && selectedUnlocked.gt(this.form.amountEth || 0);
             // compare with large number instead of uniswapEstimation to eliminate circular dependency (uniswapEstimation > isCoinApproved > ethTotalFee > ethToSwap > uniswapEstimation)
+            // eslint-disable-next-line no-unreachable
             return selectedUnlocked.gt(1e15);
             // сравниваем эстимейт с запасом
             // return selectedUnlocked.gt(0) && selectedUnlocked.gt(this.uniswapEstimation?.output * 2);
@@ -328,7 +358,7 @@ export default {
             }
             this.updateBalance();
             this.getAllowance();
-            this.fetchUniswapPair();
+            // this.fetchUniswapPair();
         }, 60 * 1000);
         timer2 = setInterval(() => {
             if (this.isFormSending) {
@@ -433,10 +463,10 @@ export default {
                 return this.$fetch();
             }
 
-            const uniswapPairPromise = this.uniswapPair ? Promise.resolve() : this.fetchUniswapPair();
+            // const uniswapPairPromise = this.uniswapPair ? Promise.resolve() : this.fetchUniswapPair();
             const allowancePromise = this.allowanceRequest && this.allowanceRequest.promiseStatus !== PROMISE_REJECTED ? this.allowanceRequest.promise : this.getAllowance();
 
-            return Promise.all([uniswapPairPromise, allowancePromise]);
+            return Promise.all([/*uniswapPairPromise, */allowancePromise]);
         },
         recoverPurchase() {
             if (!this.$store.state.onLine) {
@@ -589,11 +619,16 @@ export default {
             this.$fetch();
         },
         async depositFromEthereum() {
-            this.loadingStage = LOADING_STAGE.SWAP_ETH;
-            this.addStepData(LOADING_STAGE.SWAP_ETH, {coin0: 'ETH', amount0: this.ethToSwap, coin1: this.coinEthereumName});
+            // this.loadingStage = LOADING_STAGE.SWAP_ETH;
+            // this.addStepData(LOADING_STAGE.SWAP_ETH, {coin0: 'ETH', amount0: this.ethToSwap, coin1: this.coinEthereumName});
+            this.loadingStage = LOADING_STAGE.WRAP_ETH;
+            this.addStepData(LOADING_STAGE.WRAP_ETH, {amount: this.ethToWrap});
             let nonce = await web3.eth.getTransactionCount(this.ethAddress, "pending");
 
-            const swapPromise = this.sendUniswapTx({nonce, gasPrice: this.ethGasPriceGwei});
+
+            const wrapPromise = this.sendWrapTx({nonce, gasPrice: this.ethGasPriceGwei});
+            // const swapPromise = this.sendUniswapTx({nonce, gasPrice: this.ethGasPriceGwei});
+
             // if `approve` step exists, then process sendApproveTx to ensure it finished
             if (!this.isCoinApproved || this.steps[LOADING_STAGE.APPROVE_BRIDGE]) {
                 this.addStepData(LOADING_STAGE.APPROVE_BRIDGE, {coin: this.coinEthereumName});
@@ -601,32 +636,19 @@ export default {
                 this.sendApproveTx({nonce, gasPrice: this.ethGasPriceGwei + 1});
             }
 
-            const swapReceipt = await swapPromise;
-            const outputAmount = await swapPromise
-                .then((receipt) => {
-                    const logIndex = 5 - 1;
-                    const dataIndex = 3 - 1;
-                    const amount0StartIndex = 2 + 64 * dataIndex;
-                    const amount1StartIndex = 2 + 64 * (dataIndex + 1);
-                    const amount0OutHex = receipt.logs[logIndex].data.slice(amount0StartIndex, amount0StartIndex + 64);
-                    const amount1OutHex = receipt.logs[logIndex].data.slice(amount1StartIndex, amount1StartIndex + 64);
-                    const amount0Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount0OutHex);
-                    const amount1Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount1OutHex);
-
-                    // received coin maybe 0 or 1, depending on position in uniswap pair
-                    return Math.max(amount0Out, amount1Out);
-                });
-            if (!(outputAmount > 0)) {
-                throw new Error(`Received 0 ${this.coinEthereumName} from uniswap`);
-            }
+            const wrapReceipt = await wrapPromise;
+            const outputAmount = toErcDecimals(this.ethToWrap, this.coinDecimals);
+            // const swapReceipt = await swapPromise;
+            // const outputAmount = getSwapOutput(swapReceipt);
+            // if (!(outputAmount > 0)) {
+            //     throw new Error(`Received 0 ${this.coinEthereumName} from uniswap`);
+            // }
             const outputAmountHumanReadable = fromErcDecimals(outputAmount, this.coinDecimals);
-            this.addStepData(LOADING_STAGE.SWAP_ETH, {amount1: outputAmountHumanReadable});
-
-            // console.log(outputAmount);
+            // this.addStepData(LOADING_STAGE.SWAP_ETH, {amount1: outputAmountHumanReadable});
 
             this.loadingStage = LOADING_STAGE.SEND_BRIDGE;
             this.addStepData(LOADING_STAGE.SEND_BRIDGE, {coin: this.coinEthereumName, amount: outputAmountHumanReadable});
-            const depositNonce = this.steps[LOADING_STAGE.APPROVE_BRIDGE] ? swapReceipt.nonce + 2 : swapReceipt.nonce + 1;
+            const depositNonce = this.steps[LOADING_STAGE.APPROVE_BRIDGE] ? wrapReceipt.nonce + 2 : wrapReceipt.nonce + 1;
             const depositReceipt = await this.sendCoinTx({amount: outputAmount, nonce: depositNonce});
 
             this.loadingStage = LOADING_STAGE.WAIT_BRIDGE;
@@ -643,6 +665,16 @@ export default {
             const data = poolContract.methods.swapExactETHForTokens(amountOutMin, [wethToken.address, this.coinContractAddress], this.ethAddress, deadline).encodeABI();
 
             return this.sendEthTx({to: routerAddress, data, value: this.ethToSwap, nonce, gasPrice, gasLimit: GAS_LIMIT_SWAP}, LOADING_STAGE.SWAP_ETH);
+        },
+        sendWrapTx({nonce, gasPrice} = {}) {
+            return this.sendEthTx({
+                to: WETH_ETHEREUM_CONTRACT_ADDRESS,
+                value: this.ethToWrap,
+                data: wethDepositAbiData,
+                nonce,
+                gasPrice,
+                gasLimit: GAS_LIMIT_WRAP,
+            }, LOADING_STAGE.WRAP_ETH);
         },
         sendApproveTx({nonce, gasPrice} = {}) {
             let amountToUnlock = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
@@ -724,10 +756,11 @@ export default {
                 .then(() => {
                     const coinBalanceItem = this.$store.getters.balance.find((item) => item.coin.symbol === DEPOSIT_SYMBOL);
                     const balanceAmount = coinBalanceItem?.amount || 0;
+                    const smallAmount = DEPOSIT_COIN_DATA[DEPOSIT_SYMBOL_MAINNET].smallAmount;
 
                     let txParams = {
-                        // sell all usdt if user has no or very small amount of it
-                        type: balanceAmount - amount < 0.1 ? TX_TYPE.SELL_ALL_SWAP_POOL : TX_TYPE.SELL_SWAP_POOL,
+                        // sell all DEPOSIT_SYMBOL if user has no or very small amount of it
+                        type: balanceAmount - amount < smallAmount ? TX_TYPE.SELL_ALL_SWAP_POOL : TX_TYPE.SELL_SWAP_POOL,
                         data: {
                             coins: this.estimationRoute
                                 ? this.estimationRoute.map((coin) => coin.id)
@@ -839,6 +872,20 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
             return Object.freeze(pair);
         });
 }
+
+function getSwapOutput(receipt) {
+    const logIndex = 5 - 1;
+    const dataIndex = 3 - 1;
+    const amount0StartIndex = 2 + 64 * dataIndex;
+    const amount1StartIndex = 2 + 64 * (dataIndex + 1);
+    const amount0OutHex = receipt.logs[logIndex].data.slice(amount0StartIndex, amount0StartIndex + 64);
+    const amount1OutHex = receipt.logs[logIndex].data.slice(amount1StartIndex, amount1StartIndex + 64);
+    const amount0Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount0OutHex);
+    const amount1Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount1OutHex);
+
+    // received coin maybe 0 or 1, depending on position in uniswap pair
+    return Math.max(amount0Out, amount1Out);
+}
 </script>
 
 <template>
@@ -940,6 +987,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             <div class="form-field__label">Ethereum fee</div>
                         </div>
                     </div>
+                    <!--
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ pretty(ethToSwap) }} ETH</div>
@@ -958,6 +1006,7 @@ function _fetchUniswapPair(coinContractAddress, coinDecimals) {
                             <div class="form-field__label">Uniswap output</div>
                         </div>
                     </div>
+                    -->
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">≈{{ pretty(coinAmountAfterBridge) }} {{ $options.DEPOSIT_SYMBOL }}</div>
