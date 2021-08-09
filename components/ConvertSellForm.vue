@@ -217,9 +217,7 @@
                         }
                         if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.currentEstimation) {
                             let slippage = 1 - (this.formSlippagePercent || 0) / 100;
-                            if (slippage < 0) {
-                                slippage = 0;
-                            }
+                            slippage = Math.max(slippage, 0);
                             this.form.minimumValueToBuy = decreasePrecisionSignificant(this.currentEstimation * slippage);
                         }
                         if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.estimationError) {
@@ -327,7 +325,9 @@
 
                 this.selectedConvertType = CONVERT_TYPE.OPTIMAL;
                 this.selectedSlippageInput = SLIPPAGE_INPUT_TYPE.PERCENT;
-                this.formSlippagePercent = 5;
+                if (this.formSlippagePercent > 5) {
+                    this.formSlippagePercent = 5;
+                }
             },
         },
     };

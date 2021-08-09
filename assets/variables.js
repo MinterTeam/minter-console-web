@@ -86,6 +86,7 @@ export const HUB_DEPOSIT_TX_PURPOSE = {
 export const HUB_BUY_STAGE = {
     WAIT_ETH: 'wait_eth',
     SWAP_ETH: 'swap_eth',
+    WRAP_ETH: 'wrap_eth',
     APPROVE_BRIDGE: 'approve_bridge',
     SEND_BRIDGE: 'send_bridge',
     WAIT_BRIDGE: 'wait_bridge',

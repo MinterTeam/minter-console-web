@@ -1,7 +1,6 @@
 import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {getStatus, getCoinList} from '~/api/explorer.js';
-import {getCoinIconUrl} from '~/api/accounts.js';
-import {BASE_URL_PREFIX} from '~/assets/variables.js';
+import {ACCOUNTS_API_URL, BASE_URL_PREFIX} from '~/assets/variables.js';
 
 export const state = () => ({
     /** @type Status|null */
@@ -22,7 +21,7 @@ export const getters = {
         return function(coinSymbol) {
             // BIP
             if (coinSymbol.toUpperCase() === 'BIP') {
-                return `${BASE_URL_PREFIX}/img/icon-coin-bip.png`;
+                return `${BASE_URL_PREFIX}/img/icon-coin-bip.svg`;
             }
             // LP
             if (coinSymbol.indexOf('LP-') === 0) {
@@ -43,7 +42,7 @@ export const getters = {
 
             // myminter icon
             if (!rootGetters.isOfflineMode) {
-                return getCoinIconUrl(coinSymbol);
+                return `${ACCOUNTS_API_URL}avatar/by/coin/${coinSymbol}`;
             }
 
             // fallback

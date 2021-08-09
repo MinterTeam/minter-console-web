@@ -19,6 +19,7 @@ import {getErrorText} from '~/assets/server-error.js';
  * @property {number|string} baseCoinValue
  * @property {number|string} value
  * @property {string|number} coin
+ * @property {string|number} coinSymbol
  * @property {string} error
  * @property {boolean} isHighFee
  * @property {boolean} isLoading

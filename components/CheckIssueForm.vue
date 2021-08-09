@@ -1,6 +1,7 @@
 <script>
     import {mapGetters} from 'vuex';
     import QrcodeVue from 'qrcode.vue';
+    import { nanoid } from 'nanoid/non-secure';
     import InlineSvg from 'vue-inline-svg';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
@@ -43,7 +44,7 @@
                 check: null,
                 password: '',
                 form: {
-                    nonce: null,
+                    nonce: getRandom(),
                     dueBlock: '',
                     value: null,
                     coinSymbol: '',
@@ -62,6 +63,7 @@
                 form: {
                     nonce: {
                         required,
+                        maxLength: maxLength(16),
                     },
                     dueBlock: {
                     },
@@ -169,12 +171,7 @@
                     });
             },
             clearForm() {
-                if (parseInt(this.form.nonce, 10).toString() === this.form.nonce) {
-                    // increment nonce if it is integer number
-                    this.form.nonce = (parseInt(this.form.nonce, 10) + 1).toString();
-                } else {
-                    this.form.nonce = '';
-                }
+                this.form.nonce = getRandom();
                 this.form.dueBlock = '';
                 this.form.value = null;
                 this.form.coinSymbol = '';
@@ -184,6 +181,10 @@
             },
         },
     };
+
+    function getRandom() {
+        return nanoid(10);
+    }
 
     /**
      * Ensure empty fields to be undefined
@@ -214,7 +215,8 @@
                     <span class="form-field__label">{{ $td('Nonce', 'form.checks-issue-nonce') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.nonce.$dirty && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
-                <div class="form-field__help">{{ $td('Check\'s unique ID. Used for issuing several identical checks.', 'form.checks-issue-nonce-help') }}</div>
+                <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.maxLength">{{ $td('Max length: 16 bytes', 'form.checks-issue-nonce-error-max') }}</span>
+                <div class="form-field__help">{{ $td('Check\'s unique ID. Arbitrary string. Used for issuing several identical checks.', 'form.checks-issue-nonce-help') }}</div>
             </div>
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <FieldCoin
