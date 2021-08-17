@@ -21,6 +21,7 @@ import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEtherscanTxUrl, shortHashFilter} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
+import wethAbi from '~/assets/abi-weth.js';
 import debounce from '~/assets/lodash5-debounce.js';
 import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
@@ -32,7 +33,6 @@ import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 import HubBuyTxListItem from '@/components/HubBuyTxListItem.vue';
-import wethAbi from 'assets/abi-weth.js';
 
 
 const uniswapV2Abi = IUniswapV2Router.abi;
@@ -785,7 +785,7 @@ export default {
             }
         },
         watchEstimation() {
-            if (this.$store.getters.isOfflineMode) {
+            if (!this.$store.state.onLine) {
                 return;
             }
             if (this.$v.form.$invalid) {

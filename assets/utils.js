@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-util/src/tx-types.js';
-import {EXPLORER_HOST, ETHERSCAN_HOST, HUB_TRANSFER_STATUS, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
+import {EXPLORER_HOST, ETHERSCAN_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
 
 
 
