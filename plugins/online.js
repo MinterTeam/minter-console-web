@@ -7,6 +7,15 @@ export default ({store}) => {
 
     window.addEventListener('online', () => {
         store.commit('SET_ONLINE', true);
+
+        store.dispatch('FETCH_BALANCE')
+            .catch((e) => {
+                console.log(e);
+            });
+        store.dispatch('explorer/FETCH_STATUS')
+            .catch((e) => {
+                console.log(e);
+            });
     });
     window.addEventListener('offline', () => {
         store.commit('SET_ONLINE', false);
