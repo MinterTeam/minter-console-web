@@ -139,44 +139,59 @@
         </div>
 
         <div class="u-section u-container u-container--medium">
-            <h1 class="h-title">{{ $td('What Is Minter Console?', 'index.features-title') }}</h1>
+            <h1 class="h-title">{{ $td('What is Minter Console?', 'index.features-title') }}</h1>
             <p>{{ $td('Minter Console is by far the most advanced part of our project that lets you manage all your activities on the blockchain network and off-chain services. Here are just a few features:', 'index.features-description') }}</p>
             <ul class="features__list u-grid u-grid--vertical-margin--large no-list">
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-transfer.svg`" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">{{ $td('Send and Receive Any Coins', 'index.features-transfer-title') }}</strong>
+                        <strong class="features__title">{{ $td('Send and receive any coins', 'index.features-transfer-title') }}</strong>
                         <p>{{ $td('Transact cryptocurrencies with your friends, family members, and business partners. Almost instantly and fee-free.', 'index.features-transfer-description') }}</p>
+                    </div>
+                </li>
+                <li class="features__item u-cell u-cell--medium--1-2">
+                    <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation">
+                    <div>
+                        <strong class="features__title">{{ $td('Trade', 'index.features-trade-title') }}</strong>
+                        <p>{{ $td('Create trading pairs, add liquidity into pools and remove it, and participate in yield farming programs.', 'index.features-trade-description') }}</p>
+                    </div>
+                </li>
+                <li class="features__item u-cell u-cell--medium--1-2">
+                    <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-hub.svg`" alt="" role="presentation">
+                    <div>
+                        <strong class="features__title">{{ $td('Make cross-chain transfers', 'index.features-cross-chain-title') }}</strong>
+                        <p>{{ $td('Move your digital assets between the Minter and Ethereum networks (there are more to come).', 'index.features-cross-chain-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">{{ $td('Create and Manage Checks', 'index.features-check-title') }}</strong>
+                        <strong class="features__title">{{ $td('Create and manage checks', 'index.features-check-title') }}</strong>
                         <p>{{ $td('Paper is no more needed to issue or redeem the check. Minter Console will help you get the job done—wherever you are and whenever you need it.', 'index.features-check-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-mining.svg`" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">{{ $td('Delegate or Unbond Tokens', 'index.features-mining-title') }}</strong>
+                        <strong class="features__title">{{ $td('Delegate or unbond tokens', 'index.features-mining-title') }}</strong>
                         <p>{{ $td('Delegate your tokens to start receiving payouts. In case you don’t want the validator to handle your holdings anymore, all you need to do is submit the request for unbonding.', 'index.features-mining-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-node-management.svg`" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">{{ $td('Set Up and Manage a Masternode', 'index.features-masternode-title') }}</strong>
+                        <strong class="features__title">{{ $td('Set up and manage a masternode', 'index.features-masternode-title') }}</strong>
                         <p>{{ $td('With our user-friendly, easy-to-navigate interface, running a masternode has never been easier.', 'index.features-masternode-description') }}</p>
                     </div>
                 </li>
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-creation.svg`" alt="" role="presentation">
                     <div>
-                        <strong class="features__title">{{ $td('Create New Coins', 'index.features-creation-title') }}</strong>
+                        <strong class="features__title">{{ $td('Create new coins and tokens', 'index.features-creation-title') }}</strong>
                         <p>{{ $td('Don’t hesitate too long—starting your own cryptocurrency is just a few clicks away!', 'index.features-creation-description') }}</p>
                     </div>
                 </li>
+                <!--
                 <li class="features__item u-cell u-cell--medium--1-2">
                     <img class="features__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pco.svg`" alt="" role="presentation">
                     <div>
@@ -205,6 +220,7 @@
                         <p>{{ $td('Coping with all the razzle-dazzle technical features can sometimes be challenging. But don’t worry, our customer support team will always be there for you.', 'index.features-support-description') }}</p>
                     </div>
                 </li>
+                -->
             </ul>
             <!--
             <hr class="hr&#45;&#45;margin-large">
