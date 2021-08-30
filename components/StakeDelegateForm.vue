@@ -67,7 +67,7 @@
                 if (this.$v.form.publicKey.$invalid) {
                     return null;
                 }
-                const validator = this.$store.state.validatorList.find((item) => item.publicKey === this.form.publicKey);
+                const validator = this.$store.state.validatorMetaList.find((item) => item.publicKey === this.form.publicKey);
                 return validator?.name;
             },
             validatorFullName() {

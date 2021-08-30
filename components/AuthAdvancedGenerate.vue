@@ -38,7 +38,7 @@
     <div class="panel__section">
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell" v-if="!mnemonic">
-                <button class="button button--main button--full" data-test-id="authAdvancedRegisterGenerateButton" @click="generate">{{ $td('Click To Generate Seed&nbsp;Phrase', 'index.auth-sign-up-seed-generate') }}</button>
+                <button class="button button--main button--full" data-test-id="authAdvancedRegisterGenerateButton" @click="generate">{{ $td('Click to generate seed&nbsp;phrase', 'index.auth-sign-up-seed-generate') }}</button>
             </div>
             <div class="u-cell" v-if="address">
                 <label class="form-field form-field--with-icon">
@@ -57,7 +57,7 @@
                               :value="mnemonic"
                     ></textarea>
                     <ButtonCopy class="form-field__icon form-field__icon--copy u-semantic-button link--opacity" data-test-id="authAdvancedRegisterCopyButton" :copy-text="mnemonic">
-                        <img :src="`${BASE_URL_PREFIX}/img/icon-copy-black.svg`" :alt="$td('Copy Seed Phrase', 'index.auth-sign-up-seed-copy')">
+                        <img :src="`${BASE_URL_PREFIX}/img/icon-copy-black.svg`" :alt="$td('Copy seed phrase', 'index.auth-sign-up-seed-copy')">
                     </ButtonCopy>
                     <span class="form-field__label">{{ $td('Your generated seed phrase', 'index.auth-sign-up-seed-result') }}</span>
                 </label>

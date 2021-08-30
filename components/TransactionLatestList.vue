@@ -176,8 +176,8 @@
                 if (!tx.data.pubKey) {
                     return;
                 }
-                const validator = this.$store.state.validatorList.find((validatorItem) => validatorItem.publicKey === tx.data.pubKey);
-                return validator && validator.meta && validator.meta.name;
+                const validator = this.$store.state.validatorMetaList.find((validatorItem) => validatorItem.publicKey === tx.data.pubKey);
+                return validator?.name;
             },
             fromBase64,
             getExplorerBlockUrl,
