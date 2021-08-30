@@ -10,8 +10,8 @@ export default function() {
         balance: [],
         /** @type Array<StakeItem> */
         stakeList: [],
-        /** @type Array<Validator> */
-        validatorList: [],
+        /** @type Array<ValidatorMeta> */
+        validatorMetaList: [],
         lastUpdateTime: 9999999999999,
         // transactionListInfo: {
         //     data: [],
