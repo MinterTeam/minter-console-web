@@ -93,3 +93,12 @@ export const HUB_BUY_STAGE = {
     SWAP_MINTER: 'swap_minter',
     FINISH: 'finish',
 };
+
+/**
+ * @readonly
+ * @enum {string}
+ */
+export const TX_STATUS = {
+    SUCCESS: true,
+    FAILURE: false,
+};

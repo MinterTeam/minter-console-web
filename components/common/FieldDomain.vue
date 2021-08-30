@@ -78,7 +78,7 @@
                     return;
                 }
 
-                return this.$store.state.validatorList.map((item) => {
+                return this.$store.state.validatorMetaList.map((item) => {
                     return {name: item.name || '', value: item.publicKey};
                 });
             },

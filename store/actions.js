@@ -1,5 +1,5 @@
 // import {getProfile, getProfileAddressEncrypted} from "~/api";
-import {getBalance, getAddressStakeList, getValidatorList} from "~/api/explorer.js";
+import {getBalance, getAddressStakeList, getValidatorMetaList} from "~/api/explorer.js";
 
 export default {
     // FETCH_PROFILE: ({ state, commit }) => {
@@ -75,10 +75,10 @@ export default {
                 return stakeList;
             });
     },
-    FETCH_VALIDATOR_LIST({ commit }) {
-        return getValidatorList()
+    FETCH_VALIDATOR_META_LIST({ commit }) {
+        return getValidatorMetaList()
             .then((validatorList) => {
-                commit('SET_VALIDATOR_LIST', validatorList);
+                commit('SET_VALIDATOR_META_LIST', validatorList);
                 return validatorList;
             });
     },

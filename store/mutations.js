@@ -39,8 +39,8 @@ export default {
     SET_STAKE_LIST: (state, stakeList) => {
         state.stakeList = stakeList;
     },
-    SET_VALIDATOR_LIST(state, validatorList) {
-        state.validatorList = validatorList;
+    SET_VALIDATOR_META_LIST(state, validatorList) {
+        state.validatorMetaList = validatorList;
     },
     // PUSH_HISTORY: (state, historyItem) => {
     //     state.history.push(historyItem);
