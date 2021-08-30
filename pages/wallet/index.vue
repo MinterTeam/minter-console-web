@@ -36,7 +36,7 @@
             if (store.getters.isOfflineMode) {
                 return;
             }
-            store.dispatch('FETCH_VALIDATOR_LIST');
+            store.dispatch('FETCH_VALIDATOR_META_LIST');
         },
         asyncData({ store }) {
             if (store.getters.isOfflineMode) {
