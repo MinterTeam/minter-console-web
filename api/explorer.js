@@ -480,7 +480,7 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions
  * @property {string} [data.to]
  * @property {Coin} [data.coin]
  * @property {number} [data.amount]
- * -- type: TX_TYPE.CONVERT
+ * -- type: TX_TYPE.SELL, TX_TYPE.BUY
  * @property {Coin} [data.coinToSell]
  * @property {Coin} [data.coinToBuy]
  * @property {Array<Coin>} [data.coins]
@@ -488,6 +488,9 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions
  * @property {number} [data.minimumValueToBuy]
  * @property {number} [data.valueToBuy]
  * @property {number} [data.maximumValueToSell]
+ * -- type: TX_TYPE.ADD_LIMIT_ORDER, TX_TYPE.REMOVE_LIMIT_ORDER
+ * @property {number} [data.orderId] - from tags
+ * @property {number} [data.id] - from data
  * -- type: TX_TYPE.CREATE_COIN
  * @property {number} [data.createdCoinId]
  * @property {string} [data.name]
