@@ -42,7 +42,7 @@ export default {
         eventBus.on('activate-cancel-limit-order', (orderId) => {
             this.form.id = orderId;
 
-            const inputEl = this.$refs.orderIdInput.$el.querySelector('input');
+            const inputEl = this.$refs.orderIdInput.$el;
             focusElement(inputEl);
         });
     },
