@@ -3,16 +3,12 @@
     import ConvertSellForm from '~/components/ConvertSellForm.vue';
     import ConvertSellAllForm from '~/components/ConvertSellAllForm.vue';
     import ConvertBuyForm from '~/components/ConvertBuyForm.vue';
-    import LimitOrderAddForm from '~/components/LimitOrderAddForm.vue';
-    import LimitOrderRemoveForm from '~/components/LimitOrderRemoveForm.vue';
 
     export default {
         components: {
             ConvertSellForm,
             ConvertSellAllForm,
             ConvertBuyForm,
-            LimitOrderAddForm,
-            LimitOrderRemoveForm,
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Swap', 'common.page-convert'));
@@ -41,7 +37,5 @@
         <ConvertBuyForm/>
         <ConvertSellForm/>
         <ConvertSellAllForm/>
-        <LimitOrderAddForm/>
-        <LimitOrderRemoveForm/>
     </section>
 </template>

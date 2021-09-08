@@ -167,6 +167,19 @@ export function getAddressTransactionList(address, params) {
 }
 
 /**
+ * Get limit order list by owner address
+ * @param {string} address
+ * @param {Object} [params]
+ * @param {number} [params.page]
+ * @param {number} [params.limit]
+ * @return {Promise<LimitOrderListInfo>}
+ */
+export function getAddressOrderList(address, params) {
+    return explorer.get(`addresses/${address}/orders`, {params})
+        .then((response) => response.data);
+}
+
+/**
  * @param {string} address
  * @return {Promise<Array<StakeItem>>}
  */
@@ -331,6 +344,20 @@ export function getPool(coin0, coin1) {
 }
 
 /**
+ * Get limit order list by pool
+ * @param {string|number} coin0
+ * @param {string|number} coin1
+ * @param {Object} [params]
+ * @param {number} [params.page]
+ * @param {number} [params.limit]
+ * @return {Promise<LimitOrderListInfo>}
+ */
+export function getPoolOrderList(coin0, coin1, params) {
+    return explorer.get(`pools/coins/${coin0}/${coin1}/orders`, {params})
+        .then((response) => response.data);
+}
+
+/**
  * @param {string|number} coin0
  * @param {string|number} coin1
  * @param {string} address
@@ -452,6 +479,24 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions
  * @property {number|string} liquidityBip
  * @property {number|string} liquidityShare
  * @property {string} token
+ */
+
+/**
+ * @typedef {Object} LimitOrderListInfo
+ * @property {Array<LimitOrder>} data
+ * @property {PaginationMeta} meta
+ */
+
+/**
+ * @typedef {Object} LimitOrder
+ * @property {number} id
+ * @property {number} height - created at block
+ * @property {string} address - owner
+ * @property {number} poolId
+ * @property {Coin} coinToSell
+ * @property {Coin} coinToBuy
+ * @property {string|number} coinToSellVolume
+ * @property {string|number} coinToBuyVolume
  */
 
 /**

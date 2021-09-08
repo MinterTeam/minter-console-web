@@ -14,6 +14,7 @@ import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from "~/assets/server-error.js";
 import {pretty, prettyExact, decreasePrecisionSignificant, decreasePrecisionFixed} from "~/assets/utils.js";
 import {COIN_TYPE, SWAP_TYPE} from '~/assets/variables.js';
+import eventBus from '~/assets/event-bus.js';
 import BaseAmount from '~/components/common/BaseAmount.vue';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin.vue';
@@ -127,6 +128,9 @@ export default {
 
             return getPool(this.form.coinToSell, this.form.coinToBuy);
         },
+        success() {
+            eventBus.emit('update-limit-order-list');
+        },
         beforeConfirm(txFormContext) {
             if (this.$store.getters.isOfflineMode) {
                 return;
@@ -180,6 +184,7 @@ function getMidPriceInput(pool, inputCoin) {
         :before-confirm-modal-show="beforeConfirm"
         @update:addressBalance="addressBalance = $event"
         @update:txForm="txForm = $event"
+        @success-tx="success()"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
