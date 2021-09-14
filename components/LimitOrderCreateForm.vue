@@ -53,6 +53,7 @@ export default {
             // list of all pools' coins
             poolCoinList: [],
             debouncedFetchPoolData: null,
+            poolDataError: '',
         };
     },
     validations() {
@@ -75,6 +76,9 @@ export default {
 
         return {
             form,
+            poolData: {
+                required: this.$store.getters.isOfflineMode ? () => true : required,
+            },
         };
     },
     asyncComputed: {
@@ -117,7 +121,9 @@ export default {
     methods: {
         pretty,
         prettyExact,
-        fetchPoolData() {
+        fetchPoolData({throwOnError} = {}) {
+            this.poolDataError = '';
+
             // no pair entered
             if (!this.form.coinToSell || !this.form.coinToBuy || this.form.coinToSell === this.form.coinToBuy) {
                 return;
@@ -126,7 +132,14 @@ export default {
                 return;
             }
 
-            return getPool(this.form.coinToSell, this.form.coinToBuy);
+            return getPool(this.form.coinToSell, this.form.coinToBuy)
+                .catch((error) => {
+                    console.log(error);
+                    this.poolDataError = getErrorText(error);
+                    if (throwOnError) {
+                        throw error;
+                    }
+                });
         },
         success() {
             eventBus.emit('update-limit-order-list');
@@ -138,7 +151,7 @@ export default {
             txFormContext.isFormSending = true;
             txFormContext.serverError = '';
             txFormContext.serverSuccess = '';
-            return this.fetchPoolData()
+            return this.fetchPoolData({throwOnError: true})
                 .then(() => {
                     txFormContext.isFormSending = false;
                 })
@@ -179,7 +192,7 @@ function getMidPriceInput(pool, inputCoin) {
 <template>
     <TxForm
         :txData="form"
-        :$txData="$v.form"
+        :$txData="$v"
         :txType="$options.TX_TYPE.ADD_LIMIT_ORDER"
         :before-confirm-modal-show="beforeConfirm"
         @update:addressBalance="addressBalance = $event"
@@ -253,6 +266,7 @@ function getMidPriceInput(pool, inputCoin) {
                         <div class="form-field__label">1 {{ form.coinToBuy || 'coin to buy' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
+                    <span class="form-field__error" v-if="$v.poolData.$dirty && !$v.poolData.required">{{ poolDataError || $td('Can\'t load pool data', 'form.pool-data-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">

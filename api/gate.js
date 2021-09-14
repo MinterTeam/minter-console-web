@@ -29,12 +29,11 @@ export const postSignedTx = PostSignedTx(minterApi);
 export const getNonce = GetNonce(minterApi);
 export const ensureNonce = EnsureNonce(minterApi);
 
-const estimateCache = new Cache({maxAge: 30 * 1000});
-// sell/buy estimates not used often (only before confirmation modal opening) so no need to cache them
+const estimateCache = new Cache({maxAge: 5 * 1000});
 const _estimateCoinSell = (params, axiosOptions) => params.sellAll
-    ? EstimateCoinSellAll(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/})
-    : EstimateCoinSell(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/});
-const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions/*, cache: estimateCache*/});
+    ? EstimateCoinSellAll(minterApi)(params, {...axiosOptions, cache: estimateCache})
+    : EstimateCoinSell(minterApi)(params, {...axiosOptions, cache: estimateCache});
+const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions, cache: estimateCache});
 export function estimateCoinSell(params, axiosOptions) {
     // 0, '0', false, undefined
     if (!params.valueToSell || !Number(params.valueToSell)) {
@@ -46,10 +45,10 @@ export function estimateCoinSell(params, axiosOptions) {
             .catch((error) => {
                 estimateError = error;
             });
-        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell}, axiosOptions)
+        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell}, {...axiosOptions, cache: estimateCache})
             // ignore route errors
             .catch((error) => {
-                console.log(error);
+                console.log('getSwapRoute error ignored', error);
             });
         return Promise.all([estimatePromise, routePromise])
             .then(([estimateData, routeData]) => {
@@ -105,10 +104,10 @@ export function estimateCoinBuy(params, axiosOptions) {
             .catch((error) => {
                 estimateError = error;
             });
-        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy}, axiosOptions)
+        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy}, {...axiosOptions, cache: estimateCache})
             // ignore route errors
             .catch((error) => {
-                console.log(error);
+                console.log('getSwapRoute error ignored', error);
             });
         return Promise.all([estimatePromise, routePromise])
             .then(([estimateData, routeData]) => {
@@ -153,7 +152,9 @@ export function estimateCoinBuy(params, axiosOptions) {
     }
 }
 
-export const estimateTxCommission = (params, axiosOptions) => EstimateTxCommission(minterApi)(params, {direct: false}, {...axiosOptions, cache: estimateCache});
+//@TODO use same `getCommissionPrice` in `estimateTxCommission` (update sdk)
+const estimateCommissionCache = new Cache({maxAge: 30 * 1000});
+export const estimateTxCommission = (params, axiosOptions) => EstimateTxCommission(minterApi)(params, {direct: false}, {...axiosOptions, cache: estimateCommissionCache});
 
 const coinCache = new Cache({maxAge: 1 * 60 * 1000});
 export const replaceCoinSymbol = ReplaceCoinSymbol(minterApi);

@@ -8,9 +8,34 @@ import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
 
+
+function save404Adapter(adapter) {
+    return async function(config) {
+        try {
+            return await adapter(config);
+        } catch (error) {
+            if (error.response?.status === 404) {
+                return {savedError: error};
+            }
+
+            throw error;
+        }
+    };
+}
+
+function restoreErrorAdapter(adapter) {
+    return async function(config) {
+        const result = await adapter(config);
+        if (result.savedError) {
+            throw result.savedError;
+        }
+        return result;
+    };
+}
+
 const instance = axios.create({
     baseURL: EXPLORER_API_URL,
-    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
+    adapter: restoreErrorAdapter(cacheAdapterEnhancer(save404Adapter(axios.defaults.adapter), { enabledByDefault: false})),
 });
 addToCamelInterceptor(instance);
 addTimeInterceptor(instance);
@@ -337,6 +362,9 @@ const poolCache = new Cache({maxAge: 10 * 1000});
  * @return {Promise<Pool>}
  */
 export function getPool(coin0, coin1) {
+    if (coin0 === coin1) {
+        return Promise.reject('coin0 is equal to coin1');
+    }
     return explorer.get(`pools/coins/${coin0}/${coin1}`, {
             cache: poolCache,
         })

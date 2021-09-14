@@ -1,14 +1,14 @@
 <script>
 import getTitle from '~/assets/get-title';
-import LimitOrderAddForm from '~/components/LimitOrderAddForm.vue';
-import LimitOrderRemoveForm from '~/components/LimitOrderRemoveForm.vue';
+import LimitOrderCreateForm from '@/components/LimitOrderCreateForm.vue';
+import LimitOrderCancelForm from '@/components/LimitOrderCancelForm.vue';
 import LimitOrderList from '~/components/LimitOrderList.vue';
 
 export default {
     components: {
         LimitOrderList,
-        LimitOrderAddForm,
-        LimitOrderRemoveForm,
+        LimitOrderCreateForm,
+        LimitOrderCancelForm,
     },
     fetch({ app, store }) {
         store.commit('SET_SECTION_NAME', app.$td('Limit orders', 'common.page-order'));
@@ -36,7 +36,7 @@ export default {
     <section class="u-section u-container">
         <LimitOrderList/>
 
-        <LimitOrderAddForm/>
-        <LimitOrderRemoveForm/>
+        <LimitOrderCreateForm/>
+        <LimitOrderCancelForm/>
     </section>
 </template>
