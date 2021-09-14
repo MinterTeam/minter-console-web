@@ -363,7 +363,7 @@ const poolCache = new Cache({maxAge: 10 * 1000});
  */
 export function getPool(coin0, coin1) {
     if (coin0 === coin1) {
-        return Promise.reject('coin0 is equal to coin1');
+        return Promise.reject(new Error('coin0 is equal to coin1'));
     }
     return explorer.get(`pools/coins/${coin0}/${coin1}`, {
             cache: poolCache,

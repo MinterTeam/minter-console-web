@@ -125,7 +125,7 @@ export default {
             this.poolDataError = '';
 
             // no pair entered
-            if (!this.form.coinToSell || !this.form.coinToBuy || this.form.coinToSell === this.form.coinToBuy) {
+            if (!this.form.coinToSell || !this.form.coinToBuy) {
                 return;
             }
             if (this.$v.form.coinToSell.$invalid || this.$v.form.coinToBuy.$invalid) {
