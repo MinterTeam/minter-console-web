@@ -398,12 +398,6 @@ function getMidPriceInput(pool, inputCoin) {
             <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="form.valueToBuy" :exact="true"/>
-                        <div class="form-field__label">{{ $td('You will get', 'form.order-add-confirm-get') }}</div>
-                    </div>
-                </div>
-                <div class="u-cell">
-                    <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
                             <BaseAmount :coin="form.coinToSell" :amount="form.valueToSell" :exact="true"/>
                         </div>
@@ -412,30 +406,22 @@ function getMidPriceInput(pool, inputCoin) {
                         </div>
                     </div>
                 </div>
-                <!--
-                <div class="u-cell u-cell--1-2">
+                <div class="u-cell">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="coinToBuyCurrentPrice"/>
-                        <div class="form-field__label">1 {{ form.coinToBuy }} {{ $td('current price', 'form.order-add-current-price') }}</div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="form.valueToBuy" :exact="true"/>
+                        <div class="form-field__label">{{ $td('You will get', 'form.order-add-confirm-get') }}</div>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="coinToSellCurrentPrice"/>
-                        <div class="form-field__label">1 {{ form.coinToSell }} {{ $td('current price', 'form.order-add-current-price') }}</div>
-                    </div>
-                </div>
-                -->
-                <div class="u-cell u-cell--1-2">
-                    <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="form.valueToSell / form.valueToBuy"/>
-                        <div class="form-field__label">1 {{ form.coinToBuy }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="formSellPrice"/>
+                        <div class="form-field__label">{{ form.coinToSell }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="form.valueToBuy / form.valueToSell"/>
-                        <div class="form-field__label">1 {{ form.coinToSell }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="formBuyPrice"/>
+                        <div class="form-field__label">{{ form.coinToBuy }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
             </div>
