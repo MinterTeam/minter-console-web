@@ -21,8 +21,18 @@ import FieldCoin from '~/components/common/FieldCoin.vue';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 import Loader from '~/components/common/Loader.vue';
 
+let watcherTimer;
+
+const INPUT_TYPE = {
+    AMOUNT_SELL: 'amount_sell',
+    AMOUNT_BUY: 'amount_buy',
+    PRICE_SELL: 'price_sell',
+    PRICE_BUY: 'price_buy',
+};
+
 export default {
     TX_TYPE,
+    INPUT_TYPE,
     components: {
         BaseAmount,
         TxForm,
@@ -48,7 +58,9 @@ export default {
                 coinToBuy: '',
                 valueToBuy: '',
             },
-            txForm: {},
+            formSellPrice: '', // price of coin to sell
+            formBuyPrice: '', // price of coin to buy
+            lastSelectedInputList: [],
             addressBalance: [],
             // list of all pools' coins
             poolCoinList: [],
@@ -79,6 +91,12 @@ export default {
             poolData: {
                 required: this.$store.getters.isOfflineMode ? () => true : required,
             },
+            formSellPrice: {
+
+            },
+            formBuyPrice: {
+
+            },
         };
     },
     asyncComputed: {
@@ -90,6 +108,16 @@ export default {
     computed: {
         isPoolLoaded() {
             return this.$asyncComputed.poolData.success && this.poolData?.liquidity;
+        },
+        whatAffectsPrice() {
+            return {
+                // poolData: this.poolData,
+                lastSelectedInputList: this.lastSelectedInputList.join(','),
+                formSellPrice: this.formSellPrice,
+                formBuyPrice: this.formBuyPrice,
+                formAmountSell: this.form.valueToSell,
+                formAmountBuy: this.form.valueToBuy,
+            };
         },
         tradableCoinList() {
             return this.poolCoinList.map((coin) => coin.symbol);
@@ -115,12 +143,66 @@ export default {
             return getMidPriceInput(this.poolData, this.form.coinToBuy);
         },
     },
+    watch: {
+        whatAffectsPrice: {
+            handler() {
+                // @input and @input.native may fire in different time so timer needed to wait all events
+                clearTimeout(watcherTimer);
+                watcherTimer = setTimeout(() => {
+                    const selectedInput = this.lastSelectedInputList[0];
+                    const bothAmountInputSelected = this.lastSelectedInputList.includes(INPUT_TYPE.AMOUNT_SELL) && this.lastSelectedInputList.includes(INPUT_TYPE.AMOUNT_BUY);
+                    const bothPriceNotSpecified = !this.formSellPrice && !this.formBuyPrice;
+                    const somePriceSpecified = this.formSellPrice || this.formBuyPrice;
+
+                    // values as source
+                    if (this.form.valueToSell && this.form.valueToBuy && (bothAmountInputSelected || bothPriceNotSpecified)) {
+                        this.formSellPrice = decreasePrecisionSignificant(this.form.valueToBuy / this.form.valueToSell);
+                        this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
+                        return;
+                    }
+
+                    // restore corresponding price
+                    // e.g. selectedInput is AMOUNT_SELL and no sellPrice specified but buyPrice specified, so we can fill sellPrice
+                    if (somePriceSpecified && (selectedInput === INPUT_TYPE.AMOUNT_SELL || selectedInput === INPUT_TYPE.AMOUNT_BUY)) {
+                        if (this.formSellPrice && !this.formBuyPrice) {
+                            this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
+                        }
+                        if (this.formBuyPrice && !this.formSellPrice) {
+                            this.formSellPrice = decreasePrecisionSignificant(1 / this.formBuyPrice);
+                        }
+                    }
+
+                    const sellInputSelected = selectedInput === INPUT_TYPE.PRICE_SELL || selectedInput === INPUT_TYPE.AMOUNT_SELL;
+                    const buyInputSelected = selectedInput === INPUT_TYPE.PRICE_BUY || selectedInput === INPUT_TYPE.AMOUNT_BUY;
+
+                    if (this.formSellPrice && this.form.valueToSell && sellInputSelected) {
+                        this.form.valueToBuy = new Big(this.form.valueToSell).times(this.formSellPrice).toString();
+                        this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
+                        return;
+                    }
+                    if (this.formBuyPrice && this.form.valueToBuy && buyInputSelected) {
+                        this.form.valueToSell = new Big(this.form.valueToBuy).times(this.formBuyPrice).toString();
+                        this.formSellPrice = decreasePrecisionSignificant(1 / this.formBuyPrice);
+                        return;
+                    }
+                }, 50);
+            },
+            deep: true,
+        },
+    },
     mounted() {
         this.debouncedFetchPoolData = debounce(this.fetchPoolData, 400);
     },
     methods: {
         pretty,
         prettyExact,
+        setSelectedInput(inputType) {
+            if (this.lastSelectedInputList[0] === inputType) {
+                return;
+            }
+            this.lastSelectedInputList.unshift(inputType);
+            this.lastSelectedInputList.splice(2);
+        },
         fetchPoolData({throwOnError} = {}) {
             this.poolDataError = '';
 
@@ -166,6 +248,8 @@ export default {
             this.form.coinToSell = '';
             this.form.coinToBuy = '';
             this.form.valueToSell = '';
+            this.formSellPrice = '';
+            this.formBuyPrice = '';
             this.$v.$reset();
         },
     },
@@ -196,7 +280,6 @@ function getMidPriceInput(pool, inputCoin) {
         :txType="$options.TX_TYPE.ADD_LIMIT_ORDER"
         :before-confirm-modal-show="beforeConfirm"
         @update:addressBalance="addressBalance = $event"
-        @update:txForm="txForm = $event"
         @success-tx="success()"
         @clear-form="clearForm()"
     >
@@ -210,7 +293,7 @@ function getMidPriceInput(pool, inputCoin) {
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
-            <div class="u-cell u-cell--medium--1-2">
+            <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
                     v-model.trim="form.coinToSell"
                     :$value="$v.form.coinToSell"
@@ -221,16 +304,29 @@ function getMidPriceInput(pool, inputCoin) {
                 <span class="form-field__error" v-else-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
-            <div class="u-cell u-cell--medium--1-2">
+            <div class="u-cell u-cell--medium--1-3">
+                <label class="form-field" :class="{'is-error': $v.formSellPrice.$error}">
+                    <InputMaskedAmount
+                        class="form-field__input" v-check-empty
+                        v-model="formSellPrice"
+                        @blur="$v.formSellPrice.$touch()"
+                        @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_SELL)"
+                    />
+                    <span class="form-field__label">{{ form.coinToSell || 'Coin to sell' }} {{ $td('execution price', 'form.order-add-execution-price') }}</span>
+                </label>
+                <!--                <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>-->
+            </div>
+            <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field">
                     <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
                                        v-model="form.valueToSell"
                                        @blur="$v.form.valueToSell.$touch()"
+                                       @input.native="setSelectedInput($options.INPUT_TYPE.AMOUNT_SELL)"
                     />
                     <span class="form-field__label">{{ $td('Sell amount', 'form.order-add-amount-sell') }}</span>
                 </label>
             </div>
-            <div class="u-cell u-cell--medium--1-2">
+            <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
                     v-model.trim="form.coinToBuy"
                     :$value="$v.form.coinToBuy"
@@ -241,12 +337,25 @@ function getMidPriceInput(pool, inputCoin) {
                 <span class="form-field__error" v-else-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
-            <div class="u-cell u-cell--medium--1-2">
+            <div class="u-cell u-cell--medium--1-3">
+                <label class="form-field" :class="{'is-error': $v.formBuyPrice.$error}">
+                    <InputMaskedAmount
+                        class="form-field__input" v-check-empty
+                        v-model="formBuyPrice"
+                        @blur="$v.formBuyPrice.$touch()"
+                        @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_BUY)"
+                    />
+                    <span class="form-field__label">{{ form.coinToBuy || 'Coin to buy' }} {{ $td('execution price', 'form.order-add-execution-price') }}</span>
+                </label>
+<!--                <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>-->
+            </div>
+            <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.form.valueToBuy.$error}">
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="form.valueToBuy"
                         @blur="$v.form.valueToBuy.$touch()"
+                        @input.native="setSelectedInput($options.INPUT_TYPE.AMOUNT_BUY)"
                     />
                     <span class="form-field__label">{{ $td('Buy amount', 'form.order-add-amount-buy') }}</span>
                 </label>
@@ -273,18 +382,6 @@ function getMidPriceInput(pool, inputCoin) {
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="coinToSellCurrentPrice"/>
                         <div class="form-field__label">1 {{ form.coinToSell || 'coin to sell' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
-                    </div>
-                </div>
-                <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
-                    <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="form.valueToBuy && form.valueToSell ? form.valueToSell / form.valueToBuy : 0"/>
-                        <div class="form-field__label">1 {{ form.coinToBuy || 'coin to buy' }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
-                    </div>
-                </div>
-                <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
-                    <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="form.valueToBuy && form.valueToSell ? form.valueToBuy / form.valueToSell : 0"/>
-                        <div class="form-field__label">1 {{ form.coinToSell || 'coin to sell' }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
             </div>
