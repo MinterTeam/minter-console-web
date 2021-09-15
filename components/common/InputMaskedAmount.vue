@@ -12,7 +12,7 @@
             padFractionalZeros: false,  // if true, then pads zeros at end to the length of scale
             normalizeZeros: false, // appends or removes zeros at ends
             radix: '.',  // fractional delimiter
-            mapToRadix: [','],  // symbols to process as radix
+            mapToRadix: [',', 'ю', 'Ю', 'б', 'Б'],  // symbols to process as radix
         },
         directives: {
             imask: IMaskDirective,
