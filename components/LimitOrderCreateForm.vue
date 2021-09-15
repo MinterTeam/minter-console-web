@@ -92,10 +92,32 @@ export default {
                 required: this.$store.getters.isOfflineMode ? () => true : required,
             },
             formSellPrice: {
-
+                minValue: (value) => {
+                    if (!this.poolData || !value) {
+                        return true;
+                    }
+                    return new Big(value).gte(this.coinToSellCurrentPrice);
+                },
+                maxValue: (value) => {
+                    if (!this.poolData || !value) {
+                        return true;
+                    }
+                    return new Big(value).lte(new Big(this.coinToBuyCurrentPrice).times(5));
+                },
             },
             formBuyPrice: {
-
+                minValue: (value) => {
+                    if (!this.poolData || !value) {
+                        return true;
+                    }
+                    return new Big(value).gte(new Big(this.coinToBuyCurrentPrice).div(5));
+                },
+                maxValue: (value) => {
+                    if (!this.poolData || !value) {
+                        return true;
+                    }
+                    return new Big(value).lte(this.coinToBuyCurrentPrice);
+                },
             },
         };
     },
@@ -314,7 +336,14 @@ function getMidPriceInput(pool, inputCoin) {
                     />
                     <span class="form-field__label">{{ form.coinToSell || 'Coin to sell' }} {{ $td('execution price', 'form.order-add-execution-price') }}</span>
                 </label>
-                <!--                <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>-->
+                <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.minValue">
+                    {{ $td('Price should be greater than pool price:', 'form.order-add-sell-price-error-min') }}
+                    {{ coinToSellCurrentPrice }}
+                </span>
+                <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.maxValue">
+                    {{ $td('Should not exceed pool price by 5 times:', 'form.order-add-sell-price-error-max') }}
+                    {{ coinToSellCurrentPrice * 5 }}
+                </span>
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field">
@@ -347,7 +376,14 @@ function getMidPriceInput(pool, inputCoin) {
                     />
                     <span class="form-field__label">{{ form.coinToBuy || 'Coin to buy' }} {{ $td('execution price', 'form.order-add-execution-price') }}</span>
                 </label>
-<!--                <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>-->
+                <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.maxValue">
+                    {{ $td('Price should be less than pool price:', 'form.order-add-buy-price-error-max') }}
+                    {{ coinToBuyCurrentPrice }}
+                </span>
+                <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.minValue">
+                    {{ $td('Should not exceed pool price by 5 times:', 'form.order-add-buy-price-error-min') }}
+                    {{ coinToBuyCurrentPrice / 5 }}
+                </span>
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.form.valueToBuy.$error}">
@@ -371,16 +407,16 @@ function getMidPriceInput(pool, inputCoin) {
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="coinToBuyCurrentPrice"/>
-                        <div class="form-field__label">1 {{ form.coinToBuy || 'coin to buy' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="coinToSellCurrentPrice"/>
+                        <div class="form-field__label">{{ form.coinToSell || 'coin to sell' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
                     <span class="form-field__error" v-if="$v.poolData.$dirty && !$v.poolData.required">{{ poolDataError || $td('Can\'t load pool data', 'form.pool-data-error-required') }}</span>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="coinToSellCurrentPrice"/>
-                        <div class="form-field__label">1 {{ form.coinToSell || 'coin to sell' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="coinToBuyCurrentPrice"/>
+                        <div class="form-field__label">{{ form.coinToBuy || 'coin to buy' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
                 </div>
