@@ -311,6 +311,7 @@ export default {
                             :$value="$v.form.coin0"
                             :label="$td('First coin', 'form.pool-coin0')"
                             :coin-list="poolCoinList"
+                            :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -356,6 +357,7 @@ export default {
                             :$value="$v.form.coin1"
                             :label="$td('Second coin', 'form.pool-coin1')"
                             :coin-list="poolCoinList"
+                            :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
