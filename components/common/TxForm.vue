@@ -511,6 +511,7 @@
                             :$value="$v.form.gasCoin"
                             :label="$td('Coin to pay fee', 'form.fee')"
                             :coin-list="gasSuitableBalance"
+                            :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                         <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->

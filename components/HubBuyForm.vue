@@ -940,7 +940,7 @@ function getSwapOutput(receipt) {
                             :$value="$v.form.coinToGet"
                             :label="$td('Get', 'form.buy-get')"
                             :coin-list="suggestionList"
-                            :fallback-to-full-list="false"
+                            :select-mode="true"
                             @blur="inputBlur()"
                         />
                         <span class="form-field__error" v-if="$v.form.coinToGet.$dirty && !$v.form.coinToGet.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>

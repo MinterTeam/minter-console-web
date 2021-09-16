@@ -110,6 +110,7 @@
                     :$value="$v.form.coinSymbol"
                     :label="$td('Coin', 'form.coin')"
                     :coin-list="addressBalance"
+                    :select-mode="true"
                     coin-type="coin"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
