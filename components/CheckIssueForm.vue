@@ -224,6 +224,7 @@
                     :$value="$v.form.coinSymbol"
                     :label="$td('Coin', 'form.coin')"
                     :coin-list="balance"
+                    :select-mode="true"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -255,6 +256,7 @@
                     :$value="$v.form.gasCoin"
                     :label="$td('Coin to pay fee (optional)', 'form.fee')"
                     :coin-list="balance"
+                    :select-mode="true"
                 />
                 <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                 <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->

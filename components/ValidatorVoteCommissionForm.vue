@@ -50,8 +50,8 @@ export default {
 
         // commission coin can by only base coin or coin from pool with base
         const coinPromise = getSwapCoinList(this.$store.getters.BASE_COIN, 1)
-            .then((coinList) => {
-                this.coinList = coinList;
+            .then((swapBaseCoinList) => {
+                this.swapBaseCoinList = swapBaseCoinList;
             });
 
         return Promise.all([commissionPromise, coinPromise]);
@@ -68,7 +68,7 @@ export default {
             isPublicKeyDomainResolving: false,
             commissionListError: '',
             commissionListJson: null,
-            coinList: [],
+            swapBaseCoinList: [],
             initialCommissionData: {},
         };
     },
@@ -99,7 +99,7 @@ export default {
     },
     computed: {
         suggestionList() {
-            const coinList = this.coinList.map((item) => item.symbol);
+            const coinList = this.swapBaseCoinList.map((item) => item.symbol);
             if (coinList.includes(this.$store.getters.BASE_COIN)) {
                 return coinList;
             } else {

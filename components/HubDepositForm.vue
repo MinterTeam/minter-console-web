@@ -594,7 +594,7 @@ function getLatestTransactions(address, hubCoinList) {
                             :$value="$v.form.coin"
                             :label="$td('Coin', 'form.coin')"
                             :coin-list="suggestionList"
-                            :fallback-to-full-list="false"
+                            :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
