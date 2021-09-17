@@ -31,16 +31,16 @@ export default {
     //     state.transactionListInfo = txListInfo;
     // },
     SET_BALANCE: (state, balance) => {
-        state.balance = balance;
+        state.balance = Object.freeze(balance);
     },
     SET_LAST_UPDATE_TIME: (state, timestamp) => {
         state.lastUpdateTime = timestamp - getTimeOffset();
     },
     SET_STAKE_LIST: (state, stakeList) => {
-        state.stakeList = stakeList;
+        state.stakeList = Object.freeze(stakeList);
     },
     SET_VALIDATOR_META_LIST(state, validatorList) {
-        state.validatorMetaList = validatorList;
+        state.validatorMetaList = Object.freeze(validatorList);
     },
     // PUSH_HISTORY: (state, historyItem) => {
     //     state.history.push(historyItem);
