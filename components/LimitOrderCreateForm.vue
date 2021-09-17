@@ -102,7 +102,7 @@ export default {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return new Big(value).lte(new Big(this.coinToBuyCurrentPrice).times(5));
+                    return new Big(value).lte(new Big(this.coinToSellCurrentPrice).times(5));
                 },
             },
             formBuyPrice: {
