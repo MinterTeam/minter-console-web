@@ -104,7 +104,7 @@ export default {
                                 {{ pretty(order.coinToBuyVolume > 0 ? order.coinToBuyVolume : order.initialCoinToBuyVolume) }}
                             </span>
                             <span class="u-text-muted" v-if="shouldShowInitial(order.coinToBuyVolume, order.initialCoinToBuyVolume)">
-                                ({{ pretty(order.initialCoinToSellVolume) }})
+                                ({{ pretty(order.initialCoinToBuyVolume) }})
                             </span>
                             {{ order.coinToBuy.symbol }}
                         </td>
