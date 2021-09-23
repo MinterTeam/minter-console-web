@@ -5,7 +5,7 @@ import {ACCOUNTS_API_URL, BASE_URL_PREFIX} from '~/assets/variables.js';
 export const state = () => ({
     /** @type Status|null */
     status: null,
-    /** @type Array<CoinItem> */
+    /** @type Array<CoinInfo> */
     coinList: [],
     /** @type {Object.<string, string>} */
     coinIconMap: {},
@@ -77,9 +77,9 @@ export const mutations = {
             }
         });
 
-        state.coinList = data;
-        state.coinIconMap = coinIconMap;
-        state.coinVerifiedMap = coinVerifiedMap;
+        state.coinList = Object.freeze(data);
+        state.coinIconMap = Object.freeze(coinIconMap);
+        state.coinVerifiedMap = Object.freeze(coinVerifiedMap);
     },
 };
 

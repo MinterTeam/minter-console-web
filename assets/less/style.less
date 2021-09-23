@@ -27,10 +27,11 @@
     &::before {transform: rotate(45deg);}
     &::after {transform: rotate(-45deg);}
 }
+.mdc-list-item--with-one-line {align-items: center; justify-content: space-between;}
 // nuxt page transition
-.page-leave-active {transition: opacity .1s;}
-.page-enter-active {transition: opacity .25s;}
-.page-enter, .page-leave-to {opacity: 0;}
+.page-leave-active, .layout-leave-active {transition: opacity .1s;}
+.page-enter-active, .layout-enter-active {transition: opacity .25s;}
+.page-enter, .page-leave-to, .layout-enter, .layout-leave-to {opacity: 0;}
 // qr-scanner
 .qr-scan__modal {pointer-events: auto; cursor: default;}
 .qr-scan__modal-container {max-width: 640px;}
@@ -96,10 +97,6 @@
 .error {font-size: 16px;}
 
 
-// nuxt page transition
-.page-leave-active, .layout-leave-active {transition: opacity .1s;}
-.page-enter-active, .layout-enter-active {transition: opacity .25s;}
-.page-enter, .page-leave-to, .layout-enter, .layout-leave-to {opacity: 0;}
 // common panel
 .panel {
     background: #fff; color: @c-black; box-shadow: 0 4px 8px rgba(0,0,0,0.1);

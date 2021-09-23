@@ -33,19 +33,20 @@
             },
             /**
              * Flat array or array of balance items
-             * @type Array<string>|Array<BalanceItem>
+             * @type Array<string|BalanceItem|Coin|CoinInfo>
              * */
             coinList: {
                 type: Array,
-                default: () => [],
             },
             coinType: {
                 type: String,
                 default: COIN_TYPE.ANY,
             },
-            fallbackToFullList: {
+            // false - work as autocomplete: show little options
+            // true - work as select: show full (almost) list of options
+            selectMode: {
                 type: Boolean,
-                default: true,
+                default: false,
             },
         },
         data() {
@@ -58,24 +59,28 @@
                 const { input, ...listeners } = this.$listeners;
                 return listeners;
             },
-            useSpecifiedCoinList() {
-                if (!this.fallbackToFullList) {
-                    return true;
-                }
-                return this.coinList && this.coinList.length;
-            },
+            /**
+             * @type Array<string|BalanceItem>
+             */
             currentCoinList() {
-                if (this.useSpecifiedCoinList) {
-                    return this.coinList
-                        .filter((balanceItem) => typeof balanceItem === 'object' ? ofType(balanceItem.coin.type, this.coinType) : true);
-                } else {
-                    return this.$store.state.explorer.coinList
-                        .filter((coin) => ofType(coin.type, this.coinType))
-                        .map((item) => item.symbol);
-                }
+                const coinList = this.coinList || this.$store.state.explorer.coinList;
+                return coinList
+                    .filter((item) => typeof item === 'object' ? ofType(item, this.coinType) : true)
+                    .map((item) => {
+                        if (item.coin) {
+                            // keep BalanceItem
+                            return item;
+                        }
+                        if (item.symbol) {
+                            // cast CoinInfo and Coin to string
+                            return item.symbol;
+                        }
+                        // keep string
+                        return item;
+                    });
             },
             maxSuggestions() {
-                return this.useSpecifiedCoinList ? 100 : MAX_ITEM_COUNT;
+                return this.selectMode ? 50 : MAX_ITEM_COUNT;
             },
             verifiedMap() {
                 let map = {};
@@ -146,7 +151,13 @@
         },
     };
 
-    function ofType(coinType, selectedType) {
+    /**
+     * @param {Coin, CoinInfo, BalanceItem} item
+     * @param {COIN_TYPE} selectedType
+     * @return {boolean}
+     */
+    function ofType(item, selectedType) {
+        const coinType = item.coin?.type || item.type;
         if (selectedType === COIN_TYPE.ANY) {
             return true;
         } else if (selectedType === COIN_TYPE.ANY_TOKEN) {

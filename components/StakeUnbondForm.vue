@@ -64,7 +64,7 @@
         computed: {
             maxAmount() {
                 // no validator selected
-                if (!this.stakeList.length) {
+                if (!this.stakeList?.length) {
                     return;
                 }
                 // no coinSymbol entered
@@ -123,13 +123,13 @@
                 if (selectedValidator) {
                     return selectedValidator.stakeList;
                 } else {
-                    return [];
+                    return undefined;
                 }
             },
         },
         watch: {
             'form.publicKey': function(newVal) {
-                if (this.stakeList.length === 1) {
+                if (this.stakeList?.length === 1) {
                     this.form.coinSymbol = this.stakeList[0].coin.symbol;
                 }
             },
@@ -194,6 +194,8 @@
                     :$value="$v.form.coinSymbol"
                     :label="$td('Coin', 'form.coin')"
                     :coinList="stakeList"
+                    :select-mode="stakeList && !!stakeList.length"
+                    coin-type="coin"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>

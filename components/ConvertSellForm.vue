@@ -382,6 +382,7 @@
                     :$value="$v.form.coinFrom"
                     :label="$td('Coin to sell', 'form.convert-sell-coin-sell')"
                     :coin-list="tradableAddressBalance"
+                    :select-mode="true"
                     @blur="inputBlur()"
                 />
                 <span class="form-field__error" v-if="$v.form.coinFrom.$dirty && !$v.form.coinFrom.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
