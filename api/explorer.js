@@ -87,7 +87,7 @@ export function getTransaction(hash) {
 }
 
 /**
- * @param address
+ * @param {string} address
  * @return {Promise<{data: BalanceData, latestBlockTime: string}>}
  */
 export async function getBalance(address) {

@@ -192,26 +192,13 @@
                 return new Blob([this.form.payload]).size;
             },
             feeBusParams() {
-                const txType = this.txType;
-                const txData = this.txData;
-
-                let deltaItemCount;
-                if (txType === TX_TYPE.BUY_SWAP_POOL || txType === TX_TYPE.SELL_SWAP_POOL || txType === TX_TYPE.SELL_ALL_SWAP_POOL) {
-                    // count of pools
-                    deltaItemCount = txData.coins.length - 1;
-                }
-                if (txType === TX_TYPE.MULTISEND) {
-                    // count of recipients
-                    deltaItemCount = txData.list.length;
-                }
-
                 return {
                     txParams: {
                         // falsy value should be undefined to correct work of txParamsDecorator
                         gasCoin: this.form.gasCoin || undefined,
                         payload: this.form.payload,
-                        type: txType,
-                        data: txData,
+                        type: this.txType,
+                        data: this.txData,
                     },
                     baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     fallbackToCoinToSpend: true,
@@ -328,30 +315,18 @@
                 let postTxPromise;
                 if (!this.form.multisigAddress) {
                     let txParams = this.getTxParams();
-                    //@TODO can be simplified
-                    postTxPromise = Promise.all([
-                            ensureNonce(txParams, {address: this.$store.getters.address}),
-                            replaceCoinSymbol(txParams),
-                            // this.$store.dispatch('FETCH_ADDRESS_ENCRYPTED'),
-                        ])
-                        .then(([nonce]) => {
-                            // private key to sign
-                            return postTx({...txParams, nonce}, {
-                                privateKey: this.$store.getters.privateKey,
-                                // don't increase gasPrice for high-fee tx
-                                gasRetryLimit: this.fee.isHighFee ? 0 : 2,
-                            });
-                        });
+                    postTxPromise = postTx(txParams, {
+                        // private key to sign
+                        privateKey: this.$store.getters.privateKey,
+                        // don't increase gasPrice for high-fee tx
+                        gasRetryLimit: this.fee.isHighFee ? 0 : 2,
+                    });
                 } else {
                     let txParams = this.getTxParamsMultisigData();
-                    postTxPromise = Promise.all([
-                            ensureNonce(txParams, {address: this.form.multisigAddress}),
-                            replaceCoinSymbol(txParams),
-                        ])
-                        .then(([nonce]) => {
-                            // address to get nonce or make proof for RedeemCheck
-                            return postTx({...txParams, nonce}, {address: this.form.multisigAddress});
-                        });
+                    postTxPromise = postTx(txParams, {
+                        // address to get nonce or make proof for RedeemCheck
+                        address: this.form.multisigAddress,
+                    });
                 }
 
                 postTxPromise

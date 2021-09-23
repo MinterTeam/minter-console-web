@@ -15,13 +15,13 @@ import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import checkEmpty from '~/assets/v-check-empty';
 import {SLIPPAGE_INPUT_TYPE} from '~/assets/variables.js';
 import {decreasePrecisionFixed, decreasePrecisionSignificant, pretty, prettyExact} from "~/assets/utils.js";
+import {getErrorText} from '~/assets/server-error.js';
 import BaseAmount from '~/components/common/BaseAmount.vue';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin.vue';
 import FieldPercentage from '~/components/common/FieldPercentage.vue';
 import FieldUseMax from '~/components/common/FieldUseMax.vue';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
-import {getErrorText} from 'assets/server-error.js';
 
 let watcherTimer;
 let slippageWatcherTimer;
@@ -169,7 +169,7 @@ export default {
                     if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.AMOUNT && this.formAmount1) {
                         const slippageAmount = this.form.maximumVolume1;
                         let slippagePercent;
-                        if (!slippageAmount || slippageAmount < this.formAmount1) {
+                        if (!slippageAmount || Number(slippageAmount) < Number(this.formAmount1)) {
                             slippagePercent = 0;
                         } else {
                             slippagePercent = (slippageAmount / this.formAmount1 - 1) * 100;
