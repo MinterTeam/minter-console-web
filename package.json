@@ -77,7 +77,7 @@
     "v-file-input": "^0.1.2",
     "vue-async-computed": "github:shrpne/vue-async-computed#mixin-src",
     "vue-autonumeric": "github:shrpne/vue-autonumeric#allow-use-source",
-    "vue-imask": "^6.1.0",
+    "vue-imask": "6.1.0",
     "vue-inline-svg": "^2.0.0",
     "vue-simple-suggest": "^1.11.1",
     "vuelidate": "^0.7.6",
