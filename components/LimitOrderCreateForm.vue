@@ -18,6 +18,7 @@ import eventBus from '~/assets/event-bus.js';
 import BaseAmount from '~/components/common/BaseAmount.vue';
 import TxForm from '~/components/common/TxForm.vue';
 import FieldCoin from '~/components/common/FieldCoin.vue';
+import FieldUseMax from '@/components/common/FieldUseMax.vue';
 import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 import Loader from '~/components/common/Loader.vue';
 
@@ -37,6 +38,7 @@ export default {
         BaseAmount,
         TxForm,
         FieldCoin,
+        FieldUseMax,
         InputMaskedAmount,
         Loader,
     },
@@ -132,14 +134,14 @@ export default {
             return this.$asyncComputed.poolData.success && this.poolData?.liquidity;
         },
         whatAffectsPrice() {
-            return {
+            return JSON.stringify({
                 // poolData: this.poolData,
-                lastSelectedInputList: this.lastSelectedInputList.join(','),
+                lastSelectedInputList: this.lastSelectedInputList,
                 formSellPrice: this.formSellPrice,
                 formBuyPrice: this.formBuyPrice,
                 formAmountSell: this.form.valueToSell,
                 formAmountBuy: this.form.valueToBuy,
-            };
+            });
         },
         tradableCoinList() {
             return this.poolCoinList.map((coin) => coin.symbol);
@@ -166,26 +168,34 @@ export default {
         },
     },
     watch: {
+        // in short it works like this:
+        // take two latest non-empty inputs and calculate other (with edge cases)
         whatAffectsPrice: {
             handler() {
                 // @input and @input.native may fire in different time so timer needed to wait all events
                 clearTimeout(watcherTimer);
                 watcherTimer = setTimeout(() => {
-                    const selectedInput = this.lastSelectedInputList[0];
-                    const bothAmountInputSelected = this.lastSelectedInputList.includes(INPUT_TYPE.AMOUNT_SELL) && this.lastSelectedInputList.includes(INPUT_TYPE.AMOUNT_BUY);
+                    const amountSellIndex = this.lastSelectedInputList.indexOf(INPUT_TYPE.AMOUNT_SELL);
+                    const amountBuyIndex = this.lastSelectedInputList.indexOf(INPUT_TYPE.AMOUNT_BUY);
+                    const nearestSelectedInput = this.lastSelectedInputList[0];
+                    const nearestSelectedInputIsAmount = nearestSelectedInput === INPUT_TYPE.AMOUNT_SELL || nearestSelectedInput === INPUT_TYPE.AMOUNT_BUY;
+                    const nearestTwoSelectedAreBothAmounts = amountSellIndex >= 0 && amountSellIndex <= 1 && amountBuyIndex >= 0 && amountBuyIndex <= 1;
                     const bothPriceNotSpecified = !this.formSellPrice && !this.formBuyPrice;
-                    const somePriceSpecified = this.formSellPrice || this.formBuyPrice;
 
                     // values as source
-                    if (this.form.valueToSell && this.form.valueToBuy && (bothAmountInputSelected || bothPriceNotSpecified)) {
+                    if (this.form.valueToSell && this.form.valueToBuy &&
+                        (nearestTwoSelectedAreBothAmounts || (nearestSelectedInputIsAmount && bothPriceNotSpecified))
+                    ) {
                         this.formSellPrice = decreasePrecisionSignificant(this.form.valueToBuy / this.form.valueToSell);
                         this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
+                        // unselect price inputs
+                        this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY);
                         return;
                     }
 
                     // restore corresponding price
-                    // e.g. selectedInput is AMOUNT_SELL and no sellPrice specified but buyPrice specified, so we can fill sellPrice
-                    if (somePriceSpecified && (selectedInput === INPUT_TYPE.AMOUNT_SELL || selectedInput === INPUT_TYPE.AMOUNT_BUY)) {
+                    // e.g. nearestSelectedInput is AMOUNT_SELL and no sellPrice specified but buyPrice specified, so we can fill sellPrice
+                    if (nearestSelectedInput === INPUT_TYPE.AMOUNT_SELL || nearestSelectedInput === INPUT_TYPE.AMOUNT_BUY) {
                         if (this.formSellPrice && !this.formBuyPrice) {
                             this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
                         }
@@ -194,22 +204,50 @@ export default {
                         }
                     }
 
-                    const sellInputSelected = selectedInput === INPUT_TYPE.PRICE_SELL || selectedInput === INPUT_TYPE.AMOUNT_SELL;
-                    const buyInputSelected = selectedInput === INPUT_TYPE.PRICE_BUY || selectedInput === INPUT_TYPE.AMOUNT_BUY;
+                    // calculate corresponding price
+                    if (nearestSelectedInput === INPUT_TYPE.PRICE_SELL) {
+                        this.formBuyPrice = this.formSellPrice ? decreasePrecisionSignificant(1 / this.formSellPrice) : '';
+                    }
+                    if (nearestSelectedInput === INPUT_TYPE.PRICE_BUY) {
+                        this.formSellPrice = this.formBuyPrice ? decreasePrecisionSignificant(1 / this.formBuyPrice) : '';
+                    }
 
-                    if (this.formSellPrice && this.form.valueToSell && sellInputSelected) {
-                        this.form.valueToBuy = new Big(this.form.valueToSell).times(this.formSellPrice).toString();
-                        this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
+
+                    const nearestAmountIndex = Math.min(99, ...[amountSellIndex, amountBuyIndex].filter((item) => item !== -1));
+                    const nearestAmountInput = nearestAmountIndex !== 99 ? this.lastSelectedInputList[nearestAmountIndex] : undefined;
+                    const nearestAmountInputHasValue = (this.form.valueToSell && nearestAmountInput === INPUT_TYPE.AMOUNT_SELL) || (this.form.valueToBuy && nearestAmountInput === INPUT_TYPE.AMOUNT_BUY);
+
+                    if (!nearestAmountInput) {
                         return;
                     }
-                    if (this.formBuyPrice && this.form.valueToBuy && buyInputSelected) {
+                    // do nothing if input was just cleared
+                    if (!nearestAmountInputHasValue && nearestAmountIndex === 0) {
+                        return;
+                    }
+                    let sourceAmountInput;
+                    if (nearestAmountInputHasValue) {
+                        sourceAmountInput = nearestAmountInput;
+                    } else {
+                        const otherAmountInputToTry = nearestAmountInput !== INPUT_TYPE.AMOUNT_SELL ? INPUT_TYPE.AMOUNT_SELL : INPUT_TYPE.AMOUNT_BUY;
+                        const otherAmountInputHasValue = (this.form.valueToSell && otherAmountInputToTry === INPUT_TYPE.AMOUNT_SELL) || (this.form.valueToBuy && otherAmountInputToTry === INPUT_TYPE.AMOUNT_BUY);
+                        if (otherAmountInputHasValue && this.lastSelectedInputList.includes(otherAmountInputToTry)) {
+                            sourceAmountInput = otherAmountInputToTry;
+                        }
+                    }
+
+                    // sellAmount as source
+                    if (this.formSellPrice && this.form.valueToSell && sourceAmountInput === INPUT_TYPE.AMOUNT_SELL) {
+                        this.form.valueToBuy = new Big(this.form.valueToSell).times(this.formSellPrice).toString();
+                        return;
+                    }
+                    // buyAmount as source
+                    if (this.formBuyPrice && this.form.valueToBuy && sourceAmountInput === INPUT_TYPE.AMOUNT_BUY) {
                         this.form.valueToSell = new Big(this.form.valueToBuy).times(this.formBuyPrice).toString();
-                        this.formSellPrice = decreasePrecisionSignificant(1 / this.formBuyPrice);
                         return;
                     }
                 }, 50);
             },
-            deep: true,
+            // deep: true,
         },
     },
     mounted() {
@@ -219,12 +257,16 @@ export default {
         pretty,
         prettyExact,
         decreasePrecisionSignificant,
+        // store last 3 of 4
         setSelectedInput(inputType) {
             if (this.lastSelectedInputList[0] === inputType) {
                 return;
             }
+            // filter out current inputType to avoid duplicates
+            this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== inputType);
             this.lastSelectedInputList.unshift(inputType);
-            this.lastSelectedInputList.splice(2);
+            this.lastSelectedInputList.splice(3);
+            console.log('set', this.lastSelectedInputList[0]);
         },
         fetchPoolData({throwOnError} = {}) {
             this.poolDataError = '';
@@ -245,6 +287,14 @@ export default {
                         throw error;
                     }
                 });
+        },
+        applyCurrentPrice() {
+            if (!this.isPoolLoaded) {
+                return;
+            }
+            this.formSellPrice = this.coinToSellCurrentPrice;
+            this.formBuyPrice = this.coinToBuyCurrentPrice;
+            this.setSelectedInput(INPUT_TYPE.PRICE_SELL);
         },
         success() {
             eventBus.emit('update-limit-order-list');
@@ -286,10 +336,10 @@ export default {
  */
 function getMidPriceInput(pool, inputCoin) {
     if (inputCoin === pool.coin0.symbol) {
-        return new Big(pool.amount1).div(pool.amount0).toString(30);
+        return new Big(pool.amount1).div(pool.amount0).toString(33);
     }
     if (inputCoin === pool.coin1.symbol) {
-        return new Big(pool.amount0).div(pool.amount1).toString(30);
+        return new Big(pool.amount0).div(pool.amount1).toString(33);
     }
 
     throw new Error('Pool does not contain inputCoin');
@@ -348,14 +398,16 @@ function getMidPriceInput(pool, inputCoin) {
                 </span>
             </div>
             <div class="u-cell u-cell--medium--1-3">
-                <label class="form-field">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.valueToSell"
-                                       @blur="$v.form.valueToSell.$touch()"
-                                       @input.native="setSelectedInput($options.INPUT_TYPE.AMOUNT_SELL)"
-                    />
-                    <span class="form-field__label">{{ $td('Sell amount', 'form.order-add-amount-sell') }}</span>
-                </label>
+                <FieldUseMax
+                    v-model="form.valueToSell"
+                    :$value="$v.form.valueToSell"
+                    :label="$td('Sell amount', 'form.order-add-amount-sell')"
+                    :address-balance="addressBalance"
+                    :selected-coin-symbol="form.coinToSell"
+                    :fee="fee"
+                    @input-native="setSelectedInput($options.INPUT_TYPE.AMOUNT_SELL)"
+                    @use-max="setSelectedInput($options.INPUT_TYPE.AMOUNT_SELL)"
+                />
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <FieldCoin
@@ -422,6 +474,9 @@ function getMidPriceInput(pool, inputCoin) {
                         <div class="form-field__label">{{ form.coinToBuy || 'coin to buy' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
+                </div>
+                <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
+                    <button class="button button--ghost-main" type="button" @click="applyCurrentPrice()">Use current price</button>
                 </div>
             </div>
         </template>
