@@ -139,7 +139,11 @@ export default {
                 // @input and @input.native may fire in different time so timer needed to wait all events
                 clearTimeout(watcherTimer);
                 watcherTimer = setTimeout(() => {
-                    if (this.selectedInput === INPUT_TYPE.AMOUNT0 && this.isPoolLoaded) {
+                    if (!this.isPoolLoaded) {
+                        return;
+                    }
+
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT0) {
                         if (!this.form.volume0) {
                             this.formAmount1 = '';
                         } else {
@@ -147,7 +151,7 @@ export default {
                         }
                     }
 
-                    if (this.selectedInput === INPUT_TYPE.AMOUNT1 && this.isPoolLoaded) {
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT1) {
                         if (!this.formAmount1) {
                             this.form.volume0 = '';
                         } else {

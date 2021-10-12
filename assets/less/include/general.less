@@ -223,7 +223,7 @@ dd {overflow-wrap: break-word; margin: 0;}
     &.is-disabled {opacity: 0.6;}
 }
 .form-field__input {
-    padding: @field-input-padding 0 4px; font-size: 16px; line-height: 22px; color: inherit; background: transparent; border: none; border-bottom: 1px solid @field-input-color; transition: 0.15s; display: block; width: 100%; pointer-events: auto; border-radius: 0; opacity: 1; /* safari disabled fix */ -webkit-text-fill-color: currentcolor; /* safari disabled fix */
+    padding: @field-input-padding 0 4px; font-size: 16px; line-height: 22px; color: inherit; background: transparent; border: none; border-bottom: 1px solid @field-input-color; transition: 0.15s; display: block; width: 100%; pointer-events: auto; border-radius: 0; overflow: hidden; overflow-wrap: break-word; opacity: 1; /* safari disabled fix */ -webkit-text-fill-color: currentcolor; /* safari disabled fix */
     &:focus {border-color: @c-main;}
     &:read-only {border-color: @field-input-color;}
     .is-error & {border-color: @c-red;}
