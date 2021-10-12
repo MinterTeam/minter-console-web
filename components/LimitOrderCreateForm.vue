@@ -453,13 +453,13 @@ function getMidPriceInput(pool, inputCoin) {
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="formSellPrice"/>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="formSellPrice" :significant="true"/>
                         <div class="form-field__label">{{ form.coinToSell }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="formBuyPrice"/>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="formBuyPrice" :significant="true"/>
                         <div class="form-field__label">{{ form.coinToBuy }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
