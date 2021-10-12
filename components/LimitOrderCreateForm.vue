@@ -218,6 +218,7 @@ export default {
     methods: {
         pretty,
         prettyExact,
+        decreasePrecisionSignificant,
         setSelectedInput(inputType) {
             if (this.lastSelectedInputList[0] === inputType) {
                 return;
@@ -285,10 +286,10 @@ export default {
  */
 function getMidPriceInput(pool, inputCoin) {
     if (inputCoin === pool.coin0.symbol) {
-        return new Big(pool.amount1).div(pool.amount0).toString();
+        return new Big(pool.amount1).div(pool.amount0).toString(30);
     }
     if (inputCoin === pool.coin1.symbol) {
-        return new Big(pool.amount0).div(pool.amount1).toString();
+        return new Big(pool.amount0).div(pool.amount1).toString(30);
     }
 
     throw new Error('Pool does not contain inputCoin');
@@ -331,6 +332,7 @@ function getMidPriceInput(pool, inputCoin) {
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="formSellPrice"
+                        scale="30"
                         @blur="$v.formSellPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_SELL)"
                     />
@@ -371,6 +373,7 @@ function getMidPriceInput(pool, inputCoin) {
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="formBuyPrice"
+                        scale="30"
                         @blur="$v.formBuyPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_BUY)"
                     />
@@ -407,7 +410,7 @@ function getMidPriceInput(pool, inputCoin) {
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="coinToSellCurrentPrice"/>
+                        <div class="form-field__input is-not-empty">{{ decreasePrecisionSignificant(coinToSellCurrentPrice) }} {{ form.coinToBuy }}</div>
                         <div class="form-field__label">{{ form.coinToSell || 'coin to sell' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
@@ -415,7 +418,7 @@ function getMidPriceInput(pool, inputCoin) {
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="coinToBuyCurrentPrice"/>
+                        <div class="form-field__input is-not-empty">{{ decreasePrecisionSignificant(coinToBuyCurrentPrice) }} {{ form.coinToSell }}</div>
                         <div class="form-field__label">{{ form.coinToBuy || 'coin to buy' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
@@ -450,13 +453,13 @@ function getMidPriceInput(pool, inputCoin) {
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="formSellPrice"/>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="formSellPrice" :significant="true"/>
                         <div class="form-field__label">{{ form.coinToSell }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
-                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="formBuyPrice"/>
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="formBuyPrice" :significant="true"/>
                         <div class="form-field__label">{{ form.coinToBuy }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
                     </div>
                 </div>
