@@ -98,13 +98,13 @@ export default {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return new Big(value).gte(this.coinToSellCurrentPrice);
+                    return approxGte(value, this.coinToSellCurrentPrice);
                 },
                 maxValue: (value) => {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return new Big(value).lte(new Big(this.coinToSellCurrentPrice).times(5));
+                    return approxLte(value, new Big(this.coinToSellCurrentPrice).times(5).toString(33));
                 },
             },
             formBuyPrice: {
@@ -112,13 +112,13 @@ export default {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return new Big(value).gte(new Big(this.coinToBuyCurrentPrice).div(5));
+                    return approxGte(value, new Big(this.coinToBuyCurrentPrice).div(5).toString(33));
                 },
                 maxValue: (value) => {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return new Big(value).lte(this.coinToBuyCurrentPrice);
+                    return approxLte(value, this.coinToBuyCurrentPrice);
                 },
             },
         };
@@ -193,6 +193,15 @@ export default {
                         return;
                     }
 
+                    // calculate corresponding price
+                    if (nearestSelectedInput === INPUT_TYPE.PRICE_SELL) {
+
+                        this.formBuyPrice = this.formSellPrice ? new Big(1).div(this.formSellPrice).toString(33) : '';
+                    }
+                    if (nearestSelectedInput === INPUT_TYPE.PRICE_BUY) {
+                        this.formSellPrice = this.formBuyPrice ? new Big(1).div(this.formBuyPrice).toString(33) : '';
+                    }
+
                     // restore corresponding price
                     // e.g. nearestSelectedInput is AMOUNT_SELL and no sellPrice specified but buyPrice specified, so we can fill sellPrice
                     if (nearestSelectedInput === INPUT_TYPE.AMOUNT_SELL || nearestSelectedInput === INPUT_TYPE.AMOUNT_BUY) {
@@ -202,14 +211,6 @@ export default {
                         if (this.formBuyPrice && !this.formSellPrice) {
                             this.formSellPrice = decreasePrecisionSignificant(1 / this.formBuyPrice);
                         }
-                    }
-
-                    // calculate corresponding price
-                    if (nearestSelectedInput === INPUT_TYPE.PRICE_SELL) {
-                        this.formBuyPrice = this.formSellPrice ? decreasePrecisionSignificant(1 / this.formSellPrice) : '';
-                    }
-                    if (nearestSelectedInput === INPUT_TYPE.PRICE_BUY) {
-                        this.formSellPrice = this.formBuyPrice ? decreasePrecisionSignificant(1 / this.formBuyPrice) : '';
                     }
 
 
@@ -344,6 +345,13 @@ function getMidPriceInput(pool, inputCoin) {
 
     throw new Error('Pool does not contain inputCoin');
 }
+
+function approxLte(a, b) {
+    return new Big(decreasePrecisionSignificant(a)).lte(decreasePrecisionSignificant(b));
+}
+function approxGte(a, b) {
+    return new Big(decreasePrecisionSignificant(a)).gte(decreasePrecisionSignificant(b));
+}
 </script>
 
 <template>
@@ -382,7 +390,7 @@ function getMidPriceInput(pool, inputCoin) {
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="formSellPrice"
-                        scale="30"
+                        scale="33"
                         @blur="$v.formSellPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_SELL)"
                     />
@@ -425,7 +433,7 @@ function getMidPriceInput(pool, inputCoin) {
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="formBuyPrice"
-                        scale="30"
+                        scale="33"
                         @blur="$v.formBuyPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_BUY)"
                     />
