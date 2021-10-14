@@ -12,7 +12,7 @@ import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import Big from '~/assets/big.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from "~/assets/server-error.js";
-import {pretty, prettyExact, decreasePrecisionSignificant, decreasePrecisionFixed} from "~/assets/utils.js";
+import {pretty, prettyExact, decreasePrecisionSignificant} from "~/assets/utils.js";
 import {COIN_TYPE, SWAP_TYPE} from '~/assets/variables.js';
 import eventBus from '~/assets/event-bus.js';
 import BaseAmount from '~/components/common/BaseAmount.vue';
@@ -101,18 +101,18 @@ export default {
                     return approxGte(value, this.coinToSellCurrentPrice);
                 },
                 maxValue: (value) => {
-                    if (!this.poolData || !value) {
+                    if (!this.poolData || !value || !isPositiveNumber(this.coinToSellMaxPrice)) {
                         return true;
                     }
-                    return approxLte(value, new Big(this.coinToSellCurrentPrice).times(5).toString(33));
+                    return approxLte(value, this.coinToSellMaxPrice);
                 },
             },
             formBuyPrice: {
                 minValue: (value) => {
-                    if (!this.poolData || !value) {
+                    if (!this.poolData || !value || !isPositiveNumber(this.coinToBuyMinPrice)) {
                         return true;
                     }
-                    return approxGte(value, new Big(this.coinToBuyCurrentPrice).div(5).toString(33));
+                    return approxGte(value, this.coinToBuyMinPrice);
                 },
                 maxValue: (value) => {
                     if (!this.poolData || !value) {
@@ -165,6 +165,18 @@ export default {
             }
 
             return getMidPriceInput(this.poolData, this.form.coinToBuy);
+        },
+        coinToSellMaxPrice() {
+            if (!this.isPoolLoaded) {
+                return 0;
+            }
+            return new Big(this.coinToSellCurrentPrice).times(5).toString(33);
+        },
+        coinToBuyMinPrice() {
+            if (!this.isPoolLoaded) {
+                return 0;
+            }
+            return new Big(this.coinToBuyCurrentPrice).div(5).toString(33);
         },
     },
     watch: {
@@ -267,7 +279,6 @@ export default {
             this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== inputType);
             this.lastSelectedInputList.unshift(inputType);
             this.lastSelectedInputList.splice(3);
-            console.log('set', this.lastSelectedInputList[0]);
         },
         fetchPoolData({throwOnError} = {}) {
             this.poolDataError = '';
@@ -295,7 +306,8 @@ export default {
             }
             this.formSellPrice = this.coinToSellCurrentPrice;
             this.formBuyPrice = this.coinToBuyCurrentPrice;
-            this.setSelectedInput(INPUT_TYPE.PRICE_SELL);
+            // unselect price inputs
+            this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY);
         },
         success() {
             eventBus.emit('update-limit-order-list');
@@ -347,10 +359,13 @@ function getMidPriceInput(pool, inputCoin) {
 }
 
 function approxLte(a, b) {
-    return new Big(decreasePrecisionSignificant(a)).lte(decreasePrecisionSignificant(b));
+    return new Big(a).div(b).lte(1.001);
 }
 function approxGte(a, b) {
-    return new Big(decreasePrecisionSignificant(a)).gte(decreasePrecisionSignificant(b));
+    return new Big(a).div(b).gte(0.999);
+}
+function isPositiveNumber(value) {
+    return Number(value) > 0;
 }
 </script>
 
@@ -402,7 +417,7 @@ function approxGte(a, b) {
                 </span>
                 <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.maxValue">
                     {{ $td('Should not exceed pool price by 5 times:', 'form.order-add-sell-price-error-max') }}
-                    {{ coinToSellCurrentPrice * 5 }}
+                    {{ coinToSellMaxPrice }}
                 </span>
             </div>
             <div class="u-cell u-cell--medium--1-3">
@@ -445,7 +460,7 @@ function approxGte(a, b) {
                 </span>
                 <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.minValue">
                     {{ $td('Should not exceed pool price by 5 times:', 'form.order-add-buy-price-error-min') }}
-                    {{ coinToBuyCurrentPrice / 5 }}
+                    {{ coinToBuyMinPrice }}
                 </span>
             </div>
             <div class="u-cell u-cell--medium--1-3">
