@@ -9,7 +9,8 @@ import minValue from 'vuelidate/lib/validators/minValue.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {getPool, getSwapCoinList} from '@/api/explorer.js';
-import Big from '~/assets/big.js';
+import Big, {COMPUTATION_PRECISION, VISIBLE_PRECISION} from '~/assets/big.js';
+import Fraction, {toFraction} from '~/assets/fraction.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from "~/assets/server-error.js";
 import {pretty, prettyExact, decreasePrecisionSignificant} from "~/assets/utils.js";
@@ -34,6 +35,7 @@ const INPUT_TYPE = {
 export default {
     TX_TYPE,
     INPUT_TYPE,
+    COMPUTATION_PRECISION,
     components: {
         BaseAmount,
         TxForm,
@@ -62,6 +64,8 @@ export default {
             },
             formSellPrice: '', // price of coin to sell
             formBuyPrice: '', // price of coin to buy
+            paramsSellPrice: {numerator: '', denominator: ''},
+            paramsBuyPrice: {numerator: '', denominator: ''},
             lastSelectedInputList: [],
             addressBalance: [],
             // list of all pools' coins
@@ -98,27 +102,32 @@ export default {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return approxGte(value, this.coinToSellCurrentPrice);
+                    return toFraction(this.paramsSellPrice).gte(this.getFractionCurrentPrice(this.form.coinToSell));
+                    // return approxGte(value, this.coinToSellCurrentPrice);
                 },
                 maxValue: (value) => {
-                    if (!this.poolData || !value || !isPositiveNumber(this.coinToSellMaxPrice)) {
+                    if (!this.poolData || !value || !isPositive(this.coinToSellMaxPrice)) {
                         return true;
                     }
-                    return approxLte(value, this.coinToSellMaxPrice);
+                    return toFraction(this.paramsSellPrice).lte(this.getFractionCurrentPrice(this.form.coinToSell).multiply(5));
+                    // approxLte(value, this.coinToSellMaxPrice);
                 },
             },
             formBuyPrice: {
                 minValue: (value) => {
-                    if (!this.poolData || !value || !isPositiveNumber(this.coinToBuyMinPrice)) {
+                    if (!this.poolData || !value || !isPositive(this.coinToBuyMinPrice)) {
                         return true;
                     }
-                    return approxGte(value, this.coinToBuyMinPrice);
+                    return toFraction(this.paramsBuyPrice).gte(this.getFractionCurrentPrice(this.form.coinToBuy).divide(5));
+                    // return approxGte(value, this.coinToBuyMinPrice);
                 },
                 maxValue: (value) => {
                     if (!this.poolData || !value) {
                         return true;
                     }
-                    return approxLte(value, this.coinToBuyCurrentPrice);
+                    return toFraction(this.paramsBuyPrice).lte(this.getFractionCurrentPrice(this.form.coinToBuy));
+
+                    // return approxLte(value, this.coinToBuyCurrentPrice);
                 },
             },
         };
@@ -152,31 +161,32 @@ export default {
                 return this.poolCoinList.find((poolCoin) => poolCoin.id === balanceItem.coin.id);
             });
         },
+        //@TODO combine next 4 to one poolPrice object with price fields
         coinToSellCurrentPrice() {
             if (!this.isPoolLoaded) {
                 return 0;
             }
 
-            return getMidPriceInput(this.poolData, this.form.coinToSell);
+            return this.getFractionCurrentPrice(this.form.coinToSell).toString();
         },
         coinToBuyCurrentPrice() {
             if (!this.isPoolLoaded) {
                 return 0;
             }
 
-            return getMidPriceInput(this.poolData, this.form.coinToBuy);
+            return this.getFractionCurrentPrice(this.form.coinToBuy).toString();
         },
         coinToSellMaxPrice() {
             if (!this.isPoolLoaded) {
                 return 0;
             }
-            return new Big(this.coinToSellCurrentPrice).times(5).toString(33);
+            return this.getFractionCurrentPrice(this.form.coinToSell).multiply(5).toString();
         },
         coinToBuyMinPrice() {
             if (!this.isPoolLoaded) {
                 return 0;
             }
-            return new Big(this.coinToBuyCurrentPrice).div(5).toString(33);
+            return this.getFractionCurrentPrice(this.form.coinToBuy).divide(5).toString();
         },
     },
     watch: {
@@ -198,64 +208,92 @@ export default {
                     if (this.form.valueToSell && this.form.valueToBuy &&
                         (nearestTwoSelectedAreBothAmounts || (nearestSelectedInputIsAmount && bothPriceNotSpecified))
                     ) {
-                        this.formSellPrice = decreasePrecisionSignificant(this.form.valueToBuy / this.form.valueToSell);
-                        this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
-                        // unselect price inputs
+                        this.paramsSellPrice = {numerator: this.form.valueToBuy, denominator: this.form.valueToSell};
+                        this.paramsBuyPrice = {numerator: this.form.valueToSell, denominator: this.form.valueToBuy};
+                        this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
+                        this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+                        // unselect price inputs (so price will not recalculate)
                         this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY);
                         return;
                     }
 
-                    // calculate corresponding price
-                    if (nearestSelectedInput === INPUT_TYPE.PRICE_SELL) {
+                    const sourceAmountInput = this.getSourceAmountInput(amountSellIndex, amountBuyIndex);
 
-                        this.formBuyPrice = this.formSellPrice ? new Big(1).div(this.formSellPrice).toString(33) : '';
-                    }
-                    if (nearestSelectedInput === INPUT_TYPE.PRICE_BUY) {
-                        this.formSellPrice = this.formBuyPrice ? new Big(1).div(this.formBuyPrice).toString(33) : '';
+                    // calculate price params by new price value
+                    if (nearestSelectedInput === INPUT_TYPE.PRICE_SELL || nearestSelectedInput === INPUT_TYPE.PRICE_BUY) {
+                        const isSell = nearestSelectedInput === INPUT_TYPE.PRICE_SELL;
+                        const selectedPriceParams = isSell ? this.paramsSellPrice : this.paramsBuyPrice;
+                        const otherPriceParams = !isSell ? this.paramsSellPrice : this.paramsBuyPrice;
+                        const newPriceValue = isSell ? this.formSellPrice : this.formBuyPrice;
+                        if (!isPositive(newPriceValue)) {
+                            selectedPriceParams.numerator = '';
+                            selectedPriceParams.denominator = '';
+                            return;
+                        }
+
+                        // if params is empty - fill it, otherwise - recalculate them from amount
+                        if (!selectedPriceParams.numerator || !sourceAmountInput) {
+                            selectedPriceParams.numerator = newPriceValue;
+                            selectedPriceParams.denominator = '1';
+                            otherPriceParams.numerator = selectedPriceParams.denominator;
+                            otherPriceParams.denominator = selectedPriceParams.numerator;
+                        } else {
+                            // if source price and source amount are same type - update denominator by numerator
+                            // otherwise update numerator by denominator
+                            // e.g newPrice is sell and sourceAmount is sell - they are same type
+                            // so we will use new formSellPrice and amountToSell (as denominator) to calculate new amountToBuy (as numerator)
+                            // since price formula is: formSellPrice = amountToBuy / amountToSell
+                            const newPriceTypeSameAsSourceAmountType = isSell ? sourceAmountInput === INPUT_TYPE.AMOUNT_SELL : sourceAmountInput === INPUT_TYPE.AMOUNT_BUY;
+
+                            if (newPriceTypeSameAsSourceAmountType) {
+                                selectedPriceParams.numerator = new Big(selectedPriceParams.denominator).times(newPriceValue).toString(COMPUTATION_PRECISION);
+                                otherPriceParams.denominator = selectedPriceParams.numerator;
+                            } else {
+                                selectedPriceParams.denominator = new Big(selectedPriceParams.numerator).div(newPriceValue).toString(COMPUTATION_PRECISION);
+                                otherPriceParams.numerator = selectedPriceParams.denominator;
+                            }
+                        }
+
+                        // update other price value
+                        if (isSell) {
+                            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+                        } else {
+                            this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
+                        }
                     }
 
                     // restore corresponding price
                     // e.g. nearestSelectedInput is AMOUNT_SELL and no sellPrice specified but buyPrice specified, so we can fill sellPrice
                     if (nearestSelectedInput === INPUT_TYPE.AMOUNT_SELL || nearestSelectedInput === INPUT_TYPE.AMOUNT_BUY) {
                         if (this.formSellPrice && !this.formBuyPrice) {
-                            this.formBuyPrice = decreasePrecisionSignificant(1 / this.formSellPrice);
+                            this.paramsBuyPrice.numerator = this.paramsSellPrice.denominator;
+                            this.paramsBuyPrice.denominator = this.paramsSellPrice.numerator;
+                            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
                         }
                         if (this.formBuyPrice && !this.formSellPrice) {
-                            this.formSellPrice = decreasePrecisionSignificant(1 / this.formBuyPrice);
+                            this.paramsSellPrice.numerator = this.paramsBuyPrice.denominator;
+                            this.paramsSellPrice.denominator = this.paramsBuyPrice.numerator;
+                            this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
                         }
                     }
 
-
-                    const nearestAmountIndex = Math.min(99, ...[amountSellIndex, amountBuyIndex].filter((item) => item !== -1));
-                    const nearestAmountInput = nearestAmountIndex !== 99 ? this.lastSelectedInputList[nearestAmountIndex] : undefined;
-                    const nearestAmountInputHasValue = (this.form.valueToSell && nearestAmountInput === INPUT_TYPE.AMOUNT_SELL) || (this.form.valueToBuy && nearestAmountInput === INPUT_TYPE.AMOUNT_BUY);
-
-                    if (!nearestAmountInput) {
-                        return;
-                    }
-                    // do nothing if input was just cleared
-                    if (!nearestAmountInputHasValue && nearestAmountIndex === 0) {
-                        return;
-                    }
-                    let sourceAmountInput;
-                    if (nearestAmountInputHasValue) {
-                        sourceAmountInput = nearestAmountInput;
-                    } else {
-                        const otherAmountInputToTry = nearestAmountInput !== INPUT_TYPE.AMOUNT_SELL ? INPUT_TYPE.AMOUNT_SELL : INPUT_TYPE.AMOUNT_BUY;
-                        const otherAmountInputHasValue = (this.form.valueToSell && otherAmountInputToTry === INPUT_TYPE.AMOUNT_SELL) || (this.form.valueToBuy && otherAmountInputToTry === INPUT_TYPE.AMOUNT_BUY);
-                        if (otherAmountInputHasValue && this.lastSelectedInputList.includes(otherAmountInputToTry)) {
-                            sourceAmountInput = otherAmountInputToTry;
-                        }
-                    }
 
                     // sellAmount as source
-                    if (this.formSellPrice && this.form.valueToSell && sourceAmountInput === INPUT_TYPE.AMOUNT_SELL) {
-                        this.form.valueToBuy = new Big(this.form.valueToSell).times(this.formSellPrice).toString();
+                    if (sourceAmountInput === INPUT_TYPE.AMOUNT_SELL) {
+                        if (!isPositive(this.paramsSellPrice) || !isPositive(this.form.valueToSell)) {
+                            return;
+                        }
+                        this.form.valueToBuy = toFraction(this.paramsSellPrice).mul(this.form.valueToSell).toString(VISIBLE_PRECISION);
+                        // this.form.valueToBuy = new Big(this.form.valueToSell).times(this.formSellPrice).toString();
                         return;
                     }
                     // buyAmount as source
-                    if (this.formBuyPrice && this.form.valueToBuy && sourceAmountInput === INPUT_TYPE.AMOUNT_BUY) {
-                        this.form.valueToSell = new Big(this.form.valueToBuy).times(this.formBuyPrice).toString();
+                    if (sourceAmountInput === INPUT_TYPE.AMOUNT_BUY) {
+                        if (!isPositive(this.paramsBuyPrice) || !isPositive(this.form.valueToBuy)) {
+                            return;
+                        }
+                        this.form.valueToSell = toFraction(this.paramsBuyPrice).mul(this.form.valueToBuy).toString(VISIBLE_PRECISION);
+                        // this.form.valueToSell = new Big(this.form.valueToBuy).times(this.formBuyPrice).toString();
                         return;
                     }
                 }, 50);
@@ -270,6 +308,42 @@ export default {
         pretty,
         prettyExact,
         decreasePrecisionSignificant,
+        toFractionValue(fractionParams) {
+            return toFraction(fractionParams).toString();
+        },
+        /**
+         * @param coinSymbol - form.coinToSell || form.coinToBuy
+         * @return {Fraction}
+         */
+        getFractionCurrentPrice(coinSymbol) {
+            if (!this.isPoolLoaded) {
+                return new Fraction('', '');
+            }
+
+            return toFraction(sortPoolAmountToFractionParams(this.poolData, coinSymbol));
+        },
+        getSourceAmountInput(amountSellIndex, amountBuyIndex) {
+            const nearestAmountIndex = Math.min(99, ...[amountSellIndex, amountBuyIndex].filter((item) => item !== -1));
+            const nearestAmountInput = nearestAmountIndex !== 99 ? this.lastSelectedInputList[nearestAmountIndex] : undefined;
+            const nearestAmountInputHasValue = (this.form.valueToSell && nearestAmountInput === INPUT_TYPE.AMOUNT_SELL) || (this.form.valueToBuy && nearestAmountInput === INPUT_TYPE.AMOUNT_BUY);
+
+            if (!nearestAmountInput) {
+                return;
+            }
+            // do nothing if input was just cleared
+            if (!nearestAmountInputHasValue && nearestAmountIndex === 0) {
+                return;
+            }
+            if (nearestAmountInputHasValue) {
+                return nearestAmountInput;
+            } else {
+                const otherAmountInputToTry = nearestAmountInput !== INPUT_TYPE.AMOUNT_SELL ? INPUT_TYPE.AMOUNT_SELL : INPUT_TYPE.AMOUNT_BUY;
+                const otherAmountInputHasValue = (this.form.valueToSell && otherAmountInputToTry === INPUT_TYPE.AMOUNT_SELL) || (this.form.valueToBuy && otherAmountInputToTry === INPUT_TYPE.AMOUNT_BUY);
+                if (otherAmountInputHasValue && this.lastSelectedInputList.includes(otherAmountInputToTry)) {
+                    return otherAmountInputToTry;
+                }
+            }
+        },
         // store last 3 of 4
         setSelectedInput(inputType) {
             if (this.lastSelectedInputList[0] === inputType) {
@@ -304,10 +378,14 @@ export default {
             if (!this.isPoolLoaded) {
                 return;
             }
-            this.formSellPrice = this.coinToSellCurrentPrice;
-            this.formBuyPrice = this.coinToBuyCurrentPrice;
-            // unselect price inputs
-            this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY);
+            this.paramsSellPrice = sortPoolAmountToFractionParams(this.poolData, this.form.coinToSell);
+            this.paramsBuyPrice = sortPoolAmountToFractionParams(this.poolData, this.form.coinToBuy);
+            // by default show 18 digits precision, but form inputs manually may take up to 33
+            this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
+            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+            // unselect price inputs (so price will not recalculate)
+            // and unselect second amount (so amounts will not be used as source)
+            this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY).slice(0, 1);
         },
         success() {
             eventBus.emit('update-limit-order-list');
@@ -342,17 +420,23 @@ export default {
 };
 
 /**
- * Return amount of other pool coin
- * (selling inputCoin, buying other pool coin)
+ * E.g. if inputCoin is coinToSell, then params will represent sellPrice fraction
  * @param {Pool} pool
  * @param {string} inputCoin - symbol
+ * @return {{numerator: string, denominator: string}}
  */
-function getMidPriceInput(pool, inputCoin) {
+function sortPoolAmountToFractionParams(pool, inputCoin) {
     if (inputCoin === pool.coin0.symbol) {
-        return new Big(pool.amount1).div(pool.amount0).toString(33);
+        return {
+            numerator: pool.amount1,
+            denominator: pool.amount0,
+        };
     }
     if (inputCoin === pool.coin1.symbol) {
-        return new Big(pool.amount0).div(pool.amount1).toString(33);
+        return {
+            numerator: pool.amount0,
+            denominator: pool.amount1,
+        };
     }
 
     throw new Error('Pool does not contain inputCoin');
@@ -364,7 +448,10 @@ function approxLte(a, b) {
 function approxGte(a, b) {
     return new Big(a).div(b).gte(0.999);
 }
-function isPositiveNumber(value) {
+function isPositive(value) {
+    if (typeof value === 'object') {
+        return Number(value.numerator) > 0 && Number(value.denominator) > 0;
+    }
     return Number(value) > 0;
 }
 </script>
@@ -405,7 +492,7 @@ function isPositiveNumber(value) {
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="formSellPrice"
-                        scale="33"
+                        :scale="$options.COMPUTATION_PRECISION"
                         @blur="$v.formSellPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_SELL)"
                     />
@@ -448,7 +535,7 @@ function isPositiveNumber(value) {
                     <InputMaskedAmount
                         class="form-field__input" v-check-empty
                         v-model="formBuyPrice"
-                        scale="33"
+                        :scale="$options.COMPUTATION_PRECISION"
                         @blur="$v.formBuyPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_BUY)"
                     />
@@ -498,7 +585,7 @@ function isPositiveNumber(value) {
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
                 </div>
-                <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
+                <div class="u-cell u-cell--1-2 u-cell--medium--1-4" v-if="isPoolLoaded">
                     <button class="button button--ghost-main" type="button" @click="applyCurrentPrice()">Use current price</button>
                 </div>
             </div>

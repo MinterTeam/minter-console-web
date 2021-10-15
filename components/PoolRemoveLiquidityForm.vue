@@ -426,7 +426,7 @@ export default {
                     @input.native="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
                     @use-max="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
                 />
-<!--                @TODO form.liquidity validation-->
+                <!--                @TODO form.liquidity validation-->
                 <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Required', 'form.pool-remove-liquidity-error-required') }}</span>
             </div>
             <div class="u-cell">

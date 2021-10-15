@@ -2,8 +2,8 @@ import Big from 'big.js';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 
 // support division of 15 whole digits and 18 decimal
-const COMPUTATION_PRECISION = 15 + 18;
-const VISIBLE_PRECISION = 18;
+export const COMPUTATION_PRECISION = 15 + 18;
+export const VISIBLE_PRECISION = 18;
 // set defaults
 // precision
 Big.DP = COMPUTATION_PRECISION;
