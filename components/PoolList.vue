@@ -76,8 +76,8 @@ export default {
                     });
                     this.poolList = providerListInfo.data.map((item) => {
                         // copy trade volume from pool info
-                        item.tradeVolumeBip1D = volumeMap[item.token.symbol].tradeVolumeBip1D;
-                        item.totalLiquidityBip = volumeMap[item.token.symbol].liquidityBip;
+                        item.tradeVolumeBip1D = volumeMap[item.token.symbol]?.tradeVolumeBip1D || 0;
+                        item.totalLiquidityBip = volumeMap[item.token.symbol]?.liquidityBip || 0;
                         return item;
                     });
                 });
