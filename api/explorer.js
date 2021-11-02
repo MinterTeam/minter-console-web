@@ -397,7 +397,7 @@ export function getProviderPoolList(address, params) {
  * @param {number|string} [amountOptions.buyAmount]
  * @param {number|string} [amountOptions.sellAmount]
  * @param {AxiosRequestConfig} [axiosOptions]
- * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string}>}
+ * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string, swapType:ESTIMATE_SWAP_TYPE}>}
  */
 export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions) {
     const amount = convertToPip(buyAmount || sellAmount);
@@ -409,6 +409,28 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions
         type = 'output';
     }
     return explorer.get(`pools/coins/${coin0}/${coin1}/route?type=${type}&amount=${amount}`, axiosOptions)
+        .then((response) => response.data);
+}
+
+/**
+ * @param {string} coin0
+ * @param {string} coin1
+ * @param {Object} amountOptions
+ * @param {number|string} [amountOptions.buyAmount]
+ * @param {number|string} [amountOptions.sellAmount]
+ * @param {AxiosRequestConfig} [axiosOptions]
+ * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string, swapType:ESTIMATE_SWAP_TYPE}>}
+ */
+export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount}, axiosOptions) {
+    const amount = convertToPip(buyAmount || sellAmount);
+    let type;
+    if (sellAmount) {
+        type = 'input';
+    }
+    if (buyAmount) {
+        type = 'output';
+    }
+    return explorer.get(`pools/coins/${coin0}/${coin1}/estimate?type=${type}&amount=${amount}`, axiosOptions)
         .then((response) => response.data);
 }
 

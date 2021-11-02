@@ -14,7 +14,7 @@ import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath, GetCoinId} from 'minter-js-s
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import GetCommissionPrice from 'minter-js-sdk/src/api/get-commission-price.js';
 import {GATE_API_URL, CHAIN_ID} from '~/assets/variables.js';
-import {getSwapRoute} from '@/api/explorer.js';
+import {getSwapEstimate as explorerGetSwapEstimate} from '@/api/explorer.js';
 
 const minterApi = new MinterApi({
     apiType: 'gate',
@@ -40,54 +40,23 @@ export function estimateCoinSell(params, axiosOptions) {
         return Promise.reject(new Error('Value to sell not specified'));
     }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
-        let estimateError;
-        const estimatePromise = _estimateCoinSell(params, axiosOptions)
-            .catch((error) => {
-                estimateError = error;
-            });
-        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell}, {...axiosOptions, cache: estimateCache})
-            // ignore route errors
-            .catch((error) => {
-                console.log('getSwapRoute error ignored', error);
-            });
-        return Promise.all([estimatePromise, routePromise])
-            .then(([estimateData, routeData]) => {
-                if (estimateError && !routeData) {
-                    throw estimateError;
-                }
-                const isRouteOnly = routeData && estimateError;
-                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_get).lt(routeData.amountOut) && routeData.coins.length > 2;
-
-                if (isRouteOnly || isRouteBetter) {
-                    // swap by route is better
-                    const idRoute = routeData.coins.map((coin) => coin.id);
-                    // remove first and last items, keep only intermediate items
-                    idRoute.pop();
-                    idRoute.shift();
-                    return Promise.all([
+        return explorerGetSwapEstimate(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell}, {...axiosOptions, cache: estimateCache})
+            .then((explorerEstimation) => {
+                return Promise.all([
                         _estimateCoinSell({
                             ...params,
-                            route: idRoute,
-                            swapFrom: ESTIMATE_SWAP_TYPE.POOL,
+                            // remove first and last items, keep only intermediate items
+                            route: explorerEstimation.coins?.map((coin) => coin.id).slice(1, -1),
+                            swapFrom: explorerEstimation.swapType,
                         }, axiosOptions),
-                        Promise.resolve(routeData.coins),
-                    ])
-                        .then(([estimateRouteData, route]) => {
-                            estimateRouteData = {
-                                ...estimateRouteData,
-                                route,
-                            };
-                            const isEstimateRouteBetter = estimateData && estimateRouteData && new Big(estimateData.will_get).lt(estimateRouteData.will_get);
-
-                            if (isRouteOnly || isEstimateRouteBetter) {
-                                return estimateRouteData;
-                            } else {
-                                // direct estimation may be better
-                                return estimateData;
-                            }
-                        });
-                }
-                return estimateData;
+                        Promise.resolve(explorerEstimation.coins),
+                    ]);
+            })
+            .then(([estimateRouteData, route]) => {
+                return {
+                    ...estimateRouteData,
+                    route,
+                };
             });
     } else {
         return _estimateCoinSell(params, axiosOptions);
@@ -99,53 +68,23 @@ export function estimateCoinBuy(params, axiosOptions) {
         return Promise.reject(new Error('Value to buy not specified'));
     }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
-        let estimateError;
-        const estimatePromise = _estimateCoinBuy(params, axiosOptions)
-            .catch((error) => {
-                estimateError = error;
-            });
-        const routePromise = getSwapRoute(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy}, {...axiosOptions, cache: estimateCache})
-            // ignore route errors
-            .catch((error) => {
-                console.log('getSwapRoute error ignored', error);
-            });
-        return Promise.all([estimatePromise, routePromise])
-            .then(([estimateData, routeData]) => {
-                if (estimateError && !routeData) {
-                    throw estimateError;
-                }
-                const isRouteOnly = routeData && estimateError;
-                const isRouteBetter = estimateData && routeData && new Big(estimateData.will_pay).gt(routeData.amountIn) && routeData.coins.length > 2;
-
-                if (isRouteOnly || isRouteBetter) {
-                    const idRoute = routeData.coins.map((coin) => coin.id);
-                    // remove first and last items, keep only intermediate items
-                    idRoute.pop();
-                    idRoute.shift();
-                    return Promise.all([
-                            _estimateCoinBuy({
-                                ...params,
-                                route: idRoute,
-                                swapFrom: ESTIMATE_SWAP_TYPE.POOL,
-                            }, axiosOptions),
-                            Promise.resolve(routeData.coins),
-                        ])
-                        .then(([estimateRouteData, route]) => {
-                            estimateRouteData = {
-                                ...estimateRouteData,
-                                route,
-                            };
-                            const isEstimateRouteBetter = estimateData && estimateRouteData && new Big(estimateData.will_pay).gt(estimateRouteData.will_pay);
-
-                            if (isRouteOnly || isEstimateRouteBetter) {
-                                return estimateRouteData;
-                            } else {
-                                // direct estimation may be better
-                                return estimateData;
-                            }
-                        });
-                }
-                return estimateData;
+        return explorerGetSwapEstimate(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy}, {...axiosOptions, cache: estimateCache})
+            .then((explorerEstimation) => {
+                return Promise.all([
+                        _estimateCoinBuy({
+                            ...params,
+                            // remove first and last items, keep only intermediate items
+                            route: explorerEstimation.coins?.map((coin) => coin.id).slice(1, -1),
+                            swapFrom: explorerEstimation.swapType,
+                        }, axiosOptions),
+                        Promise.resolve(explorerEstimation.coins),
+                    ]);
+            })
+            .then(([estimateRouteData, route]) => {
+                return {
+                    ...estimateRouteData,
+                    route,
+                };
             });
     } else {
         return _estimateCoinBuy(params, axiosOptions);
