@@ -1,4 +1,4 @@
-FROM node:lts as builder
+FROM node:14 as builder
 
 ARG BUILD_BRANCH_ENV_PREFIX
 
