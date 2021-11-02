@@ -82,6 +82,7 @@ export default {
             },
             valueToSell: {
                 required,
+                minValue: minValue(0.00000001),
             },
             coinToBuy: {
                 required,
@@ -89,6 +90,7 @@ export default {
             },
             valueToBuy: {
                 required,
+                minValue: minValue(0.00000001),
             },
         };
 
