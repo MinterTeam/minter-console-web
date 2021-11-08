@@ -2,6 +2,7 @@ import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
+import coinBlockList from 'minter-coin-block-list';
 import {_getOracleCoinList} from '@/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
@@ -237,7 +238,7 @@ export function getCoinList({skipMeta} = {}) {
     })
         .then((response) => {
             const coinList = response.data.data;
-            return coinList;
+            return coinList.filter((coin) => !coinBlockList.includes(coin.symbol));
         });
 
     if (!skipMeta) {
