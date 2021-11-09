@@ -10,6 +10,12 @@ import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
 
 
+const coinBlockMap = Object.fromEntries(coinBlockList.map((symbol) => [symbol, true]));
+function isBlocked(symbol) {
+    return !!coinBlockMap[symbol.replace(/-\d+$/, '')];
+}
+
+
 function save404Adapter(adapter) {
     return async function(config) {
         try {
@@ -238,7 +244,7 @@ export function getCoinList({skipMeta} = {}) {
     })
         .then((response) => {
             const coinList = response.data.data;
-            return coinList.filter((coin) => !coinBlockList.includes(coin.symbol));
+            return coinList.filter((coin) => !isBlocked(coin.symbol));
         });
 
     if (!skipMeta) {
