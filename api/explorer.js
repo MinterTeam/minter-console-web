@@ -3,11 +3,18 @@ import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
 import Big from '~/assets/big.js';
+import coinBlockList from 'minter-coin-block-list';
 import {_getOracleCoinList} from '@/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {addTimeInterceptor} from '~/assets/time-offset.js';
+
+
+const coinBlockMap = Object.fromEntries(coinBlockList.map((symbol) => [symbol, true]));
+function isBlocked(symbol) {
+    return !!coinBlockMap[symbol.replace(/-\d+$/, '')];
+}
 
 
 function save404Adapter(adapter) {
@@ -262,7 +269,7 @@ export function getCoinList({skipMeta} = {}) {
     })
         .then((response) => {
             const coinList = response.data.data;
-            return coinList;
+            return coinList.filter((coin) => !isBlocked(coin.symbol));
         });
 
     if (!skipMeta) {
