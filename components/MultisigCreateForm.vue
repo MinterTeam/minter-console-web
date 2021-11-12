@@ -215,8 +215,8 @@
                     <span class="form-field__label">{{ $td('Threshold', 'form.multisig-create-threshold') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.threshold.$dirty && !$v.form.threshold.required">{{ $td('Enter threshold', 'form.multisig-create-threshold-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.threshold.$dirty && !$v.form.threshold.maxValue">{{ $td('Should be greater or equal than Weights Sum', 'form.multisig-create-threshold-error-max') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.threshold.$dirty && !$v.form.threshold.minValue">{{ $td('Should be less or equal than minimal Weight:', 'form.multisig-create-threshold-error-min') }} {{ weightMin }}</span>
+                <span class="form-field__error" v-else-if="$v.form.threshold.$dirty && !$v.form.threshold.maxValue">{{ $td('Should be less or equal than weights sum', 'form.multisig-create-threshold-error-max') }}</span>
+                <span class="form-field__error" v-else-if="$v.form.threshold.$dirty && !$v.form.threshold.minValue">{{ $td('Should be greater or equal than minimal weight:', 'form.multisig-create-threshold-error-min') }} {{ weightMin }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--large--1-4">
                 <label class="form-field form-field--dashed">
