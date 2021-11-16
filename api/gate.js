@@ -1,4 +1,3 @@
-import Big from '~/assets/big.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import MinterApi from "minter-js-sdk/src/api";
@@ -14,7 +13,7 @@ import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath, GetCoinId} from 'minter-js-s
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import GetCommissionPrice from 'minter-js-sdk/src/api/get-commission-price.js';
 import {GATE_API_URL, CHAIN_ID} from '~/assets/variables.js';
-import {getSwapEstimate as explorerGetSwapEstimate} from '@/api/explorer.js';
+import {getSwapEstimate as explorerGetSwapEstimate} from '~/api/explorer.js';
 
 const minterApi = new MinterApi({
     apiType: 'gate',
