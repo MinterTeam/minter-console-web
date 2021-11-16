@@ -54,6 +54,9 @@ export default {
 
             return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
         },
+        isInfiniteUnlock() {
+            return this.confirmData.info?.type === HUB_DEPOSIT_TX_PURPOSE.UNLOCK && this.confirmData.info?.amount > 10 ** 18;
+        },
     },
     mounted() {
         // set account on page load if some was set previously
@@ -155,7 +158,7 @@ export default {
 
         <portal to="account-minter-confirm-modal">
             <!-- Confirm Modal -->
-            <Modal v-bind:isOpen.sync="isConfirmModalVisible">
+            <Modal v-bind:isOpen.sync="isConfirmModalVisible" @modal-close="cancelConfirmation()">
                 <div class="panel u-text-left" v-if="confirmData.tx && confirmData.computed">
                     <div class="panel__header">
                         <h1 class="panel__header-title">
@@ -183,7 +186,10 @@ export default {
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
-                                    {{ prettyExact(confirmData.info.amount) }} {{ confirmData.info.tokenName }}
+                                    <template v-if="isInfiniteUnlock">Infinity</template>
+                                    <template v-else>
+                                        {{ prettyExact(confirmData.info.amount) }} {{ confirmData.info.tokenName }}
+                                    </template>
                                 </div>
                                 <span class="form-field__label">Amount</span>
                             </div>
