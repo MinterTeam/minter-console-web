@@ -49,7 +49,7 @@ export default {
             if (!priceItem) {
                 gasPriceGwei = 100;
             } else {
-                gasPriceGwei = priceItem.value / 10;
+                gasPriceGwei = web3.utils.fromWei(priceItem.value, 'gwei');
             }
 
             return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;

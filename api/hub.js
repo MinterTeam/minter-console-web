@@ -1,10 +1,14 @@
+import MinterHub from 'minter-js-hub';
+import {TxStatusType} from 'minter-js-hub/gen/mhub2/v1/mhub2_pb.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {getCoinList} from '@/api/explorer.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS} from "~/assets/variables";
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID} from "~/assets/variables";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
+
+const minterHub = new MinterHub(HUB_API_URL);
 
 const instance = axios.create({
     baseURL: HUB_API_URL,
@@ -17,6 +21,8 @@ addToCamelInterceptor(instance);
  * @return {Promise<{min: string, fast: string}>}
  */
 export function getOracleEthFee() {
+    return minterHub.getOracleEthFee();
+    // eslint-disable-next-line no-unreachable
     return instance.get('oracle/eth_fee')
         .then((response) => {
             return response.data.result;
@@ -31,6 +37,7 @@ export function getOracleCoinList() {
     return Promise.all([_getOracleCoinList(), getCoinList({skipMeta: true})])
         .then(([oracleCoinList, minterCoinList]) => {
             oracleCoinList.forEach((oracleCoin) => {
+                // @TODO oracleCoin.minterId
                 const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
                 oracleCoin.symbol = minterCoin?.symbol;
             });
@@ -43,9 +50,30 @@ export function getOracleCoinList() {
 const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
 
 /**
+ * #@return {Promise<TokenInfo.AsObject[]>}
  * @return {Promise<Array<HubCoinItem>>}
  */
 export function _getOracleCoinList() {
+    return minterHub.getTokenList()
+        .then((tokenList) => {
+            const ethTokenList = tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.ETHEREUM);
+
+            return ethTokenList
+                .map((token) => {
+                    const minterToken = tokenList.find((item) => item.denom === token.denom && item.chainId === HUB_CHAIN_ID.MINTER);
+                    const minterId = minterToken?.externalTokenId;
+
+                    return {
+                        minterId,
+                        denom: token.denom,
+                        ethAddr: token.externalTokenId,
+                        ethDecimals: token.externalDecimals,
+                        customCommission: token.commission / 10 ** 18,
+                    };
+                })
+                .filter((token) => typeof token.minterId !== 'undefined');
+        });
+    // eslint-disable-next-line no-unreachable
     return instance.get('oracle/coins', {
             cache: coinsCache,
         })
@@ -57,9 +85,11 @@ export function _getOracleCoinList() {
 const priceCache = new Cache({maxAge: 10 * 1000});
 
 /**
- * @return {Promise<Array<{name: string, value: string}>>}
+ * @return {Promise<Array<HubPriceItem>>}
  */
 export function getOraclePriceList() {
+    return minterHub.getOraclePriceList();
+    // eslint-disable-next-line no-unreachable
     return instance.get('oracle/prices', {
             cache: priceCache,
         })
@@ -74,6 +104,20 @@ export function getOraclePriceList() {
  * @return {Promise<HubTransfer>}
  */
 export function getMinterTxStatus(hash) {
+    const chainId = hash.indexOf('Mt') === 0 ? HUB_CHAIN_ID.ETHEREUM : HUB_CHAIN_ID.MINTER;
+    return minterHub.getTxStatus(chainId, hash)
+        .then((statusData) => {
+            // cast {string: number} obj to {number: string} array-like obj
+            const hubStatusTypes = Object.fromEntries(
+                Object.entries(TxStatusType)
+                    .map((entry) => [entry[1], entry[0]]),
+            );
+
+            // get string representation from number, e.g. replace 0 with 'TX_STATUS_NOT_FOUND'
+            statusData.status = hubStatusTypes[statusData.status];
+            return statusData;
+        });
+    // eslint-disable-next-line no-unreachable
     return instance.get(`minter/tx_status/${hash}`)
         .then((response) => {
             return response.data.result;
@@ -179,6 +223,12 @@ function wait(time) {
  * @property {string} minterId
  * @property {string} ethDecimals
  * @property {string|number} customCommission
+ */
+
+/**
+ * @typedef {object} HubPriceItem
+ * @property {string} name
+ * @property {number|string} value
  */
 
 /**
