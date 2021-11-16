@@ -3,7 +3,7 @@ import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
 import coinBlockList from 'minter-coin-block-list';
-import {_getOracleCoinList} from '@/api/hub.js';
+import {_getOracleCoinList} from '~/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
 import addToCamelInterceptor from '~/assets/to-camel.js';
@@ -112,8 +112,8 @@ export async function getBalance(address) {
 
 /**
  * @typedef {Object} BalanceItem
- * @property {string|number} amount
- * @property {string|number} bipAmount
+ * @property {number|string} amount
+ * @property {number|string} bipAmount
  * @property {Coin} coin
  */
 
