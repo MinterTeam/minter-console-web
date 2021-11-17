@@ -182,7 +182,7 @@ export default {
             if (!priceItem) {
                 gasPriceGwei = 100;
             } else {
-                gasPriceGwei = priceItem.value / 10;
+                gasPriceGwei = priceItem.value / 10 ** 18;
             }
 
             return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
@@ -685,7 +685,8 @@ export default {
         sendCoinTx({amount, nonce}) {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.$store.getters.address.replace("Mx", "0x")))]);
-            let data = hubBridgeContract.methods.sendToMinter(this.coinContractAddress, address, amount).encodeABI();
+            const destinationChain = Buffer.from('minter', 'utf-8');
+            let data = hubBridgeContract.methods.transferToChain(this.coinContractAddress, destinationChain, address, amount, 0).encodeABI();
 
             return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE}, LOADING_STAGE.SEND_BRIDGE);
         },

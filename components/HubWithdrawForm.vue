@@ -84,13 +84,17 @@ export default {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
+        coinDenom() {
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
+            return coinItem ? coinItem.denom : undefined;
+        },
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem?.customCommission || 0.01;
         },
         coinPrice() {
-            const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
-            return priceItem ? priceItem.value : '0';
+            const priceItem = this.priceList.find((item) => item.name === this.coinDenom);
+            return priceItem ? priceItem.value / 10 ** 18 : '0';
         },
         // fee to ethereum network calculated in COIN
         coinFee() {

@@ -63,6 +63,12 @@ export const SLIPPAGE_INPUT_TYPE = {
     PERCENT: 'percent',
 };
 
+export const HUB_CHAIN_ID = {
+    ETHEREUM: 'ethereum',
+    BSC: 'bsc',
+    MINTER: 'minter',
+};
+
 export const HUB_TRANSFER_STATUS = {
     not_found_long: 'not_found_long', // custom status
     not_found: 'TX_STATUS_NOT_FOUND',

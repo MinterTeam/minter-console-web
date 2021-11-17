@@ -38,6 +38,7 @@ function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
 
+//@TODO rename peggy
 const peggyAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
@@ -467,7 +468,8 @@ export default {
         sendCoinTx() {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
-            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin])).encodeABI();
+            const destinationChain = Buffer.from('minter', 'utf-8');
+            let data = peggyContract.methods.transferToChain(this.coinContractAddress, destinationChain, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin]), 0).encodeABI();
 
             return this.sendEthTx({to: peggyAddress, data})
                 .then((hash) => {

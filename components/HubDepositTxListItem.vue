@@ -71,6 +71,7 @@ export default {
                 }
             });
 
+        //@TODO this.tokenInfoPromise may be null
         // subscribe on transfer for send txs
         this.txWatcher.then((tx) => {
             this.tokenInfoPromise

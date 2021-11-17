@@ -36,15 +36,15 @@ export default {
             return this.coinList.map((coin) => {
                 return {
                     ...coin,
-                    price: getPriceFromList(this.priceList, 'minter/' + coin.minterId),
+                    price: getPriceFromList(this.priceList, coin.denom),
                 };
             });
         },
         ethereumPrice() {
-            return getPriceFromList(this.priceList, 'eth/0');
+            return getPriceFromList(this.priceList, 'eth');
         },
         ethereumGas() {
-            return getPriceFromList(this.priceList, 'eth/gas', true) / 10;
+            return getPriceFromList(this.priceList, 'eth/gas');
         },
     },
     methods: {
@@ -56,15 +56,14 @@ export default {
 
 /**
  *
- * @param {Array<HubCoinItem>} list
+ * @param {Array<HubPriceItem>} list
  * @param {string} name
- * @param {boolean} [keepDecimals]
  * @return {string|number}
  */
-function getPriceFromList(list, name, keepDecimals) {
+function getPriceFromList(list, name) {
     const priceItem = list.find((item) => item.name === name);
     const coinPrice = priceItem ? priceItem.value : '0';
-    return keepDecimals ? coinPrice : new Big(coinPrice).div(10 ** 10).toString();
+    return new Big(coinPrice).div(10 ** 18).toString();
 }
 </script>
 

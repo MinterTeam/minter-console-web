@@ -100,6 +100,7 @@ export default {
                 <div>
                     <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
+<!--  @TODO combine deposit_to_hub_received & batch_created into "Bridge received tx and wait gas conditions to proceed" -->
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">Bridge collecting batch to Ethereum</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to Ethereum, waiting confirmation</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_executed">

@@ -49,7 +49,7 @@ export default {
             if (!priceItem) {
                 gasPriceGwei = 100;
             } else {
-                gasPriceGwei = priceItem.value / 10;
+                gasPriceGwei = priceItem.value / 10 ** 18;
             }
 
             return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
