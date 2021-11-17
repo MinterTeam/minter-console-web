@@ -255,11 +255,13 @@ export async function getDepositTxInfo(tx, hubCoinList, skipAmount) {
     // remove 0x and function selector
     const input = tx.input.slice(2 + 8);
     const itemCount = input.length / 64;
-    // last item (2nd for `unlock`, 3rd for `sendToMinter`)
     let type;
+    // first item
     let tokenContract;
+    // 2nd for `unlock`, 4th for `transferToChain`, 'tx.to' in `wrap` and `sendETHToChain`
     let amount;
     if (itemCount === 2) {
+        // unlock
         const beneficiaryHex = '0x' + input.slice(0, 64);
         const beneficiaryAddress = eth.abi.decodeParameter('address', beneficiaryHex);
         const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
@@ -272,12 +274,19 @@ export async function getDepositTxInfo(tx, hubCoinList, skipAmount) {
                 type: HUB_DEPOSIT_TX_PURPOSE.OTHER,
             };
         }
-    } else if (tx.to.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 3) {
+    } else if (tx.to.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 5) {
+        // transferToChain
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
         const tokenContractHex = '0x' + input.slice(0, 64);
         tokenContract = eth.abi.decodeParameter('address', tokenContractHex);
-        amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 1) * 64), tokenContract, hubCoinList);
+        amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 2) * 64), tokenContract, hubCoinList);
+    } else if (tx.to.toLowerCase() === HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 3) {
+        // transferETHToChain
+        type = HUB_DEPOSIT_TX_PURPOSE.SEND;
+        tokenContract = WETH_ETHEREUM_CONTRACT_ADDRESS;
+        amount = Utils.fromWei(tx.value);
     } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
+        // wrap
         type = HUB_DEPOSIT_TX_PURPOSE.WRAP;
         tokenContract = tx.to;
         amount = Utils.fromWei(tx.value);

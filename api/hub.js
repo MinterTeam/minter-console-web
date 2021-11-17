@@ -104,8 +104,7 @@ export function getOraclePriceList() {
  * @return {Promise<HubTransfer>}
  */
 export function getMinterTxStatus(hash) {
-    const chainId = hash.indexOf('Mt') === 0 ? HUB_CHAIN_ID.ETHEREUM : HUB_CHAIN_ID.MINTER;
-    return minterHub.getTxStatus(chainId, hash)
+    return minterHub.getTxStatus(hash)
         .then((statusData) => {
             // cast {string: number} obj to {number: string} array-like obj
             const hubStatusTypes = Object.fromEntries(
