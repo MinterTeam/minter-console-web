@@ -77,9 +77,13 @@ const DEPOSIT_COIN_DATA = {
         testnetSymbol: 'USDC',
         smallAmount: 0.1,
     },
+    HUB: {
+        testnetSymbol: 'TESTHUB',
+        smallAmount: 0.01,
+    },
 };
 const DEPOSIT_SYMBOL_MAINNET = 'ETH';
-const DEPOSIT_SYMBOL = NETWORK === MAINNET ? DEPOSIT_SYMBOL_MAINNET : DEPOSIT_COIN_DATA[DEPOSIT_SYMBOL_MAINNET].testnetSymbol;
+const DEPOSIT_SYMBOL = NETWORK === MAINNET ? DEPOSIT_SYMBOL_MAINNET : DEPOSIT_COIN_DATA['ETH'].testnetSymbol;
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
@@ -109,8 +113,8 @@ export default {
     fetch() {
         return Promise.all([getOracleCoinList(), getOraclePriceList()])
             .then(([coinList, priceList]) => {
-                this.hubCoinList = coinList;
-                this.priceList = priceList;
+                this.hubCoinList = Object.freeze(coinList);
+                this.priceList = Object.freeze(priceList);
             })
             // wait for computed coinContractAddress to recalculate
             .then(() => wait(1))
@@ -267,7 +271,7 @@ export default {
         },
         coinContractAddress() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === DEPOSIT_SYMBOL);
-            return coinItem ? coinItem.ethAddr : undefined;
+            return coinItem ? coinItem.ethAddr : WETH_TOKEN_DATA[ETHEREUM_CHAIN_ID].address;
         },
         coinDecimals() {
             if (!this.coinContractAddress) {
@@ -705,7 +709,9 @@ export default {
             }
 
             nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
-            gasLimit = gasLimit || await this.estimateTxGas({to, value, data});
+            // force estimation to prevent smart contract errors
+            const forceGasLimitEstimation = loadingStage === LOADING_STAGE.SEND_BRIDGE;
+            gasLimit = gasLimit && !forceGasLimitEstimation ? gasLimit : await this.estimateTxGas({to, value, data});
             const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
             const txParams = {
                 to,
@@ -750,7 +756,13 @@ export default {
                 data,
             };
 
-            return web3.eth.estimateGas(txParams);
+            return web3.eth.estimateGas(txParams)
+                .then((gasLimit) => {
+                    if (gasLimit > 1000000) {
+                        throw new Error(`Gas limit estimate is too high: ${gasLimit}. Probably tx will be failed.`);
+                    }
+                    return gasLimit;
+                });
         },
         sendMinterSwapTx(amount) {
             return this.forceEstimation()
@@ -917,7 +929,7 @@ function getSwapOutput(receipt) {
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">ETH</div>
+                            <div class="form-field__input is-not-empty">{{ $options.DEPOSIT_SYMBOL }}</div>
                             <span class="form-field__label">Spend</span>
                         </div>
                     </div>
@@ -1053,7 +1065,7 @@ function getSwapOutput(receipt) {
                 <div class="panel__section">
                     <div class="form-row">
                         <div class="form-field form-field--dashed">
-                            <BaseAmount class="form-field__input is-not-empty" coin="ETH" :amount="form.amountEth"/>
+                            <BaseAmount class="form-field__input is-not-empty" :coin="$options.DEPOSIT_SYMBOL" :amount="form.amountEth"/>
                             <div class="form-field__label">You will spend</div>
                         </div>
                     </div>
