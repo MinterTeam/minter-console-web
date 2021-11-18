@@ -80,7 +80,7 @@ export default {
         },
         async sendTransaction(txParams) {
             let nonce = txParams.nonce;
-            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
+            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, 'latest');
             let gasLimit = await this.estimateTxGas(txParams);
             gasLimit = Math.ceil(gasLimit * 1.5);
             const gasPriceGwei = (this.ethGasPriceGwei || 1).toString();
@@ -95,7 +95,7 @@ export default {
             };
 
             await this.showConfirmation(txParamsFinal);
-            console.log('send', txParamsFinal);
+            console.log('send', JSON.parse(JSON.stringify(txParamsFinal)));
             const { rawTransaction } = await web3.eth.accounts.signTransaction(txParamsFinal, this.$store.getters.privateKey);
 
             return new Promise((resolve, reject) => {

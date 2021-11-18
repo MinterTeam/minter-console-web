@@ -9,7 +9,9 @@ import {fromBase64} from '~/assets/utils.js';
 export const state = () => ({
     /** @type {Object.<string, HubWithdraw>} */
     minterList: {},
-    ethList: {},
+    // @TODO store whole tx struct
+    /** @type {Array<string>} */
+    ethList: [],
 });
 
 export const mutations = {
@@ -47,6 +49,15 @@ export const mutations = {
             status,
             ethTxHash: outTxHash,
         });
+    },
+    setDepositList(state, itemList) {
+        state.ethList = itemList || [];
+        state.ethList.slice(0, 5);
+    },
+    //@TODO check txs with same nonce and filter out pending if another is confirmed
+    saveDeposit(state, hash) {
+        state.ethList.unshift(hash);
+        state.ethList = state.ethList.slice(0, 5);
     },
 };
 

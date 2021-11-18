@@ -97,9 +97,8 @@ export default {
                 amount: "",
                 address: this.$store.getters.address,
                 isInfiniteUnlock: true,
+                isIgnorePending: true,
             },
-            // @TODO use tx data in children components (for now only hash is used)
-            transactionList: [],
             isFormSending: false,
             serverError: '',
             waitWrapConfirmation: false,
@@ -242,10 +241,10 @@ export default {
                     this.getAllowance();
                     getLatestTransactions(newVal, this.hubCoinList)
                         .then((txList) => {
-                            this.transactionList = txList;
+                            this.$store.commit('hub/setDepositList', txList.map((tx) => tx.hash));
                         });
                 } else {
-                    this.transactionList = [];
+                    this.$store.commit('hub/setDepositList', []);
                 }
             },
         },
@@ -421,14 +420,6 @@ export default {
                         return this.sendCoinTx();
                     }
                 })
-                .then((hash) => {
-                    // Returns transaction hash
-                    this.transactionList.unshift({
-                        hash,
-                        type: stage,
-                        timestamp: (new Date()).toISOString(),
-                    });
-                })
                 .catch((error) => {
                     this.serverError = getErrorText(error);
                     // Error returned when rejected
@@ -492,7 +483,7 @@ export default {
                 // gasPrice: "0x02540be400", // Optional
                 // gas: "0x9c40", // Optional
                 value: value ? toErcDecimals(value) : "0x00", // Optional
-                nonce: await web3.eth.getTransactionCount(this.ethAddress, "pending"), // Optional
+                nonce: await web3.eth.getTransactionCount(this.ethAddress, this.form.isIgnorePending ? "latest" : "pending"), // Optional
             };
 
             return this.$refs.ethAccount.sendTransaction(txParams);
@@ -531,7 +522,7 @@ function getLatestTransactions(address, hubCoinList) {
     return Promise.all([
         // check last 100 txs
         getAddressTransactionList(address, {page: 1, offset: 100}),
-        //@TODO store pending txs in localStorage
+        //@TODO store pending txs in localStorage, because eth_pendingTransactions is not available on Infura
         Promise.resolve([]),
         // getAddressPendingTransactions(address),
     ])
@@ -614,11 +605,17 @@ function getLatestTransactions(address, hubCoinList) {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-2">
-                        <div class="form-field form-field--dashed" v-if="stage === $options.TX_WRAP">
+                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2" v-if="stage === $options.TX_WRAP">
+                        <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
                             <div class="form-field__label">{{ $td('Wrapped ETH balance', 'form.hub-deposit-weth-balance') }}</div>
                         </div>
+                    </div>
+                    <div class="u-cell" :class="stage === $options.TX_WRAP ? 'u-cell--xlarge--1-4 u-cell--small--1-2' : 'u-cell--xlarge--1-2'">
+                        <label class="form-check">
+                            <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
+                            <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
+                        </label>
                         <label class="form-check" v-if="stage === $options.TX_APPROVE">
                             <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
@@ -692,13 +689,13 @@ function getLatestTransactions(address, hubCoinList) {
             <!--          </div>-->
         </div>
 
-        <div class="panel" v-if="transactionList.length">
+        <div class="panel" v-if="$store.state.hub.ethList.length">
             <div class="panel__header panel__header-title">Latest transactions</div>
             <TxListItem
                 class="panel__section"
-                v-for="tx in transactionList"
-                :key="tx.hash"
-                :hash="tx.hash"
+                v-for="hash in $store.state.hub.ethList"
+                :key="hash"
+                :hash="hash"
                 :coin-list="hubCoinList"
             />
         </div>

@@ -1,4 +1,5 @@
 <script>
+import eventBus from '~/assets/event-bus.js';
 import {getEtherscanAddressUrl} from '~/assets/utils.js';
 import HubDepositAccountWalletConnect from '~/components/HubDepositAccountWalletConnect.vue';
 import HubDepositAccountMetamask from '~/components/HubDepositAccountMetamask.vue';
@@ -39,6 +40,14 @@ export default {
             return !!this.ethAddress;
         },
     },
+    mounted() {
+        eventBus.on('account-send-transaction', (txParams) => {
+            this.sendTransaction(txParams);
+        });
+    },
+    destroyed() {
+        eventBus.off('account-send-transaction');
+    },
     methods: {
         getEtherscanAddressUrl,
         disconnectEth() {
@@ -76,7 +85,11 @@ export default {
             }
         },
         sendTransaction(txParams) {
-            return this.selectedAccount.sendTransaction(txParams);
+            return this.selectedAccount.sendTransaction(txParams)
+                .then((hash) => {
+                    this.$store.commit('hub/saveDeposit', hash);
+                    return hash;
+                });
         },
     },
 };
