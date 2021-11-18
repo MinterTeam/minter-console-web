@@ -77,9 +77,13 @@ const DEPOSIT_COIN_DATA = {
         testnetSymbol: 'USDC',
         smallAmount: 0.1,
     },
+    HUB: {
+        testnetSymbol: 'TESTHUB',
+        smallAmount: 0.01,
+    },
 };
 const DEPOSIT_SYMBOL_MAINNET = 'ETH';
-const DEPOSIT_SYMBOL = NETWORK === MAINNET ? DEPOSIT_SYMBOL_MAINNET : DEPOSIT_COIN_DATA[DEPOSIT_SYMBOL_MAINNET].testnetSymbol;
+const DEPOSIT_SYMBOL = NETWORK === MAINNET ? DEPOSIT_SYMBOL_MAINNET : DEPOSIT_COIN_DATA['ETH'].testnetSymbol;
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
@@ -267,7 +271,7 @@ export default {
         },
         coinContractAddress() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === DEPOSIT_SYMBOL);
-            return coinItem ? coinItem.ethAddr : undefined;
+            return coinItem ? coinItem.ethAddr : WETH_TOKEN_DATA[ETHEREUM_CHAIN_ID].address;
         },
         coinDecimals() {
             if (!this.coinContractAddress) {
@@ -925,7 +929,7 @@ function getSwapOutput(receipt) {
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">ETH</div>
+                            <div class="form-field__input is-not-empty">{{ $options.DEPOSIT_SYMBOL }}</div>
                             <span class="form-field__label">Spend</span>
                         </div>
                     </div>
@@ -1061,7 +1065,7 @@ function getSwapOutput(receipt) {
                 <div class="panel__section">
                     <div class="form-row">
                         <div class="form-field form-field--dashed">
-                            <BaseAmount class="form-field__input is-not-empty" coin="ETH" :amount="form.amountEth"/>
+                            <BaseAmount class="form-field__input is-not-empty" :coin="$options.DEPOSIT_SYMBOL" :amount="form.amountEth"/>
                             <div class="form-field__label">You will spend</div>
                         </div>
                     </div>
