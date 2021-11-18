@@ -109,8 +109,8 @@ export default {
     fetch() {
         return Promise.all([getOracleCoinList(), getOraclePriceList()])
             .then(([coinList, priceList]) => {
-                this.hubCoinList = coinList;
-                this.priceList = priceList;
+                this.hubCoinList = Object.freeze(coinList);
+                this.priceList = Object.freeze(priceList);
             })
             // wait for computed coinContractAddress to recalculate
             .then(() => wait(1))
@@ -704,7 +704,9 @@ export default {
             }
 
             nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
-            gasLimit = gasLimit || await this.estimateTxGas({to, value, data});
+            // force estimation to prevent smart contract errors
+            const forceGasLimitEstimation = loadingStage === LOADING_STAGE.SEND_BRIDGE;
+            gasLimit = gasLimit && !forceGasLimitEstimation ? gasLimit : await this.estimateTxGas({to, value, data});
             const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
             const txParams = {
                 to,
@@ -749,7 +751,13 @@ export default {
                 data,
             };
 
-            return web3.eth.estimateGas(txParams);
+            return web3.eth.estimateGas(txParams)
+                .then((gasLimit) => {
+                    if (gasLimit > 1000000) {
+                        throw new Error(`Gas limit estimate is too high: ${gasLimit}. Probably tx will be failed.`);
+                    }
+                    return gasLimit;
+                });
         },
         sendMinterSwapTx(amount) {
             return this.forceEstimation()
