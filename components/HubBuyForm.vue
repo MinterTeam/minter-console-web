@@ -33,6 +33,7 @@ import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 import HubBuyTxListItem from '@/components/HubBuyTxListItem.vue';
+import HubBuySpeedup from '@/components/HubBuySpeedup.vue';
 
 
 const uniswapV2Abi = IUniswapV2Router.abi;
@@ -104,6 +105,7 @@ export default {
         FieldUseMax,
         FieldCoin,
         HubBuyTxListItem,
+        HubBuySpeedup,
     },
     directives: {
         autosize,
@@ -370,7 +372,7 @@ export default {
             }
             getOraclePriceList()
                 .then((priceList) => {
-                    this.priceList = priceList;
+                    this.priceList = Object.freeze(priceList);
                 });
         }, 15 * 1000);
     },
@@ -623,11 +625,12 @@ export default {
             this.$fetch();
         },
         async depositFromEthereum() {
+            //@TODO speedup not work properly
             // this.loadingStage = LOADING_STAGE.SWAP_ETH;
             // this.addStepData(LOADING_STAGE.SWAP_ETH, {coin0: 'ETH', amount0: this.ethToSwap, coin1: this.coinEthereumName});
             this.loadingStage = LOADING_STAGE.WRAP_ETH;
             this.addStepData(LOADING_STAGE.WRAP_ETH, {amount: this.ethToWrap});
-            let nonce = await web3.eth.getTransactionCount(this.ethAddress, "pending");
+            let nonce = await web3.eth.getTransactionCount(this.ethAddress, 'latest');
 
 
             const wrapPromise = this.sendWrapTx({nonce, gasPrice: this.ethGasPriceGwei});
@@ -694,12 +697,15 @@ export default {
 
             return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE}, LOADING_STAGE.SEND_BRIDGE);
         },
-        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}, loadingStage) {
+        speedup({txParams, loadingStage}) {
+            return this.sendEthTx(txParams, loadingStage, true);
+        },
+        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}, loadingStage, isSpeedup) {
             // @TODO check recovery earlier
             const currentStep = this.steps[loadingStage];
             if (currentStep?.finished) {
                 return currentStep.tx;
-            } else if (currentStep?.tx) {
+            } else if (currentStep?.tx && !isSpeedup) {
                 return subscribeTransaction(currentStep.tx.hash, 0)
                     .then((receipt) => {
                         const tx = Object.freeze({...this.steps[loadingStage]?.tx, ...receipt});
@@ -708,17 +714,17 @@ export default {
                     });
             }
 
-            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
+            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, 'latest');
             // force estimation to prevent smart contract errors
-            const forceGasLimitEstimation = loadingStage === LOADING_STAGE.SEND_BRIDGE;
+            const forceGasLimitEstimation = loadingStage === LOADING_STAGE.SEND_BRIDGE && !isSpeedup;
             gasLimit = gasLimit && !forceGasLimitEstimation ? gasLimit : await this.estimateTxGas({to, value, data});
-            const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
+            gasPrice = (gasPrice || this.ethGasPriceGwei || 1).toString();
             const txParams = {
                 to,
                 value: value ? toErcDecimals(value, 18) : "0x00",
                 data,
                 nonce,
-                gasPrice: web3.utils.toWei(gasPriceGwei, 'gwei'),
+                gasPrice: web3.utils.toWei(gasPrice, 'gwei'),
                 gas: gasLimit,
                 chainId: ETHEREUM_CHAIN_ID,
             };
@@ -732,7 +738,7 @@ export default {
                         hash: txHash,
                         timestamp: (new Date()).toISOString(),
                     });
-                    this.addStepData(loadingStage, {tx});
+                    this.addStepData(loadingStage, {tx, txParams: {to, value, data, nonce, gasPrice, gasLimit}});
                 })
                 .on('receipt', (receipt) => {
                     console.log("receipt:", receipt);
@@ -1171,6 +1177,7 @@ function getSwapOutput(receipt) {
                         :loadingStage="item.loadingStage"
                     />
                 </div>
+                <HubBuySpeedup :steps-ordered="stepsOrdered" @speedup="speedup"/>
                 <div class="panel__section" v-if="serverError || !$store.state.onLine">
                     <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                         <div class="u-cell u-text-error u-fw-500">
