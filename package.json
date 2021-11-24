@@ -81,6 +81,7 @@
     "vue-autonumeric": "github:shrpne/vue-autonumeric#allow-use-source",
     "vue-imask": "6.1.0",
     "vue-inline-svg": "^2.1.0",
+    "vue-now": "^0.1.1",
     "vue-simple-suggest": "^1.11.2",
     "vuelidate": "^0.7.6",
     "vuex-persistedstate": "^3.2.1",

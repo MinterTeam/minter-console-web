@@ -40,7 +40,8 @@ export function toErcDecimals(balance, ercDecimals = 18) {
  *
  * @param {string} hash
  * @param {number} [confirmationCoin = CONFIRMATION_COUNT]
- * @return {Promise<Object>}
+ * @return {Promise<import('web3-core/types/index.d.ts').Transaction & import('web3-core/types/index.d.ts').TransactionReceipt & {confirmations: number, timestamp: number}>}
+ *
  */
 export function subscribeTransaction(hash, confirmationCoin = CONFIRMATION_COUNT) {
     let isUnsubscribed = false;
@@ -241,6 +242,11 @@ export function getAddressPendingTransactions(address) {
     return eth.getPendingTransactions()
         .then((txList) => {
             return txList.filter((tx) => tx.from === address);
+        })
+        .catch((error) => {
+            // The method eth_pendingTransactions may be not available
+            console.log(error);
+            return [];
         });
 }
 

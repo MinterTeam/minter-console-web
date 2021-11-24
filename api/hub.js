@@ -4,7 +4,7 @@ import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {getCoinList} from '@/api/explorer.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID} from "~/assets/variables";
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
 
@@ -206,6 +206,22 @@ export function subscribeTransfer(hash, timestamp) {
                 return wait(10000).then(() => pollMinterTxStatus(hash));
             });
     }
+}
+
+/**
+ * @param {Array<HubPriceItem>} priceList
+ * @return {number}
+ */
+export function getGasPriceGwei(priceList) {
+    const priceItem = priceList.find((item) => item.name === 'eth/gas');
+    let gasPriceGwei;
+    if (!priceItem) {
+        gasPriceGwei = 100;
+    } else {
+        gasPriceGwei = priceItem.value / 10 ** 18;
+    }
+
+    return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
 }
 
 function wait(time) {

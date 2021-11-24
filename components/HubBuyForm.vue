@@ -33,6 +33,7 @@ import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
 import HubBuyTxListItem from '@/components/HubBuyTxListItem.vue';
+import HubBuySpeedup from '@/components/HubBuySpeedup.vue';
 
 
 const uniswapV2Abi = IUniswapV2Router.abi;
@@ -104,6 +105,7 @@ export default {
         FieldUseMax,
         FieldCoin,
         HubBuyTxListItem,
+        HubBuySpeedup,
     },
     directives: {
         autosize,
@@ -370,7 +372,7 @@ export default {
             }
             getOraclePriceList()
                 .then((priceList) => {
-                    this.priceList = priceList;
+                    this.priceList = Object.freeze(priceList);
                 });
         }, 15 * 1000);
     },
@@ -627,10 +629,10 @@ export default {
             // this.addStepData(LOADING_STAGE.SWAP_ETH, {coin0: 'ETH', amount0: this.ethToSwap, coin1: this.coinEthereumName});
             this.loadingStage = LOADING_STAGE.WRAP_ETH;
             this.addStepData(LOADING_STAGE.WRAP_ETH, {amount: this.ethToWrap});
-            let nonce = await web3.eth.getTransactionCount(this.ethAddress, "pending");
+            let nonce = await web3.eth.getTransactionCount(this.ethAddress, 'latest');
 
-
-            const wrapPromise = this.sendWrapTx({nonce, gasPrice: this.ethGasPriceGwei});
+            this.sendWrapTx({nonce, gasPrice: this.ethGasPriceGwei});
+            const wrapPromise = this.waitPendingStep(LOADING_STAGE.WRAP_ETH);
             // const swapPromise = this.sendUniswapTx({nonce, gasPrice: this.ethGasPriceGwei});
 
             // if `approve` step exists, then process sendApproveTx to ensure it finished
@@ -653,7 +655,8 @@ export default {
             this.loadingStage = LOADING_STAGE.SEND_BRIDGE;
             this.addStepData(LOADING_STAGE.SEND_BRIDGE, {coin: this.coinEthereumName, amount: outputAmountHumanReadable});
             const depositNonce = this.steps[LOADING_STAGE.APPROVE_BRIDGE] ? wrapReceipt.nonce + 2 : wrapReceipt.nonce + 1;
-            const depositReceipt = await this.sendCoinTx({amount: outputAmount, nonce: depositNonce});
+            this.sendCoinTx({amount: outputAmount, nonce: depositNonce});
+            const depositReceipt = await this.waitPendingStep(LOADING_STAGE.SEND_BRIDGE);
 
             this.loadingStage = LOADING_STAGE.WAIT_BRIDGE;
             this.addStepData(LOADING_STAGE.WAIT_BRIDGE, {coin: DEPOSIT_SYMBOL /* calculate receive amount? */});
@@ -694,50 +697,56 @@ export default {
 
             return this.sendEthTx({to: hubBridgeAddress, data, nonce, gasLimit: GAS_LIMIT_BRIDGE}, LOADING_STAGE.SEND_BRIDGE);
         },
-        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}, loadingStage) {
+        speedup({txParams, loadingStage}) {
+            return this.sendEthTx(txParams, loadingStage, true);
+        },
+        async sendEthTx({to, value, data, nonce, gasPrice, gasLimit}, loadingStage, isSpeedup) {
             // @TODO check recovery earlier
             const currentStep = this.steps[loadingStage];
             if (currentStep?.finished) {
                 return currentStep.tx;
-            } else if (currentStep?.tx) {
+            } else if (currentStep?.tx && !isSpeedup) {
                 return subscribeTransaction(currentStep.tx.hash, 0)
                     .then((receipt) => {
-                        const tx = Object.freeze({...this.steps[loadingStage]?.tx, ...receipt});
-                        this.addStepData(loadingStage, {tx, finished: true});
-                        return tx;
+                        console.log('subscribeTransaction', receipt);
+                        this.addStepData(loadingStage, {tx: receipt, finished: true});
+                        return this.steps[loadingStage].tx;
                     });
             }
 
-            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
+            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, 'latest');
             // force estimation to prevent smart contract errors
-            const forceGasLimitEstimation = loadingStage === LOADING_STAGE.SEND_BRIDGE;
+            const forceGasLimitEstimation = loadingStage === LOADING_STAGE.SEND_BRIDGE && !isSpeedup;
             gasLimit = gasLimit && !forceGasLimitEstimation ? gasLimit : await this.estimateTxGas({to, value, data});
-            const gasPriceGwei = (gasPrice || this.ethGasPriceGwei || 1).toString();
+            gasPrice = (gasPrice || this.ethGasPriceGwei || 1).toString();
             const txParams = {
                 to,
                 value: value ? toErcDecimals(value, 18) : "0x00",
                 data,
                 nonce,
-                gasPrice: web3.utils.toWei(gasPriceGwei, 'gwei'),
+                gasPrice: web3.utils.toWei(gasPrice, 'gwei'),
                 gas: gasLimit,
                 chainId: ETHEREUM_CHAIN_ID,
             };
             console.log('send', txParams);
             const { rawTransaction } = await web3.eth.accounts.signTransaction(txParams, this.$store.getters.privateKey);
 
+            let txHash;
+            // @TODO return tx from `steps` so it will have full data, instead of just receipt
             return web3.eth.sendSignedTransaction(rawTransaction)
-                .on('transactionHash', (txHash) => {
+                .on('transactionHash', (hash) => {
+                    txHash = hash;
                     console.log(txHash);
-                    const tx = Object.freeze({
+                    const tx = {
                         hash: txHash,
                         timestamp: (new Date()).toISOString(),
-                    });
+                        params: {to, value, data, nonce, gasPrice, gasLimit},
+                    };
                     this.addStepData(loadingStage, {tx});
                 })
                 .on('receipt', (receipt) => {
                     console.log("receipt:", receipt);
-                    const tx = Object.freeze({...this.steps[loadingStage]?.tx, ...receipt});
-                    this.addStepData(loadingStage, {tx, finished: true});
+                    this.addStepData(loadingStage, {tx: receipt, finished: true});
                 })
                 // .on('confirmation', function (confirmationNumber, receipt) {
                 //     if (confirmationNumber < 2) {
@@ -746,6 +755,7 @@ export default {
                 // })
                 .on('error', function(error) {
                     console.log(error);
+                    this.addStepData(loadingStage, {tx: {hash: txHash, error}});
                 });
         },
         estimateTxGas({to, value, data}) {
@@ -848,10 +858,72 @@ export default {
             this.debouncedGetEstimation();
             return this.debouncedGetEstimation.flush();
         },
+        waitPendingStep(loadingStage) {
+            if (!this.steps[loadingStage]) {
+                return Promise.reject();
+            }
+            //@TODO store error in tx and reject on it
+            return new Promise((resolve, reject) => {
+                const interval = setInterval(() => {
+                    const step = this.steps[loadingStage];
+                    const txList = step?.txList || step?.tx ? [step.tx] : [];
+                    // reject
+                    const erroredTxList = txList.filter((item) => item.error);
+                    if (txList.length && erroredTxList.length === txList.length) {
+                        if (txList.length > 1) {
+                            reject(txList.slice().sort((a, b) => b.gasPrice - a.gasPrice)[0].error);
+                        } else {
+                            reject(txList[0].error);
+                        }
+                        clearInterval(interval);
+                        return;
+                    }
+                    // resolve
+                    const finishedTx = txList.find((item) => item.blockHash);
+                    if (finishedTx) {
+                        resolve(finishedTx);
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            });
+        },
         addStepData(loadingStage, data) {
-            this.$set(this.steps, loadingStage, {...this.steps[loadingStage], ...data});
+            let {tx: newTx, ...otherData} = data;
+            let txData;
+            if (newTx) {
+                const step = this.steps[loadingStage];
+                let txList = step?.txList || step?.tx ? [step.tx] : [];
+                const oldMatchingTxIndex = txList.findIndex((item) => {
+                    const newTxHash = newTx.hash || newTx.transactionHash;
+                    return item?.hash === newTxHash;
+                });
+                if (oldMatchingTxIndex > -1) {
+                    newTx = {...txList[oldMatchingTxIndex], ...newTx};
+                }
+                if (data.finished) {
+                    txList = [newTx];
+                } else if (oldMatchingTxIndex > -1) {
+                    txList[oldMatchingTxIndex] = newTx;
+                } else {
+                    txList.push(newTx);
+                }
+                if (txList.length > 1) {
+                    const fastestTx = txList.slice().sort((a, b) => b.params?.gasPrice - a.params?.gasPrice)[0];
+                    txData = {
+                        txList,
+                        tx: fastestTx,
+                    };
+                } else if (txList.length === 1) {
+                    txData = {
+                        tx: txList[0],
+                        // it overwrite old value
+                        txList: undefined,
+                    };
+                }
+            }
+            this.$set(this.steps, loadingStage, Object.freeze({...this.steps[loadingStage], ...txData, ...otherData}));
             const needSaveRecovery = loadingStage !== LOADING_STAGE.FINISH;
-            console.log({loadingStage, needSaveRecovery, data});
+            console.log({loadingStage, needSaveRecovery}, {...this.steps[loadingStage], ...txData, ...otherData});
             if (needSaveRecovery) {
                 window.localStorage.setItem('hub-buy-recovery', JSON.stringify({
                     steps: this.steps,
@@ -1171,6 +1243,7 @@ function getSwapOutput(receipt) {
                         :loadingStage="item.loadingStage"
                     />
                 </div>
+                <HubBuySpeedup :steps-ordered="stepsOrdered" @speedup="speedup"/>
                 <div class="panel__section" v-if="serverError || !$store.state.onLine">
                     <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                         <div class="u-cell u-text-error u-fw-500">
