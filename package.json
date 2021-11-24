@@ -60,7 +60,7 @@
     "json5": "^2.2.0",
     "lodash-es": "^4.17.21",
     "minter-coin-block-list": "0.0.4",
-    "minter-js-hub": "0.0.3",
+    "minter-js-hub": "0.0.4",
     "minter-js-sdk": "^0.39.0-alpha.2",
     "minterjs-tx": "^11.0.0-alpha.1",
     "minterjs-util": "^0.22.0-alpha.2",

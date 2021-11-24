@@ -1,6 +1,7 @@
 <script>
 import Big from '~/assets/big.js';
 import {pretty, getExplorerCoinUrl, getEtherscanAddressUrl} from '~/assets/utils.js';
+import {HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import Loader from '~/components/common/Loader.vue';
 
 export default {
@@ -40,11 +41,24 @@ export default {
                 };
             });
         },
-        ethereumPrice() {
-            return getPriceFromList(this.priceList, 'eth');
-        },
-        ethereumGas() {
-            return getPriceFromList(this.priceList, 'eth/gas');
+        /**
+         *
+         * @type {{coinPrice: string|number, coinSymbol: string, name: string, network: *, gasPrice: string|number}[]}
+         */
+        networkList() {
+            return this.priceList
+                .filter((item) => item.name.includes('/gas') && HUB_CHAIN_DATA[item.name.replace('/gas', '')])
+                .map((item) => {
+                    const network = item.name.replace('/gas', '');
+                    const coinSymbol = HUB_CHAIN_DATA[network].coinSymbol;
+                    return {
+                        network,
+                        name: HUB_CHAIN_DATA[network].name,
+                        coinSymbol,
+                        coinPrice: getPriceFromList(this.priceList, coinSymbol.toLowerCase()),
+                        gasPrice: getPriceFromList(this.priceList, `${network}/gas`),
+                    };
+                });
         },
     },
     methods: {
@@ -70,6 +84,36 @@ function getPriceFromList(list, name) {
 <template>
     <section class="panel">
         <template v-if="!isLoading">
+            <div class="table-wrap u-mb-20" v-if="networkList.length">
+                <table>
+                    <thead>
+                        <tr class="u-text-nowrap">
+                            <th>
+                                <span class="u-hidden-small-down">{{ $td('Supported networks', 'hub.network-table-name') }}</span>
+                                <span class="u-hidden-small-up">{{ $td('Networks', 'hub.network-table-name-mobile') }}</span>
+                            </th>
+                            <th>{{ $td('Coin price', 'hub.network-table-coin-price') }}</th>
+                            <th>{{ $td('Gas price', 'hub.network-table-gas-price') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="u-text-nowrap" :key="network.network" v-for="network in networkList">
+                            <td>
+                                {{ network.name }}
+                            </td>
+                            <!-- price -->
+                            <td>
+                                1 {{ network.coinSymbol }} = ${{ pretty(network.coinPrice) }}
+                            </td>
+                            <!-- gas price -->
+                            <td>
+                                {{ network.gasPrice }} gwei
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="table-wrap" v-if="coinList.length">
                 <table>
                     <thead>
@@ -107,19 +151,6 @@ function getPriceFromList(list, name) {
                 </table>
             </div>
             <div class="panel__content panel__section u-text-center" v-else>No Coins</div>
-
-            <!--            <div class="panel__header">-->
-            <!--                <h1 class="panel__header-title">-->
-            <!--                    {{ $td('Ethereum stats', 'hub.ethereum-title') }}-->
-            <!--                </h1>-->
-            <!--            </div>-->
-            <dl class="dl--table">
-                <dt>{{ $td('Ethereum price:', 'hub.ethereum-price') }}</dt>
-                <dd>${{ pretty(ethereumPrice) }}</dd>
-
-                <dt>{{ $td('Gas price:', 'hub.ethereum-gase') }}</dt>
-                <dd>{{ ethereumGas }} gwei</dd>
-            </dl>
         </template>
         <div class="panel__content panel__section u-text-center" v-else>
             <Loader :isLoading="true"/>

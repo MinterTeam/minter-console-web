@@ -17,11 +17,17 @@ const instance = axios.create({
 addToCamelInterceptor(instance);
 
 /**
- *
+ * @param {HUB_CHAIN_ID} network
  * @return {Promise<{min: string, fast: string}>}
  */
-export function getOracleEthFee() {
-    return minterHub.getOracleEthFee();
+export function getOracleFee(network) {
+    if (network === HUB_CHAIN_ID.ETHEREUM) {
+        return minterHub.getOracleEthFee();
+    }
+    if (network === HUB_CHAIN_ID.BSC) {
+        return minterHub.getOracleBscFee();
+    }
+    return Promise.reject(new Error('Network not specified'));
     // eslint-disable-next-line no-unreachable
     return instance.get('oracle/eth_fee')
         .then((response) => {

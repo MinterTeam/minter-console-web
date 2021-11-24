@@ -31,6 +31,7 @@ export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
 export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-ropsten.etherscan.io/api/';
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
+export const BSCSCAN_HOST = NETWORK === MAINNET ? 'https://bscscan.com' : 'https://testnet.bscscan.com';
 export const WETH_ETHEREUM_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0xc778417e063141139fce010982780140aa0cd5ab';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';
 export const USERNAME_MIN_LENGTH = 5;
@@ -63,10 +64,29 @@ export const SLIPPAGE_INPUT_TYPE = {
     PERCENT: 'percent',
 };
 
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const HUB_CHAIN_ID = {
     ETHEREUM: 'ethereum',
     BSC: 'bsc',
     MINTER: 'minter',
+};
+
+/**
+ * @readonly
+ * @type {{[HUB_CHAIN_ID]: {coinSymbol: string, name: string}}}}
+ */
+export const HUB_CHAIN_DATA = {
+    [HUB_CHAIN_ID.ETHEREUM]: {
+        name: 'Ethereum',
+        coinSymbol: 'ETH',
+    },
+    [HUB_CHAIN_ID.BSC]: {
+        name: 'BSC',
+        coinSymbol: 'BNB',
+    },
 };
 
 export const HUB_TRANSFER_STATUS = {
