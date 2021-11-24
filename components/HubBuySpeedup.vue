@@ -32,14 +32,13 @@ export default {
         slowStep() {
             const item = this.stepsOrdered.slice().reverse().find((item) => {
                 const tx = item.step.tx;
-                const txParams = item.step.txParams;
-                if (!tx || !tx.timestamp || !txParams) {
+                if (!tx || !tx.timestamp || !tx.params) {
                     return false;
                 }
                 const isEthTx = tx.hash.indexOf('0x') === 0;
                 const isMined = tx.blockHash;
                 const isSlow = new Date(this.$now) - new Date(tx.timestamp) > 6 * 1000;
-                const canSpeedup = Number(txParams.gasPrice) < Number(this.ethGasPriceGwei);
+                const canSpeedup = Number(tx.params.gasPrice) < Number(this.ethGasPriceGwei);
 
                 return isEthTx && !isMined && isSlow && canSpeedup;
             });
@@ -76,7 +75,7 @@ export default {
         },
         speedup() {
             this.$emit('speedup', {
-                txParams: {...this.slowStep.txParams, gasPrice: this.ethGasPriceGwei},
+                txParams: {...this.slowStep.tx.params, gasPrice: this.ethGasPriceGwei},
                 loadingStage: this.slowStep.loadingStage,
             });
         },
@@ -107,10 +106,10 @@ export default {
                     <a :href="getEtherscanTxUrl(slowStep.tx.hash)" class="link--main link--hover" target="_blank">{{ formatHash(slowStep.tx.hash) }}</a>
                 </div>
                 <div class="u-mt-05">
-                    Gas price change: <br> {{ slowStep.txParams.gasPrice }} → <strong>{{ ethGasPriceGwei }}</strong>
+                    Gas price change: <br> {{ slowStep.tx.params.gasPrice }} → <strong>{{ ethGasPriceGwei }}</strong>
                 </div>
                 <div class="u-mt-05">
-                    Fee change: <br> {{ getFee(slowStep.txParams.gasPrice, slowStep.txParams.gasLimit) }} ETH → <strong>{{ getFee(ethGasPriceGwei, slowStep.txParams.gasLimit) }} ETH</strong>
+                    Fee change: <br> {{ getFee(slowStep.tx.params.gasPrice, slowStep.tx.params.gasLimit) }} ETH → <strong>{{ getFee(ethGasPriceGwei, slowStep.tx.params.gasLimit) }} ETH</strong>
                 </div>
                 <div class="u-mt-05 u-fw-500">
                     <span class="u-emoji">⚠️</span> Make sure you have enough ETH on your address to pay new&nbsp;fee.
