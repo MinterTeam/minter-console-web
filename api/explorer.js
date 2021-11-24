@@ -12,6 +12,9 @@ import {addTimeInterceptor} from '~/assets/time-offset.js';
 
 const coinBlockMap = Object.fromEntries(coinBlockList.map((symbol) => [symbol, true]));
 function isBlocked(symbol) {
+    // rely on api being already filtered
+    return false;
+    // eslint-disable-next-line no-unreachable
     return !!coinBlockMap[symbol.replace(/-\d+$/, '')];
 }
 
