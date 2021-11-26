@@ -141,6 +141,7 @@
             v-bind="$attrs"
             :value="value"
             @input="$emit('input', $event)"
+            @input.native="$emit('input-native', $event)"
             @blur="$value.$touch(); $emit('blur', $event)"
         />
         <button class="form-field__use-max link--main link--opacity u-semantic-button" type="button" @click="useMax" v-if="isMaxValueDefined">Use max</button>

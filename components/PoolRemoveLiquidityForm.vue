@@ -78,7 +78,6 @@ export default {
             formSlippagePercent0: '5',
             formSlippagePercent1: '5',
             selectedInput: INPUT_TYPE.LIQUIDITY_PERCENT,
-            estimation: null,
             // list of own pools' coins
             poolCoinList: [],
             debouncedFetchAddressLiquidity: null,
@@ -118,8 +117,8 @@ export default {
             formSlippagePercent1: {
                 maxValue: maxValue(100),
             },
-            addressLiquidityData: {
-                success: () => this.isPoolLoaded,
+            isPoolLoaded: {
+                success: (value) => !!value,
             },
         };
     },
@@ -172,28 +171,32 @@ export default {
                 // @input and @input.native may fire in different time so timer needed to wait all events
                 clearTimeout(watcherTimer);
                 watcherTimer = setTimeout(() => {
-                    if (this.selectedInput === INPUT_TYPE.AMOUNT0 && this.isPoolLoaded) {
+                    if (!this.isPoolLoaded) {
+                        return;
+                    }
+
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT0) {
                         const amount0 = Math.min(this.formAmount0 || 0, this.addressLiquidityData.amount0);
                         this.formLiquidityPercent = liquidityPercentFromAmount(amount0, this.addressLiquidityData.amount0);
                         this.form.liquidity = poolTokenFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.liquidity);
                         this.formAmount1 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount1);
                     }
 
-                    if (this.selectedInput === INPUT_TYPE.AMOUNT1 && this.isPoolLoaded) {
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT1) {
                         const amount1 = Math.min(this.formAmount1 || 0, this.addressLiquidityData.amount1);
                         this.formLiquidityPercent = liquidityPercentFromAmount(amount1, this.addressLiquidityData.amount1);
                         this.form.liquidity = poolTokenFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.liquidity);
                         this.formAmount0 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount0);
                     }
 
-                    if (this.selectedInput === INPUT_TYPE.LIQUIDITY_PERCENT && this.isPoolLoaded) {
+                    if (this.selectedInput === INPUT_TYPE.LIQUIDITY_PERCENT) {
                         const liquidityPercent = Math.max(Math.min(this.formLiquidityPercent || 0, 100), 0);
                         this.form.liquidity = poolTokenFromLiquidityPercent(liquidityPercent, this.addressLiquidityData.liquidity);
                         this.formAmount0 = amountFromLiquidityPercent(liquidityPercent, this.addressLiquidityData.amount0);
                         this.formAmount1 = amountFromLiquidityPercent(liquidityPercent, this.addressLiquidityData.amount1);
                     }
 
-                    if (this.selectedInput === INPUT_TYPE.LIQUIDITY_AMOUNT && this.isPoolLoaded) {
+                    if (this.selectedInput === INPUT_TYPE.LIQUIDITY_AMOUNT) {
                         this.formLiquidityPercent = new Big(this.form.liquidity || 0).div(this.addressLiquidityData.liquidity).times(100).toFixed(2);
                         this.formAmount0 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount0);
                         this.formAmount1 = amountFromLiquidityPercent(this.formLiquidityPercent, this.addressLiquidityData.amount1);
@@ -423,10 +426,11 @@ export default {
                     @input.native="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
                     @use-max="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
                 />
+                <!--                @TODO form.liquidity validation-->
                 <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Required', 'form.pool-remove-liquidity-error-required') }}</span>
             </div>
             <div class="u-cell">
-                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.addressLiquidityData.$dirty && !$v.addressLiquidityData.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.pool-remove-liquidity-error-pool') }}</span>
+                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.isPoolLoaded.$dirty && !$v.isPoolLoaded.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.pool-remove-liquidity-error-pool') }}</span>
             </div>
         </template>
 

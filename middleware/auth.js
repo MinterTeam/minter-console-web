@@ -12,6 +12,8 @@ export default function({app, store, route, redirect, error}) {
         /^(\/ru)?\/checks(\/|$)/,
         /^(\/ru)?\/coiner(\/|$)/,
         /^(\/ru)?\/swap(\/|$)/,
+        /^(\/ru)?\/order(\/|$)/,
+        /^(\/ru)?\/pool(\/|$)/,
         /^(\/ru)?\/dao(\/|$)/,
         /^(\/ru)?\/delegation(\/|$)/,
         /^(\/ru)?\/masternode(\/|$)/,
