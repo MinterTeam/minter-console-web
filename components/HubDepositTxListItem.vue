@@ -32,7 +32,7 @@ export default {
         /**
          * @type Array<HubCoinItem>
          */
-        coinList: {
+        hubCoinList: {
             type: Array,
             default: () => [],
         },
@@ -47,7 +47,7 @@ export default {
             .once('tx', (tx) => {
                 this.tx = tx;
 
-                this.tokenInfoPromise =  getDepositTxInfo(tx, this.coinList)
+                this.tokenInfoPromise =  getDepositTxInfo(tx, this.hubCoinList)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -144,7 +144,8 @@ export default {
             if (!this.tokenInfo) {
                 return '';
             }
-            const coinItem = this.coinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
+            //@TODO network
+            const coinItem = this.hubCoinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
 
             return coinItem ? coinItem.symbol : '';
         },

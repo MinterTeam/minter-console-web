@@ -706,7 +706,7 @@ export default {
             if (currentStep?.finished) {
                 return currentStep.tx;
             } else if (currentStep?.tx && !isSpeedup) {
-                return subscribeTransaction(currentStep.tx.hash, 0)
+                return subscribeTransaction(currentStep.tx.hash, {confirmationCount: 0})
                     .then((receipt) => {
                         console.log('subscribeTransaction', receipt);
                         this.addStepData(loadingStage, {tx: receipt, finished: true});

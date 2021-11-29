@@ -12,9 +12,9 @@ import {getAddressTransactionList} from '@/api/ethersacn.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
-import peggyABI from '~/assets/abi-hub.js';
+import hubABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, HUB_BSC_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -37,10 +37,6 @@ let timer;
 function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
-
-//@TODO rename peggy
-const peggyAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
-const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
 
 const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
 const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
@@ -86,6 +82,7 @@ export default {
     data() {
         return {
             ethAddress: "",
+            chainId: 0,
             balances: {},
             decimals: {},
             balanceRequest: null,
@@ -133,9 +130,18 @@ export default {
         isConnected() {
             return !!this.ethAddress;
         },
+        hubAddress() {
+            if (this.chainId === ETHEREUM_CHAIN_ID) {
+                return HUB_ETHEREUM_CONTRACT_ADDRESS;
+            }
+            if (this.chainId === BSC_CHAIN_ID) {
+                return HUB_BSC_CONTRACT_ADDRESS;
+            }
+            return undefined;
+        },
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem?.customCommission || 0.01;
+            return coinItem?.commission || 0.01;
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
@@ -157,7 +163,13 @@ export default {
         },
         coinContractAddress() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem ? coinItem.ethAddr : undefined;
+            if (this.chainId === ETHEREUM_CHAIN_ID) {
+                return coinItem?.ethereum?.externalTokenId;
+            }
+            if (this.chainId === BSC_CHAIN_ID) {
+                return coinItem?.bsc?.externalTokenId;
+            }
+            return undefined;
         },
         isEthSelected() {
             return (this.coinContractAddress || '').toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
@@ -239,6 +251,7 @@ export default {
                 if (newVal) {
                     this.updateBalance();
                     this.getAllowance();
+                    // @TODO pass chainId and watch chaiId changes
                     getLatestTransactions(newVal, this.hubCoinList)
                         .then((txList) => {
                             this.$store.commit('hub/setDepositList', txList.map((tx) => tx.hash));
@@ -338,7 +351,7 @@ export default {
                 return;
             }
 
-            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, peggyAddress).call()
+            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, this.hubAddress).call()
                 .then((allowanceValue) => {
                     this.$set(this.allowanceList, selectedCoin, allowanceValue);
                     // coin not changed
@@ -447,7 +460,7 @@ export default {
             } else {
                 amountToUnlock = toErcDecimals(this.amountToUnlock, this.decimals[this.form.coin]);
             }
-            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, amountToUnlock).encodeABI();
+            let data = coinContract(this.coinContractAddress).methods.approve(this.hubAddress, amountToUnlock).encodeABI();
 
             return this.sendEthTx({to: this.coinContractAddress, data})
                 .then((hash) => {
@@ -460,9 +473,10 @@ export default {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
             const destinationChain = Buffer.from('minter', 'utf-8');
-            let data = peggyContract.methods.transferToChain(this.coinContractAddress, destinationChain, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin]), 0).encodeABI();
+            const hubContract = new web3.eth.Contract(hubABI, this.hubAddress);
+            let data = hubContract.methods.transferToChain(this.coinContractAddress, destinationChain, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin]), 0).encodeABI();
 
-            return this.sendEthTx({to: peggyAddress, data})
+            return this.sendEthTx({to: this.hubAddress, data})
                 .then((hash) => {
                     this.$v.$reset();
                     // reset form
@@ -515,10 +529,25 @@ export default {
         //         alert(error)
         //     });
         // },
+        handleAccount(ethAddress) {
+            // ethAddress = '0xf4bbd85fad8fbd28422f3a969196ab648e8ee888'
+            this.ethAddress = ethAddress;
+            this.serverError = '';
+        },
+        handleChainId(chainId) {
+            this.chainId = chainId;
+            if (chainId === ETHEREUM_CHAIN_ID) {
+                web3.eth.setProvider(ETHEREUM_API_URL);
+            }
+            if (chainId === BSC_CHAIN_ID) {
+                web3.eth.setProvider(BSC_API_URL);
+            }
+            this.serverError = '';
+        },
     },
 };
 
-function getLatestTransactions(address, hubCoinList) {
+function getLatestTransactions(address, hubCoinList, chainId) {
     return Promise.all([
         // check last 100 txs
         getAddressTransactionList(address, {page: 1, offset: 100}),
@@ -539,7 +568,7 @@ function getLatestTransactions(address, hubCoinList) {
             const promiseList = txList.map((item) => {
                 return getDepositTxInfo(item, hubCoinList, true)
                     .then((txInfo) => {
-                        return {info: txInfo, tx: item};
+                        return {info: txInfo, tx: {...item, chainId}};
                     });
             });
             return Promise.all(promiseList);
@@ -677,7 +706,13 @@ function getLatestTransactions(address, hubCoinList) {
                 </div>
             </div>
 
-            <Account @update:address="ethAddress = $event" ref="ethAccount" :hub-coin-list="hubCoinList" :price-list="priceList"/>
+            <Account
+                ref="ethAccount"
+                @update:address="handleAccount"
+                @update:network="handleChainId"
+                :hub-coin-list="hubCoinList"
+                :price-list="priceList"
+            />
             <portal-target name="account-minter-confirm-modal"/>
 
             <!--          <div class="card__content card__content&#45;&#45;gray u-text-center send__qr-card" v-if="linkToBip">-->

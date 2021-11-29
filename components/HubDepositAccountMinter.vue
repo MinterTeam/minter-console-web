@@ -1,7 +1,7 @@
 <script>
-import {ETHEREUM_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
+import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import * as web3 from '@/api/web3.js';
-import {getDepositTxInfo} from '@/api/web3.js';
+import {getDepositTxInfo, getEvmNetworkName} from '@/api/web3.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import Modal from '@/components/common/Modal.vue';
 
@@ -9,10 +9,15 @@ let activeConfirmation;
 
 export default {
     HUB_DEPOSIT_TX_PURPOSE,
+    HUB_CHAIN_DATA,
     components: {
         Modal,
     },
     props: {
+        chainId: {
+            type: Number,
+            required: true,
+        },
         /**
          * @type Array<HubCoinItem>
          */
@@ -43,8 +48,17 @@ export default {
         isConnected() {
             return !!this.ethAddress;
         },
-        ethGasPriceGwei() {
-            const priceItem = this.priceList.find((item) => item.name === 'eth/gas');
+        selectedHubNetwork() {
+            if (this.chainId === ETHEREUM_CHAIN_ID) {
+                return HUB_CHAIN_ID.ETHEREUM;
+            }
+            if (this.chainId === BSC_CHAIN_ID) {
+                return HUB_CHAIN_ID.BSC;
+            }
+            return undefined;
+        },
+        gasPriceGwei() {
+            const priceItem = this.priceList.find((item) => item.name === `${this.selectedHubNetwork}/gas`);
             let gasPriceGwei;
             if (!priceItem) {
                 gasPriceGwei = 100;
@@ -58,6 +72,14 @@ export default {
             return this.confirmData.info?.type === HUB_DEPOSIT_TX_PURPOSE.UNLOCK && this.confirmData.info?.amount > 10 ** 18;
         },
     },
+    watch: {
+        chainId: {
+            handler() {
+                // emit passed chainId back to be consistent with other Accounts
+                this.$emit('update:network', this.chainId);
+            },
+        },
+    },
     mounted() {
         // set account on page load if some was set previously
         if (window.localStorage.getItem('hub-deposit-connected-account') === 'minter') {
@@ -67,8 +89,10 @@ export default {
     methods: {
         pretty,
         prettyExact,
+        getEvmNetworkName,
         connectEth() {
             this.setEthAddress(this.$store.getters.address.replace('Mx', '0x'));
+            this.$emit('update:network', this.chainId);
         },
         disconnectEth() {
             this.cancelConfirmation();
@@ -83,7 +107,7 @@ export default {
             nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, 'latest');
             let gasLimit = await this.estimateTxGas(txParams);
             gasLimit = Math.ceil(gasLimit * 1.5);
-            const gasPriceGwei = (this.ethGasPriceGwei || 1).toString();
+            const gasPriceGwei = (this.gasPriceGwei || 1).toString();
             const txParamsFinal = {
                 to: txParams.to,
                 value: txParams.value || "0x00",
@@ -91,7 +115,7 @@ export default {
                 nonce,
                 gasPrice: web3.utils.toWei(gasPriceGwei, 'gwei'),
                 gas: gasLimit,
-                chainId: ETHEREUM_CHAIN_ID,
+                chainId: this.chainId,
             };
 
             await this.showConfirmation(txParamsFinal);
@@ -113,6 +137,7 @@ export default {
                 data,
             };
 
+            //@TODO
             return web3.eth.estimateGas(txParams);
         },
         async showConfirmation(txParams) {
@@ -169,6 +194,14 @@ export default {
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
+                                    {{ getEvmNetworkName(chainId) }}
+                                </div>
+                                <span class="form-field__label">From network</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">
                                     {{ ethAddress }}
                                 </div>
                                 <span class="form-field__label">From your address</span>
@@ -216,7 +249,8 @@ export default {
                             <div class="u-cell">
                                 <div class="form-field form-field--dashed">
                                     <div class="form-field__input is-not-empty">
-                                        {{ pretty(confirmData.computed.fee) }} ETH
+                                        {{ pretty(confirmData.computed.fee) }}
+                                        {{ $options.HUB_CHAIN_DATA[selectedHubNetwork].coinSymbol }}
                                     </div>
                                     <span class="form-field__label">Fee</span>
                                 </div>

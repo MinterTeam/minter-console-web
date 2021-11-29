@@ -87,16 +87,15 @@ export default {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
-        coinDenom() {
+        externalToken() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem ? coinItem.denom : undefined;
+            return coinItem?.[this.form.networkTo];
         },
         hubFeeRate() {
-            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem?.customCommission || 0.01;
+            return this.externalToken?.commission || 0.01;
         },
         coinPrice() {
-            const priceItem = this.priceList.find((item) => item.name === this.coinDenom);
+            const priceItem = this.priceList.find((item) => item.name === this.externalToken?.denom);
             return priceItem ? priceItem.value / 10 ** 18 : '0';
         },
         // fee for destination network calculated in COIN
@@ -127,7 +126,7 @@ export default {
             });
             // coin not selected
             if (!selectedCoin) {
-                return undefined;
+                return 0;
             }
 
             const maxHubFee = new Big(selectedCoin.amount).times(this.hubFeeRate);
@@ -138,11 +137,15 @@ export default {
                 return maxAmount.toString();
             }
         },
-        // intersection of address balance and hub supported coins
+
         suggestionList() {
+            return this.hubCoinList.map((item) => item.symbol);
+            // intersection of address balance and hub supported coins
+            /*
             return this.$store.getters.balance.filter((balanceItem) => {
                 return this.hubCoinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
             });
+            */
         },
     },
     validations() {
@@ -157,7 +160,7 @@ export default {
                 coin: {
                     required,
                     minLength: minLength(3),
-                    supported: () => !!this.coinId,
+                    supported: () => !!this.externalToken,
                 },
                 amount: {
                     required,
@@ -328,7 +331,10 @@ export default {
                     />
                     <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by Hub bridge', 'form.hub-coin-error-supported') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
+                        {{ $td('Can\'t be transferred to', 'form.hub-coin-error-supported') }}
+                        {{ $options.HUB_CHAIN_DATA[form.networkTo].name }}
+                    </span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <FieldUseMax

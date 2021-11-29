@@ -140,7 +140,7 @@ export function getEtherscanAddressUrl(hash) {
     return ETHERSCAN_HOST + '/address/' + hash;
 }
 
-export function getBscscanAddressUrl(hash) {
+export function getBscAddressUrl(hash) {
     return BSCSCAN_HOST + '/address/' + hash;
 }
 

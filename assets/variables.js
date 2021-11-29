@@ -28,7 +28,9 @@ export const HUB_BSC_CONTRACT_ADDRESS = process.env.APP_HUB_BSC_CONTRACT_ADDRESS
 export const HUB_MINTER_MULTISIG_ADDRESS = process.env.APP_HUB_MINTER_MULTISIG_ADDRESS;
 export const HUB_API_URL = process.env.APP_HUB_API_URL;
 export const ETHEREUM_API_URL = process.env.APP_ETHEREUM_API_URL;
+export const BSC_API_URL = process.env.APP_BSC_API_URL;
 export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
+export const BSC_CHAIN_ID = NETWORK === MAINNET ? 56 : 97;
 export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-ropsten.etherscan.io/api/';
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
@@ -77,16 +79,18 @@ export const HUB_CHAIN_ID = {
 
 /**
  * @readonly
- * @type {{[HUB_CHAIN_ID]: {coinSymbol: string, name: string}}}}
+ * @type {{[HUB_CHAIN_ID]: {coinSymbol: string, name: string, chainId: number}}}}
  */
 export const HUB_CHAIN_DATA = {
     [HUB_CHAIN_ID.ETHEREUM]: {
         name: 'Ethereum',
         coinSymbol: 'ETH',
+        chainId: ETHEREUM_CHAIN_ID,
     },
     [HUB_CHAIN_ID.BSC]: {
         name: 'BSC',
         coinSymbol: 'BNB',
+        chainId: BSC_CHAIN_ID,
     },
 };
 

@@ -86,7 +86,6 @@
     "vuelidate": "^0.7.6",
     "vuex-persistedstate": "^3.2.1",
     "web3-core": "^1.6.0",
-    "web3-core-requestmanager": "^1.6.0",
     "web3-eth": "^1.6.0",
     "web3-utils": "^1.6.0"
   },

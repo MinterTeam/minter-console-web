@@ -4,6 +4,7 @@ import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
 import {getCoinList} from '@/api/explorer.js';
+import Big from '~/assets/big.js';
 import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
@@ -21,13 +22,22 @@ addToCamelInterceptor(instance);
  * @return {Promise<{min: string, fast: string}>}
  */
 export function getOracleFee(network) {
+    let promise;
     if (network === HUB_CHAIN_ID.ETHEREUM) {
-        return minterHub.getOracleEthFee();
+        promise = minterHub.getOracleEthFee();
     }
     if (network === HUB_CHAIN_ID.BSC) {
-        return minterHub.getOracleBscFee();
+        promise = minterHub.getOracleBscFee();
     }
-    return Promise.reject(new Error('Network not specified'));
+    if (promise) {
+        return promise.then((result) => {
+            result.min = new Big(result.min).div(10 ** 18).toString();
+            result.fast =new Big(result.fast).div(10 ** 18).toString();
+            return result;
+        });
+    } else {
+        return Promise.reject(new Error('Network not specified'));
+    }
     // eslint-disable-next-line no-unreachable
     return instance.get('oracle/eth_fee')
         .then((response) => {
@@ -43,7 +53,6 @@ export function getOracleCoinList() {
     return Promise.all([_getOracleCoinList(), getCoinList({skipMeta: true})])
         .then(([oracleCoinList, minterCoinList]) => {
             oracleCoinList.forEach((oracleCoin) => {
-                // @TODO oracleCoin.minterId
                 const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
                 oracleCoin.symbol = minterCoin?.symbol;
             });
@@ -62,22 +71,25 @@ const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
 export function _getOracleCoinList() {
     return minterHub.getTokenList()
         .then((tokenList) => {
-            const ethTokenList = tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.ETHEREUM);
+            tokenList = tokenList.map((item) => {
+                item.commission = new Big(item.commission).div(10 ** 18).toString();
+                return item;
+            });
+            const minterTokenList = tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.MINTER);
 
-            return ethTokenList
-                .map((token) => {
-                    const minterToken = tokenList.find((item) => item.denom === token.denom && item.chainId === HUB_CHAIN_ID.MINTER);
-                    const minterId = minterToken?.externalTokenId;
+            return minterTokenList
+                .map((minterToken) => {
+                    function findToken(denom, chainId) {
+                        return tokenList.find((item) => item.denom === denom && item.chainId === chainId);
+                    }
 
                     return {
-                        minterId,
-                        denom: token.denom,
-                        ethAddr: token.externalTokenId,
-                        ethDecimals: token.externalDecimals,
-                        customCommission: token.commission / 10 ** 18,
+                        minterId: minterToken.externalTokenId,
+                        ...minterToken,
+                        ethereum: findToken(minterToken.denom, HUB_CHAIN_ID.ETHEREUM),
+                        bsc: findToken(minterToken.denom, HUB_CHAIN_ID.BSC),
                     };
-                })
-                .filter((token) => typeof token.minterId !== 'undefined');
+                });
         });
     // eslint-disable-next-line no-unreachable
     return instance.get('oracle/coins', {
@@ -237,13 +249,12 @@ function wait(time) {
 }
 
 /**
- * @typedef {object} HubCoinItem
+ * @typedef {object} HubCoinItemMinterExtra
  * @property {string} symbol - minter symbol
- * @property {string} denom - eth symbol
- * @property {string} ethAddr
  * @property {string} minterId
- * @property {string} ethDecimals
- * @property {string|number} customCommission
+ */
+/**
+ * @typedef {TokenInfo.AsObject & HubCoinItemMinterExtra & {ethereum: TokenInfo.AsObject, bsc: TokenInfo.AsObject}} HubCoinItem
  */
 
 /**
