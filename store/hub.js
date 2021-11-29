@@ -3,13 +3,15 @@ import Big from '~/assets/big.js';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {TX_TYPE, normalizeTxType} from 'minterjs-util/src/tx-types.js';
 import {getAddressTransactionList} from '@/api/explorer.js';
-import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
+import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID} from '~/assets/variables.js';
 import {fromBase64} from '~/assets/utils.js';
 
 export const state = () => ({
     /** @type {Object.<string, HubWithdraw>} */
     minterList: {},
-    ethList: {},
+    // @TODO store whole tx struct
+    /** @type {Array<string>} */
+    ethList: [],
 });
 
 export const mutations = {
@@ -19,13 +21,15 @@ export const mutations = {
         });
     },
     saveWithdraw(state, tx) {
-        const hubNetworkFee = convertFromPip(tx.hubPayload.fee);
+        const hubPayload = tx.hubPayload || parsePayload(tx.payload);
+        const hubNetworkFee = convertFromPip(hubPayload.fee);
         const hubBridgeFee = new Big(tx.data.value).times(0.01).toString();
         const amount = new Big(tx.data.value).minus(hubBridgeFee).minus(hubNetworkFee).toString();
 
         Vue.set(state.minterList, tx.hash, {
             tx,
             amount,
+            destination: hubPayload.type.replace('send_to_', ''),
             timestamp: tx.timestamp,
         });
     },
@@ -36,7 +40,6 @@ export const mutations = {
                 ...tx.data,
                 value: convertFromPip(tx.data.value),
             },
-            hubPayload: parsePayload(tx.payload),
             // there is no timestamp in the gate response, so use current time
             timestamp: (new Date()).toISOString(),
         });
@@ -45,8 +48,17 @@ export const mutations = {
         Vue.set(state.minterList, inTxHash, {
             ...state.minterList[inTxHash],
             status,
-            ethTxHash: outTxHash,
+            outTxHash,
         });
+    },
+    setDepositList(state, itemList) {
+        state.ethList = itemList || [];
+        state.ethList.slice(0, 5);
+    },
+    //@TODO check txs with same nonce and filter out pending if another is confirmed
+    saveDeposit(state, hash) {
+        state.ethList.unshift(hash);
+        state.ethList = state.ethList.slice(0, 5);
     },
 };
 
@@ -64,8 +76,10 @@ export const actions = {
                     // check if valid hub payload
                     const payload = parsePayload(tx.payload);
                     tx.hubPayload = payload;
+                    const isSendToHubType = payload && Object.values(HUB_CHAIN_ID)
+                        .some((network) => payload.type === `send_to_${network}`);
 
-                    return payload?.type === 'send_to_eth' && payload?.fee;
+                    return isSendToHubType && payload?.fee;
                 });
 
                 commit('setWithdrawList', txList.slice(0, 5));
@@ -89,6 +103,8 @@ function parsePayload(payload) {
  * @typedef {Object} HubWithdraw
  * @property {Object} tx - minter tx data
  * @property {string} status - withdraw status
- * @property {string} ethTxHash
+ * @property {string} outTxHash
+ * @property {number|string} amount
+ * @property {HUB_CHAIN_ID} destination
  * @property {string} timestamp
  */

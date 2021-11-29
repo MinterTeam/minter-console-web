@@ -2,6 +2,7 @@
 import {subscribeTransaction, getDepositTxInfo, getBlockNumber, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
 import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import eventBus from '~/assets/event-bus.js';
 import Loader from '@/components/common/Loader.vue';
 import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE} from '~/assets/variables.js';
 
@@ -31,7 +32,7 @@ export default {
         /**
          * @type Array<HubCoinItem>
          */
-        coinList: {
+        hubCoinList: {
             type: Array,
             default: () => [],
         },
@@ -46,7 +47,7 @@ export default {
             .once('tx', (tx) => {
                 this.tx = tx;
 
-                this.tokenInfoPromise =  getDepositTxInfo(tx, this.coinList)
+                this.tokenInfoPromise =  getDepositTxInfo(tx, this.hubCoinList)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -71,6 +72,7 @@ export default {
                 }
             });
 
+        //@TODO this.tokenInfoPromise may be null
         // subscribe on transfer for send txs
         this.txWatcher.then((tx) => {
             this.tokenInfoPromise
@@ -142,7 +144,8 @@ export default {
             if (!this.tokenInfo) {
                 return '';
             }
-            const coinItem = this.coinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
+            //@TODO network
+            const coinItem = this.hubCoinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
 
             return coinItem ? coinItem.symbol : '';
         },
@@ -171,6 +174,10 @@ export default {
         getEtherscanTxUrl,
         getExplorerTxUrl,
         formatHash: (value) => shortFilter(value, 13),
+        speedup() {
+            const {from, to, value, input, nonce} = this.tx;
+            eventBus.emit('account-send-transaction', {from, to, value, data: input, nonce});
+        },
     },
 };
 </script>
@@ -193,7 +200,10 @@ export default {
             </div>
             <div>
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
-                <template v-if="status === $options.TX_STATUS.PENDING">Pending</template>
+                <template v-if="status === $options.TX_STATUS.PENDING">
+                    <button class="link--default u-semantic-button" @click="speedup()">Speed up</button>
+                    Pending
+                </template>
                 <template v-if="status === $options.TX_STATUS.RECEIPT">Received, waiting confirmations</template>
                 <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed</template>
                 <template v-if="status === $options.TX_STATUS.CONFIRMED_NOT_FINAL">Confirmed, waiting for bridge</template>

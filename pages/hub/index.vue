@@ -21,8 +21,8 @@ export default {
     fetch() {
         return Promise.all([getOracleCoinList(), getOraclePriceList()])
             .then(([coinList, priceList]) => {
-                this.coinList = coinList;
-                this.priceList = priceList;
+                this.coinList = Object.freeze(coinList);
+                this.priceList = Object.freeze(priceList);
             });
     },
     head() {
