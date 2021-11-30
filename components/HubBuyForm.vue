@@ -18,7 +18,7 @@ import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hu
 import {getTransaction} from '@/api/explorer.js';
 import {estimateCoinSell, postTx} from '@/api/gate.js';
 import Big from '~/assets/big.js';
-import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEtherscanTxUrl, shortHashFilter} from '~/assets/utils.js';
+import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
@@ -386,8 +386,6 @@ export default {
         prettyExact,
         prettyRound,
         getExplorerTxUrl,
-        getEtherscanTxUrl,
-        shortHashFilter,
         updateBalance() {
             if (!this.coinContractAddress) {
                 return Promise.reject();

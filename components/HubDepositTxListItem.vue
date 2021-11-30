@@ -1,10 +1,10 @@
 <script>
 import {subscribeTransaction, getDepositTxInfo, getBlockNumber, getEvmNetworkName, getExternalCoinList, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {shortHashFilter, getTimeDistance, getTimeStamp as getTime, getEthereumTxUrl, getBscTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import eventBus from '~/assets/event-bus.js';
 import Loader from '@/components/common/Loader.vue';
-import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE} from '~/assets/variables.js';
+import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE, HUB_CHAIN_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID} from '~/assets/variables.js';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -173,10 +173,17 @@ export default {
     },
     methods: {
         pretty,
-        getEtherscanTxUrl,
         getExplorerTxUrl,
         getEvmNetworkName,
-        formatHash: (value) => shortFilter(value, 13),
+        formatHash: (value) => shortHashFilter(value, 13),
+        getEvmTxUrl(tx) {
+            if (tx.chainId === ETHEREUM_CHAIN_ID) {
+                return getEthereumTxUrl(tx.hash);
+            }
+            if (tx.chainId === BSC_CHAIN_ID) {
+                return getBscTxUrl(tx.hash);
+            }
+        },
         speedup() {
             const {from, to, value, input, nonce} = this.tx;
             eventBus.emit('account-send-transaction', {from, to, value, data: input, nonce});
@@ -189,7 +196,7 @@ export default {
     <div class="preview__transaction" v-if="!isLoading">
         <div class="hub__preview-transaction-row u-text-overflow">
             <div>
-                <a class="link--main" :href="getEtherscanTxUrl(tx.hash)" target="_blank">{{ formatHash(tx.hash) }}</a>
+                <a class="link--main" :href="getEvmTxUrl(tx)" target="_blank">{{ formatHash(tx.hash) }}</a>
             </div>
             <div class="u-fw-700" v-if="tokenInfo">
                 <template v-if="isInfiniteUnlock">Infinite unlock {{ symbol }}</template>

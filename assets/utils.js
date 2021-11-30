@@ -128,11 +128,11 @@ export function getExplorerCoinUrl(coin) {
     return EXPLORER_HOST + `/coins/${coin}`;
 }
 
-export function getEtherscanTxUrl(hash) {
+export function getEthereumTxUrl(hash) {
     return ETHERSCAN_HOST + '/tx/' + hash;
 }
 
-export function getBscscanTxUrl(hash) {
+export function getBscTxUrl(hash) {
     return BSCSCAN_HOST + '/tx/' + hash;
 }
 
@@ -257,11 +257,6 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
 
-/**
- * @deprecated
- * @type {function(string, number=, number=): string}
- */
-export const shortFilter = shortHashFilter;
 
 /**
  * @param {number} value

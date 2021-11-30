@@ -3,7 +3,7 @@ import eventBus from '~/assets/event-bus.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {shortHashFilter, getEtherscanAddressUrl, getBscAddressUrl} from '~/assets/utils.js';
 import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
-import {getEvmNetworkName} from '@/api/web3.js';
+import {getEvmNetworkName, getHubNetworkByChain} from '@/api/web3.js';
 import HubDepositAccountWalletConnect from '~/components/HubDepositAccountWalletConnect.vue';
 import HubDepositAccountMetamask from '~/components/HubDepositAccountMetamask.vue';
 import HubDepositAccountMinter from '~/components/HubDepositAccountMinter.vue';
@@ -60,17 +60,19 @@ export default {
         };
     },
     computed: {
-        selectedChainId() {
-            return HUB_CHAIN_DATA[this.selectedHubNetwork]?.chainId;
-        },
         isConnected() {
             return !!this.ethAddress;
         },
         ethAddress() {
             return this.accountData[this.selectedAccountType]?.ethAddress.toLowerCase() || '';
         },
+        // from connected web3 wallet
         chainId() {
             return this.accountData[this.selectedAccountType]?.chainId || 0;
+        },
+        // selected by user
+        selectedChainId() {
+            return HUB_CHAIN_DATA[this.selectedHubNetwork]?.chainId;
         },
         unsupportedNetwork() {
             return this.chainId !== ETHEREUM_CHAIN_ID && this.chainId !== BSC_CHAIN_ID;
@@ -105,6 +107,10 @@ export default {
         },
         setChainId(chainId, type) {
             this.$set(this.accountData[type], 'chainId', chainId);
+            const network = getHubNetworkByChain(chainId);
+            if (network && this.selectedHubNetwork !== network) {
+                this.selectedHubNetwork = network;
+            }
         },
         setEthAddress(ethAddress, type) {
             this.$set(this.accountData[type], 'ethAddress', ethAddress);
@@ -183,12 +189,13 @@ export default {
                             @update:network="setChainId($event, $options.TYPE.WALLETCONNECT)"
                             @error="errorMessage = $event"
                         />
-                        <!-- @TODO rework chainID to prop -->
                         <HubDepositAccountMetamask
                             class="button--ghost-main"
                             ref="ethAccountMetamask"
+                            :chain-id="selectedChainId"
                             @update:address="setEthAddress($event, $options.TYPE.METAMASK)"
                             @update:network="setChainId($event, $options.TYPE.METAMASK)"
+                            @error="errorMessage = $event"
                         />
                         <HubDepositAccountMinter
                             class-custom="button--ghost-main"
