@@ -7,12 +7,20 @@ import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID} from '~/assets/variables.js';
 import {fromBase64} from '~/assets/utils.js';
 
 export const state = () => ({
+    // minterList fetched on every load
     /** @type {Object.<string, HubWithdraw>} */
     minterList: {},
-    // @TODO store whole tx struct
-    /** @type {Array<string>} */
-    ethList: [],
+    ethAddress: '',
+    // ethList stored in localStorage
+    /** @type {Object.<string, Array<HubDeposit>>} */
+    ethList: {},
 });
+
+export const getters = {
+    depositList(state) {
+        return state.ethList[state.ethAddress] || [];
+    },
+};
 
 export const mutations = {
     setWithdrawList(state, txList) {
@@ -51,14 +59,30 @@ export const mutations = {
             outTxHash,
         });
     },
-    setDepositList(state, itemList) {
-        state.ethList = itemList || [];
-        state.ethList.slice(0, 5);
+    setEthAddress(state, address) {
+        state.ethAddress = address.toLowerCase();
     },
     //@TODO check txs with same nonce and filter out pending if another is confirmed
-    saveDeposit(state, hash) {
-        state.ethList.unshift(hash);
-        state.ethList = state.ethList.slice(0, 5);
+    saveDeposit(state, tx) {
+        if (!tx.from) {
+            console.warn('hub/saveDeposit: can\'t save because `tx.from` not specified');
+            return;
+        }
+        const ethAddress = tx.from.toLowerCase();
+        let depositList = state.ethList[ethAddress] || [];
+        const index = depositList.findIndex((item) => item.hash === tx.hash);
+        if (index >= 0) {
+            depositList[index] = {
+                ...depositList[index],
+                ...tx,
+            };
+        } else {
+            depositList.unshift(tx);
+        }
+        if (depositList.length > 5) {
+            depositList = depositList.slice(0, 5);
+        }
+        Vue.set(state.ethList, ethAddress, depositList);
     },
 };
 
@@ -107,4 +131,8 @@ function parsePayload(payload) {
  * @property {number|string} amount
  * @property {HUB_CHAIN_ID} destination
  * @property {string} timestamp
+ */
+
+/**
+ * @typedef {Web3Tx & {chainId: number}} HubDeposit
  */

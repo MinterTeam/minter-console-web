@@ -1,5 +1,5 @@
 <script>
-import {subscribeTransaction, getDepositTxInfo, getBlockNumber, CONFIRMATION_COUNT} from '@/api/web3.js';
+import {subscribeTransaction, getDepositTxInfo, getBlockNumber, getEvmNetworkName, getExternalCoinList, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
 import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import eventBus from '~/assets/event-bus.js';
@@ -25,13 +25,12 @@ export default {
         Loader,
     },
     props: {
-        hash: {
-            type: String,
+        /** @type {HubDeposit} */
+        tx: {
+            type: Object,
             required: true,
         },
-        /**
-         * @type Array<HubCoinItem>
-         */
+        /** @type {Array<HubCoinItem>} */
         hubCoinList: {
             type: Array,
             default: () => [],
@@ -43,11 +42,13 @@ export default {
         // prefetch block number
         getBlockNumber();
 
-        this.txWatcher = subscribeTransaction(this.hash)
+        this.txWatcher = subscribeTransaction(this.tx.hash, {chainId: this.tx.chainId})
             .once('tx', (tx) => {
-                this.tx = tx;
+                // tx in block or pending
+                this.$store.commit('hub/saveDeposit', tx);
 
-                this.tokenInfoPromise =  getDepositTxInfo(tx, this.hubCoinList)
+                //@TODO store tokenInfo in tx
+                this.tokenInfoPromise = getDepositTxInfo(tx, this.tx.chainId, this.hubCoinList)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -58,11 +59,11 @@ export default {
             })
             .once('confirmation', (tx) => {
                 // first confirmation
-                this.tx = tx;
+                this.$store.commit('hub/saveDeposit', tx);
             })
             .then((tx) => {
                 // enough confirmations
-                this.tx = tx;
+                this.$store.commit('hub/saveDeposit', tx);
 
                 return tx;
             })
@@ -73,6 +74,8 @@ export default {
             });
 
         //@TODO this.tokenInfoPromise may be null
+        //@TODO rework to Promise.all([txWatcher, txInfoPromise])
+        //@TODO store transfer in tx
         // subscribe on transfer for send txs
         this.txWatcher.then((tx) => {
             this.tokenInfoPromise
@@ -94,7 +97,6 @@ export default {
     data() {
         return {
             isLoading: true,
-            tx: null,
             tokenInfo: null,
             tokenInfoPromise: null,
             txWatcher: null,
@@ -144,10 +146,10 @@ export default {
             if (!this.tokenInfo) {
                 return '';
             }
-            //@TODO network
-            const coinItem = this.hubCoinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
+            const coinItem = getExternalCoinList(this.hubCoinList, this.tx.chainId)
+                .find((item) => item.externalTokenId === this.tokenInfo.tokenContract);
 
-            return coinItem ? coinItem.symbol : '';
+            return coinItem ? coinItem.denom.toUpperCase() : '';
         },
         isInfiniteUnlock() {
             if (!this.tokenInfo) {
@@ -173,6 +175,7 @@ export default {
         pretty,
         getEtherscanTxUrl,
         getExplorerTxUrl,
+        getEvmNetworkName,
         formatHash: (value) => shortFilter(value, 13),
         speedup() {
             const {from, to, value, input, nonce} = this.tx;
@@ -186,7 +189,7 @@ export default {
     <div class="preview__transaction" v-if="!isLoading">
         <div class="hub__preview-transaction-row u-text-overflow">
             <div>
-                <a class="link--main" :href="getEtherscanTxUrl(hash)" target="_blank">{{ formatHash(hash) }}</a>
+                <a class="link--main" :href="getEtherscanTxUrl(tx.hash)" target="_blank">{{ formatHash(tx.hash) }}</a>
             </div>
             <div class="u-fw-700" v-if="tokenInfo">
                 <template v-if="isInfiniteUnlock">Infinite unlock {{ symbol }}</template>
@@ -197,6 +200,7 @@ export default {
         <div class="hub__preview-transaction-row hub__preview-transaction-meta">
             <div>
                 <template v-if="tx.timestamp">{{ timeDistance }} ago ({{ time }})</template>
+                from {{ getEvmNetworkName(tx.chainId) }}
             </div>
             <div>
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>

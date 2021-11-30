@@ -251,14 +251,8 @@ export default {
                 if (newVal) {
                     this.updateBalance();
                     this.getAllowance();
-                    // @TODO pass chainId and watch chaiId changes
-                    getLatestTransactions(newVal, this.hubCoinList)
-                        .then((txList) => {
-                            this.$store.commit('hub/setDepositList', txList.map((tx) => tx.hash));
-                        });
-                } else {
-                    this.$store.commit('hub/setDepositList', []);
                 }
+                this.$store.commit('hub/setEthAddress', newVal);
             },
         },
         coinContractAddress: {
@@ -311,7 +305,7 @@ export default {
             const coinSymbol = this.form.coin;
             const balancePromise = Promise.all([
                 coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call(),
-                getTokenDecimals(this.coinContractAddress, this.hubCoinList),
+                getTokenDecimals(this.coinContractAddress, this.chainId, this.hubCoinList),
                 this.isEthSelected ? web3.eth.getBalance(this.ethAddress) : Promise.resolve(),
             ])
                 .then(([balance, decimals, ethBalance]) => {
@@ -500,35 +494,18 @@ export default {
                 nonce: await web3.eth.getTransactionCount(this.ethAddress, this.form.isIgnorePending ? "latest" : "pending"), // Optional
             };
 
-            return this.$refs.ethAccount.sendTransaction(txParams);
+            return this.$refs.ethAccount.sendTransaction(txParams)
+                .then((hash) => {
+                    this.$store.commit('hub/saveDeposit', {
+                        hash,
+                        chainId: this.chainId,
+                        from: txParams.from,
+                        params: txParams,
+                        timestamp: (new Date()).toISOString(),
+                    });
+                    return hash;
+                });
         },
-        // async sendEthTx(to, data) {
-        //     let hist;
-        //     let rawTx = {
-        //         "nonce": await web3.eth.getTransactionCount(this.ethAddress, "pending"),
-        //         "gasPrice": "0x3b9aca00",
-        //         "gasLimit": web3.utils.toHex(100000),
-        //         "to": to, // contract
-        //         "value": "0x00",
-        //         "data": data,
-        //     }
-        //     const tx = new Transaction(rawTx, {common: customChainCommon})
-        //     tx.sign(wallet.getPrivateKey())
-        //     let serializedTx = "0x" + tx.serialize().toString('hex');
-        //     web3.eth.sendSignedTransaction(serializedTx).on('transactionHash', (txHash) => {
-        //         console.log(txHash)
-        //         // hist = {time: new Date, hash: txHash, note: "transferToHub", confirmed: false};
-        //         // hist = {time: new Date, hash: txHash, note: "approve"};
-        //         // this.transactions.push(hist)
-        //     }).on('receipt', function (receipt) {
-        //         console.log("receipt:" + receipt);
-        //     }).on('confirmation', function (confirmationNumber, receipt) {
-        //         console.log("confirmationNumber:" + confirmationNumber + " receipt:" + receipt);
-        //         // hist.confirmed = true
-        //     }).on('error', function (error) {
-        //         alert(error)
-        //     });
-        // },
         handleAccount(ethAddress) {
             // ethAddress = '0xf4bbd85fad8fbd28422f3a969196ab648e8ee888'
             this.ethAddress = ethAddress;
@@ -546,41 +523,6 @@ export default {
         },
     },
 };
-
-function getLatestTransactions(address, hubCoinList, chainId) {
-    return Promise.all([
-        // check last 100 txs
-        getAddressTransactionList(address, {page: 1, offset: 100}),
-        //@TODO store pending txs in localStorage, because eth_pendingTransactions is not available on Infura
-        Promise.resolve([]),
-        // getAddressPendingTransactions(address),
-    ])
-        .then(([etherscanTxList, pendingTxList]) => {
-            // assume web3 pending status is more correct and filter out such etherscan txs
-            etherscanTxList = etherscanTxList.filter((tx) => {
-                const isPending = pendingTxList.find((pendingTx) => pendingTx.hash.toLowerCase() === tx.hash.toLowerCase());
-
-                return !isPending;
-            });
-
-            let txList = pendingTxList.concat(etherscanTxList);
-
-            const promiseList = txList.map((item) => {
-                return getDepositTxInfo(item, hubCoinList, true)
-                    .then((txInfo) => {
-                        return {info: txInfo, tx: {...item, chainId}};
-                    });
-            });
-            return Promise.all(promiseList);
-
-        })
-        .then((infoList) => {
-            // keep only hub bridge transactions
-            infoList = infoList.filter(({info}) => info.type !== HUB_DEPOSIT_TX_PURPOSE.OTHER);
-
-            return infoList.slice(0, 5).map((item) => item.tx);
-        });
-}
 </script>
 
 <template>
@@ -714,24 +656,16 @@ function getLatestTransactions(address, hubCoinList, chainId) {
                 :price-list="priceList"
             />
             <portal-target name="account-minter-confirm-modal"/>
-
-            <!--          <div class="card__content card__content&#45;&#45;gray u-text-center send__qr-card" v-if="linkToBip">-->
-            <!--              <div class="send__qr-wrap u-mb-10">-->
-            <!--                  <QrcodeVue class="send__qr" :value="linkToBip" :size="240" level="L"></QrcodeVue>-->
-            <!--              </div>-->
-            <!--              Scan this QR with your Bip Wallet or-->
-            <!--              <a class="link&#45;&#45;default u-text-break" :href="linkToBip">follow the link</a>-->
-            <!--          </div>-->
         </div>
 
-        <div class="panel" v-if="$store.state.hub.ethList.length">
+        <div class="panel" v-if="$store.getters['hub/depositList'].length">
             <div class="panel__header panel__header-title">Latest transactions</div>
             <TxListItem
                 class="panel__section"
-                v-for="hash in $store.state.hub.ethList"
-                :key="hash"
-                :hash="hash"
-                :coin-list="hubCoinList"
+                v-for="tx in $store.getters['hub/depositList']"
+                :key="tx.hash"
+                :tx="tx"
+                :hub-coin-list="hubCoinList"
             />
         </div>
     </div>

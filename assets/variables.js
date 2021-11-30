@@ -86,11 +86,13 @@ export const HUB_CHAIN_DATA = {
         name: 'Ethereum',
         coinSymbol: 'ETH',
         chainId: ETHEREUM_CHAIN_ID,
+        apiUrl: ETHEREUM_API_URL,
     },
     [HUB_CHAIN_ID.BSC]: {
         name: 'BSC',
         coinSymbol: 'BNB',
         chainId: BSC_CHAIN_ID,
+        apiUrl: BSC_API_URL,
     },
 };
 

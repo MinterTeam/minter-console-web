@@ -15,7 +15,10 @@ export default ({store}) => {
     //     return;
     // }
     createPersistedState({
-        paths: ['auth'],
+        paths: [
+            'auth',
+            'hub.ethList',
+        ],
         // filter(mutation) {
         //     // is auth mutation
         //     return authMutationList.indexOf(mutation.type) !== -1;
