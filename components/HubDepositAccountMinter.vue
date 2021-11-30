@@ -118,7 +118,7 @@ export default {
                 chainId: this.chainId,
             };
 
-            await this.showConfirmation(txParamsFinal);
+            await this.showConfirmation(txParamsFinal, this.chainId);
             console.log('send', JSON.parse(JSON.stringify(txParamsFinal)));
             const { rawTransaction } = await web3.eth.accounts.signTransaction(txParamsFinal, this.$store.getters.privateKey);
 
@@ -140,12 +140,12 @@ export default {
             //@TODO
             return web3.eth.estimateGas(txParams);
         },
-        async showConfirmation(txParams) {
+        async showConfirmation(txParams, chainId) {
             // cancel previous active confirmation, if exists
             this.cancelConfirmation();
 
             this.confirmData.tx = txParams;
-            this.confirmData.info = await getDepositTxInfo({...txParams, input: txParams.data}, this.hubCoinList);
+            this.confirmData.info = await getDepositTxInfo({...txParams, input: txParams.data}, chainId, this.hubCoinList);
             this.confirmData.computed = {
                 gasPriceGwei: web3.utils.fromWei(txParams.gasPrice, 'gwei'),
                 fee: txParams.gas * web3.utils.fromWei(txParams.gasPrice),

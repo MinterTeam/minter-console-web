@@ -106,12 +106,14 @@ export default {
                 </div>
                 <div class="u-fw-700">
                     {{ pretty(withdraw.amount) }} {{ withdraw.tx.data.coin.symbol }}
-                    to {{ $options.HUB_CHAIN_DATA[withdraw.destination].name }}
                 </div>
             </div>
 
             <div class="hub__preview-transaction-row hub__preview-transaction-meta">
-                <div>{{ getTimeDistance(withdraw.timestamp || 0, undefined, $now) }} ago ({{ getTime(withdraw.timestamp || 0) }})</div>
+                <div>
+                    {{ getTimeDistance(withdraw.timestamp || 0, undefined, $now) }} ago ({{ getTime(withdraw.timestamp || 0) }})
+                    to {{ $options.HUB_CHAIN_DATA[withdraw.destination].name }}
+                </div>
                 <div>
                     <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
