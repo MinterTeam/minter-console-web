@@ -78,8 +78,12 @@ export const HUB_CHAIN_ID = {
 };
 
 /**
+ * @typedef {{coinSymbol: string, name: string, chainId: number, apiUrl: string, explorerHost: string}} HubChainDataItem
+ */
+
+/**
  * @readonly
- * @type {{[HUB_CHAIN_ID]: {coinSymbol: string, name: string, chainId: number}}}}
+ * @type {{[HUB_CHAIN_ID]: HubChainDataItem}}}
  */
 export const HUB_CHAIN_DATA = {
     [HUB_CHAIN_ID.ETHEREUM]: {
@@ -87,12 +91,14 @@ export const HUB_CHAIN_DATA = {
         coinSymbol: 'ETH',
         chainId: ETHEREUM_CHAIN_ID,
         apiUrl: ETHEREUM_API_URL,
+        explorerHost: ETHERSCAN_HOST,
     },
     [HUB_CHAIN_ID.BSC]: {
         name: 'BSC',
         coinSymbol: 'BNB',
         chainId: BSC_CHAIN_ID,
         apiUrl: BSC_API_URL,
+        explorerHost: BSCSCAN_HOST,
     },
 };
 

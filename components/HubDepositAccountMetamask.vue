@@ -1,18 +1,37 @@
 <script>
 import Eth from 'web3-eth';
+import {getEvmNetworkName, getHubNetworkByChain} from '~/api/web3.js';
+import {HUB_CHAIN_DATA} from '~/assets/variables.js';
 import {STORAGE_KEY} from './HubDepositAccount.vue';
 
 export default {
+    props: {
+        // chainId selected by user in Console
+        chainId: {
+            type: Number,
+            required: true,
+        },
+    },
     data() {
         return {
             isAvailable: false,
             ethAddress: "",
-            chainId: 0,
+            // chainId from connected web3 wallet
+            ethChainId: 0,
         };
     },
     computed: {
         isConnected() {
             return !!this.ethAddress;
+        },
+    },
+    watch: {
+        chainId: {
+            handler() {
+                if (this.ethChainId && this.ethChainId !== this.chainId) {
+                    this.requestSwitchChainId(this.chainId);
+                }
+            },
         },
     },
     mounted() {
@@ -31,11 +50,8 @@ export default {
                         this.setEthAddress(accounts[0]);
                     }
                 });
-            window.ethereum.request({method: 'eth_chainId'})
-                .then((chainId) => {
-                    console.log('eth_chainId', chainId);
-                    this.setChainId(chainId);
-                });
+
+            this.fetchChainId();
         }
         // update on change, handles changes from metamask interface
         window.ethereum.on('accountsChanged', (accounts) => {
@@ -60,16 +76,17 @@ export default {
                 .then((permissions) => {
                     // set account after user action
                     // can't rely on 'accountsChanged' here, because user may select the same account and event will not fire
-                    console.log('wallet_requestPermissions', permissions);
                     const accountsPermission = permissions.find((permission) => permission.parentCapability === 'eth_accounts');
                     const caveats = accountsPermission?.caveats || [];
                     const exposedAccounts = caveats.find((caveat) => caveat.name === 'exposedAccounts');
                     const accounts = exposedAccounts?.value || [];
+                    console.log('wallet_requestPermissions', permissions, accounts);
                     if (accounts.length) {
                         this.setEthAddress(accounts[0]);
-                        this.setChainId(this.chainId);
+                        this.fetchChainId();
                     }
                 });
+            // eth_requestAccounts don't prompt account selection if some already connected
             // window.ethereum.request({method: 'eth_requestAccounts'});
                 // .then((accounts) => {
                 //     this.setEthAddress(accounts[0]);
@@ -84,11 +101,66 @@ export default {
         },
         setChainId(chainId) {
             chainId = Number(chainId);
-            this.chainId = chainId;
+            this.ethChainId = chainId;
             this.$emit('update:network', chainId);
         },
+        fetchChainId() {
+            window.ethereum.request({method: 'eth_chainId'})
+                .then((chainId) => {
+                    console.log('eth_chainId', chainId);
+                    this.setChainId(chainId);
+                });
+        },
+        /**
+         * @param {number} chainId
+         */
+        requestSwitchChainId(chainId) {
+            const chainIdHex = `0x${chainId.toString(16)}`;
+            window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: chainIdHex }],
+            })
+                .catch((error) => {
+                    // This error code indicates that the chain has not been added to MetaMask
+                    // if it is not, then install it into the user MetaMask
+                    if (error.code === 4902) {
+                        const networkData = HUB_CHAIN_DATA[getHubNetworkByChain(chainId)];
+                        return window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [
+                                {
+                                    chainId: chainIdHex,
+                                    chainName: getEvmNetworkName(chainId),
+                                    // replace mainnet with cloudflare to not expose Infura's api key
+                                    rpcUrls: [networkData.apiUrl.indexOf('mainnet.infura') >= 0 ? 'https://cloudflare-eth.com' : networkData.apiUrl],
+                                    blockExplorerUrls: [networkData.explorerHost],
+                                    nativeCurrency: {
+                                        name: networkData.coinSymbol,
+                                        symbol: networkData.coinSymbol,
+                                        decimals: 18,
+                                    },
+                                },
+                            ],
+                        });
+                    } else {
+                        throw error;
+                    }
+                })
+                .then(() => {
+                    this.setChainId(chainId);
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.$emit('error', error.message);
+                    // restore user selected chainId back to connected web3 wallet chainId
+                    this.setChainId(this.ethChainId);
+                });
+        },
         async sendTransaction(txParams) {
-            //@TODO restore check
+            if (this.ethChainId !== this.chainId) {
+                throw new Error(`Web3 wallet connected to the wrong chain: ${getEvmNetworkName(this.ethChainId)}. Expected ${getEvmNetworkName(this.chainId)}.`);
+            }
+            //@TODO restore check? (looks like was moved to DepositForm)
             // const chainId = await window.ethereum.request({ method: 'eth_chainId' });
             // const chainId = this.chainId;
             // if (Number(chainId) !== ETHEREUM_CHAIN_ID) {
