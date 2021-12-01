@@ -2,6 +2,7 @@ import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {convertToPip} from 'minterjs-util';
+import Big from '~/assets/big.js';
 import coinBlockList from 'minter-coin-block-list';
 import {_getOracleCoinList} from '~/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
@@ -192,13 +193,37 @@ function markVerified(coinListPromise, itemType = 'coin') {
 /**
  * @param {string} address
  * @param {Object} [params]
- * @param {number} [params.page]
- * @param {number} [params.limit]
+ * @param {number|string} [params.page]
+ * @param {number|string} [params.limit]
  * @return {Promise<TransactionListInfo>}
  */
 export function getAddressTransactionList(address, params) {
     return explorer.get(`addresses/${address}/transactions`, {params})
         .then((response) => response.data);
+}
+
+/**
+ * Get limit order list by owner address
+ * @param {string} address
+ * @param {Object} [params]
+ * @param {number|string} [params.page]
+ * @param {number|string} [params.limit]
+ * @param {string} [params.status]
+ * @return {Promise<LimitOrderListInfo>}
+ */
+export function getAddressOrderList(address, params) {
+    return explorer.get(`addresses/${address}/orders`, {params})
+        .then((response) => {
+            response.data.data = response.data.data.map((order) => {
+                return {
+                    ...order,
+                    coinToSellPrice: new Big(order.initialCoinToBuyVolume).div(order.initialCoinToSellVolume).toString(),
+                    coinToBuyPrice: new Big(order.initialCoinToSellVolume).div(order.initialCoinToBuyVolume).toString(),
+                };
+            });
+
+            return response.data;
+        });
 }
 
 /**
@@ -327,6 +352,9 @@ export function getSwapCoinList(coin, depth) {
         }));
 }
 
+
+const poolCache = new Cache({maxAge: 10 * 1000});
+
 /**
  * @typedef {Object} PoolListInfo
  * @property {Array<Pool>} data
@@ -337,21 +365,17 @@ export function getSwapCoinList(coin, depth) {
  * @param {Object} [params]
  * @param {string|number} [params.coin] - search by coin
  * @param {string} [params.provider] - search by Mx address
- * @param {number} [params.page]
- * @param {number} [params.limit]
+ * @param {number|string} [params.page]
+ * @param {number|string} [params.limit]
  * @return {Promise<PoolListInfo>}
  */
 export function getPoolList(params) {
     return explorer.get('pools', {
             params,
-            cache: statusCache,
+            cache: poolCache,
         })
         .then((response) => response.data);
 }
-
-
-// 10s cache
-const poolCache = new Cache({maxAge: 10 * 1000});
 
 /**
  * @param {string|number} coin0
@@ -359,10 +383,41 @@ const poolCache = new Cache({maxAge: 10 * 1000});
  * @return {Promise<Pool>}
  */
 export function getPool(coin0, coin1) {
+    if (coin0 === coin1) {
+        return Promise.reject(new Error('coin0 is equal to coin1'));
+    }
     return explorer.get(`pools/coins/${coin0}/${coin1}`, {
             cache: poolCache,
         })
         .then((response) => response.data.data);
+}
+
+/**
+ * Get limit order list by pool
+ * @param {string|number} coin0
+ * @param {string|number} coin1
+ * @param {Object} [params]
+ * @param {number|string} [params.page]
+ * @param {number|string} [params.limit]
+ * @param {string} [params.status]
+ * @return {Promise<LimitOrderListInfo>}
+ */
+export function getPoolOrderList(coin0, coin1, params) {
+    return explorer.get(`pools/coins/${coin0}/${coin1}/orders`, {
+            params,
+            poolCache,
+        })
+        .then((response) => {
+            response.data.data = response.data.data.map((order) => {
+                return {
+                    ...order,
+                    coinToSellPrice: new Big(order.initialCoinToBuyVolume).div(order.initialCoinToSellVolume).toString(),
+                    coinToBuyPrice: new Big(order.initialCoinToSellVolume).div(order.initialCoinToBuyVolume).toString(),
+                };
+            });
+
+            return response.data;
+        });
 }
 
 /**
@@ -373,7 +428,7 @@ export function getPool(coin0, coin1) {
  */
 export function getPoolProvider(coin0, coin1, address) {
     return explorer.get(`pools/coins/${coin0}/${coin1}/providers/${address}`, {
-            cache: statusCache,
+            cache: poolCache,
         })
         .then((response) => response.data.data);
 }
@@ -381,8 +436,8 @@ export function getPoolProvider(coin0, coin1, address) {
 /**
  * @param {string} address
  * @param {Object} [params]
- * @param {number} [params.page]
- * @param {number} [params.limit]
+ * @param {number|string} [params.page]
+ * @param {number|string} [params.limit]
  * @return {Promise<ProviderPoolListInfo>}
  */
 export function getProviderPoolList(address, params) {
@@ -512,6 +567,29 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount}, axiosOpti
  */
 
 /**
+ * @typedef {Object} LimitOrderListInfo
+ * @property {Array<LimitOrder>} data
+ * @property {PaginationMeta} meta
+ */
+
+/**
+ * @typedef {Object} LimitOrder
+ * @property {number} id
+ * @property {number} height - created at block
+ * @property {string} address - owner
+ * @property {number} poolId
+ * @property {Coin} coinToSell
+ * @property {Coin} coinToBuy
+ * @property {string|number} coinToSellVolume
+ * @property {string|number} coinToBuyVolume
+ * @property {string|number} initialCoinToSellVolume
+ * @property {string|number} initialCoinToBuyVolume
+ * @property {string|number} coinToSellPrice
+ * @property {string|number} coinToBuyPrice
+ * @property {string} status
+ */
+
+/**
  * @typedef {Object} TransactionListInfo
  * @property {Array<Transaction>} data
  * @property {PaginationMeta} meta
@@ -537,7 +615,7 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount}, axiosOpti
  * @property {string} [data.to]
  * @property {Coin} [data.coin]
  * @property {number} [data.amount]
- * -- type: TX_TYPE.CONVERT
+ * -- type: TX_TYPE.SELL, TX_TYPE.BUY
  * @property {Coin} [data.coinToSell]
  * @property {Coin} [data.coinToBuy]
  * @property {Array<Coin>} [data.coins]
@@ -545,6 +623,9 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount}, axiosOpti
  * @property {number} [data.minimumValueToBuy]
  * @property {number} [data.valueToBuy]
  * @property {number} [data.maximumValueToSell]
+ * -- type: TX_TYPE.ADD_LIMIT_ORDER, TX_TYPE.REMOVE_LIMIT_ORDER
+ * @property {number} [data.orderId] - from tags
+ * @property {number} [data.id] - from data
  * -- type: TX_TYPE.CREATE_COIN
  * @property {number} [data.createdCoinId]
  * @property {string} [data.name]

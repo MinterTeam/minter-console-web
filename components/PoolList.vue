@@ -1,29 +1,24 @@
 <script>
-import {getPoolList, getProviderPoolList, getStatus} from '@/api/explorer.js';
-import {pretty, getExplorerPoolUrl} from '~/assets/utils.js';
+import {getPoolList, getProviderPoolList} from '@/api/explorer.js';
+import {pretty} from '~/assets/utils.js';
+import eventBus from '~/assets/event-bus.js';
 import Loader from '~/components/common/Loader';
-import TableLink from '@/components/common/TableLink.vue';
-import eventBus from 'assets/event-bus.js';
+import PoolPair from '@/components/common/PoolPair.vue';
+
+//@TODO pagination
 
 export default {
     components: {
         Loader,
-        TableLink,
+        PoolPair,
     },
     fetch() {
-        return Promise.all([
-                getStatus(),
-                this.fetchPoolList(),
-            ])
-            .then(([statusData]) => {
-                this.bipPriceUsd = statusData.bipPriceUsd;
-            });
+        return this.fetchPoolList();
     },
     data() {
         return {
             /** @type Array<Pool> */
             poolList: [],
-            bipPriceUsd: 0,
         };
     },
     computed: {
@@ -35,7 +30,7 @@ export default {
 
                 return {
                     ...pool,
-                    liquidityUsd: pool.liquidityBip * this.bipPriceUsd,
+                    liquidityUsd: pool.liquidityBip * this.$store.getters['explorer/bipPriceUsd'],
                     apy,
                 };
             });
@@ -54,10 +49,6 @@ export default {
     },
     methods: {
         pretty,
-        getExplorerPoolUrl,
-        getCoinIconUrl(coin) {
-            return this.$store.getters['explorer/getCoinIcon'](coin);
-        },
         addLiquidity({coin0, coin1}) {
             eventBus.emit('activate-add-liquidity', {coin0, coin1});
         },
@@ -66,6 +57,7 @@ export default {
         },
         fetchPoolList() {
             return Promise.all([
+                //@TODO
                     getProviderPoolList(this.$store.getters.address, {limit: 1000}),
                     getPoolList({provider: this.$store.getters.address, limit: 1000}),
                 ])
@@ -105,13 +97,7 @@ export default {
                 <tbody>
                     <tr v-for="pool in poolListFormatted" :key="pool.token.symbol">
                         <td>
-                            <div class="pool-pair">
-                                <div class="pool-pair__figure">
-                                    <img class="pool-pair__icon" :src="getCoinIconUrl(pool.coin0.symbol)" width="24" height="24" alt="" role="presentation">
-                                    <img class="pool-pair__icon pool-pair__icon1" :src="getCoinIconUrl(pool.coin1.symbol)" width="24" height="24" alt="" role="presentation">
-                                </div>
-                                <TableLink :link-text="pool.coin0.symbol + ' / ' + pool.coin1.symbol" :link-path="getExplorerPoolUrl(pool.coin0.symbol, pool.coin1.symbol)" :should-not-shorten="true"/>
-                            </div>
+                            <PoolPair :coins="pool"/>
                         </td>
                         <td>{{ pool.token.symbol }}</td>
                         <td><span class="u-fw-500">{{ pretty(pool.amount0) }}</span> {{ pool.coin0.symbol }}</td>

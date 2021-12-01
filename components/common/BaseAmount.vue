@@ -1,5 +1,5 @@
 <script>
-import {pretty, prettyExact} from '~/assets/utils.js';
+import {pretty, prettyExact, decreasePrecisionSignificant} from '~/assets/utils.js';
 
 export default {
     props: {
@@ -16,6 +16,10 @@ export default {
             default: 'span',
         },
         exact: {
+            type: Boolean,
+            default: false,
+        },
+        significant: {
             type: Boolean,
             default: false,
         },
@@ -49,7 +53,10 @@ export default {
         pretty,
         prettyExact,
         prettyAmount(value) {
-            return this.exact ? prettyExact(value) : pretty(value);
+            if (this.exact) {
+                return prettyExact(value);
+            }
+            return this.significant ? decreasePrecisionSignificant(value) : pretty(value);
         },
     },
 };

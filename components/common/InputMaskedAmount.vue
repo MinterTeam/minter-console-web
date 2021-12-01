@@ -12,7 +12,7 @@
             padFractionalZeros: false,  // if true, then pads zeros at end to the length of scale
             normalizeZeros: false, // appends or removes zeros at ends
             radix: '.',  // fractional delimiter
-            mapToRadix: [','],  // symbols to process as radix
+            mapToRadix: [',', 'ю', 'Ю', 'б', 'Б'],  // symbols to process as radix
         },
         directives: {
             imask: IMaskDirective,
@@ -21,6 +21,9 @@
             value: {
                 type: [String, Number],
                 default: '',
+            },
+            scale: {
+                type: [String, Number],
             },
         },
         data() {
@@ -34,6 +37,12 @@
             listeners() {
                 const { input, ...listeners } = this.$listeners;
                 return listeners;
+            },
+            imaskOptions() {
+                return {
+                    ...this.$options.imaskAmount,
+                    scale: this.scale || this.$options.imaskAmount.scale,
+                };
             },
         },
         watch: {
@@ -49,6 +58,9 @@
         },
         methods: {
             updateMaskState(value) {
+                if (!this.$refs.input.maskRef) {
+                    return;
+                }
                 this.$refs.input.maskRef.typedValue = value;
                 const maskedValue = this.$refs.input.maskRef._value;
                 const cursorPos = maskedValue.length;
@@ -63,5 +75,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" inputmode="decimal" v-imask="$options.imaskAmount" v-on="listeners" @accept="onAcceptInput" ref="input"/>
+    <input type="text" autocapitalize="off" inputmode="decimal" v-imask="imaskOptions" v-on="listeners" @accept="onAcceptInput" ref="input"/>
 </template>

@@ -1,12 +1,12 @@
 <script>
 import Big from '~/assets/big.js';
-import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
 import debounce from 'debounce-promise';
-import stripZeros from 'pretty-num/src/pretty-num.js';
+import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
 import {validationMixin} from 'vuelidate';
 import required from 'vuelidate/lib/validators/required.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
+import stripZeros from 'pretty-num/src/pretty-num.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import eventBus from '~/assets/event-bus.js';
 import focusElement from '~/assets/focus-element.js';
@@ -101,6 +101,7 @@ export default {
     },
     asyncComputed: {
         poolData() {
+            // function argument not used, but they are required to trigger computed property recalculation
             return this.debouncedFetchPoolData?.(this.form.coin0, this.form.coin1);
         },
     },
@@ -127,10 +128,6 @@ export default {
         },
         // intersection of address balance and pool coins
         availableCoinList() {
-            if (!this.poolCoinList.length) {
-                return this.addressBalance;
-            }
-
             return this.addressBalance.filter((balanceItem) => {
                 return this.poolCoinList.find((poolCoin) => poolCoin.id === balanceItem.coin.id);
             });
@@ -142,7 +139,11 @@ export default {
                 // @input and @input.native may fire in different time so timer needed to wait all events
                 clearTimeout(watcherTimer);
                 watcherTimer = setTimeout(() => {
-                    if (this.selectedInput === INPUT_TYPE.AMOUNT0 && this.isPoolLoaded) {
+                    if (!this.isPoolLoaded) {
+                        return;
+                    }
+
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT0) {
                         if (!this.form.volume0) {
                             this.formAmount1 = '';
                         } else {
@@ -150,7 +151,7 @@ export default {
                         }
                     }
 
-                    if (this.selectedInput === INPUT_TYPE.AMOUNT1 && this.isPoolLoaded) {
+                    if (this.selectedInput === INPUT_TYPE.AMOUNT1) {
                         if (!this.formAmount1) {
                             this.form.volume0 = '';
                         } else {
@@ -208,6 +209,9 @@ export default {
         fetchPoolData() {
             // no pair entered
             if (!this.form.coin0 || !this.form.coin1 || this.form.coin0 === this.form.coin1) {
+                return;
+            }
+            if (this.$v.form.coin0.$invalid || this.$v.form.coin1.$invalid) {
                 return;
             }
 

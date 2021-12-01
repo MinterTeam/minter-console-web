@@ -67,6 +67,9 @@
             isBuyPool(tx) {
                 return this.isTxType(tx, TX_TYPE.BUY_SWAP_POOL);
             },
+            isAddOrder(tx) {
+                return this.isTxType(tx, TX_TYPE.ADD_LIMIT_ORDER);
+            },
             isMultisend(tx) {
                 return this.isTxType(tx, TX_TYPE.MULTISEND);
             },
@@ -180,6 +183,7 @@
                 return validator?.name;
             },
             fromBase64,
+            pretty,
             getExplorerBlockUrl,
             getExplorerTxUrl,
             getExplorerAddressUrl,
@@ -312,6 +316,22 @@
                                     <div class="table__inner-item" v-if="isBuyPool(tx)">
                                         <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
                                         {{ tx.data.coins[0].symbol }} {{ tx.data.valueToSell | pretty }}
+                                    </div>
+
+                                    <!-- ADD_LIMIT_ORDER -->
+                                    <div class="table__inner-item" v-if="isAddOrder(tx)">
+                                        <strong>Want to sell</strong> <br>
+                                        {{ tx.data.coinToSell.symbol }} {{ pretty(tx.data.valueToSell) }}
+                                    </div>
+                                    <div class="table__inner-item" v-if="isAddOrder(tx)">
+                                        <strong>Want to buy</strong> <br>
+                                        {{ tx.data.coinToBuy.symbol }} {{ pretty(tx.data.valueToBuy) }}
+                                    </div>
+
+                                    <!-- ADD_LIMIT_ORDER, REMOVE_LIMIT_ORDER -->
+                                    <div class="table__inner-item" v-if="tx.data.id || tx.data.orderId">
+                                        <strong>Order ID</strong> <br>
+                                        {{ tx.data.id || tx.data.orderId }}
                                     </div>
 
                                     <!-- type CREATE_COIN -->

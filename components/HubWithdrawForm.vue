@@ -377,7 +377,7 @@ export default {
                         <ul class="list-simple">
                             <li>Withdraw to the wallet you own first (the one you have a seed phrase to);</li>
                             <li>Do not withdraw to an exchange because many do not accept deposits from smart contracts and your tokens will be lost;</li>
-                            <li>Pay attention to Ethereum a Minter Hub fees;</li>
+                            <li>Pay attention to Ethereum and Minter Hub fees;</li>
                             <li>
                                 {{ $td('Minter Hub is', 'hub.warning-description-2') }}
                                 <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">{{ $td('open-source', 'hub.warning-description-3') }}</a>.
