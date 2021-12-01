@@ -12,6 +12,7 @@ export default {
         // chainId is needed for trustwallet's walletconnect
         chainId: {
             type: Number,
+            required: true,
         },
     },
     data() {
@@ -20,12 +21,24 @@ export default {
             isConnectionStartedAndModalClosed: false,
         };
     },
-    computed: {
-        isConnected() {
-            return !!this.ethAddress;
+    // computed: {
+    //     isConnected() {
+    //         return !!this.ethAddress;
+    //     },
+    // },
+    watch: {
+        chainId: {
+            handler() {
+                if (this.connector.connected && this.connector.chainId !== this.chainId) {
+                    connector.killSession().then(() => {
+                        this.connectEth();
+                    });
+                }
+            },
         },
     },
     created() {
+        // not in data to skip reactivity
         this.connector = null;
     },
     mounted() {
@@ -71,7 +84,7 @@ export default {
                 bridge: "https://bridge.walletconnect.org", // Required
                 qrcodeModal: QRCodeModal,
             });
-            window['connector' + this.chainId] = this.connector;
+            // window.connector = this.connector;
             // console.log('init', {connector});
 
             // Subscribe to connection events
@@ -92,11 +105,11 @@ export default {
             console.log(payload.event, payload.params, accounts, chainId, this.chainId);
             if (accounts) {
                 if (this.chainId && this.chainId !== chainId) {
-                    this.connector.killSession();
+                    // this.connector.killSession();
                     this.$emit('error', `Invalid network selected. Expected ${getNetworkName(this.chainId)}, but your wallet is on ${getNetworkName(chainId)}.`);
                     // this.setEthAddress('');
                     // connector = null;
-                    return;
+                    // return;
                 }
 
                 this.setEthAddress(accounts[0]);
@@ -114,6 +127,13 @@ export default {
             this.$emit('update:address', ethAddress);
         },
         sendTransaction(txParams) {
+            console.log('send transaction walletconnect', {
+                ...txParams,
+                // - chainId is needed for trustwallet
+                // - if txParams.chainId is different from metamask selected network, sending will hang
+                // - chainId is needed to prevent sending tx from wrong network in metamask
+                chainId: this.connector.chainId,
+            });
             return this.connector.sendTransaction({
                 ...txParams,
                 // - chainId is needed for trustwallet
@@ -129,10 +149,6 @@ export default {
 <template>
     <button class="button" @click="connectEth">
         <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-walletconnect.svg`">
-        <span>
-            WalletConnect
-            <template v-if="chainId === $options.ETHEREUM_CHAIN_ID">Eth</template>
-            <template v-if="chainId === $options.BSC_CHAIN_ID">BSC</template>
-        </span>
+        <span>WalletConnect</span>
     </button>
 </template>

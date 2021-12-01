@@ -53,6 +53,9 @@ export function subscribeTransaction(hash, {
 } = {}) {
     let isUnsubscribed = false;
     const emitter = new Emitter();
+    if (!getProviderHostByChain(chainId)) {
+        return Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
+    }
     // keep provider for this tx, because later it can be changed
     const ethSaved = new Eth(getProviderHostByChain(chainId));
 
@@ -288,11 +291,11 @@ export function getAddressPendingTransactions(address, chainId) {
  * @return {Promise<{amount: string, tokenContract: string, type: string}|{type: string}>}
  */
 export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
-    chainId = tx.chainId || chainId;
+    chainId = Number(tx.chainId || chainId);
     // remove 0x and function selector
     const input = tx.input.slice(2 + 8);
     const itemCount = input.length / 64;
-    let hubContractAddress;
+    let hubContractAddress = '';
     if (chainId === ETHEREUM_CHAIN_ID) {
         hubContractAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
     }
@@ -401,6 +404,7 @@ export function getExternalCoinList(hubCoinList, chainId) {
  * @return {Eth}
  */
 function getProviderByChain(chainId) {
+    validateChainId(chainId);
     if (!chainId) {
         return eth;
     }
@@ -417,11 +421,12 @@ function getProviderByChain(chainId) {
  * @return {string}
  */
 function getProviderHostByChain(chainId) {
+    validateChainId(chainId);
     if (!chainId) {
         return eth.currentProvider.host;
     }
 
-    return HUB_CHAIN_DATA[getHubNetworkByChain(chainId)].apiUrl;
+    return HUB_CHAIN_DATA[getHubNetworkByChain(chainId)]?.apiUrl;
 }
 
 /**
@@ -429,6 +434,7 @@ function getProviderHostByChain(chainId) {
  * @return {HUB_CHAIN_ID}
  */
 export function getHubNetworkByChain(chainId) {
+    validateChainId(chainId);
     if (chainId === ETHEREUM_CHAIN_ID) {
         return HUB_CHAIN_ID.ETHEREUM;
     }
@@ -442,6 +448,7 @@ export function getHubNetworkByChain(chainId) {
  * @return {string}
  */
 export function getEvmNetworkName(chainId) {
+    chainId = Number(chainId);
     switch (chainId) {
         case 1:
             return 'Ethereum';
@@ -457,5 +464,11 @@ export function getEvmNetworkName(chainId) {
             return 'BSC Testnet';
         default:
             return chainId.toString();
+    }
+}
+
+function validateChainId(chainId) {
+    if (chainId && typeof chainId !== 'number') {
+        throw new Error(`chainId should be a number`);
     }
 }

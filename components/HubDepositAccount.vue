@@ -131,6 +131,9 @@ export default {
             }
         },
         sendTransaction(txParams) {
+            if (this.selectedChainId !== this.chainId) {
+                return Promise.reject(new Error(`Web3 wallet connected to the wrong chain: ${getEvmNetworkName(this.selectedChainId)}. Expected ${getEvmNetworkName(this.chainId)}.`));
+            }
             return this.getSelectedAccountRef()?.sendTransaction(txParams);
         },
         getSelectedAccountRef() {
@@ -138,11 +141,8 @@ export default {
                 return false;
             }
 
-            if (this.selectedAccountType === TYPE.WALLETCONNECT && this.chainId === ETHEREUM_CHAIN_ID) {
-                return this.$refs.ethAccountWalletconnectEth;
-            }
-            if (this.selectedAccountType === TYPE.WALLETCONNECT && this.chainId === BSC_CHAIN_ID) {
-                return this.$refs.ethAccountWalletconnectBsc;
+            if (this.selectedAccountType === TYPE.WALLETCONNECT) {
+                return this.$refs.ethAccountWalletconnect;
             }
             if (this.selectedAccountType === TYPE.METAMASK) {
                 return this.$refs.ethAccountMetamask;
@@ -175,16 +175,8 @@ export default {
                     <div class="button-group">
                         <HubDepositAccountWalletConnect
                             class="button--ghost-main"
-                            ref="ethAccountWalletconnectEth"
-                            :chain-id="$options.ETHEREUM_CHAIN_ID"
-                            @update:address="setEthAddress($event, $options.TYPE.WALLETCONNECT)"
-                            @update:network="setChainId($event, $options.TYPE.WALLETCONNECT)"
-                            @error="errorMessage = $event"
-                        />
-                        <HubDepositAccountWalletConnect
-                            class="button--ghost-main"
-                            ref="ethAccountWalletconnectBsc"
-                            :chain-id="$options.BSC_CHAIN_ID"
+                            ref="ethAccountWalletconnect"
+                            :chain-id="selectedChainId"
                             @update:address="setEthAddress($event, $options.TYPE.WALLETCONNECT)"
                             @update:network="setChainId($event, $options.TYPE.WALLETCONNECT)"
                             @error="errorMessage = $event"
