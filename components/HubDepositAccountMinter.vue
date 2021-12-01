@@ -260,8 +260,9 @@ export default {
                         <!--                    <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> Transaction requires high fee.</div>-->
                     </div>
                     <div class="panel__section">
-                        <button class="button button--main button--full" type="button" data-focus-on-open
-                                @click="acceptConfirmation()"
+                        <button
+                            class="button button--main button--full" type="button" data-focus-on-open
+                            @click="acceptConfirmation()"
                         >
                             <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                         </button>

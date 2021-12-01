@@ -42,13 +42,13 @@ export default {
         // prefetch block number
         getBlockNumber();
 
-        this.txWatcher = subscribeTransaction(this.tx.hash, {chainId: this.tx.chainId})
+        this.txWatcher = subscribeTransaction(this.tx.hash, {chainId: Number(this.tx.chainId)})
             .once('tx', (tx) => {
                 // tx in block or pending
                 this.$store.commit('hub/saveDeposit', tx);
 
                 //@TODO store tokenInfo in tx
-                this.tokenInfoPromise = getDepositTxInfo(tx, this.tx.chainId, this.hubCoinList)
+                this.tokenInfoPromise = getDepositTxInfo(tx, Number(this.tx.chainId), this.hubCoinList)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -146,7 +146,7 @@ export default {
             if (!this.tokenInfo) {
                 return '';
             }
-            const coinItem = getExternalCoinList(this.hubCoinList, this.tx.chainId)
+            const coinItem = getExternalCoinList(this.hubCoinList, Number(this.tx.chainId))
                 .find((item) => item.externalTokenId === this.tokenInfo.tokenContract);
 
             return coinItem ? coinItem.denom.toUpperCase() : '';
@@ -177,10 +177,11 @@ export default {
         getEvmNetworkName,
         formatHash: (value) => shortHashFilter(value, 13),
         getEvmTxUrl(tx) {
-            if (tx.chainId === ETHEREUM_CHAIN_ID) {
+            const chainId = Number(tx.chainId);
+            if (chainId === ETHEREUM_CHAIN_ID) {
                 return getEthereumTxUrl(tx.hash);
             }
-            if (tx.chainId === BSC_CHAIN_ID) {
+            if (chainId === BSC_CHAIN_ID) {
                 return getBscTxUrl(tx.hash);
             }
         },

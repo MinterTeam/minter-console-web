@@ -157,9 +157,6 @@ export default {
                 });
         },
         async sendTransaction(txParams) {
-            if (this.ethChainId !== this.chainId) {
-                throw new Error(`Web3 wallet connected to the wrong chain: ${getEvmNetworkName(this.ethChainId)}. Expected ${getEvmNetworkName(this.chainId)}.`);
-            }
             //@TODO restore check? (looks like was moved to DepositForm)
             // const chainId = await window.ethereum.request({ method: 'eth_chainId' });
             // const chainId = this.chainId;

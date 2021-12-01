@@ -5,7 +5,8 @@ module.exports = {
         node: true,
     },
     parserOptions: {
-        parser: 'babel-eslint',
+        parser: '@babel/eslint-parser',
+        requireConfigFile: false,
     },
     extends: [
         'eslint:recommended',
@@ -58,6 +59,7 @@ module.exports = {
         'vue/no-unused-vars': 0,
         // allow `$value`
         'vue/prop-name-casing': ["warn"],
+        'vue/multi-word-component-names': 0,
 
         // VUE RECOMMENDED
         'vue/no-v-html': 0,

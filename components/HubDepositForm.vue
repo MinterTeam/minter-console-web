@@ -7,7 +7,7 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getTokenDecimals, getDepositTxInfo, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
 import {getAddressTransactionList} from '@/api/ethersacn.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
@@ -293,6 +293,7 @@ export default {
         pretty,
         prettyPrecise,
         prettyRound,
+        getEvmNetworkName,
         updateBalance() {
             if (!this.isConnected || !this.coinContractAddress) {
                 return;
@@ -562,7 +563,10 @@ export default {
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by Hub bridge', 'form.hub-coin-error-supported') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
+                            {{ $td('Can\'t be deposited from', 'form.hub-deposit0coin-error-supported') }}
+                            {{ getEvmNetworkName(chainId) }}
+                        </span>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <FieldUseMax
