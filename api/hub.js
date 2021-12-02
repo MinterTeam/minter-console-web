@@ -3,6 +3,8 @@ import {TxStatusType} from 'minter-js-hub/gen/mhub2/v1/mhub2_pb.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
+import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
+import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
 import {getCoinList} from '@/api/explorer.js';
 import Big from '~/assets/big.js';
 import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET} from "~/assets/variables.js";
@@ -113,6 +115,21 @@ export function getOraclePriceList() {
         })
         .then((response) => {
             return response.data.result.list;
+        });
+}
+
+/**
+ * @param {string} address
+ * @return {Promise<number|string>}
+ */
+export function getDiscountForHolder(address) {
+    if (!isValidMinterAddress(address) && !isValidEthAddress(address)) {
+        return Promise.resolve(0);
+    }
+    address = address.replace(/^Mx/, '').replace(/^0x/, '');
+    return minterHub.getDiscountForHolder(address)
+        .then((discount) => {
+            return new Big(discount).div(10 ** 18).toString();
         });
 }
 

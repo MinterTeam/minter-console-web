@@ -8,7 +8,7 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getOracleFee} from '@/api/hub.js';
+import {getOracleFee, getDiscountForHolder} from '@/api/hub.js';
 import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
@@ -59,6 +59,8 @@ export default {
         },
     },
     fetch() {
+        getDiscountForHolder(this.$store.getters.address)
+            .then((discount) => this.discountMinter = discount);
         return this.getDestinationFee();
     },
     data() {
@@ -80,6 +82,9 @@ export default {
             serverWarning: '',
             isConfirmModalVisible: false,
             isSuccessModalVisible: false,
+            // @TODO refactor to composable
+            discountEth: 0,
+            discountMinter: 0,
         };
     },
     computed: {
@@ -92,7 +97,8 @@ export default {
             return coinItem?.[this.form.networkTo];
         },
         hubFeeRate() {
-            return this.externalToken?.commission || 0.01;
+            const discountModifier = 1 - this.discount;
+            return new Big(this.externalToken?.commission || 0.01).times(discountModifier).toString();
         },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === this.externalToken?.denom);
@@ -137,7 +143,9 @@ export default {
                 return maxAmount.toString();
             }
         },
-
+        discount() {
+            return Math.max(this.discountEth, this.discountMinter);
+        },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol);
             // intersection of address balance and hub supported coins
@@ -177,6 +185,13 @@ export default {
                 // fetch fee for updated network
                 this.destinationFee = {min: 0, fast: 0};
                 this.getDestinationFee();
+            },
+        },
+        'form.address': {
+            handler(newVal) {
+                //@TODO debounce
+                getDiscountForHolder(newVal)
+                    .then((discount) => this.discountEth = discount);
             },
         },
     },
@@ -399,7 +414,7 @@ export default {
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">
                             {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                            ({{ prettyRound(hubFeeRate * 100) }}%)
+                            ({{ hubFeeRate * 100 }}%)
                         </span>
                     </div>
                 </div>

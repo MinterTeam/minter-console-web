@@ -8,7 +8,7 @@ import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
 import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
-import {getAddressTransactionList} from '@/api/ethersacn.js';
+import {getDiscountForHolder} from '@/api/hub.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
@@ -96,6 +96,9 @@ export default {
                 isInfiniteUnlock: true,
                 isIgnorePending: true,
             },
+            // @TODO refactor to composable
+            discountEth: 0,
+            discountMinter: 0,
             isFormSending: false,
             serverError: '',
             waitWrapConfirmation: false,
@@ -141,7 +144,8 @@ export default {
         },
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem?.commission || 0.01;
+            const discountModifier = 1 - this.discount;
+            return new Big(coinItem?.commission || 0.01).times(discountModifier).toString();
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
@@ -232,6 +236,9 @@ export default {
             // don't unlock delta, it will overwrite total unlocked
             // return new Big(this.amountToSpend).minus(this.selectedUnlocked).toString();
         },
+        discount() {
+            return Math.max(this.discountEth, this.discountMinter);
+        },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol.toUpperCase());
         },
@@ -253,6 +260,15 @@ export default {
                     this.getAllowance();
                 }
                 this.$store.commit('hub/setEthAddress', newVal);
+                getDiscountForHolder(newVal)
+                    .then((discount) => this.discountEth = discount);
+            },
+        },
+        'form.address': {
+            handler(newVal) {
+                //@TODO debounce
+                getDiscountForHolder(newVal)
+                    .then((discount) => this.discountMinter = discount);
             },
         },
         coinContractAddress: {
@@ -534,7 +550,7 @@ export default {
                     {{ $td('Deposit', 'hub.deposit-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Send coins from Ethereum to Minter', 'hub.deposit-description') }}
+                    {{ $td('Send coins from other network to Minter', 'hub.deposit-description') }}
                 </p>
             </div>
 
@@ -630,7 +646,7 @@ export default {
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
                                 {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                                ({{ prettyRound(hubFeeRate * 100) }}%)
+                                ({{ hubFeeRate * 100 }}%)
                             </span>
                         </div>
                     </div>
