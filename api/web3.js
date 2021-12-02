@@ -396,7 +396,8 @@ export function getExternalCoinList(hubCoinList, chainId) {
             const externalTokens = externalNetworks.map((network) => item[network]);
             return externalTokens;
         })
-        .flat();
+        .flat()
+        .filter((item) => !!item);
 }
 
 /**
