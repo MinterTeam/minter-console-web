@@ -134,12 +134,14 @@
                                     {{ $td('Deposit & withdraw', 'common.page-hub') }}
                                 </nuxt-link>
                             </li>
+<!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('buy')" @click.native="linkClick">
+                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('buy')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-coin-transfer.svg`" alt="" role="presentation">
                                     {{ $td('Buy BIP & HUB', 'common.page-buy') }}
                                 </nuxt-link>
                             </li>
+-->
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('checks')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-check.svg`" alt="" role="presentation">
