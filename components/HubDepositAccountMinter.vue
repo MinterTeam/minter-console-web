@@ -66,7 +66,8 @@ export default {
                 gasPriceGwei = priceItem.value / 10 ** 18;
             }
 
-            return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
+            return gasPriceGwei;
+            // return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
         },
         isInfiniteUnlock() {
             return this.confirmData.info?.type === HUB_DEPOSIT_TX_PURPOSE.UNLOCK && this.confirmData.info?.amount > 10 ** 18;
@@ -210,7 +211,7 @@ export default {
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
-                                    <template v-if="confirmData.info.type === $options.HUB_DEPOSIT_TX_PURPOSE.SEND">Send to bridge</template>
+                                    <template v-if="confirmData.info.type === $options.HUB_DEPOSIT_TX_PURPOSE.SEND">Transfer to Minter</template>
                                     <template v-else>{{ confirmData.info.type }}</template>
                                 </div>
                                 <span class="form-field__label">Method</span>

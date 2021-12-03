@@ -11,6 +11,11 @@ export default {
             type: Number,
             required: true,
         },
+        // is another account provider used
+        disabled: {
+            type: Boolean,
+            default: false,
+        },
     },
     data() {
         return {
@@ -28,9 +33,12 @@ export default {
     watch: {
         chainId: {
             handler() {
-                if (this.ethChainId && this.ethChainId !== this.chainId) {
-                    this.requestSwitchChainId(this.chainId);
-                }
+                this.handleWatchChainId();
+            },
+        },
+        disabled: {
+            handler() {
+                this.handleWatchChainId();
             },
         },
     },
@@ -110,6 +118,15 @@ export default {
                     console.log('eth_chainId', chainId);
                     this.setChainId(chainId);
                 });
+        },
+        handleWatchChainId() {
+            if (this.disabled) {
+                return;
+            }
+            // is connected and connected to another network => switch
+            if (this.ethChainId && this.ethChainId !== this.chainId) {
+                this.requestSwitchChainId(this.chainId);
+            }
         },
         /**
          * @param {number} chainId

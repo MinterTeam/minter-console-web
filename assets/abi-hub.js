@@ -21,6 +21,26 @@ export default [
                 "name": "_powers",
                 "type": "uint256[]",
             },
+            {
+                "internalType": "address[]",
+                "name": "_validators2",
+                "type": "address[]",
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "_powers2",
+                "type": "uint256[]",
+            },
+            {
+                "internalType": "address",
+                "name": "_wethAddress",
+                "type": "address",
+            },
+            {
+                "internalType": "address",
+                "name": "_guardian",
+                "type": "address",
+            },
         ],
         "stateMutability": "nonpayable",
         "type": "constructor",
@@ -165,6 +185,32 @@ export default [
         "inputs": [
             {
                 "internalType": "address",
+                "name": "_guardian",
+                "type": "address",
+            },
+        ],
+        "name": "changeGuardian",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function",
+    },
+    {
+        "inputs": [],
+        "name": "guardian",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address",
+            },
+        ],
+        "stateMutability": "view",
+        "type": "function",
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
                 "name": "_erc20Address",
                 "type": "address",
             },
@@ -197,6 +243,24 @@ export default [
             },
         ],
         "stateMutability": "view",
+        "type": "function",
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address[]",
+                "name": "_tokenContracts",
+                "type": "address[]",
+            },
+            {
+                "internalType": "address",
+                "name": "_safeAddress",
+                "type": "address",
+            },
+        ],
+        "name": "panicHalt",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function",
     },
     {
@@ -463,77 +527,6 @@ export default [
     {
         "inputs": [
             {
-                "internalType": "address[]",
-                "name": "_currentValidators",
-                "type": "address[]",
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "_currentPowers",
-                "type": "uint256[]",
-            },
-            {
-                "internalType": "uint8[]",
-                "name": "_v",
-                "type": "uint8[]",
-            },
-            {
-                "internalType": "bytes32[]",
-                "name": "_r",
-                "type": "bytes32[]",
-            },
-            {
-                "internalType": "bytes32[]",
-                "name": "_s",
-                "type": "bytes32[]",
-            },
-            {
-                "internalType": "bytes32",
-                "name": "_theHash",
-                "type": "bytes32",
-            },
-            {
-                "internalType": "uint256",
-                "name": "_powerThreshold",
-                "type": "uint256",
-            },
-        ],
-        "name": "testCheckValidatorSignatures",
-        "outputs": [],
-        "stateMutability": "pure",
-        "type": "function",
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "_validators",
-                "type": "address[]",
-            },
-            {
-                "internalType": "uint256[]",
-                "name": "_powers",
-                "type": "uint256[]",
-            },
-            {
-                "internalType": "uint256",
-                "name": "_valsetNonce",
-                "type": "uint256",
-            },
-            {
-                "internalType": "bytes32",
-                "name": "_gravityId",
-                "type": "bytes32",
-            },
-        ],
-        "name": "testMakeCheckpoint",
-        "outputs": [],
-        "stateMutability": "pure",
-        "type": "function",
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "bytes32",
                 "name": "_destinationChain",
                 "type": "bytes32",
@@ -652,5 +645,9 @@ export default [
         ],
         "stateMutability": "view",
         "type": "function",
+    },
+    {
+        "stateMutability": "payable",
+        "type": "receive",
     },
 ];
