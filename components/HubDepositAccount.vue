@@ -185,6 +185,7 @@ export default {
                             class="button--ghost-main"
                             ref="ethAccountMetamask"
                             :chain-id="selectedChainId"
+                            :disabled="selectedAccountType && selectedAccountType !== $options.TYPE.METAMASK"
                             @update:address="setEthAddress($event, $options.TYPE.METAMASK)"
                             @update:network="setChainId($event, $options.TYPE.METAMASK)"
                             @error="errorMessage = $event"
