@@ -14,7 +14,7 @@ import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import hubABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, HUB_BSC_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, HUB_BSC_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -28,7 +28,7 @@ const PROMISE_FINISHED = 'finished';
 const PROMISE_REJECTED = 'rejected';
 const PROMISE_PENDING = 'pending';
 
-const TX_WRAP = 'wrap';
+const TX_UNWRAP = 'unwrap';
 const TX_APPROVE = 'approve';
 const TX_TRANSFER = 'transfer';
 
@@ -39,14 +39,13 @@ function coinContract(coinContractAddress) {
 }
 
 const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
-const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
 });
 
 export default {
-    TX_WRAP,
+    TX_UNWRAP,
     TX_APPROVE,
     TX_TRANSFER,
     components: {
@@ -83,6 +82,7 @@ export default {
         return {
             ethAddress: "",
             chainId: 0,
+            //@TODO update on chainId change
             balances: {},
             decimals: {},
             balanceRequest: null,
@@ -95,13 +95,14 @@ export default {
                 address: this.$store.getters.address,
                 isInfiniteUnlock: true,
                 isIgnorePending: true,
+                isUnwrapAll: true,
             },
             // @TODO refactor to composable
             discountEth: 0,
             discountMinter: 0,
             isFormSending: false,
             serverError: '',
-            waitWrapConfirmation: false,
+            waitUnwrapConfirmation: false,
             waitApproveConfirmation: false,
             isConnectionStartedAndModalClosed: false,
         };
@@ -176,14 +177,16 @@ export default {
             return undefined;
         },
         isEthSelected() {
+            //@TODO WBNB
             return (this.coinContractAddress || '').toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
         },
-        isWrappingRequired() {
+        //@TODO allow sending wrapped ERC-20 WETH directly without unwrap if it is enough (more than amount to spend) (extra unlock tx will be needed instead of unwrap tx, but we may save on gas fee: transferToChain should be cheaper than transferETHToChain)
+        isUnwrapRequired() {
             if (!this.isEthSelected) {
                 return false;
             }
 
-            return Number(this.selectedWrapped) === 0 || this.amountToWrap > 0;
+            return this.amountToUnwrap > 0;
         },
         isCoinApproved() {
             const selectedUnlocked = new Big(this.selectedUnlocked);
@@ -191,7 +194,7 @@ export default {
         },
         selectedBalance() {
             if (this.isEthSelected) {
-                return new Big(this.balances[this.form.coin] || 0).plus(this.balances[0] || 0).toString();
+                return new Big(this.selectedWrapped).plus(this.selectedNative).toString();
             } else {
                 return this.balances[this.form.coin] || 0;
             }
@@ -203,8 +206,19 @@ export default {
 
             return 0;
         },
-        amountToWrap() {
-            return new Big(this.amountToSpend).minus(this.selectedWrapped).toString();
+        selectedNative() {
+            if (this.isEthSelected) {
+                return this.balances[0] || 0;
+            }
+
+            return 0;
+        },
+        amountToUnwrap() {
+            const amountToUnwrapMinimum = new Big(this.amountToSpend).minus(this.selectedNative).toString();
+            if (amountToUnwrapMinimum <= 0) {
+                return 0;
+            }
+            return this.form.isUnwrapAll ? this.selectedWrapped : amountToUnwrapMinimum;
         },
         currentBalanceRequest() {
             if (this.balanceRequest?.coin === this.form.coin) {
@@ -243,10 +257,10 @@ export default {
             return this.hubCoinList.map((item) => item.symbol.toUpperCase());
         },
         stage() {
-            if (this.isWrappingRequired) {
-                return TX_WRAP;
+            if (this.isUnwrapRequired) {
+                return TX_UNWRAP;
             }
-            if (!this.isCoinApproved) {
+            if (!this.isEthSelected && !this.isCoinApproved) {
                 return TX_APPROVE;
             }
             return TX_TRANSFER;
@@ -277,11 +291,11 @@ export default {
                 this.getAllowance();
             },
         },
-        isWrappingRequired: {
+        isUnwrapRequired: {
             handler(newVal) {
-                // stop form sending loader after wrapping tx confirmed
-                if (!newVal && this.waitWrapConfirmation) {
-                    this.waitWrapConfirmation = false;
+                // stop form sending loader after unwrap tx confirmed
+                if (!newVal && this.waitUnwrapConfirmation) {
+                    this.waitUnwrapConfirmation = false;
                     this.isFormSending = false;
                 }
             },
@@ -434,8 +448,8 @@ export default {
                 .then(() => {
                     stage = this.stage;
 
-                    if (stage === TX_WRAP) {
-                        return this.wrapEther();
+                    if (stage === TX_UNWRAP) {
+                        return this.unwrapToNativeCoin();
                     }
                     if (stage === TX_APPROVE) {
                         return this.sendApproveTx();
@@ -452,14 +466,15 @@ export default {
                     this.isFormSending = false;
                 });
         },
-        wrapEther() {
+        unwrapToNativeCoin() {
+            const amountToUnwrap = toErcDecimals(this.amountToUnwrap, this.decimals[this.form.coin]);
+            const data = wethContract.methods.withdraw(amountToUnwrap).encodeABI();
             return this.sendEthTx({
                     to: WETH_ETHEREUM_CONTRACT_ADDRESS,
-                    value: this.amountToWrap,
-                    data: wethDepositAbiData,
+                    data,
                 })
                 .then((hash) => {
-                    this.waitWrapConfirmation = true;
+                    this.waitUnwrapConfirmation = true;
 
                     return hash;
                 });
@@ -485,9 +500,29 @@ export default {
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
             const destinationChain = Buffer.from('minter', 'utf-8');
             const hubContract = new web3.eth.Contract(hubABI, this.hubAddress);
-            let data = hubContract.methods.transferToChain(this.coinContractAddress, destinationChain, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin]), 0).encodeABI();
+            let txParams;
+            if (this.isEthSelected) {
+                txParams = {
+                    value: this.amountToSpend,
+                    data: hubContract.methods.transferETHToChain(
+                        destinationChain,
+                        address,
+                        0,
+                    ).encodeABI(),
+                };
+            } else {
+                txParams = {
+                    data: hubContract.methods.transferToChain(
+                        this.coinContractAddress,
+                        destinationChain,
+                        address,
+                        toErcDecimals(this.amountToSpend, this.decimals[this.form.coin]),
+                        0,
+                    ).encodeABI(),
+                };
+            }
 
-            return this.sendEthTx({to: this.hubAddress, data})
+            return this.sendEthTx({to: this.hubAddress, ...txParams})
                 .then((hash) => {
                     this.$v.$reset();
                     // reset form
@@ -596,13 +631,7 @@ export default {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2" v-if="stage === $options.TX_WRAP">
-                        <div class="form-field form-field--dashed">
-                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
-                            <div class="form-field__label">{{ $td('Wrapped ETH balance', 'form.hub-deposit-weth-balance') }}</div>
-                        </div>
-                    </div>
-                    <div class="u-cell" :class="stage === $options.TX_WRAP ? 'u-cell--xlarge--1-4 u-cell--small--1-2' : 'u-cell--xlarge--1-2'">
+                    <div class="u-cell u-cell--xlarge--1-2">
                         <label class="form-check">
                             <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
@@ -610,6 +639,10 @@ export default {
                         <label class="form-check" v-if="stage === $options.TX_APPROVE">
                             <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
+                        </label>
+                        <label class="form-check" v-if="stage === $options.TX_UNWRAP">
+                            <input type="checkbox" class="form-check__input" v-model="form.isUnwrapAll">
+                            <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
                         </label>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-2">
@@ -622,8 +655,8 @@ export default {
                                 <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
                                 <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
                             </span>
-                            <span class="button__content" v-if="stage === $options.TX_WRAP">
-                                Wrap <template v-if="amountToWrap > 0">{{ pretty(amountToWrap) }}</template> ETH
+                            <span class="button__content" v-if="stage === $options.TX_UNWRAP">
+                                Unwrap <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template> ETH
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
@@ -663,6 +696,18 @@ export default {
                                 <template v-else>{{ prettyPrecise(selectedUnlocked) }}</template>
                             </div>
                             <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="stage === $options.TX_UNWRAP">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedNative) }}</div>
+                            <div class="form-field__label">{{ $td('Native ETH balance', 'form.hub-deposit-weth-balance') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="stage === $options.TX_UNWRAP">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
+                            <div class="form-field__label">{{ $td('Wrapped WETH balance', 'form.hub-deposit-native-eth-balance') }}</div>
                         </div>
                     </div>
                 </div>

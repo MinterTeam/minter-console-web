@@ -283,7 +283,7 @@ export function getAddressPendingTransactions(address, chainId) {
 }
 
 /**
- *
+ * @TODO refactor to find by method id https://stackoverflow.com/a/55258775/4936667
  * @param {Object} tx
  * @param {number} chainId
  * @param {Array<HubCoinItem>} [hubCoinList]
@@ -332,6 +332,12 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
         tokenContract = WETH_ETHEREUM_CONTRACT_ADDRESS;
         amount = Utils.fromWei(tx.value);
+    } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 1) {
+        //@TODO WBNB contract address
+        // unwrap
+        type = HUB_DEPOSIT_TX_PURPOSE.UNWRAP;
+        tokenContract = tx.to;
+        amount = skipAmount ? 0 : await getAmountFromInputValue(input, tokenContract, chainId, hubCoinList);
     } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
         // wrap
         type = HUB_DEPOSIT_TX_PURPOSE.WRAP;
@@ -343,16 +349,9 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
         };
     }
 
-    let tokenName = '';
-    if (type === HUB_DEPOSIT_TX_PURPOSE.WRAP) {
-        tokenName = 'ETH';
-    } else {
-        const coinItem = getExternalCoinList(hubCoinList, chainId)
-            .find((item) => item.externalTokenId === tokenContract);
-        if (coinItem) {
-            tokenName = coinItem.denom.toUpperCase();
-        }
-    }
+    const coinItem = getExternalCoinList(hubCoinList, chainId)
+        .find((item) => item.externalTokenId === tokenContract);
+    const tokenName = coinItem?.denom.toUpperCase();
 
     return {
         type,
