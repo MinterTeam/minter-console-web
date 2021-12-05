@@ -82,7 +82,6 @@ export default {
         return {
             ethAddress: "",
             chainId: 0,
-            //@TODO update on chainId change
             balances: {},
             decimals: {},
             balanceRequest: null,
@@ -291,6 +290,19 @@ export default {
                 this.getAllowance();
             },
         },
+        chainId: {
+            handler(newVal) {
+                if (newVal === ETHEREUM_CHAIN_ID || newVal === BSC_CHAIN_ID) {
+                    // @TODO store balances for each chainId
+                    // - then no need to flush them
+                    // - then no need to handle pending balance request for the wrong chain
+                    this.balances = {};
+                    this.allowanceList = {};
+                    this.updateBalance();
+                    this.getAllowance();
+                }
+            },
+        },
         isUnwrapRequired: {
             handler(newVal) {
                 // stop form sending loader after unwrap tx confirmed
@@ -314,7 +326,7 @@ export default {
         timer = setInterval(() => {
             this.updateBalance();
             this.getAllowance();
-        }, 5000);
+        }, 10000);
     },
     destroyed() {
         clearInterval(timer);
