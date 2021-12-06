@@ -160,7 +160,7 @@ export default {
         <div class="panel__section" v-show="!isConnected">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell">
-                    Connect your Ethereum wallet
+                    Connect your wallet
                 </div>
                 <div class="u-cell u-cell--small--1-2 u-cell--large--1-4">
                     <label class="form-field">

@@ -7,7 +7,7 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals, getHubNetworkByChain} from '@/api/web3.js';
 import {getDiscountForHolder} from '@/api/hub.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
@@ -253,7 +253,11 @@ export default {
             return Math.max(this.discountEth, this.discountMinter);
         },
         suggestionList() {
-            return this.hubCoinList.map((item) => item.symbol.toUpperCase());
+            const network = getHubNetworkByChain(this.chainId);
+            return this.hubCoinList
+                // show only available coins for selected network
+                .filter((item) => !!item[network])
+                .map((item) => item.symbol.toUpperCase());
         },
         stage() {
             if (this.isUnwrapRequired) {
