@@ -126,11 +126,11 @@ function getPriceFromList(list, name) {
                                 <span class="u-hidden-small-up">{{ $td('Tokens', 'hub.coin-table-name-mobile') }}</span>
                             </th>
                             <th width="20%">
-                                {{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}
+                                {{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].shortName }}
                                 {{ $td('contract', 'hub.coin-table-contract') }}
                             </th>
                             <th width="20%">
-                                {{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}
+                                {{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].shortName }}
                                 {{ $td('contract', 'hub.coin-table-contract') }}
                             </th>
                             <th width="20%">{{ $td('Price', 'hub.coin-table-price') }}</th>

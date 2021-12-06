@@ -601,14 +601,14 @@ export default {
                     {{ $td('Deposit', 'hub.deposit-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Send coins from other network to Minter', 'hub.deposit-description') }}
+                    {{ $td(`Send coins from ${chainId ? getEvmNetworkName(chainId) : 'other network'} to Minter`, 'hub.deposit-description', {network: getEvmNetworkName(chainId)}) }}
                 </p>
             </div>
 
 
             <form class="panel__section" v-if="isConnected" @submit.prevent="submit">
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                    <div class="u-cell u-cell--xlarge--1-2">
+                    <div class="u-cell u-cell--large--1-2">
                         <FieldQr
                             v-model.trim="form.address"
                             :$value="$v.form.address"
@@ -619,7 +619,7 @@ export default {
                         <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Minter address</span>
                         <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Minter address</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <FieldCoin
                             :readonly="isFormSending"
                             v-model="form.coin"
@@ -635,7 +635,7 @@ export default {
                             {{ getEvmNetworkName(chainId) }}
                         </span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <FieldUseMax
                             :readonly="isFormSending"
                             v-model="form.amount"
@@ -647,7 +647,7 @@ export default {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-2">
+                    <div class="u-cell u-cell--large--1-2">
                         <label class="form-check">
                             <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
@@ -661,7 +661,7 @@ export default {
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
                         </label>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-2">
+                    <div class="u-cell u-cell--large--1-2">
                         <button
                             class="button button--main button--full"
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"

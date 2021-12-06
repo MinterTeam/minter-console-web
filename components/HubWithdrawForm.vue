@@ -324,7 +324,7 @@ export default {
         <!-- Form -->
         <form class="panel__section" @submit.prevent="submitConfirm">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                <div class="u-cell u-cell--xlarge--1-2">
+                <div class="u-cell u-cell--large--1-2">
                     <FieldQr
                         v-model.trim="form.address"
                         :$value="$v.form.address"
@@ -332,11 +332,11 @@ export default {
                         @blur="$v.form.address.$touch()"
                     />
 
-                    <span class="form-field__help" v-if="!$v.form.address.$error">{{ $options.HUB_CHAIN_DATA[form.networkTo].name }} address starting with 0x…</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} address</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} address</span>
+                    <span class="form-field__help" v-if="!$v.form.address.$error">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} address starting with 0x…</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} address</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} address</span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                     <FieldCoin
                         v-model="form.coin"
                         :$value="$v.form.coin"
@@ -348,10 +348,10 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
                         {{ $td('Can\'t be transferred to', 'form.hub-coin-error-supported') }}
-                        {{ $options.HUB_CHAIN_DATA[form.networkTo].name }}
+                        {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }}
                     </span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                     <FieldUseMax
                         v-model="form.amount"
                         :$value="$v.form.amount"
@@ -362,7 +362,7 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2">
+                <div class="u-cell u-cell--large--1-2 u-cell--large-down--order-minus">
                     <label class="form-field">
                         <select class="form-field__input form-field__input--select" v-model="form.networkTo" v-check-empty>
                             <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
@@ -382,7 +382,7 @@ export default {
                     </label>
                     -->
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2">
+                <div class="u-cell u-cell--large--1-2">
                     <button
                         class="button button--main button--full"
                         :class="{'is-disabled': $v.$invalid, 'is-loading': isFormSending}"
@@ -391,7 +391,7 @@ export default {
                         <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
-                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} fee has updated</div>
+                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} fee has updated</div>
                 </div>
             </div>
         </form>
@@ -406,7 +406,7 @@ export default {
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
-                        <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].name }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
+                        <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
@@ -424,7 +424,7 @@ export default {
                         <ul class="list-simple">
                             <li>Withdraw to the wallet you own first (the one you have a seed phrase to);</li>
                             <li>Do not withdraw to an exchange because many do not accept deposits from smart contracts and your tokens will be lost;</li>
-                            <li>Pay attention to {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} and Minter Hub fees;</li>
+                            <li>Pay attention to {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} and Minter Hub fees;</li>
                             <li>
                                 {{ $td('Minter Hub is', 'hub.warning-description-2') }}
                                 <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">{{ $td('open-source', 'hub.warning-description-3') }}</a>.
@@ -437,7 +437,7 @@ export default {
                         <ul class="list-simple">
                             <li>Вывод средств возможен только на ваш персональный адрес;</li>
                             <li>Не допускается вывод средств на смарт-контракты, адреса бирж или адреса, к которым у вас нет прямого доступа;</li>
-                            <li>Всегда обращайте внимание на комиссии в {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} и Minter Hub;</li>
+                            <li>Всегда обращайте внимание на комиссии в {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} и Minter Hub;</li>
                             <li>Minter Hub имеет открытый <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">исходный код</a>, изучите его при необходимости.</li>
                         </ul>
                     </template>
@@ -470,7 +470,7 @@ export default {
                         <div class="u-cell">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
-                                <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].name }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
+                                <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
                             </div>
                         </div>
                         <div class="u-cell">
