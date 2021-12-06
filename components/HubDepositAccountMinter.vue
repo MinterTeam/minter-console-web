@@ -1,7 +1,7 @@
 <script>
-import {ETHEREUM_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
+import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import * as web3 from '@/api/web3.js';
-import {getDepositTxInfo} from '@/api/web3.js';
+import {getDepositTxInfo, getEvmNetworkName} from '@/api/web3.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import Modal from '@/components/common/Modal.vue';
 
@@ -9,10 +9,15 @@ let activeConfirmation;
 
 export default {
     HUB_DEPOSIT_TX_PURPOSE,
+    HUB_CHAIN_DATA,
     components: {
         Modal,
     },
     props: {
+        chainId: {
+            type: Number,
+            required: true,
+        },
         /**
          * @type Array<HubCoinItem>
          */
@@ -43,19 +48,37 @@ export default {
         isConnected() {
             return !!this.ethAddress;
         },
-        ethGasPriceGwei() {
-            const priceItem = this.priceList.find((item) => item.name === 'eth/gas');
+        selectedHubNetwork() {
+            if (this.chainId === ETHEREUM_CHAIN_ID) {
+                return HUB_CHAIN_ID.ETHEREUM;
+            }
+            if (this.chainId === BSC_CHAIN_ID) {
+                return HUB_CHAIN_ID.BSC;
+            }
+            return undefined;
+        },
+        gasPriceGwei() {
+            const priceItem = this.priceList.find((item) => item.name === `${this.selectedHubNetwork}/gas`);
             let gasPriceGwei;
             if (!priceItem) {
                 gasPriceGwei = 100;
             } else {
-                gasPriceGwei = priceItem.value / 10;
+                gasPriceGwei = priceItem.value / 10 ** 18;
             }
 
-            return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
+            return gasPriceGwei;
+            // return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
         },
         isInfiniteUnlock() {
             return this.confirmData.info?.type === HUB_DEPOSIT_TX_PURPOSE.UNLOCK && this.confirmData.info?.amount > 10 ** 18;
+        },
+    },
+    watch: {
+        chainId: {
+            handler() {
+                // emit passed chainId back to be consistent with other Accounts
+                this.$emit('update:network', this.chainId);
+            },
         },
     },
     mounted() {
@@ -67,8 +90,10 @@ export default {
     methods: {
         pretty,
         prettyExact,
+        getEvmNetworkName,
         connectEth() {
             this.setEthAddress(this.$store.getters.address.replace('Mx', '0x'));
+            this.$emit('update:network', this.chainId);
         },
         disconnectEth() {
             this.cancelConfirmation();
@@ -80,10 +105,10 @@ export default {
         },
         async sendTransaction(txParams) {
             let nonce = txParams.nonce;
-            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, "pending");
+            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, 'latest');
             let gasLimit = await this.estimateTxGas(txParams);
             gasLimit = Math.ceil(gasLimit * 1.5);
-            const gasPriceGwei = (this.ethGasPriceGwei || 1).toString();
+            const gasPriceGwei = (this.gasPriceGwei || 1).toString();
             const txParamsFinal = {
                 to: txParams.to,
                 value: txParams.value || "0x00",
@@ -91,11 +116,11 @@ export default {
                 nonce,
                 gasPrice: web3.utils.toWei(gasPriceGwei, 'gwei'),
                 gas: gasLimit,
-                chainId: ETHEREUM_CHAIN_ID,
+                chainId: this.chainId,
             };
 
-            await this.showConfirmation(txParamsFinal);
-            console.log('send', txParamsFinal);
+            await this.showConfirmation(txParamsFinal, this.chainId);
+            console.log('send', JSON.parse(JSON.stringify(txParamsFinal)));
             const { rawTransaction } = await web3.eth.accounts.signTransaction(txParamsFinal, this.$store.getters.privateKey);
 
             return new Promise((resolve, reject) => {
@@ -113,14 +138,15 @@ export default {
                 data,
             };
 
+            //@TODO
             return web3.eth.estimateGas(txParams);
         },
-        async showConfirmation(txParams) {
+        async showConfirmation(txParams, chainId) {
             // cancel previous active confirmation, if exists
             this.cancelConfirmation();
 
             this.confirmData.tx = txParams;
-            this.confirmData.info = await getDepositTxInfo({...txParams, input: txParams.data}, this.hubCoinList);
+            this.confirmData.info = await getDepositTxInfo({...txParams, input: txParams.data}, chainId, this.hubCoinList);
             this.confirmData.computed = {
                 gasPriceGwei: web3.utils.fromWei(txParams.gasPrice, 'gwei'),
                 fee: txParams.gas * web3.utils.fromWei(txParams.gasPrice),
@@ -169,6 +195,14 @@ export default {
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
+                                    {{ getEvmNetworkName(chainId) }}
+                                </div>
+                                <span class="form-field__label">From network</span>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">
                                     {{ ethAddress }}
                                 </div>
                                 <span class="form-field__label">From your address</span>
@@ -177,7 +211,7 @@ export default {
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
-                                    <template v-if="confirmData.info.type === $options.HUB_DEPOSIT_TX_PURPOSE.SEND">Send to bridge</template>
+                                    <template v-if="confirmData.info.type === $options.HUB_DEPOSIT_TX_PURPOSE.SEND">Transfer to Minter</template>
                                     <template v-else>{{ confirmData.info.type }}</template>
                                 </div>
                                 <span class="form-field__label">Method</span>
@@ -216,7 +250,8 @@ export default {
                             <div class="u-cell">
                                 <div class="form-field form-field--dashed">
                                     <div class="form-field__input is-not-empty">
-                                        {{ pretty(confirmData.computed.fee) }} ETH
+                                        {{ pretty(confirmData.computed.fee) }}
+                                        {{ $options.HUB_CHAIN_DATA[selectedHubNetwork].coinSymbol }}
                                     </div>
                                     <span class="form-field__label">Fee</span>
                                 </div>
@@ -226,8 +261,9 @@ export default {
                         <!--                    <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> Transaction requires high fee.</div>-->
                     </div>
                     <div class="panel__section">
-                        <button class="button button--main button--full" type="button" data-focus-on-open
-                                @click="acceptConfirmation()"
+                        <button
+                            class="button button--main button--full" type="button" data-focus-on-open
+                            @click="acceptConfirmation()"
                         >
                             <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                         </button>

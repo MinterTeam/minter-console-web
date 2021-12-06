@@ -21,8 +21,8 @@ export default {
     fetch() {
         return Promise.all([getOracleCoinList(), getOraclePriceList()])
             .then(([coinList, priceList]) => {
-                this.coinList = coinList;
-                this.priceList = priceList;
+                this.coinList = Object.freeze(coinList);
+                this.priceList = Object.freeze(priceList);
             });
     },
     head() {
@@ -72,9 +72,9 @@ export default {
 
 <template>
     <section class="u-section u-container">
-        <HubCoinList :coin-list="coinList" :price-list="priceList" :is-loading="$fetchState.pending"/>
+        <HubDepositForm :hub-coin-list="coinList" :price-list="priceList"/>
         <HubWithdrawForm :hub-coin-list="coinList" :price-list="priceList"/>
         <HubWithdrawTxList/>
-        <HubDepositForm :hub-coin-list="coinList" :price-list="priceList"/>
+        <HubCoinList :coin-list="coinList" :price-list="priceList" :is-loading="$fetchState.pending"/>
     </section>
 </template>

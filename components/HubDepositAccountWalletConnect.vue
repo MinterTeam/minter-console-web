@@ -1,32 +1,58 @@
 <script>
 import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
-
-let connector;
+import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID} from '~/assets/variables.js';
+import {getEvmNetworkName as getNetworkName} from '~/api/web3.js';
+import {STORAGE_KEY} from './HubDepositAccount.vue';
 
 export default {
+    ETHEREUM_CHAIN_ID,
+    BSC_CHAIN_ID,
+    props: {
+        // chainId is needed for trustwallet's walletconnect
+        chainId: {
+            type: Number,
+            required: true,
+        },
+    },
     data() {
         return {
             ethAddress: "",
             isConnectionStartedAndModalClosed: false,
         };
     },
-    computed: {
-        isConnected() {
-            return !!this.ethAddress;
+    // computed: {
+    //     isConnected() {
+    //         return !!this.ethAddress;
+    //     },
+    // },
+    watch: {
+        chainId: {
+            handler() {
+                if (this.connector.connected && this.connector.chainId !== this.chainId) {
+                    connector.killSession().then(() => {
+                        this.connectEth();
+                    });
+                }
+            },
         },
+    },
+    created() {
+        // not in data to skip reactivity
+        this.connector = null;
     },
     mounted() {
         this.initConnector();
 
         // Check if connection is already established
-        if (connector.connected && window.localStorage.getItem('hub-deposit-connected-account') === 'walletconnect') {
-            this.setEthAddress(connector.accounts[0]);
+        if (this.connector.connected && window.localStorage.getItem(STORAGE_KEY) === 'walletconnect') {
+            this.setEthAddress(this.connector.accounts[0]);
+            this.$emit('update:network', this.connector.chainId);
         }
     },
     methods: {
         connectEth() {
-            if (!connector) {
+            if (!this.connector) {
                 this.initConnector();
             }
 
@@ -34,36 +60,38 @@ export default {
             //     await connector.killSession()
             // }
 
-            if (connector.connected) {
-                this.setEthAddress(connector.accounts[0]);
+            if (this.connector.connected) {
+                this.setEthAddress(this.connector.accounts[0]);
+                this.$emit('update:network', this.connector.chainId);
             } else {
                 // create new session
-                connector.createSession();
+                this.connector.createSession({
+                    chainId: this.chainId,
+                });
             }
 
             // workaround to fix modal not opening after manual close
-            if (this.isConnectionStartedAndModalClosed && connector.uri) {
-                QRCodeModal.open(connector.uri, () => {
-                });
+            if (this.isConnectionStartedAndModalClosed && this.connector.uri) {
+                QRCodeModal.open(this.connector.uri, () => {});
             }
         },
         disconnectEth() {
-            connector.killSession();
+            this.connector.killSession();
         },
         initConnector() {
             // Create a connector
-            connector = new WalletConnect({
+            this.connector = new WalletConnect({
                 bridge: "https://bridge.walletconnect.org", // Required
                 qrcodeModal: QRCodeModal,
             });
-            // window.connector = connector
+            // window.connector = this.connector;
             // console.log('init', {connector});
 
             // Subscribe to connection events
-            connector.on("connect", this.handleEvent);
-            connector.on("session_update", this.handleEvent);
-            connector.on("disconnect", this.handleEvent);
-            connector.on('modal_closed', () => {
+            this.connector.on("connect", this.handleEvent);
+            this.connector.on("session_update", this.handleEvent);
+            this.connector.on("disconnect", this.handleEvent);
+            this.connector.on('modal_closed', () => {
                 this.isConnectionStartedAndModalClosed = true;
             });
         },
@@ -74,12 +102,24 @@ export default {
 
             // Get provided accounts and chainId
             const { accounts, chainId } = payload.params[0];
-            // console.log(payload.event, payload.params, accounts, chainId);
+            console.log(payload.event, payload.params, accounts, chainId, this.chainId);
             if (accounts) {
+                if (this.chainId && this.chainId !== chainId) {
+                    // this.connector.killSession();
+                    this.$emit('error', `Invalid network selected. Expected ${getNetworkName(this.chainId)}, but your wallet is on ${getNetworkName(chainId)}.`);
+                    // this.setEthAddress('');
+                    // connector = null;
+                    // return;
+                }
+
                 this.setEthAddress(accounts[0]);
             } else {
                 this.setEthAddress('');
-                connector = null;
+                // this.connector = null;
+            }
+            if (chainId) {
+                // walletconnect handle chainId badly (session_update not fired on chain update)
+                this.$emit('update:network', chainId);
             }
         },
         setEthAddress(ethAddress) {
@@ -87,7 +127,20 @@ export default {
             this.$emit('update:address', ethAddress);
         },
         sendTransaction(txParams) {
-            return connector.sendTransaction(txParams);
+            console.log('send transaction walletconnect', {
+                ...txParams,
+                // - chainId is needed for trustwallet
+                // - if txParams.chainId is different from metamask selected network, sending will hang
+                // - chainId is needed to prevent sending tx from wrong network in metamask
+                chainId: this.connector.chainId,
+            });
+            return this.connector.sendTransaction({
+                ...txParams,
+                // - chainId is needed for trustwallet
+                // - if txParams.chainId is different from metamask selected network, sending will hang
+                // - chainId is needed to prevent sending tx from wrong network in metamask
+                chainId: this.connector.chainId,
+            });
         },
     },
 };
@@ -95,10 +148,7 @@ export default {
 
 <template>
     <button class="button" @click="connectEth">
-        <img class="button__icon" alt="" role="presentation"
-             :src="`${BASE_URL_PREFIX}/img/icon-walletconnect.png`"
-             :srcset="`${BASE_URL_PREFIX}/img/icon-walletconnect@2x.png 2x`"
-        >
+        <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-walletconnect.svg`">
         <span>WalletConnect</span>
     </button>
 </template>

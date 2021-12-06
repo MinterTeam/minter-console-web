@@ -8,9 +8,9 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getOracleEthFee} from '@/api/hub.js';
+import {getOracleFee, getDiscountForHolder} from '@/api/hub.js';
 import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
-import {HUB_MINTER_MULTISIG_ADDRESS} from '~/assets/variables.js';
+import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import FieldQr from '@/components/common/FieldQr.vue';
@@ -28,6 +28,8 @@ let interval;
 export default {
     SPEED_MIN,
     SPEED_FAST,
+    HUB_CHAIN_ID,
+    HUB_CHAIN_DATA,
     components: {
         FieldQr,
         FieldUseMax,
@@ -57,11 +59,13 @@ export default {
         },
     },
     fetch() {
-        return this.getEthFee();
+        getDiscountForHolder(this.$store.getters.address)
+            .then((discount) => this.discountMinter = discount);
+        return this.getDestinationFee();
     },
     data() {
         return {
-            ethFee: {
+            destinationFee: {
                 min: 0,
                 fast: 0,
             },
@@ -70,6 +74,7 @@ export default {
                 amount: "",
                 address: "",
                 speed: SPEED_FAST,
+                networkTo: HUB_CHAIN_ID.ETHEREUM,
             },
             isFormSending: false,
             serverSuccess: null,
@@ -77,6 +82,9 @@ export default {
             serverWarning: '',
             isConfirmModalVisible: false,
             isSuccessModalVisible: false,
+            // @TODO refactor to composable
+            discountEth: 0,
+            discountMinter: 0,
         };
     },
     computed: {
@@ -84,22 +92,26 @@ export default {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             return coinItem ? coinItem.minterId : undefined;
         },
-        hubFeeRate() {
+        externalToken() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem?.customCommission || 0.01;
+            return coinItem?.[this.form.networkTo];
+        },
+        hubFeeRate() {
+            const discountModifier = 1 - this.discount;
+            return new Big(this.externalToken?.commission || 0.01).times(discountModifier).toString();
         },
         coinPrice() {
-            const priceItem = this.priceList.find((item) => item.name === 'minter/' + this.coinId);
-            return priceItem ? priceItem.value : '0';
+            const priceItem = this.priceList.find((item) => item.name === this.externalToken?.denom);
+            return priceItem ? priceItem.value / 10 ** 18 : '0';
         },
-        // fee to ethereum network calculated in COIN
+        // fee for destination network calculated in COIN
         coinFee() {
             if (this.coinPrice === '0') {
                 return 0;
             }
-            const ethFee = this.form.speed === SPEED_MIN ? this.ethFee.min : this.ethFee.fast;
+            const destinationFee = this.form.speed === SPEED_MIN ? this.destinationFee.min : this.destinationFee.fast;
 
-            return new Big(ethFee).div(this.coinPrice).toString();
+            return new Big(destinationFee).div(this.coinPrice).toString();
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
@@ -120,7 +132,7 @@ export default {
             });
             // coin not selected
             if (!selectedCoin) {
-                return undefined;
+                return 0;
             }
 
             const maxHubFee = new Big(selectedCoin.amount).times(this.hubFeeRate);
@@ -131,11 +143,17 @@ export default {
                 return maxAmount.toString();
             }
         },
-        // intersection of address balance and hub supported coins
+        discount() {
+            return Math.max(this.discountEth, this.discountMinter);
+        },
         suggestionList() {
+            return this.hubCoinList.map((item) => item.symbol);
+            // intersection of address balance and hub supported coins
+            /*
             return this.$store.getters.balance.filter((balanceItem) => {
                 return this.hubCoinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
             });
+            */
         },
     },
     validations() {
@@ -150,7 +168,7 @@ export default {
                 coin: {
                     required,
                     minLength: minLength(3),
-                    supported: () => !!this.coinId,
+                    supported: () => !!this.externalToken,
                 },
                 amount: {
                     required,
@@ -161,9 +179,25 @@ export default {
             },
         };
     },
+    watch: {
+        'form.networkTo': {
+            handler() {
+                // fetch fee for updated network
+                this.destinationFee = {min: 0, fast: 0};
+                this.getDestinationFee();
+            },
+        },
+        'form.address': {
+            handler(newVal) {
+                //@TODO debounce
+                getDiscountForHolder(newVal)
+                    .then((discount) => this.discountEth = discount);
+            },
+        },
+    },
     mounted() {
         interval = setInterval(() => {
-            this.getEthFee();
+            this.getDestinationFee();
         }, 30 * 1000);
     },
     destroyed() {
@@ -174,14 +208,17 @@ export default {
         prettyPrecise,
         prettyRound,
         getExplorerTxUrl,
-        getEthFee({checkWarning} = {}) {
-            return getOracleEthFee()
-                .then((ethFee) => {
-                    if (checkWarning && new Big(ethFee.fast).gt(this.ethFee.fast)) {
+        getDestinationFee({checkWarning} = {}) {
+            if (!this.form.networkTo) {
+                return 0;
+            }
+            return getOracleFee(this.form.networkTo)
+                .then((fee) => {
+                    if (checkWarning && new Big(fee.fast).gt(this.destinationFee.fast)) {
                         // don't send form, show warning to user so he has to press Submit again
                         this.serverWarning = true;
                     }
-                    this.ethFee = ethFee;
+                    this.destinationFee = fee;
                 });
         },
         submitConfirm() {
@@ -198,7 +235,7 @@ export default {
             this.serverSuccess = null;
             this.isFormSending = true;
 
-            return this.getEthFee({checkWarning: true})
+            return this.getDestinationFee({checkWarning: true})
                 .then(() => {
                     this.isFormSending = false;
                     if (!this.serverWarning) {
@@ -226,7 +263,7 @@ export default {
             this.serverSuccess = null;
             this.isFormSending = true;
 
-            await this.getEthFee({checkWarning: true});
+            await this.getDestinationFee({checkWarning: true});
 
             if (this.serverWarning) {
                 this.isFormSending = false;
@@ -242,8 +279,8 @@ export default {
                 },
                 payload: JSON.stringify({
                     recipient: this.form.address,
-                    type: 'send_to_eth',
-                    // fee to ethereum network
+                    type: 'send_to_' + this.form.networkTo,
+                    // fee for destination network
                     fee: convertToPip(this.coinFee),
                 }),
             };
@@ -280,7 +317,7 @@ export default {
                 {{ $td('Withdraw', 'hub.withdraw-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Send coins from Minter to Ethereum', 'hub.withdraw-description') }}
+                {{ $td('Send coins from Minter to another network', 'hub.withdraw-description') }}
             </p>
         </div>
 
@@ -295,9 +332,9 @@ export default {
                         @blur="$v.form.address.$touch()"
                     />
 
-                    <span class="form-field__help" v-if="!$v.form.address.$error">Ethereum address starting with 0x…</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Ethereum address</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Ethereum address</span>
+                    <span class="form-field__help" v-if="!$v.form.address.$error">{{ $options.HUB_CHAIN_DATA[form.networkTo].name }} address starting with 0x…</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} address</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} address</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <FieldCoin
@@ -309,7 +346,10 @@ export default {
                     />
                     <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by Hub bridge', 'form.hub-coin-error-supported') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
+                        {{ $td('Can\'t be transferred to', 'form.hub-coin-error-supported') }}
+                        {{ $options.HUB_CHAIN_DATA[form.networkTo].name }}
+                    </span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                     <FieldUseMax
@@ -323,6 +363,13 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell u-cell--xlarge--1-2 u-hidden-xlarge-down">
+                    <label class="form-field">
+                        <select class="form-field__input form-field__input--select" v-model="form.networkTo" v-check-empty>
+                            <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
+                            <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
+                        </select>
+                        <span class="form-field__label">Destination network</span>
+                    </label>
                     <!--
                     <div class="form-check-label">Tx speed</div>
                     <label class="form-check">
@@ -344,7 +391,7 @@ export default {
                         <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
-                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> Ethereum fee has updated</div>
+                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} fee has updated</div>
                 </div>
             </div>
         </form>
@@ -359,7 +406,7 @@ export default {
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
-                        <span class="form-field__label">{{ $td('Ethereum fee', 'form.hub-withdraw-eth-fee') }}</span>
+                        <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].name }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
@@ -367,7 +414,7 @@ export default {
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">
                             {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                            ({{ prettyRound(hubFeeRate * 100) }}%)
+                            ({{ hubFeeRate * 100 }}%)
                         </span>
                     </div>
                 </div>
@@ -377,7 +424,7 @@ export default {
                         <ul class="list-simple">
                             <li>Withdraw to the wallet you own first (the one you have a seed phrase to);</li>
                             <li>Do not withdraw to an exchange because many do not accept deposits from smart contracts and your tokens will be lost;</li>
-                            <li>Pay attention to Ethereum and Minter Hub fees;</li>
+                            <li>Pay attention to {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} and Minter Hub fees;</li>
                             <li>
                                 {{ $td('Minter Hub is', 'hub.warning-description-2') }}
                                 <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">{{ $td('open-source', 'hub.warning-description-3') }}</a>.
@@ -390,7 +437,7 @@ export default {
                         <ul class="list-simple">
                             <li>Вывод средств возможен только на ваш персональный адрес;</li>
                             <li>Не допускается вывод средств на смарт-контракты, адреса бирж или адреса, к которым у вас нет прямого доступа;</li>
-                            <li>Всегда обращайте внимание на комиссии Ethereum и Minter Hub;</li>
+                            <li>Всегда обращайте внимание на комиссии в {{ $options.HUB_CHAIN_DATA[form.networkTo].name }} и Minter Hub;</li>
                             <li>Minter Hub имеет открытый <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">исходный код</a>, изучите его при необходимости.</li>
                         </ul>
                     </template>
@@ -423,7 +470,7 @@ export default {
                         <div class="u-cell">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
-                                <span class="form-field__label">{{ $td('Ethereum fee', 'form.hub-withdraw-eth-fee') }}</span>
+                                <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].name }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
                             </div>
                         </div>
                         <div class="u-cell">

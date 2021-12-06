@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-util/src/tx-types.js';
-import {EXPLORER_HOST, ETHERSCAN_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
+import {EXPLORER_HOST, ETHERSCAN_HOST, BSCSCAN_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
 
 
 
@@ -128,12 +128,20 @@ export function getExplorerCoinUrl(coin) {
     return EXPLORER_HOST + `/coins/${coin}`;
 }
 
-export function getEtherscanTxUrl(hash) {
+export function getEthereumTxUrl(hash) {
     return ETHERSCAN_HOST + '/tx/' + hash;
+}
+
+export function getBscTxUrl(hash) {
+    return BSCSCAN_HOST + '/tx/' + hash;
 }
 
 export function getEtherscanAddressUrl(hash) {
     return ETHERSCAN_HOST + '/address/' + hash;
+}
+
+export function getBscAddressUrl(hash) {
+    return BSCSCAN_HOST + '/address/' + hash;
 }
 
 /**
@@ -249,11 +257,6 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
 
-/**
- * @deprecated
- * @type {function(string, number=, number=): string}
- */
-export const shortFilter = shortHashFilter;
 
 /**
  * @param {number} value

@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
@@ -60,6 +60,7 @@
     "json5": "^2.2.0",
     "lodash-es": "^4.17.21",
     "minter-coin-block-list": "0.0.7",
+    "minter-js-hub": "0.0.6",
     "minter-js-sdk": "^0.39.0",
     "minterjs-tx": "^11.0.0",
     "minterjs-util": "^0.22.0",
@@ -80,11 +81,11 @@
     "vue-autonumeric": "github:shrpne/vue-autonumeric#allow-use-source",
     "vue-imask": "6.1.0",
     "vue-inline-svg": "^2.1.0",
+    "vue-now": "^0.1.1",
     "vue-simple-suggest": "^1.11.2",
     "vuelidate": "^0.7.6",
     "vuex-persistedstate": "^3.2.1",
     "web3-core": "^1.6.1",
-    "web3-core-requestmanager": "^1.6.1",
     "web3-eth": "^1.6.1",
     "web3-utils": "^1.6.1"
   },

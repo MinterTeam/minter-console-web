@@ -1,10 +1,17 @@
+import MinterHub from 'minter-js-hub';
+import {TxStatusType} from 'minter-js-hub/gen/mhub2/v1/mhub2_pb.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
+import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
+import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
 import {getCoinList} from '@/api/explorer.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS} from "~/assets/variables";
+import Big from '~/assets/big.js';
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
+
+const minterHub = new MinterHub(HUB_API_URL);
 
 const instance = axios.create({
     baseURL: HUB_API_URL,
@@ -13,10 +20,27 @@ const instance = axios.create({
 addToCamelInterceptor(instance);
 
 /**
- *
+ * @param {HUB_CHAIN_ID} network
  * @return {Promise<{min: string, fast: string}>}
  */
-export function getOracleEthFee() {
+export function getOracleFee(network) {
+    let promise;
+    if (network === HUB_CHAIN_ID.ETHEREUM) {
+        promise = minterHub.getOracleEthFee();
+    }
+    if (network === HUB_CHAIN_ID.BSC) {
+        promise = minterHub.getOracleBscFee();
+    }
+    if (promise) {
+        return promise.then((result) => {
+            result.min = new Big(result.min).div(10 ** 18).toString();
+            result.fast =new Big(result.fast).div(10 ** 18).toString();
+            return result;
+        });
+    } else {
+        return Promise.reject(new Error('Network not specified'));
+    }
+    // eslint-disable-next-line no-unreachable
     return instance.get('oracle/eth_fee')
         .then((response) => {
             return response.data.result;
@@ -43,9 +67,33 @@ export function getOracleCoinList() {
 const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
 
 /**
+ * #@return {Promise<TokenInfo.AsObject[]>}
  * @return {Promise<Array<HubCoinItem>>}
  */
 export function _getOracleCoinList() {
+    return minterHub.getTokenList()
+        .then((tokenList) => {
+            tokenList = tokenList.map((item) => {
+                item.commission = new Big(item.commission).div(10 ** 18).toString();
+                return item;
+            });
+            const minterTokenList = tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.MINTER);
+
+            return minterTokenList
+                .map((minterToken) => {
+                    function findToken(denom, chainId) {
+                        return tokenList.find((item) => item.denom === denom && item.chainId === chainId);
+                    }
+
+                    return {
+                        minterId: minterToken.externalTokenId,
+                        ...minterToken,
+                        ethereum: findToken(minterToken.denom, HUB_CHAIN_ID.ETHEREUM),
+                        bsc: findToken(minterToken.denom, HUB_CHAIN_ID.BSC),
+                    };
+                });
+        });
+    // eslint-disable-next-line no-unreachable
     return instance.get('oracle/coins', {
             cache: coinsCache,
         })
@@ -57,9 +105,11 @@ export function _getOracleCoinList() {
 const priceCache = new Cache({maxAge: 10 * 1000});
 
 /**
- * @return {Promise<Array<{name: string, value: string}>>}
+ * @return {Promise<Array<HubPriceItem>>}
  */
 export function getOraclePriceList() {
+    return minterHub.getOraclePriceList();
+    // eslint-disable-next-line no-unreachable
     return instance.get('oracle/prices', {
             cache: priceCache,
         })
@@ -69,11 +119,39 @@ export function getOraclePriceList() {
 }
 
 /**
+ * @param {string} address
+ * @return {Promise<number|string>}
+ */
+export function getDiscountForHolder(address) {
+    if (!isValidMinterAddress(address) && !isValidEthAddress(address)) {
+        return Promise.resolve(0);
+    }
+    address = address.replace(/^Mx/, '').replace(/^0x/, '');
+    return minterHub.getDiscountForHolder(address)
+        .then((discount) => {
+            return new Big(discount).div(10 ** 18).toString();
+        });
+}
+
+/**
  *
  * @param {string} hash
  * @return {Promise<HubTransfer>}
  */
 export function getMinterTxStatus(hash) {
+    return minterHub.getTxStatus(hash)
+        .then((statusData) => {
+            // cast {string: number} obj to {number: string} array-like obj
+            const hubStatusTypes = Object.fromEntries(
+                Object.entries(TxStatusType)
+                    .map((entry) => [entry[1], entry[0]]),
+            );
+
+            // get string representation from number, e.g. replace 0 with 'TX_STATUS_NOT_FOUND'
+            statusData.status = hubStatusTypes[statusData.status];
+            return statusData;
+        });
+    // eslint-disable-next-line no-unreachable
     return instance.get(`minter/tx_status/${hash}`)
         .then((response) => {
             return response.data.result;
@@ -165,6 +243,22 @@ export function subscribeTransfer(hash, timestamp) {
     }
 }
 
+/**
+ * @param {Array<HubPriceItem>} priceList
+ * @return {number}
+ */
+export function getGasPriceGwei(priceList) {
+    const priceItem = priceList.find((item) => item.name === 'eth/gas');
+    let gasPriceGwei;
+    if (!priceItem) {
+        gasPriceGwei = 100;
+    } else {
+        gasPriceGwei = priceItem.value / 10 ** 18;
+    }
+
+    return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
+}
+
 function wait(time) {
     return new Promise((resolve) => {
         setTimeout(resolve, time);
@@ -172,13 +266,18 @@ function wait(time) {
 }
 
 /**
- * @typedef {object} HubCoinItem
+ * @typedef {object} HubCoinItemMinterExtra
  * @property {string} symbol - minter symbol
- * @property {string} denom - eth symbol
- * @property {string} ethAddr
  * @property {string} minterId
- * @property {string} ethDecimals
- * @property {string|number} customCommission
+ */
+/**
+ * @typedef {TokenInfo.AsObject & HubCoinItemMinterExtra & {ethereum: TokenInfo.AsObject, bsc: TokenInfo.AsObject}} HubCoinItem
+ */
+
+/**
+ * @typedef {object} HubPriceItem
+ * @property {string} name
+ * @property {number|string} value
  */
 
 /**

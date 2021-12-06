@@ -1,17 +1,22 @@
 <script>
+import {VueNowMixinFactory} from 'vue-now';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {getExplorerTxUrl, getEtherscanTxUrl, getTimeDistance, getTimeStamp as getTime, shortFilter, pretty, isHubTransferFinished} from '~/assets/utils.js';
-import {HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
+import {getExplorerTxUrl, getEthereumTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished, getBscTxUrl} from '~/assets/utils.js';
+import {HUB_CHAIN_ID, HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
 import Loader from '@/components/common/Loader.vue';
 
 
 
 export default {
     WITHDRAW_STATUS,
+    HUB_CHAIN_DATA,
     components: {
         Loader,
     },
+    mixins: [
+        VueNowMixinFactory(5000),
+    ],
     fetch() {
         this.$store.dispatch('hub/loadWithdrawList');
     },
@@ -75,11 +80,18 @@ export default {
         getTime,
         getTimeDistance,
         getExplorerTxUrl,
-        getEtherscanTxUrl,
         convertFromPip,
         pretty,
-        formatHash: (value) => shortFilter(value || '', 13),
+        formatHash: (value) => shortHashFilter(value || '', 13),
         isHubTransferFinished,
+        getDestinationUrl(withdraw) {
+            if (withdraw.destination === HUB_CHAIN_ID.ETHEREUM) {
+                return getEthereumTxUrl(withdraw.outTxHash);
+            }
+            if (withdraw.destination === HUB_CHAIN_ID.BSC) {
+                return getBscTxUrl(withdraw.outTxHash);
+            }
+        },
     },
 };
 </script>
@@ -92,19 +104,25 @@ export default {
                 <div>
                     <a class="link--main" :href="getExplorerTxUrl(withdraw.tx.hash)" target="_blank">{{ formatHash(withdraw.tx.hash) }}</a>
                 </div>
-                <div class="u-fw-700">{{ pretty(withdraw.amount) }} {{ withdraw.tx.data.coin.symbol }}</div>
+                <div class="u-fw-700">
+                    {{ pretty(withdraw.amount) }} {{ withdraw.tx.data.coin.symbol }}
+                </div>
             </div>
 
             <div class="hub__preview-transaction-row hub__preview-transaction-meta">
-                <div>{{ getTimeDistance(withdraw.timestamp || 0) }} ago ({{ getTime(withdraw.timestamp || 0) }})</div>
+                <div>
+                    {{ getTimeDistance(withdraw.timestamp || 0, undefined, $now) }} ago ({{ getTime(withdraw.timestamp || 0) }})
+                    to {{ $options.HUB_CHAIN_DATA[withdraw.destination].name }}
+                </div>
                 <div>
                     <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">Bridge collecting batch to Ethereum</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to Ethereum, waiting confirmation</template>
+                    <!--  @TODO combine deposit_to_hub_received & batch_created into "Bridge received tx and wait gas conditions to proceed" -->
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">Bridge collecting batch</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to {{ $options.HUB_CHAIN_DATA[withdraw.destination].name }}, waiting confirmation</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_executed">
                         Success
-                        <a class="link--main" :href="getEtherscanTxUrl(withdraw.ethTxHash)" target="_blank">{{ formatHash(withdraw.ethTxHash) }}</a>
+                        <a class="link--main" :href="getDestinationUrl(withdraw)" target="_blank">{{ formatHash(withdraw.outTxHash) }}</a>
                     </template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.refund">Refunded</template>
 

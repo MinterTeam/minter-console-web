@@ -1,9 +1,10 @@
 <script>
-import {subscribeTransaction, getDepositTxInfo, getBlockNumber, CONFIRMATION_COUNT} from '@/api/web3.js';
+import {subscribeTransaction, getDepositTxInfo, getBlockNumber, getEvmNetworkName, getExternalCoinList, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {shortHashFilter, getTimeDistance, getTimeStamp as getTime, getEthereumTxUrl, getBscTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import eventBus from '~/assets/event-bus.js';
 import Loader from '@/components/common/Loader.vue';
-import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE} from '~/assets/variables.js';
+import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE, HUB_CHAIN_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID} from '~/assets/variables.js';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -24,14 +25,13 @@ export default {
         Loader,
     },
     props: {
-        hash: {
-            type: String,
+        /** @type {HubDeposit} */
+        tx: {
+            type: Object,
             required: true,
         },
-        /**
-         * @type Array<HubCoinItem>
-         */
-        coinList: {
+        /** @type {Array<HubCoinItem>} */
+        hubCoinList: {
             type: Array,
             default: () => [],
         },
@@ -42,11 +42,13 @@ export default {
         // prefetch block number
         getBlockNumber();
 
-        this.txWatcher = subscribeTransaction(this.hash)
+        this.txWatcher = subscribeTransaction(this.tx.hash, {chainId: Number(this.tx.chainId)})
             .once('tx', (tx) => {
-                this.tx = tx;
+                // tx in block or pending
+                this.$store.commit('hub/saveDeposit', tx);
 
-                this.tokenInfoPromise =  getDepositTxInfo(tx, this.coinList)
+                //@TODO store tokenInfo in tx
+                this.tokenInfoPromise = getDepositTxInfo(tx, Number(this.tx.chainId), this.hubCoinList)
                     .then((tokenInfo) => {
                         this.tokenInfo = tokenInfo;
                         this.isLoading = false;
@@ -57,11 +59,11 @@ export default {
             })
             .once('confirmation', (tx) => {
                 // first confirmation
-                this.tx = tx;
+                this.$store.commit('hub/saveDeposit', tx);
             })
             .then((tx) => {
                 // enough confirmations
-                this.tx = tx;
+                this.$store.commit('hub/saveDeposit', tx);
 
                 return tx;
             })
@@ -71,6 +73,9 @@ export default {
                 }
             });
 
+        //@TODO this.tokenInfoPromise may be null
+        //@TODO rework to Promise.all([txWatcher, txInfoPromise])
+        //@TODO store transfer in tx
         // subscribe on transfer for send txs
         this.txWatcher.then((tx) => {
             this.tokenInfoPromise
@@ -92,7 +97,6 @@ export default {
     data() {
         return {
             isLoading: true,
-            tx: null,
             tokenInfo: null,
             tokenInfoPromise: null,
             txWatcher: null,
@@ -142,9 +146,10 @@ export default {
             if (!this.tokenInfo) {
                 return '';
             }
-            const coinItem = this.coinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
+            const coinItem = getExternalCoinList(this.hubCoinList, Number(this.tx.chainId))
+                .find((item) => item.externalTokenId === this.tokenInfo.tokenContract);
 
-            return coinItem ? coinItem.symbol : '';
+            return coinItem ? coinItem.denom.toUpperCase() : '';
         },
         isInfiniteUnlock() {
             if (!this.tokenInfo) {
@@ -168,9 +173,22 @@ export default {
     },
     methods: {
         pretty,
-        getEtherscanTxUrl,
         getExplorerTxUrl,
-        formatHash: (value) => shortFilter(value, 13),
+        getEvmNetworkName,
+        formatHash: (value) => shortHashFilter(value, 13),
+        getEvmTxUrl(tx) {
+            const chainId = Number(tx.chainId);
+            if (chainId === ETHEREUM_CHAIN_ID) {
+                return getEthereumTxUrl(tx.hash);
+            }
+            if (chainId === BSC_CHAIN_ID) {
+                return getBscTxUrl(tx.hash);
+            }
+        },
+        speedup() {
+            const {from, to, value, input, nonce} = this.tx;
+            eventBus.emit('account-send-transaction', {from, to, value, data: input, nonce});
+        },
     },
 };
 </script>
@@ -179,7 +197,7 @@ export default {
     <div class="preview__transaction" v-if="!isLoading">
         <div class="hub__preview-transaction-row u-text-overflow">
             <div>
-                <a class="link--main" :href="getEtherscanTxUrl(hash)" target="_blank">{{ formatHash(hash) }}</a>
+                <a class="link--main" :href="getEvmTxUrl(tx)" target="_blank">{{ formatHash(tx.hash) }}</a>
             </div>
             <div class="u-fw-700" v-if="tokenInfo">
                 <template v-if="isInfiniteUnlock">Infinite unlock {{ symbol }}</template>
@@ -190,10 +208,14 @@ export default {
         <div class="hub__preview-transaction-row hub__preview-transaction-meta">
             <div>
                 <template v-if="tx.timestamp">{{ timeDistance }} ago ({{ time }})</template>
+                from {{ getEvmNetworkName(tx.chainId) }}
             </div>
             <div>
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
-                <template v-if="status === $options.TX_STATUS.PENDING">Pending</template>
+                <template v-if="status === $options.TX_STATUS.PENDING">
+                    <button class="link--default u-semantic-button" @click="speedup()">Speed up</button>
+                    Pending
+                </template>
                 <template v-if="status === $options.TX_STATUS.RECEIPT">Received, waiting confirmations</template>
                 <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed</template>
                 <template v-if="status === $options.TX_STATUS.CONFIRMED_NOT_FINAL">Confirmed, waiting for bridge</template>

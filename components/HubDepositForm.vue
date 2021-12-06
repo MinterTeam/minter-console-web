@@ -7,14 +7,14 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getTokenDecimals, getDepositTxInfo, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
-import {getAddressTransactionList} from '@/api/ethersacn.js';
+import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {getDiscountForHolder} from '@/api/hub.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
-import peggyABI from '~/assets/abi-hub.js';
+import hubABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, HUB_BSC_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -28,7 +28,7 @@ const PROMISE_FINISHED = 'finished';
 const PROMISE_REJECTED = 'rejected';
 const PROMISE_PENDING = 'pending';
 
-const TX_WRAP = 'wrap';
+const TX_UNWRAP = 'unwrap';
 const TX_APPROVE = 'approve';
 const TX_TRANSFER = 'transfer';
 
@@ -38,18 +38,14 @@ function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
 
-const peggyAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
-const peggyContract = new web3.eth.Contract(peggyABI, peggyAddress);
-
 const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
-const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
 });
 
 export default {
-    TX_WRAP,
+    TX_UNWRAP,
     TX_APPROVE,
     TX_TRANSFER,
     components: {
@@ -85,6 +81,7 @@ export default {
     data() {
         return {
             ethAddress: "",
+            chainId: 0,
             balances: {},
             decimals: {},
             balanceRequest: null,
@@ -96,12 +93,15 @@ export default {
                 amount: "",
                 address: this.$store.getters.address,
                 isInfiniteUnlock: true,
+                isIgnorePending: true,
+                isUnwrapAll: true,
             },
-            // @TODO use tx data in children components (for now only hash is used)
-            transactionList: [],
+            // @TODO refactor to composable
+            discountEth: 0,
+            discountMinter: 0,
             isFormSending: false,
             serverError: '',
-            waitWrapConfirmation: false,
+            waitUnwrapConfirmation: false,
             waitApproveConfirmation: false,
             isConnectionStartedAndModalClosed: false,
         };
@@ -133,9 +133,19 @@ export default {
         isConnected() {
             return !!this.ethAddress;
         },
+        hubAddress() {
+            if (this.chainId === ETHEREUM_CHAIN_ID) {
+                return HUB_ETHEREUM_CONTRACT_ADDRESS;
+            }
+            if (this.chainId === BSC_CHAIN_ID) {
+                return HUB_BSC_CONTRACT_ADDRESS;
+            }
+            return undefined;
+        },
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem?.customCommission || 0.01;
+            const discountModifier = 1 - this.discount;
+            return new Big(coinItem?.commission || 0.01).times(discountModifier).toString();
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
@@ -157,17 +167,25 @@ export default {
         },
         coinContractAddress() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem ? coinItem.ethAddr : undefined;
+            if (this.chainId === ETHEREUM_CHAIN_ID) {
+                return coinItem?.ethereum?.externalTokenId;
+            }
+            if (this.chainId === BSC_CHAIN_ID) {
+                return coinItem?.bsc?.externalTokenId;
+            }
+            return undefined;
         },
         isEthSelected() {
+            //@TODO WBNB
             return (this.coinContractAddress || '').toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
         },
-        isWrappingRequired() {
+        //@TODO allow sending wrapped ERC-20 WETH directly without unwrap if it is enough (more than amount to spend) (extra unlock tx will be needed instead of unwrap tx, but we may save on gas fee: transferToChain should be cheaper than transferETHToChain)
+        isUnwrapRequired() {
             if (!this.isEthSelected) {
                 return false;
             }
 
-            return Number(this.selectedWrapped) === 0 || this.amountToWrap > 0;
+            return this.amountToUnwrap > 0;
         },
         isCoinApproved() {
             const selectedUnlocked = new Big(this.selectedUnlocked);
@@ -175,7 +193,7 @@ export default {
         },
         selectedBalance() {
             if (this.isEthSelected) {
-                return new Big(this.balances[this.form.coin] || 0).plus(this.balances[0] || 0).toString();
+                return new Big(this.selectedWrapped).plus(this.selectedNative).toString();
             } else {
                 return this.balances[this.form.coin] || 0;
             }
@@ -187,8 +205,19 @@ export default {
 
             return 0;
         },
-        amountToWrap() {
-            return new Big(this.amountToSpend).minus(this.selectedWrapped).toString();
+        selectedNative() {
+            if (this.isEthSelected) {
+                return this.balances[0] || 0;
+            }
+
+            return 0;
+        },
+        amountToUnwrap() {
+            const amountToUnwrapMinimum = new Big(this.amountToSpend).minus(this.selectedNative).toString();
+            if (amountToUnwrapMinimum <= 0) {
+                return 0;
+            }
+            return this.form.isUnwrapAll ? this.selectedWrapped : amountToUnwrapMinimum;
         },
         currentBalanceRequest() {
             if (this.balanceRequest?.coin === this.form.coin) {
@@ -220,14 +249,17 @@ export default {
             // don't unlock delta, it will overwrite total unlocked
             // return new Big(this.amountToSpend).minus(this.selectedUnlocked).toString();
         },
+        discount() {
+            return Math.max(this.discountEth, this.discountMinter);
+        },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol.toUpperCase());
         },
         stage() {
-            if (this.isWrappingRequired) {
-                return TX_WRAP;
+            if (this.isUnwrapRequired) {
+                return TX_UNWRAP;
             }
-            if (!this.isCoinApproved) {
+            if (!this.isEthSelected && !this.isCoinApproved) {
                 return TX_APPROVE;
             }
             return TX_TRANSFER;
@@ -239,13 +271,17 @@ export default {
                 if (newVal) {
                     this.updateBalance();
                     this.getAllowance();
-                    getLatestTransactions(newVal, this.hubCoinList)
-                        .then((txList) => {
-                            this.transactionList = txList;
-                        });
-                } else {
-                    this.transactionList = [];
                 }
+                this.$store.commit('hub/setEthAddress', newVal);
+                getDiscountForHolder(newVal)
+                    .then((discount) => this.discountEth = discount);
+            },
+        },
+        'form.address': {
+            handler(newVal) {
+                //@TODO debounce
+                getDiscountForHolder(newVal)
+                    .then((discount) => this.discountMinter = discount);
             },
         },
         coinContractAddress: {
@@ -254,11 +290,24 @@ export default {
                 this.getAllowance();
             },
         },
-        isWrappingRequired: {
+        chainId: {
             handler(newVal) {
-                // stop form sending loader after wrapping tx confirmed
-                if (!newVal && this.waitWrapConfirmation) {
-                    this.waitWrapConfirmation = false;
+                if (newVal === ETHEREUM_CHAIN_ID || newVal === BSC_CHAIN_ID) {
+                    // @TODO store balances for each chainId
+                    // - then no need to flush them
+                    // - then no need to handle pending balance request for the wrong chain
+                    this.balances = {};
+                    this.allowanceList = {};
+                    this.updateBalance();
+                    this.getAllowance();
+                }
+            },
+        },
+        isUnwrapRequired: {
+            handler(newVal) {
+                // stop form sending loader after unwrap tx confirmed
+                if (!newVal && this.waitUnwrapConfirmation) {
+                    this.waitUnwrapConfirmation = false;
                     this.isFormSending = false;
                 }
             },
@@ -277,7 +326,7 @@ export default {
         timer = setInterval(() => {
             this.updateBalance();
             this.getAllowance();
-        }, 5000);
+        }, 10000);
     },
     destroyed() {
         clearInterval(timer);
@@ -286,6 +335,7 @@ export default {
         pretty,
         prettyPrecise,
         prettyRound,
+        getEvmNetworkName,
         updateBalance() {
             if (!this.isConnected || !this.coinContractAddress) {
                 return;
@@ -298,7 +348,7 @@ export default {
             const coinSymbol = this.form.coin;
             const balancePromise = Promise.all([
                 coinContract(this.coinContractAddress).methods.balanceOf(this.ethAddress).call(),
-                getTokenDecimals(this.coinContractAddress, this.hubCoinList),
+                getTokenDecimals(this.coinContractAddress, this.chainId, this.hubCoinList),
                 this.isEthSelected ? web3.eth.getBalance(this.ethAddress) : Promise.resolve(),
             ])
                 .then(([balance, decimals, ethBalance]) => {
@@ -338,7 +388,7 @@ export default {
                 return;
             }
 
-            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, peggyAddress).call()
+            const allowancePromise = coinContract(this.coinContractAddress).methods.allowance(this.ethAddress, this.hubAddress).call()
                 .then((allowanceValue) => {
                     this.$set(this.allowanceList, selectedCoin, allowanceValue);
                     // coin not changed
@@ -410,8 +460,8 @@ export default {
                 .then(() => {
                     stage = this.stage;
 
-                    if (stage === TX_WRAP) {
-                        return this.wrapEther();
+                    if (stage === TX_UNWRAP) {
+                        return this.unwrapToNativeCoin();
                     }
                     if (stage === TX_APPROVE) {
                         return this.sendApproveTx();
@@ -419,14 +469,6 @@ export default {
                     if (stage === TX_TRANSFER)  {
                         return this.sendCoinTx();
                     }
-                })
-                .then((hash) => {
-                    // Returns transaction hash
-                    this.transactionList.unshift({
-                        hash,
-                        type: stage,
-                        timestamp: (new Date()).toISOString(),
-                    });
                 })
                 .catch((error) => {
                     this.serverError = getErrorText(error);
@@ -436,14 +478,15 @@ export default {
                     this.isFormSending = false;
                 });
         },
-        wrapEther() {
+        unwrapToNativeCoin() {
+            const amountToUnwrap = toErcDecimals(this.amountToUnwrap, this.decimals[this.form.coin]);
+            const data = wethContract.methods.withdraw(amountToUnwrap).encodeABI();
             return this.sendEthTx({
                     to: WETH_ETHEREUM_CONTRACT_ADDRESS,
-                    value: this.amountToWrap,
-                    data: wethDepositAbiData,
+                    data,
                 })
                 .then((hash) => {
-                    this.waitWrapConfirmation = true;
+                    this.waitUnwrapConfirmation = true;
 
                     return hash;
                 });
@@ -455,7 +498,7 @@ export default {
             } else {
                 amountToUnlock = toErcDecimals(this.amountToUnlock, this.decimals[this.form.coin]);
             }
-            let data = coinContract(this.coinContractAddress).methods.approve(peggyAddress, amountToUnlock).encodeABI();
+            let data = coinContract(this.coinContractAddress).methods.approve(this.hubAddress, amountToUnlock).encodeABI();
 
             return this.sendEthTx({to: this.coinContractAddress, data})
                 .then((hash) => {
@@ -467,9 +510,31 @@ export default {
         sendCoinTx() {
             let address;
             address = Buffer.concat([Buffer.alloc(12), Buffer.from(web3.utils.hexToBytes(this.form.address.replace("Mx", "0x")))]);
-            let data = peggyContract.methods.sendToMinter(this.coinContractAddress, address, toErcDecimals(this.amountToSpend, this.decimals[this.form.coin])).encodeABI();
+            const destinationChain = Buffer.from('minter', 'utf-8');
+            const hubContract = new web3.eth.Contract(hubABI, this.hubAddress);
+            let txParams;
+            if (this.isEthSelected) {
+                txParams = {
+                    value: this.amountToSpend,
+                    data: hubContract.methods.transferETHToChain(
+                        destinationChain,
+                        address,
+                        0,
+                    ).encodeABI(),
+                };
+            } else {
+                txParams = {
+                    data: hubContract.methods.transferToChain(
+                        this.coinContractAddress,
+                        destinationChain,
+                        address,
+                        toErcDecimals(this.amountToSpend, this.decimals[this.form.coin]),
+                        0,
+                    ).encodeABI(),
+                };
+            }
 
-            return this.sendEthTx({to: peggyAddress, data})
+            return this.sendEthTx({to: this.hubAddress, ...txParams})
                 .then((hash) => {
                     this.$v.$reset();
                     // reset form
@@ -490,75 +555,38 @@ export default {
                 // gasPrice: "0x02540be400", // Optional
                 // gas: "0x9c40", // Optional
                 value: value ? toErcDecimals(value) : "0x00", // Optional
-                nonce: await web3.eth.getTransactionCount(this.ethAddress, "pending"), // Optional
+                nonce: await web3.eth.getTransactionCount(this.ethAddress, this.form.isIgnorePending ? "latest" : "pending"), // Optional
             };
 
-            return this.$refs.ethAccount.sendTransaction(txParams);
+            return this.$refs.ethAccount.sendTransaction(txParams)
+                .then((hash) => {
+                    this.$store.commit('hub/saveDeposit', {
+                        hash,
+                        chainId: this.chainId,
+                        from: txParams.from,
+                        params: txParams,
+                        timestamp: (new Date()).toISOString(),
+                    });
+                    return hash;
+                });
         },
-        // async sendEthTx(to, data) {
-        //     let hist;
-        //     let rawTx = {
-        //         "nonce": await web3.eth.getTransactionCount(this.ethAddress, "pending"),
-        //         "gasPrice": "0x3b9aca00",
-        //         "gasLimit": web3.utils.toHex(100000),
-        //         "to": to, // contract
-        //         "value": "0x00",
-        //         "data": data,
-        //     }
-        //     const tx = new Transaction(rawTx, {common: customChainCommon})
-        //     tx.sign(wallet.getPrivateKey())
-        //     let serializedTx = "0x" + tx.serialize().toString('hex');
-        //     web3.eth.sendSignedTransaction(serializedTx).on('transactionHash', (txHash) => {
-        //         console.log(txHash)
-        //         // hist = {time: new Date, hash: txHash, note: "transferToHub", confirmed: false};
-        //         // hist = {time: new Date, hash: txHash, note: "approve"};
-        //         // this.transactions.push(hist)
-        //     }).on('receipt', function (receipt) {
-        //         console.log("receipt:" + receipt);
-        //     }).on('confirmation', function (confirmationNumber, receipt) {
-        //         console.log("confirmationNumber:" + confirmationNumber + " receipt:" + receipt);
-        //         // hist.confirmed = true
-        //     }).on('error', function (error) {
-        //         alert(error)
-        //     });
-        // },
+        handleAccount(ethAddress) {
+            // ethAddress = '0xf4bbd85fad8fbd28422f3a969196ab648e8ee888'
+            this.ethAddress = ethAddress;
+            this.serverError = '';
+        },
+        handleChainId(chainId) {
+            this.chainId = chainId;
+            if (chainId === ETHEREUM_CHAIN_ID) {
+                web3.eth.setProvider(ETHEREUM_API_URL);
+            }
+            if (chainId === BSC_CHAIN_ID) {
+                web3.eth.setProvider(BSC_API_URL);
+            }
+            this.serverError = '';
+        },
     },
 };
-
-function getLatestTransactions(address, hubCoinList) {
-    return Promise.all([
-        // check last 100 txs
-        getAddressTransactionList(address, {page: 1, offset: 100}),
-        //@TODO store pending txs in localStorage
-        Promise.resolve([]),
-        // getAddressPendingTransactions(address),
-    ])
-        .then(([etherscanTxList, pendingTxList]) => {
-            // assume web3 pending status is more correct and filter out such etherscan txs
-            etherscanTxList = etherscanTxList.filter((tx) => {
-                const isPending = pendingTxList.find((pendingTx) => pendingTx.hash.toLowerCase() === tx.hash.toLowerCase());
-
-                return !isPending;
-            });
-
-            let txList = pendingTxList.concat(etherscanTxList);
-
-            const promiseList = txList.map((item) => {
-                return getDepositTxInfo(item, hubCoinList, true)
-                    .then((txInfo) => {
-                        return {info: txInfo, tx: item};
-                    });
-            });
-            return Promise.all(promiseList);
-
-        })
-        .then((infoList) => {
-            // keep only hub bridge transactions
-            infoList = infoList.filter(({info}) => info.type !== HUB_DEPOSIT_TX_PURPOSE.OTHER);
-
-            return infoList.slice(0, 5).map((item) => item.tx);
-        });
-}
 </script>
 
 <template>
@@ -569,7 +597,7 @@ function getLatestTransactions(address, hubCoinList) {
                     {{ $td('Deposit', 'hub.deposit-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Send coins from Ethereum to Minter', 'hub.deposit-description') }}
+                    {{ $td('Send coins from other network to Minter', 'hub.deposit-description') }}
                 </p>
             </div>
 
@@ -598,7 +626,10 @@ function getLatestTransactions(address, hubCoinList) {
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">{{ $td('Not supported by Hub bridge', 'form.hub-coin-error-supported') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
+                            {{ $td('Can\'t be deposited from', 'form.hub-deposit0coin-error-supported') }}
+                            {{ getEvmNetworkName(chainId) }}
+                        </span>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
                         <FieldUseMax
@@ -613,13 +644,17 @@ function getLatestTransactions(address, hubCoinList) {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-2">
-                        <div class="form-field form-field--dashed" v-if="stage === $options.TX_WRAP">
-                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
-                            <div class="form-field__label">{{ $td('Wrapped ETH balance', 'form.hub-deposit-weth-balance') }}</div>
-                        </div>
+                        <label class="form-check">
+                            <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
+                            <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
+                        </label>
                         <label class="form-check" v-if="stage === $options.TX_APPROVE">
                             <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
+                        </label>
+                        <label class="form-check" v-if="stage === $options.TX_UNWRAP">
+                            <input type="checkbox" class="form-check__input" v-model="form.isUnwrapAll">
+                            <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
                         </label>
                     </div>
                     <div class="u-cell u-cell--xlarge--1-2">
@@ -632,8 +667,8 @@ function getLatestTransactions(address, hubCoinList) {
                                 <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
                                 <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
                             </span>
-                            <span class="button__content" v-if="stage === $options.TX_WRAP">
-                                Wrap <template v-if="amountToWrap > 0">{{ pretty(amountToWrap) }}</template> ETH
+                            <span class="button__content" v-if="stage === $options.TX_UNWRAP">
+                                Unwrap <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template> ETH
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
@@ -656,7 +691,7 @@ function getLatestTransactions(address, hubCoinList) {
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
                                 {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                                ({{ prettyRound(hubFeeRate * 100) }}%)
+                                ({{ hubFeeRate * 100 }}%)
                             </span>
                         </div>
                     </div>
@@ -675,29 +710,39 @@ function getLatestTransactions(address, hubCoinList) {
                             <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
                         </div>
                     </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="stage === $options.TX_UNWRAP">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedNative) }}</div>
+                            <div class="form-field__label">{{ $td('Native ETH balance', 'form.hub-deposit-weth-balance') }}</div>
+                        </div>
+                    </div>
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="stage === $options.TX_UNWRAP">
+                        <div class="form-field form-field--dashed">
+                            <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
+                            <div class="form-field__label">{{ $td('Wrapped WETH balance', 'form.hub-deposit-native-eth-balance') }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <Account @update:address="ethAddress = $event" ref="ethAccount" :hub-coin-list="hubCoinList" :price-list="priceList"/>
+            <Account
+                ref="ethAccount"
+                @update:address="handleAccount"
+                @update:network="handleChainId"
+                :hub-coin-list="hubCoinList"
+                :price-list="priceList"
+            />
             <portal-target name="account-minter-confirm-modal"/>
-
-            <!--          <div class="card__content card__content&#45;&#45;gray u-text-center send__qr-card" v-if="linkToBip">-->
-            <!--              <div class="send__qr-wrap u-mb-10">-->
-            <!--                  <QrcodeVue class="send__qr" :value="linkToBip" :size="240" level="L"></QrcodeVue>-->
-            <!--              </div>-->
-            <!--              Scan this QR with your Bip Wallet or-->
-            <!--              <a class="link&#45;&#45;default u-text-break" :href="linkToBip">follow the link</a>-->
-            <!--          </div>-->
         </div>
 
-        <div class="panel" v-if="transactionList.length">
+        <div class="panel" v-if="$store.getters['hub/depositList'].length">
             <div class="panel__header panel__header-title">Latest transactions</div>
             <TxListItem
                 class="panel__section"
-                v-for="tx in transactionList"
+                v-for="tx in $store.getters['hub/depositList']"
                 :key="tx.hash"
-                :hash="tx.hash"
-                :coin-list="hubCoinList"
+                :tx="tx"
+                :hub-coin-list="hubCoinList"
             />
         </div>
     </div>
