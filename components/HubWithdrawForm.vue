@@ -100,6 +100,9 @@ export default {
             const discountModifier = 1 - this.discount;
             return new Big(this.externalToken?.commission || 0.01).times(discountModifier).toString();
         },
+        hubFeeRatePercent() {
+            return new Big(this.hubFeeRate).times(100).toString();
+        },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === this.externalToken?.denom);
             return priceItem ? priceItem.value / 10 ** 18 : '0';
@@ -193,6 +196,7 @@ export default {
                 getDiscountForHolder(newVal)
                     .then((discount) => this.discountEth = discount);
             },
+            immediate: true,
         },
     },
     mounted() {
@@ -414,7 +418,7 @@ export default {
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">
                             {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                            ({{ hubFeeRate * 100 }}%)
+                            ({{ hubFeeRatePercent }}%)
                         </span>
                     </div>
                 </div>
@@ -478,7 +482,7 @@ export default {
                                 <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                                 <span class="form-field__label">
                                     {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                                    ({{ prettyRound(hubFeeRate * 100) }}%)
+                                    ({{ hubFeeRatePercent }}%)
                                 </span>
                             </div>
                         </div>

@@ -147,6 +147,9 @@ export default {
             const discountModifier = 1 - this.discount;
             return new Big(coinItem?.commission || 0.01).times(discountModifier).toString();
         },
+        hubFeeRatePercent() {
+            return new Big(this.hubFeeRate).times(100).toString();
+        },
         // fee to HUB bridge calculated in COIN
         hubFee() {
             // x / (1 - x)
@@ -287,6 +290,7 @@ export default {
                 getDiscountForHolder(newVal)
                     .then((discount) => this.discountMinter = discount);
             },
+            immediate: true,
         },
         coinContractAddress: {
             handler() {
@@ -695,7 +699,7 @@ export default {
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
                                 {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                                ({{ hubFeeRate * 100 }}%)
+                                ({{ hubFeeRatePercent }}%)
                             </span>
                         </div>
                     </div>

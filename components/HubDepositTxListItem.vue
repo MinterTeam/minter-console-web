@@ -73,25 +73,23 @@ export default {
                 }
             });
 
-        //@TODO this.tokenInfoPromise may be null
-        //@TODO rework to Promise.all([txWatcher, txInfoPromise])
         //@TODO store transfer in tx
         // subscribe on transfer for send txs
-        this.txWatcher.then((tx) => {
-            this.tokenInfoPromise
-                .then(() => {
-                    if (this.tokenInfo.type === TX_PURPOSE.SEND) {
-                        this.transferWatcher = subscribeTransfer(tx.hash)
-                            .on('update', (transfer) => {
-                                this.transfer = transfer;
-                            })
-                            .catch((error) => {
-                                if (error.message !== 'unsubscribed') {
-                                    console.log(error);
-                                }
-                            });
-                    }
-                });
+        Promise.all([
+            this.txWatcher,
+            this.tokenInfoPromise,
+        ]).then(([tx]) => {
+            if (this.tokenInfo?.type === TX_PURPOSE.SEND) {
+                this.transferWatcher = subscribeTransfer(tx.hash)
+                    .on('update', (transfer) => {
+                        this.transfer = transfer;
+                    })
+                    .catch((error) => {
+                        if (error.message !== 'unsubscribed') {
+                            console.log(error);
+                        }
+                    });
+            }
         });
     },
     data() {

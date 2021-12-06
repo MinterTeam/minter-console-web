@@ -42,10 +42,17 @@ export function toErcDecimals(balance, ercDecimals = 18) {
  */
 
 /**
+ * @typedef {Promise} PromiseWithEmitter
+ * @property {function} on
+ * @property {function} once
+ * @property {function} unsubscribe
+ */
+
+/**
  * @param {string} hash
  * @param {number} [confirmationCount = CONFIRMATION_COUNT]
  * @param {number} [chainId]
- * @return {Promise<Web3Tx>}
+ * @return {PromiseWithEmitter<Web3Tx>}
  */
 export function subscribeTransaction(hash, {
     confirmationCount = CONFIRMATION_COUNT,
@@ -53,41 +60,19 @@ export function subscribeTransaction(hash, {
 } = {}) {
     let isUnsubscribed = false;
     const emitter = new Emitter();
-    if (!getProviderHostByChain(chainId)) {
-        return Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
+    let txPromise;
+    try {
+        const providerHost = getProviderHostByChain(chainId);
+        if (providerHost) {
+            // keep provider for this tx, because later it can be changed
+            const ethSaved = new Eth(getProviderHostByChain(chainId));
+            txPromise = _subscribeTransaction(hash, confirmationCount, ethSaved, emitter);
+        } else {
+            txPromise = Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
+        }
+    } catch (error) {
+        txPromise = Promise.reject(error);
     }
-    // keep provider for this tx, because later it can be changed
-    const ethSaved = new Eth(getProviderHostByChain(chainId));
-
-    const txPromise = waitTxInBlock(hash)
-        .then((tx) => {
-            return Promise.all([ethSaved.getTransactionReceipt(hash), ethSaved.getBlock(tx.blockNumber), getConfirmations(tx), Promise.resolve(tx)]);
-        })
-        .then(([receipt, block, confirmations, txData]) => {
-            const tx = {
-                // input, hash from tx
-                ...txData,
-                // logs, status from receipt
-                ...receipt,
-                confirmations,
-                timestamp: block.timestamp * 1000,
-            };
-            emitter.emit('confirmation', tx);
-
-            if (!tx.status) {
-                throw new Error('Transaction failed');
-            }
-
-            if (confirmations >= confirmationCount) {
-                return tx;
-            } else {
-                return waitConfirmations(tx);
-            }
-        })
-        .then((tx) => {
-            emitter.emit('confirmed', tx);
-            return tx;
-        });
 
     // proxy `.on` and `.once`
     proxyEmitter(txPromise, emitter);
@@ -117,9 +102,57 @@ export function subscribeTransaction(hash, {
         //     return target;
         // }
     }
+}
+
+/**
+ *
+ * @param {string} hash
+ * @param {number} confirmationCount
+ * @param {Eth} ethProvider
+ * @param {Emitter} emitter
+ * @return {Promise<Web3Tx>}
+ * @private
+ */
+function _subscribeTransaction(hash, confirmationCount, ethProvider, emitter) {
+    let isUnsubscribed = false;
+
+    return waitTxInBlock(hash)
+        .then((tx) => {
+            return Promise.all([
+                ethProvider.getTransactionReceipt(hash),
+                ethProvider.getBlock(tx.blockNumber),
+                getConfirmations(tx),
+                Promise.resolve(tx),
+            ]);
+        })
+        .then(([receipt, block, confirmations, txData]) => {
+            const tx = {
+                // input, hash from tx
+                ...txData,
+                // logs, status from receipt
+                ...receipt,
+                confirmations,
+                timestamp: block.timestamp * 1000,
+            };
+            emitter.emit('confirmation', tx);
+
+            if (!tx.status) {
+                throw new Error('Transaction failed');
+            }
+
+            if (confirmations >= confirmationCount) {
+                return tx;
+            } else {
+                return waitConfirmations(tx);
+            }
+        })
+        .then((tx) => {
+            emitter.emit('confirmed', tx);
+            return tx;
+        });
 
     function waitTxInBlock(hash) {
-        return ethSaved.getTransaction(hash)
+        return ethProvider.getTransaction(hash)
             .then((tx) => {
                 // reject
                 if (isUnsubscribed) {
@@ -158,11 +191,11 @@ export function subscribeTransaction(hash, {
                 } else {
                     return waitConfirmations(tx);
                 }
-             });
+            });
     }
 
     function getConfirmations(tx) {
-        return getBlockNumber(ethSaved)
+        return getBlockNumber(ethProvider)
             .then((currentBlock) => {
                 return currentBlock - tx.blockNumber + 1;
             });
