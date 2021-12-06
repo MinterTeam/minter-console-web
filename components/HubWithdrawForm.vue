@@ -362,7 +362,7 @@ export default {
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                 </div>
-                <div class="u-cell u-cell--xlarge--1-2 u-hidden-xlarge-down">
+                <div class="u-cell u-cell--xlarge--1-2">
                     <label class="form-field">
                         <select class="form-field__input form-field__input--select" v-model="form.networkTo" v-check-empty>
                             <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
