@@ -87,7 +87,11 @@ export function subscribeTransaction(hash, {
 
     return txPromise;
 
-
+    /**
+     *
+     * @param {Promise<T>} target
+     * @param {PromiseWithEmitter<T>} emitter
+     */
     function proxyEmitter(target, emitter) {
         target.on = function() {
             emitter.on(...arguments);
@@ -317,11 +321,11 @@ export function getAddressPendingTransactions(address, chainId) {
 
 /**
  * @TODO refactor to find by method id https://stackoverflow.com/a/55258775/4936667
- * @param {Object} tx
+ * @param {HubDeposit} tx
  * @param {number} chainId
  * @param {Array<HubCoinItem>} [hubCoinList]
  * @param {boolean} [skipAmount]
- * @return {Promise<{amount: string, tokenContract: string, type: string}|{type: string}>}
+ * @return {Promise<HubDepositTxInfo>}
  */
 export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
     chainId = Number(tx.chainId || chainId);

@@ -61,6 +61,12 @@ export function _getOracleCoinList() {
             return response.data.list.tokenInfos;
         })
         .then((tokenList) => {
+            tokenList = tokenList.map((item) => {
+                if (typeof item.externalTokenId === 'string') {
+                    item.externalTokenId = item.externalTokenId.toLowerCase();
+                }
+                return item;
+            });
             const minterTokenList = tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.MINTER);
 
             return minterTokenList
@@ -140,7 +146,7 @@ export function subscribeTransfer(hash, timestamp) {
     let lastStatus;
     const emitter = new Emitter();
 
-    const statusPromise = pollMinterTxStatus()
+    const statusPromise = pollMinterTxStatus(hash)
         .then((transfer) => {
             emitter.emit('finished', transfer);
             return transfer;
@@ -174,7 +180,7 @@ export function subscribeTransfer(hash, timestamp) {
         // }
     }
 
-    function pollMinterTxStatus() {
+    function pollMinterTxStatus(hash) {
         return getMinterTxStatus(hash)
             .catch((error) => {
                 console.log(error);
