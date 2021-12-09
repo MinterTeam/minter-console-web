@@ -23,7 +23,7 @@ import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
 import debounce from '~/assets/lodash5-debounce.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import BaseAmount from '@/components/common/BaseAmount.vue';
@@ -65,7 +65,7 @@ function coinContract(coinContractAddress) {
 const hubBridgeAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const hubBridgeContract = new web3.eth.Contract(peggyABI, hubBridgeAddress);
 
-const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
+const wethContract = new web3.eth.Contract(wethAbi, WETH_CONTRACT_ADDRESS);
 const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
 
 const wethToken = WETH_TOKEN_DATA[ETHEREUM_CHAIN_ID];
@@ -673,7 +673,7 @@ export default {
         },
         sendWrapTx({nonce, gasPrice} = {}) {
             return this.sendEthTx({
-                to: WETH_ETHEREUM_CONTRACT_ADDRESS,
+                to: WETH_CONTRACT_ADDRESS,
                 value: this.ethToWrap,
                 data: wethDepositAbiData,
                 nonce,

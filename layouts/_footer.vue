@@ -1,5 +1,5 @@
 <script>
-    import footerLinksData from '@minterteam/footer-links';
+    import footerLinksData from 'minter-footer-links';
     import {NETWORK, MAINNET, TESTNET} from '~/assets/variables';
 
     export default {

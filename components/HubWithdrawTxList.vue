@@ -2,8 +2,9 @@
 import {VueNowMixinFactory} from 'vue-now';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {getExplorerTxUrl, getEthereumTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished, getBscTxUrl} from '~/assets/utils.js';
-import {HUB_CHAIN_ID, HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
+import {getChainIdByHubNetwork} from '~/api/web3.js';
+import {getExplorerTxUrl, getEvmTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
 import Loader from '@/components/common/Loader.vue';
 
 
@@ -85,12 +86,7 @@ export default {
         formatHash: (value) => shortHashFilter(value || '', 13),
         isHubTransferFinished,
         getDestinationUrl(withdraw) {
-            if (withdraw.destination === HUB_CHAIN_ID.ETHEREUM) {
-                return getEthereumTxUrl(withdraw.outTxHash);
-            }
-            if (withdraw.destination === HUB_CHAIN_ID.BSC) {
-                return getBscTxUrl(withdraw.outTxHash);
-            }
+            return getEvmTxUrl(getChainIdByHubNetwork(withdraw.destination), withdraw.outTxHash);
         },
     },
 };
@@ -112,14 +108,14 @@ export default {
             <div class="hub__preview-transaction-row hub__preview-transaction-meta">
                 <div>
                     {{ getTimeDistance(withdraw.timestamp || 0, undefined, $now) }} ago ({{ getTime(withdraw.timestamp || 0) }})
-                    to {{ $options.HUB_CHAIN_DATA[withdraw.destination].name }}
+                    to {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}
                 </div>
                 <div>
                     <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
                     <!--  @TODO combine deposit_to_hub_received & batch_created into "Bridge received tx and wait gas conditions to proceed" -->
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">Bridge collecting batch</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to {{ $options.HUB_CHAIN_DATA[withdraw.destination].name }}, waiting confirmation</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}, waiting confirmation</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_executed">
                         Success
                         <a class="link--main" :href="getDestinationUrl(withdraw)" target="_blank">{{ formatHash(withdraw.outTxHash) }}</a>

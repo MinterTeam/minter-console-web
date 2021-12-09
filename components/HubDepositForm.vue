@@ -7,14 +7,14 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals} from '@/api/web3.js';
+import {getTokenDecimals, getEvmNetworkName, fromErcDecimals, toErcDecimals, getHubNetworkByChain} from '@/api/web3.js';
 import {getDiscountForHolder} from '@/api/hub.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import hubABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, HUB_BSC_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
+import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -37,8 +37,6 @@ let timer;
 function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
-
-const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
@@ -134,18 +132,18 @@ export default {
             return !!this.ethAddress;
         },
         hubAddress() {
-            if (this.chainId === ETHEREUM_CHAIN_ID) {
-                return HUB_ETHEREUM_CONTRACT_ADDRESS;
-            }
-            if (this.chainId === BSC_CHAIN_ID) {
-                return HUB_BSC_CONTRACT_ADDRESS;
-            }
-            return undefined;
+            return HUB_CHAIN_BY_ID[this.chainId]?.hubContractAddress;
+        },
+        wrappedNativeContractAddress() {
+            return HUB_CHAIN_BY_ID[this.chainId]?.wrappedNativeContractAddress;
         },
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             const discountModifier = 1 - this.discount;
             return new Big(coinItem?.commission || 0.01).times(discountModifier).toString();
+        },
+        hubFeeRatePercent() {
+            return new Big(this.hubFeeRate).times(100).toString();
         },
         // fee to HUB bridge calculated in COIN
         hubFee() {
@@ -176,8 +174,7 @@ export default {
             return undefined;
         },
         isEthSelected() {
-            //@TODO WBNB
-            return (this.coinContractAddress || '').toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
+            return (this.coinContractAddress || '').toLowerCase() === this.wrappedNativeContractAddress;
         },
         //@TODO allow sending wrapped ERC-20 WETH directly without unwrap if it is enough (more than amount to spend) (extra unlock tx will be needed instead of unwrap tx, but we may save on gas fee: transferToChain should be cheaper than transferETHToChain)
         isUnwrapRequired() {
@@ -253,7 +250,11 @@ export default {
             return Math.max(this.discountEth, this.discountMinter);
         },
         suggestionList() {
-            return this.hubCoinList.map((item) => item.symbol.toUpperCase());
+            const network = getHubNetworkByChain(this.chainId);
+            return this.hubCoinList
+                // show only available coins for selected network
+                .filter((item) => !!item[network])
+                .map((item) => item.symbol.toUpperCase());
         },
         stage() {
             if (this.isUnwrapRequired) {
@@ -283,6 +284,7 @@ export default {
                 getDiscountForHolder(newVal)
                     .then((discount) => this.discountMinter = discount);
             },
+            immediate: true,
         },
         coinContractAddress: {
             handler() {
@@ -480,9 +482,10 @@ export default {
         },
         unwrapToNativeCoin() {
             const amountToUnwrap = toErcDecimals(this.amountToUnwrap, this.decimals[this.form.coin]);
-            const data = wethContract.methods.withdraw(amountToUnwrap).encodeABI();
+            const wrappedNativeContract = new web3.eth.Contract(wethAbi, this.wrappedNativeContractAddress);
+            const data = wrappedNativeContract.methods.withdraw(amountToUnwrap).encodeABI();
             return this.sendEthTx({
-                    to: WETH_ETHEREUM_CONTRACT_ADDRESS,
+                    to: this.wrappedNativeContractAddress,
                     data,
                 })
                 .then((hash) => {
@@ -597,14 +600,14 @@ export default {
                     {{ $td('Deposit', 'hub.deposit-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td('Send coins from other network to Minter', 'hub.deposit-description') }}
+                    {{ $td(`Send coins from ${chainId ? getEvmNetworkName(chainId) : 'other network'} to Minter`, 'hub.deposit-description', {network: getEvmNetworkName(chainId)}) }}
                 </p>
             </div>
 
 
             <form class="panel__section" v-if="isConnected" @submit.prevent="submit">
                 <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                    <div class="u-cell u-cell--xlarge--1-2">
+                    <div class="u-cell u-cell--large--1-2">
                         <FieldQr
                             v-model.trim="form.address"
                             :$value="$v.form.address"
@@ -615,7 +618,7 @@ export default {
                         <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Minter address</span>
                         <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Minter address</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <FieldCoin
                             :readonly="isFormSending"
                             v-model="form.coin"
@@ -631,7 +634,7 @@ export default {
                             {{ getEvmNetworkName(chainId) }}
                         </span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <FieldUseMax
                             :readonly="isFormSending"
                             v-model="form.amount"
@@ -643,7 +646,7 @@ export default {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-2">
+                    <div class="u-cell u-cell--large--1-2">
                         <label class="form-check">
                             <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
@@ -657,7 +660,7 @@ export default {
                             <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
                         </label>
                     </div>
-                    <div class="u-cell u-cell--xlarge--1-2">
+                    <div class="u-cell u-cell--large--1-2">
                         <button
                             class="button button--main button--full"
                             :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
@@ -691,7 +694,7 @@ export default {
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
                                 {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
-                                ({{ hubFeeRate * 100 }}%)
+                                ({{ hubFeeRatePercent }}%)
                             </span>
                         </div>
                     </div>

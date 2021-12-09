@@ -2,7 +2,7 @@ import Big from '~/assets/big.js';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
-import {ETHEREUM_API_URL, BSC_API_URL, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_BSC_CONTRACT_ADDRESS, HUB_CHAIN_DATA} from '~/assets/variables.js';
+import {ETHEREUM_API_URL, BSC_API_URL, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_CHAIN_DATA, HUB_CHAIN_BY_ID} from '~/assets/variables.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 
 export const CONFIRMATION_COUNT = 5;
@@ -42,10 +42,17 @@ export function toErcDecimals(balance, ercDecimals = 18) {
  */
 
 /**
+ * @typedef {Promise} PromiseWithEmitter
+ * @property {function} on
+ * @property {function} once
+ * @property {function} unsubscribe
+ */
+
+/**
  * @param {string} hash
  * @param {number} [confirmationCount = CONFIRMATION_COUNT]
  * @param {number} [chainId]
- * @return {Promise<Web3Tx>}
+ * @return {PromiseWithEmitter<Web3Tx>}
  */
 export function subscribeTransaction(hash, {
     confirmationCount = CONFIRMATION_COUNT,
@@ -53,41 +60,19 @@ export function subscribeTransaction(hash, {
 } = {}) {
     let isUnsubscribed = false;
     const emitter = new Emitter();
-    if (!getProviderHostByChain(chainId)) {
-        return Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
+    let txPromise;
+    try {
+        const providerHost = getProviderHostByChain(chainId);
+        if (providerHost) {
+            // keep provider for this tx, because later it can be changed
+            const ethSaved = new Eth(getProviderHostByChain(chainId));
+            txPromise = _subscribeTransaction(hash, confirmationCount, ethSaved, emitter);
+        } else {
+            txPromise = Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
+        }
+    } catch (error) {
+        txPromise = Promise.reject(error);
     }
-    // keep provider for this tx, because later it can be changed
-    const ethSaved = new Eth(getProviderHostByChain(chainId));
-
-    const txPromise = waitTxInBlock(hash)
-        .then((tx) => {
-            return Promise.all([ethSaved.getTransactionReceipt(hash), ethSaved.getBlock(tx.blockNumber), getConfirmations(tx), Promise.resolve(tx)]);
-        })
-        .then(([receipt, block, confirmations, txData]) => {
-            const tx = {
-                // input, hash from tx
-                ...txData,
-                // logs, status from receipt
-                ...receipt,
-                confirmations,
-                timestamp: block.timestamp * 1000,
-            };
-            emitter.emit('confirmation', tx);
-
-            if (!tx.status) {
-                throw new Error('Transaction failed');
-            }
-
-            if (confirmations >= confirmationCount) {
-                return tx;
-            } else {
-                return waitConfirmations(tx);
-            }
-        })
-        .then((tx) => {
-            emitter.emit('confirmed', tx);
-            return tx;
-        });
 
     // proxy `.on` and `.once`
     proxyEmitter(txPromise, emitter);
@@ -117,9 +102,57 @@ export function subscribeTransaction(hash, {
         //     return target;
         // }
     }
+}
+
+/**
+ *
+ * @param {string} hash
+ * @param {number} confirmationCount
+ * @param {Eth} ethProvider
+ * @param {Emitter} emitter
+ * @return {Promise<Web3Tx>}
+ * @private
+ */
+function _subscribeTransaction(hash, confirmationCount, ethProvider, emitter) {
+    let isUnsubscribed = false;
+
+    return waitTxInBlock(hash)
+        .then((tx) => {
+            return Promise.all([
+                ethProvider.getTransactionReceipt(hash),
+                ethProvider.getBlock(tx.blockNumber),
+                getConfirmations(tx),
+                Promise.resolve(tx),
+            ]);
+        })
+        .then(([receipt, block, confirmations, txData]) => {
+            const tx = {
+                // input, hash from tx
+                ...txData,
+                // logs, status from receipt
+                ...receipt,
+                confirmations,
+                timestamp: block.timestamp * 1000,
+            };
+            emitter.emit('confirmation', tx);
+
+            if (!tx.status) {
+                throw new Error('Transaction failed');
+            }
+
+            if (confirmations >= confirmationCount) {
+                return tx;
+            } else {
+                return waitConfirmations(tx);
+            }
+        })
+        .then((tx) => {
+            emitter.emit('confirmed', tx);
+            return tx;
+        });
 
     function waitTxInBlock(hash) {
-        return ethSaved.getTransaction(hash)
+        return ethProvider.getTransaction(hash)
             .then((tx) => {
                 // reject
                 if (isUnsubscribed) {
@@ -158,11 +191,11 @@ export function subscribeTransaction(hash, {
                 } else {
                     return waitConfirmations(tx);
                 }
-             });
+            });
     }
 
     function getConfirmations(tx) {
-        return getBlockNumber(ethSaved)
+        return getBlockNumber(ethProvider)
             .then((currentBlock) => {
                 return currentBlock - tx.blockNumber + 1;
             });
@@ -295,13 +328,9 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
     // remove 0x and function selector
     const input = tx.input.slice(2 + 8);
     const itemCount = input.length / 64;
-    let hubContractAddress = '';
-    if (chainId === ETHEREUM_CHAIN_ID) {
-        hubContractAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
-    }
-    if (chainId === BSC_CHAIN_ID) {
-        hubContractAddress = HUB_BSC_CONTRACT_ADDRESS;
-    }
+    const hubContractAddress = HUB_CHAIN_BY_ID[chainId]?.hubContractAddress;
+    const wrappedNativeContractAddress = HUB_CHAIN_BY_ID[chainId]?.wrappedNativeContractAddress;
+
     let type;
     // first item
     let tokenContract;
@@ -311,7 +340,7 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
         // unlock
         const beneficiaryHex = '0x' + input.slice(0, 64);
         const beneficiaryAddress = eth.abi.decodeParameter('address', beneficiaryHex);
-        const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === hubContractAddress.toLowerCase();
+        const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === hubContractAddress;
         if (isUnlockedForBridge) {
             type = HUB_DEPOSIT_TX_PURPOSE.UNLOCK;
             tokenContract = tx.to;
@@ -321,24 +350,23 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
                 type: HUB_DEPOSIT_TX_PURPOSE.OTHER,
             };
         }
-    } else if (tx.to.toLowerCase() === hubContractAddress.toLowerCase() && itemCount === 5) {
+    } else if (tx.to.toLowerCase() === hubContractAddress && itemCount === 5) {
         // transferToChain
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
         const tokenContractHex = '0x' + input.slice(0, 64);
         tokenContract = eth.abi.decodeParameter('address', tokenContractHex);
         amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 2) * 64), tokenContract, chainId, hubCoinList);
-    } else if (tx.to.toLowerCase() === hubContractAddress.toLowerCase() && itemCount === 3) {
+    } else if (tx.to.toLowerCase() === hubContractAddress && itemCount === 3) {
         // transferETHToChain
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
-        tokenContract = WETH_ETHEREUM_CONTRACT_ADDRESS;
+        tokenContract = wrappedNativeContractAddress;
         amount = Utils.fromWei(tx.value);
-    } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 1) {
-        //@TODO WBNB contract address
+    } else if (tx.to.toLowerCase() === wrappedNativeContractAddress && itemCount === 1) {
         // unwrap
         type = HUB_DEPOSIT_TX_PURPOSE.UNWRAP;
         tokenContract = tx.to;
         amount = skipAmount ? 0 : await getAmountFromInputValue(input, tokenContract, chainId, hubCoinList);
-    } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
+    } else if (tx.to.toLowerCase() === wrappedNativeContractAddress && itemCount === 0) {
         // wrap
         type = HUB_DEPOSIT_TX_PURPOSE.WRAP;
         tokenContract = tx.to;
@@ -435,12 +463,15 @@ function getProviderHostByChain(chainId) {
  */
 export function getHubNetworkByChain(chainId) {
     validateChainId(chainId);
-    if (chainId === ETHEREUM_CHAIN_ID) {
-        return HUB_CHAIN_ID.ETHEREUM;
-    }
-    if (chainId === BSC_CHAIN_ID) {
-        return HUB_CHAIN_ID.BSC;
-    }
+    return HUB_CHAIN_BY_ID[chainId]?.hubChainId;
+}
+
+/**
+ * @param {HUB_CHAIN_ID} network
+ * @return {number}
+ */
+export function getChainIdByHubNetwork(network) {
+    return HUB_CHAIN_DATA[network].chainId;
 }
 
 /**
