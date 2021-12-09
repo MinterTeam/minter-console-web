@@ -1,17 +1,13 @@
-import MinterHub from 'minter-js-hub';
-import {TxStatusType} from 'minter-js-hub/gen/mhub2/v1/mhub2_pb.js';
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
+import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
 import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
 import {getCoinList} from '@/api/explorer.js';
-import Big from '~/assets/big.js';
 import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
-
-const minterHub = new MinterHub(HUB_API_URL);
 
 const instance = axios.create({
     baseURL: HUB_API_URL,
@@ -19,31 +15,18 @@ const instance = axios.create({
 });
 addToCamelInterceptor(instance);
 
+const fastCache = new Cache({maxAge: 5 * 1000});
+
 /**
  * @param {HUB_CHAIN_ID} network
  * @return {Promise<{min: string, fast: string}>}
  */
 export function getOracleFee(network) {
-    let promise;
-    if (network === HUB_CHAIN_ID.ETHEREUM) {
-        promise = minterHub.getOracleEthFee();
-    }
-    if (network === HUB_CHAIN_ID.BSC) {
-        promise = minterHub.getOracleBscFee();
-    }
-    if (promise) {
-        return promise.then((result) => {
-            result.min = new Big(result.min).div(10 ** 18).toString();
-            result.fast =new Big(result.fast).div(10 ** 18).toString();
-            return result;
-        });
-    } else {
-        return Promise.reject(new Error('Network not specified'));
-    }
-    // eslint-disable-next-line no-unreachable
-    return instance.get('oracle/eth_fee')
+    return instance.get(`oracle/v1/${network}_fee`, {
+            cache: fastCache,
+        })
         .then((response) => {
-            return response.data.result;
+            return response.data;
         });
 }
 
@@ -71,12 +54,13 @@ const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
  * @return {Promise<Array<HubCoinItem>>}
  */
 export function _getOracleCoinList() {
-    return minterHub.getTokenList()
+    return instance.get('mhub2/v1/token_infos', {
+            cache: coinsCache,
+        })
+        .then((response) => {
+            return response.data.list.tokenInfos;
+        })
         .then((tokenList) => {
-            tokenList = tokenList.map((item) => {
-                item.commission = new Big(item.commission).div(10 ** 18).toString();
-                return item;
-            });
             const minterTokenList = tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.MINTER);
 
             return minterTokenList
@@ -86,35 +70,28 @@ export function _getOracleCoinList() {
                     }
 
                     return {
-                        minterId: minterToken.externalTokenId,
+                        minterId: Number(minterToken.externalTokenId),
                         ...minterToken,
                         ethereum: findToken(minterToken.denom, HUB_CHAIN_ID.ETHEREUM),
                         bsc: findToken(minterToken.denom, HUB_CHAIN_ID.BSC),
                     };
                 });
         });
-    // eslint-disable-next-line no-unreachable
-    return instance.get('oracle/coins', {
-            cache: coinsCache,
-        })
-        .then((response) => {
-            return response.data.result;
-        });
 }
-
-const priceCache = new Cache({maxAge: 10 * 1000});
 
 /**
  * @return {Promise<Array<HubPriceItem>>}
  */
 export function getOraclePriceList() {
-    return minterHub.getOraclePriceList();
-    // eslint-disable-next-line no-unreachable
-    return instance.get('oracle/prices', {
-            cache: priceCache,
+    return instance.get('oracle/v1/prices', {
+            cache: fastCache,
         })
         .then((response) => {
-            return response.data.result.list;
+            return response.data.prices.list
+                .map((item) => {
+                    item.value = stripZeros(item.value);
+                    return item;
+                });
         });
 }
 
@@ -127,9 +104,11 @@ export function getDiscountForHolder(address) {
         return Promise.resolve(0);
     }
     address = address.replace(/^Mx/, '').replace(/^0x/, '');
-    return minterHub.getDiscountForHolder(address)
-        .then((discount) => {
-            return new Big(discount).div(10 ** 18).toString();
+    return instance.get(`mhub2/v1/discount_for_holder/${address}`, {
+            cache: fastCache,
+        })
+        .then((response) => {
+            return response.data.discount;
         });
 }
 
@@ -139,22 +118,11 @@ export function getDiscountForHolder(address) {
  * @return {Promise<HubTransfer>}
  */
 export function getMinterTxStatus(hash) {
-    return minterHub.getTxStatus(hash)
-        .then((statusData) => {
-            // cast {string: number} obj to {number: string} array-like obj
-            const hubStatusTypes = Object.fromEntries(
-                Object.entries(TxStatusType)
-                    .map((entry) => [entry[1], entry[0]]),
-            );
-
-            // get string representation from number, e.g. replace 0 with 'TX_STATUS_NOT_FOUND'
-            statusData.status = hubStatusTypes[statusData.status];
-            return statusData;
-        });
-    // eslint-disable-next-line no-unreachable
-    return instance.get(`minter/tx_status/${hash}`)
+    return instance.get(`mhub2/v1/transaction_status/${hash}`, {
+            cache: fastCache,
+        })
         .then((response) => {
-            return response.data.result;
+            return response.data.status;
         });
 }
 
