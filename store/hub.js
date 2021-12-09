@@ -134,5 +134,9 @@ function parsePayload(payload) {
  */
 
 /**
- * @typedef {Web3Tx & {chainId: number}} HubDeposit
+ * @typedef {Web3Tx & {chainId: number, tokenInfo: HubDepositTxInfo=, transfer: HubTransfer=}} HubDeposit
+ */
+
+/**
+ * @typedef {{amount: string, tokenContract: string, tokenName: string, type: HUB_DEPOSIT_TX_PURPOSE}|{type: HUB_DEPOSIT_TX_PURPOSE}} HubDepositTxInfo
  */

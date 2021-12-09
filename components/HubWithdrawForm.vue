@@ -105,7 +105,7 @@ export default {
         },
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === this.externalToken?.denom);
-            return priceItem ? priceItem.value / 10 ** 18 : '0';
+            return priceItem ? priceItem.value : '0';
         },
         // fee for destination network calculated in COIN
         coinFee() {

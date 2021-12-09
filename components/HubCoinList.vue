@@ -83,8 +83,7 @@ export default {
  */
 function getPriceFromList(list, name) {
     const priceItem = list.find((item) => item.name === name);
-    const coinPrice = priceItem ? priceItem.value : '0';
-    return new Big(coinPrice).div(10 ** 18).toString();
+    return priceItem ? priceItem.value : '0';
 }
 </script>
 

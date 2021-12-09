@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-util/src/tx-types.js';
-import {EXPLORER_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS, HUB_CHAIN_BY_ID} from "~/assets/variables.js";
+import {EXPLORER_HOST, HUB_TRANSFER_STATUS, HUB_CHAIN_BY_ID} from "~/assets/variables.js";
 
 
 
@@ -341,9 +341,9 @@ function boldenSuggestion(text, query) {
 
 export function isHubTransferFinished(status) {
     const finishedStatus = {
-        [WITHDRAW_STATUS.not_found_long]: true,
-        [WITHDRAW_STATUS.batch_executed]: true,
-        [WITHDRAW_STATUS.refund]: true,
+        [HUB_TRANSFER_STATUS.not_found_long]: true,
+        [HUB_TRANSFER_STATUS.batch_executed]: true,
+        [HUB_TRANSFER_STATUS.refund]: true,
     };
 
     return !!finishedStatus[status];

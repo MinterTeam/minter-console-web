@@ -117,6 +117,10 @@ export const HUB_CHAIN_DATA = {
  */
 export const HUB_CHAIN_BY_ID = Object.fromEntries(Object.values(HUB_CHAIN_DATA).map((item) => [item.chainId, item]));
 
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const HUB_TRANSFER_STATUS = {
     not_found_long: 'not_found_long', // custom status
     not_found: 'TX_STATUS_NOT_FOUND',
@@ -126,6 +130,10 @@ export const HUB_TRANSFER_STATUS = {
     refund: "TX_STATUS_REFUNDED",
 };
 
+/**
+ * @readonly
+ * @enum {string}
+ */
 export const HUB_DEPOSIT_TX_PURPOSE = {
     SEND: 'Send',
     UNLOCK: 'Unlock',
@@ -151,7 +159,7 @@ export const HUB_BUY_STAGE = {
 
 /**
  * @readonly
- * @enum {string}
+ * @enum {boolean}
  */
 export const TX_STATUS = {
     SUCCESS: true,

@@ -63,7 +63,7 @@ export default {
             if (!priceItem) {
                 gasPriceGwei = 100;
             } else {
-                gasPriceGwei = priceItem.value / 10 ** 18;
+                gasPriceGwei = priceItem.value;
             }
 
             return gasPriceGwei;
