@@ -1,7 +1,7 @@
 <script>
 import eventBus from '~/assets/event-bus.js';
 import checkEmpty from '~/assets/v-check-empty.js';
-import {shortHashFilter, getEtherscanAddressUrl, getBscAddressUrl} from '~/assets/utils.js';
+import {shortHashFilter, getEvmAddressUrl} from '~/assets/utils.js';
 import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import {getEvmNetworkName, getHubNetworkByChain} from '@/api/web3.js';
 import HubDepositAccountWalletConnect from '~/components/HubDepositAccountWalletConnect.vue';
@@ -97,7 +97,7 @@ export default {
     methods: {
         getEvmNetworkName,
         getAddressUrl(address) {
-            return this.chainId === BSC_CHAIN_ID ? getBscAddressUrl(address) : getEtherscanAddressUrl(address);
+            return getEvmAddressUrl(this.chainId, address);
         },
         shortHash: shortHashFilter,
         disconnectEth() {

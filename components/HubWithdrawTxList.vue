@@ -2,8 +2,9 @@
 import {VueNowMixinFactory} from 'vue-now';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {getExplorerTxUrl, getEthereumTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished, getBscTxUrl} from '~/assets/utils.js';
-import {HUB_CHAIN_ID, HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
+import {getChainIdByHubNetwork} from '~/api/web3.js';
+import {getExplorerTxUrl, getEvmTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
 import Loader from '@/components/common/Loader.vue';
 
 
@@ -85,12 +86,7 @@ export default {
         formatHash: (value) => shortHashFilter(value || '', 13),
         isHubTransferFinished,
         getDestinationUrl(withdraw) {
-            if (withdraw.destination === HUB_CHAIN_ID.ETHEREUM) {
-                return getEthereumTxUrl(withdraw.outTxHash);
-            }
-            if (withdraw.destination === HUB_CHAIN_ID.BSC) {
-                return getBscTxUrl(withdraw.outTxHash);
-            }
+            return getEvmTxUrl(getChainIdByHubNetwork(withdraw.destination), withdraw.outTxHash);
         },
     },
 };

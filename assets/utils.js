@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-util/src/tx-types.js';
-import {EXPLORER_HOST, ETHERSCAN_HOST, BSCSCAN_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
+import {EXPLORER_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS, HUB_CHAIN_BY_ID} from "~/assets/variables.js";
 
 
 
@@ -128,20 +128,31 @@ export function getExplorerCoinUrl(coin) {
     return EXPLORER_HOST + `/coins/${coin}`;
 }
 
+/**
+ * @param {number} chainId
+ * @param {string} hash
+ * @return {string}
+ */
+export function getEvmTxUrl(chainId, hash) {
+    const host = HUB_CHAIN_BY_ID[Number(chainId)]?.explorerHost;
+    return host + '/tx/' + hash;
+}
+
+/**
+ * @deprecated
+ */
 export function getEthereumTxUrl(hash) {
-    return ETHERSCAN_HOST + '/tx/' + hash;
+    return '';
 }
 
-export function getBscTxUrl(hash) {
-    return BSCSCAN_HOST + '/tx/' + hash;
-}
-
-export function getEtherscanAddressUrl(hash) {
-    return ETHERSCAN_HOST + '/address/' + hash;
-}
-
-export function getBscAddressUrl(hash) {
-    return BSCSCAN_HOST + '/address/' + hash;
+/**
+ * @param {number} chainId
+ * @param {string} hash
+ * @return {string}
+ */
+export function getEvmAddressUrl(chainId, hash) {
+    const host = HUB_CHAIN_BY_ID[Number(chainId)]?.explorerHost;
+    return host + '/address/' + hash;
 }
 
 /**

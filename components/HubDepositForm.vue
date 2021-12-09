@@ -7,14 +7,14 @@ import withParams from 'vuelidate/lib/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
-import {getTokenDecimals, getDepositTxInfo, getEvmNetworkName, fromErcDecimals, toErcDecimals, getHubNetworkByChain} from '@/api/web3.js';
+import {getTokenDecimals, getEvmNetworkName, fromErcDecimals, toErcDecimals, getHubNetworkByChain} from '@/api/web3.js';
 import {getDiscountForHolder} from '@/api/hub.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import hubABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, HUB_BSC_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
+import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import Loader from '~/components/common/Loader.vue';
@@ -37,8 +37,6 @@ let timer;
 function coinContract(coinContractAddress) {
     return new web3.eth.Contract(erc20ABI, coinContractAddress);
 }
-
-const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
 
 const isValidAmount = withParams({type: 'validAmount'}, (value) => {
     return parseFloat(value) >= 0;
@@ -134,13 +132,10 @@ export default {
             return !!this.ethAddress;
         },
         hubAddress() {
-            if (this.chainId === ETHEREUM_CHAIN_ID) {
-                return HUB_ETHEREUM_CONTRACT_ADDRESS;
-            }
-            if (this.chainId === BSC_CHAIN_ID) {
-                return HUB_BSC_CONTRACT_ADDRESS;
-            }
-            return undefined;
+            return HUB_CHAIN_BY_ID[this.chainId]?.hubContractAddress;
+        },
+        wrappedNativeContractAddress() {
+            return HUB_CHAIN_BY_ID[this.chainId]?.wrappedNativeContractAddress;
         },
         hubFeeRate() {
             const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
@@ -179,8 +174,7 @@ export default {
             return undefined;
         },
         isEthSelected() {
-            //@TODO WBNB
-            return (this.coinContractAddress || '').toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase();
+            return (this.coinContractAddress || '').toLowerCase() === this.wrappedNativeContractAddress;
         },
         //@TODO allow sending wrapped ERC-20 WETH directly without unwrap if it is enough (more than amount to spend) (extra unlock tx will be needed instead of unwrap tx, but we may save on gas fee: transferToChain should be cheaper than transferETHToChain)
         isUnwrapRequired() {
@@ -488,9 +482,10 @@ export default {
         },
         unwrapToNativeCoin() {
             const amountToUnwrap = toErcDecimals(this.amountToUnwrap, this.decimals[this.form.coin]);
-            const data = wethContract.methods.withdraw(amountToUnwrap).encodeABI();
+            const wrappedNativeContract = new web3.eth.Contract(wethAbi, this.wrappedNativeContractAddress);
+            const data = wrappedNativeContract.methods.withdraw(amountToUnwrap).encodeABI();
             return this.sendEthTx({
-                    to: WETH_ETHEREUM_CONTRACT_ADDRESS,
+                    to: this.wrappedNativeContractAddress,
                     data,
                 })
                 .then((hash) => {

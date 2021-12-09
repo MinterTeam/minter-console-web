@@ -2,7 +2,7 @@ import Big from '~/assets/big.js';
 import Eth from 'web3-eth';
 import Utils from 'web3-utils';
 import {TinyEmitter as Emitter} from 'tiny-emitter';
-import {ETHEREUM_API_URL, BSC_API_URL, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_ETHEREUM_CONTRACT_ADDRESS, WETH_ETHEREUM_CONTRACT_ADDRESS, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_BSC_CONTRACT_ADDRESS, HUB_CHAIN_DATA} from '~/assets/variables.js';
+import {ETHEREUM_API_URL, BSC_API_URL, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_CHAIN_DATA, HUB_CHAIN_BY_ID} from '~/assets/variables.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 
 export const CONFIRMATION_COUNT = 5;
@@ -328,13 +328,9 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
     // remove 0x and function selector
     const input = tx.input.slice(2 + 8);
     const itemCount = input.length / 64;
-    let hubContractAddress = '';
-    if (chainId === ETHEREUM_CHAIN_ID) {
-        hubContractAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
-    }
-    if (chainId === BSC_CHAIN_ID) {
-        hubContractAddress = HUB_BSC_CONTRACT_ADDRESS;
-    }
+    const hubContractAddress = HUB_CHAIN_BY_ID[chainId]?.hubContractAddress;
+    const wrappedNativeContractAddress = HUB_CHAIN_BY_ID[chainId]?.wrappedNativeContractAddress;
+
     let type;
     // first item
     let tokenContract;
@@ -344,7 +340,7 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
         // unlock
         const beneficiaryHex = '0x' + input.slice(0, 64);
         const beneficiaryAddress = eth.abi.decodeParameter('address', beneficiaryHex);
-        const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === hubContractAddress.toLowerCase();
+        const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === hubContractAddress;
         if (isUnlockedForBridge) {
             type = HUB_DEPOSIT_TX_PURPOSE.UNLOCK;
             tokenContract = tx.to;
@@ -354,24 +350,23 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
                 type: HUB_DEPOSIT_TX_PURPOSE.OTHER,
             };
         }
-    } else if (tx.to.toLowerCase() === hubContractAddress.toLowerCase() && itemCount === 5) {
+    } else if (tx.to.toLowerCase() === hubContractAddress && itemCount === 5) {
         // transferToChain
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
         const tokenContractHex = '0x' + input.slice(0, 64);
         tokenContract = eth.abi.decodeParameter('address', tokenContractHex);
         amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 2) * 64), tokenContract, chainId, hubCoinList);
-    } else if (tx.to.toLowerCase() === hubContractAddress.toLowerCase() && itemCount === 3) {
+    } else if (tx.to.toLowerCase() === hubContractAddress && itemCount === 3) {
         // transferETHToChain
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
-        tokenContract = WETH_ETHEREUM_CONTRACT_ADDRESS;
+        tokenContract = wrappedNativeContractAddress;
         amount = Utils.fromWei(tx.value);
-    } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 1) {
-        //@TODO WBNB contract address
+    } else if (tx.to.toLowerCase() === wrappedNativeContractAddress && itemCount === 1) {
         // unwrap
         type = HUB_DEPOSIT_TX_PURPOSE.UNWRAP;
         tokenContract = tx.to;
         amount = skipAmount ? 0 : await getAmountFromInputValue(input, tokenContract, chainId, hubCoinList);
-    } else if (tx.to.toLowerCase() === WETH_ETHEREUM_CONTRACT_ADDRESS.toLowerCase() && itemCount === 0) {
+    } else if (tx.to.toLowerCase() === wrappedNativeContractAddress && itemCount === 0) {
         // wrap
         type = HUB_DEPOSIT_TX_PURPOSE.WRAP;
         tokenContract = tx.to;
@@ -468,12 +463,15 @@ function getProviderHostByChain(chainId) {
  */
 export function getHubNetworkByChain(chainId) {
     validateChainId(chainId);
-    if (chainId === ETHEREUM_CHAIN_ID) {
-        return HUB_CHAIN_ID.ETHEREUM;
-    }
-    if (chainId === BSC_CHAIN_ID) {
-        return HUB_CHAIN_ID.BSC;
-    }
+    return HUB_CHAIN_BY_ID[chainId]?.hubChainId;
+}
+
+/**
+ * @param {HUB_CHAIN_ID} network
+ * @return {number}
+ */
+export function getChainIdByHubNetwork(network) {
+    return HUB_CHAIN_DATA[network].chainId;
 }
 
 /**

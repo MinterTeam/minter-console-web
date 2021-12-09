@@ -35,7 +35,8 @@ export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
 export const BSCSCAN_HOST = NETWORK === MAINNET ? 'https://bscscan.com' : 'https://testnet.bscscan.com';
-export const WETH_ETHEREUM_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0x0a180a76e4466bf68a7f86fb029bed3cccfaaac5';// '0xc778417e063141139fce010982780140aa0cd5ab';
+export const WETH_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0x0a180a76e4466bf68a7f86fb029bed3cccfaaac5';// '0xc778417e063141139fce010982780140aa0cd5ab';
+export const WBNB_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c' : '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';
 export const USERNAME_MIN_LENGTH = 5;
 export const USERNAME_MAX_LENGTH = 16;
@@ -78,7 +79,7 @@ export const HUB_CHAIN_ID = {
 };
 
 /**
- * @typedef {{coinSymbol: string, name: string, shortName: string, chainId: number, apiUrl: string, explorerHost: string}} HubChainDataItem
+ * @typedef {{coinSymbol: string, name: string, shortName: string, chainId: number, hubChainId: HUB_CHAIN_ID, apiUrl: string, explorerHost: string, hubContractAddress: string, wrappedNativeContractAddress: string}} HubChainDataItem
  */
 
 /**
@@ -91,18 +92,30 @@ export const HUB_CHAIN_DATA = {
         shortName: 'Ethereum',
         coinSymbol: 'ETH',
         chainId: ETHEREUM_CHAIN_ID,
+        hubChainId: HUB_CHAIN_ID.ETHEREUM,
         apiUrl: ETHEREUM_API_URL,
         explorerHost: ETHERSCAN_HOST,
+        hubContractAddress: HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase(),
+        wrappedNativeContractAddress: WETH_CONTRACT_ADDRESS.toLowerCase(),
     },
     [HUB_CHAIN_ID.BSC]: {
         name: 'Binance Smart Chain',
         shortName: 'BSC',
         coinSymbol: 'BNB',
         chainId: BSC_CHAIN_ID,
+        hubChainId: HUB_CHAIN_ID.BSC,
         apiUrl: BSC_API_URL,
         explorerHost: BSCSCAN_HOST,
+        hubContractAddress: HUB_BSC_CONTRACT_ADDRESS.toLowerCase(),
+        wrappedNativeContractAddress: WBNB_CONTRACT_ADDRESS.toLowerCase(),
     },
 };
+
+/**
+ * @readonly
+ * @type {{number: HubChainDataItem}}
+ */
+export const HUB_CHAIN_BY_ID = Object.fromEntries(Object.values(HUB_CHAIN_DATA).map((item) => [item.chainId, item]));
 
 export const HUB_TRANSFER_STATUS = {
     not_found_long: 'not_found_long', // custom status

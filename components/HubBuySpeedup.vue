@@ -3,7 +3,7 @@ import {VueNowMixinFactory} from 'vue-now';
 import Big from '~/assets/big.js';
 import {utils as web3Utils} from '~/api/web3.js';
 import {getOraclePriceList, getGasPriceGwei} from '~/api/hub.js';
-import {pretty, getEthereumTxUrl, shortHashFilter} from '~/assets/utils.js';
+import {pretty, getEvmTxUrl, shortHashFilter} from '~/assets/utils.js';
 import {HUB_BUY_STAGE as LOADING_STAGE} from '~/assets/variables.js';
 
 
@@ -44,6 +44,7 @@ export default {
             });
 
             if (item) {
+                item.tx.chainId = Number(item.tx.chainId);
                 return {
                     ...item.step,
                     loadingStage: item.loadingStage,
@@ -65,7 +66,7 @@ export default {
     },
     methods: {
         pretty,
-        getEthereumTxUrl,
+        getEvmTxUrl,
         formatHash: (value) => shortHashFilter(value, 8),
         getFee(gasPriceGwei, gasLimit) {
             // gwei to ether
@@ -103,8 +104,7 @@ export default {
                         Send {{ slowStep.coin }}
                     </template>
 
-                    <!-- @TODO bscscan -->
-                    <a :href="getEthereumTxUrl(slowStep.tx.hash)" class="link--main link--hover" target="_blank">{{ formatHash(slowStep.tx.hash) }}</a>
+                    <a :href="getEvmTxUrl(slowStep.tx.chainId, slowStep.tx.hash)" class="link--main link--hover" target="_blank">{{ formatHash(slowStep.tx.hash) }}</a>
                 </div>
                 <div class="u-mt-05">
                     Gas price change: <br> {{ slowStep.tx.params.gasPrice }} → <strong>{{ ethGasPriceGwei }}</strong>

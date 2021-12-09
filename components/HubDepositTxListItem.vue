@@ -1,10 +1,10 @@
 <script>
 import {subscribeTransaction, getDepositTxInfo, getBlockNumber, getEvmNetworkName, getExternalCoinList, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {shortHashFilter, getTimeDistance, getTimeStamp as getTime, getEthereumTxUrl, getBscTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {shortHashFilter, getTimeDistance, getTimeStamp as getTime, getEvmTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import eventBus from '~/assets/event-bus.js';
 import Loader from '@/components/common/Loader.vue';
-import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE, HUB_CHAIN_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID} from '~/assets/variables.js';
+import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE} from '~/assets/variables.js';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -175,13 +175,7 @@ export default {
         getEvmNetworkName,
         formatHash: (value) => shortHashFilter(value, 13),
         getEvmTxUrl(tx) {
-            const chainId = Number(tx.chainId);
-            if (chainId === ETHEREUM_CHAIN_ID) {
-                return getEthereumTxUrl(tx.hash);
-            }
-            if (chainId === BSC_CHAIN_ID) {
-                return getBscTxUrl(tx.hash);
-            }
+            return getEvmTxUrl(Number(tx.chainId), tx.hash);
         },
         speedup() {
             const {from, to, value, input, nonce} = this.tx;

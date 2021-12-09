@@ -1,7 +1,7 @@
 <script>
 import Big from '~/assets/big.js';
-import {pretty, getExplorerCoinUrl, getEtherscanAddressUrl, getBscAddressUrl} from '~/assets/utils.js';
-import {HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
+import {pretty, getExplorerCoinUrl, getEvmAddressUrl} from '~/assets/utils.js';
+import {HUB_CHAIN_ID, HUB_CHAIN_DATA, BSC_CHAIN_ID, ETHEREUM_CHAIN_ID} from '~/assets/variables.js';
 import Loader from '~/components/common/Loader.vue';
 
 export default {
@@ -66,8 +66,12 @@ export default {
     methods: {
         pretty,
         getExplorerCoinUrl,
-        getEtherscanAddressUrl,
-        getBscAddressUrl,
+        getEthereumAddressUrl(address) {
+            return getEvmAddressUrl(ETHEREUM_CHAIN_ID, address);
+        },
+        getBscAddressUrl(address) {
+            return getEvmAddressUrl(BSC_CHAIN_ID, address);
+        },
     },
 };
 
@@ -146,7 +150,7 @@ function getPriceFromList(list, name) {
                                 <a class="link--default" :href="getExplorerCoinUrl(coinItem.symbol)" target="_blank" rel="noopener">{{ coinItem.symbol }}</a>
                             </td>
                             <td>
-                                <a class="link--default" :href="getEtherscanAddressUrl(coinItem.ethereum.externalTokenId)" target="_blank" rel="noopener" v-if="coinItem.ethereum">{{ coinItem.denom.toUpperCase() }}</a>
+                                <a class="link--default" :href="getEthereumAddressUrl(coinItem.ethereum.externalTokenId)" target="_blank" rel="noopener" v-if="coinItem.ethereum">{{ coinItem.denom.toUpperCase() }}</a>
                             </td>
                             <td>
                                 <a class="link--default" :href="getBscAddressUrl(coinItem.bsc.externalTokenId)" target="_blank" rel="noopener" v-if="coinItem.bsc">{{ coinItem.denom.toUpperCase() }}</a>
