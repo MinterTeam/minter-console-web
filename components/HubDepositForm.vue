@@ -8,7 +8,6 @@ import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import * as web3 from '@/api/web3.js';
 import {getTokenDecimals, getEvmNetworkName, fromErcDecimals, toErcDecimals, getHubNetworkByChain} from '@/api/web3.js';
-import {getDiscountForHolder} from '@/api/hub.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
@@ -17,6 +16,7 @@ import wethAbi from '~/assets/abi-weth.js';
 import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
+import useHubDiscount from '@/composables/useHubDiscount.js';
 import Loader from '~/components/common/Loader.vue';
 import TxListItem from '~/components/HubDepositTxListItem.vue';
 import Account from '~/components/HubDepositAccount.vue';
@@ -76,6 +76,14 @@ export default {
             required: true,
         },
     },
+    setup() {
+        const { discount, discountProps } = useHubDiscount();
+
+        return {
+            discount,
+            discountProps,
+        };
+    },
     data() {
         return {
             ethAddress: "",
@@ -94,9 +102,6 @@ export default {
                 isIgnorePending: true,
                 isUnwrapAll: true,
             },
-            // @TODO refactor to composable
-            discountEth: 0,
-            discountMinter: 0,
             isFormSending: false,
             serverError: '',
             waitUnwrapConfirmation: false,
@@ -246,9 +251,6 @@ export default {
             // don't unlock delta, it will overwrite total unlocked
             // return new Big(this.amountToSpend).minus(this.selectedUnlocked).toString();
         },
-        discount() {
-            return Math.max(this.discountEth, this.discountMinter);
-        },
         suggestionList() {
             const network = getHubNetworkByChain(this.chainId);
             return this.hubCoinList
@@ -274,15 +276,13 @@ export default {
                     this.getAllowance();
                 }
                 this.$store.commit('hub/setEthAddress', newVal);
-                getDiscountForHolder(newVal)
-                    .then((discount) => this.discountEth = discount);
+                this.discountProps.ethAddress = this.ethAddress;
             },
+            immediate: true,
         },
         'form.address': {
             handler(newVal) {
-                //@TODO debounce
-                getDiscountForHolder(newVal)
-                    .then((discount) => this.discountMinter = discount);
+                this.discountProps.minterAddress = newVal;
             },
             immediate: true,
         },
