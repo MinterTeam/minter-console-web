@@ -8,11 +8,12 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getOracleFee, getDiscountForHolder} from '@/api/hub.js';
+import {getOracleFee} from '@/api/hub.js';
 import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
+import useHubDiscount from '@/composables/useHubDiscount.js';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
@@ -58,9 +59,15 @@ export default {
             required: true,
         },
     },
+    setup() {
+        const { discount, discountProps } = useHubDiscount();
+
+        return {
+            discount,
+            discountProps,
+        };
+    },
     fetch() {
-        getDiscountForHolder(this.$store.getters.address)
-            .then((discount) => this.discountMinter = discount);
         return this.getDestinationFee();
     },
     data() {
@@ -82,9 +89,6 @@ export default {
             serverWarning: '',
             isConfirmModalVisible: false,
             isSuccessModalVisible: false,
-            // @TODO refactor to composable
-            discountEth: 0,
-            discountMinter: 0,
         };
     },
     computed: {
@@ -146,9 +150,6 @@ export default {
                 return maxAmount.toString();
             }
         },
-        discount() {
-            return Math.max(this.discountEth, this.discountMinter);
-        },
         suggestionList() {
             return this.hubCoinList.map((item) => item.symbol);
             // intersection of address balance and hub supported coins
@@ -192,9 +193,13 @@ export default {
         },
         'form.address': {
             handler(newVal) {
-                //@TODO debounce
-                getDiscountForHolder(newVal)
-                    .then((discount) => this.discountEth = discount);
+                this.discountProps.ethAddress = newVal;
+            },
+            immediate: true,
+        },
+        '$store.getters.address': {
+            handler(newVal) {
+                this.discountProps.minterAddress = newVal;
             },
             immediate: true,
         },
