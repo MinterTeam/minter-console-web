@@ -305,6 +305,9 @@ export default {
                 }
             },
         },
+        // @TODO isUnwrapRequired may not change, because native token balance will be less than expected, because it will be spent on tx gas
+        // @TODO including gas fee to unwrap amount should fix it
+        // @TODO unwrap errors will not stop loader
         isUnwrapRequired: {
             handler(newVal) {
                 // stop form sending loader after unwrap tx confirmed

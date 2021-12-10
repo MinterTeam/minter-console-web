@@ -57,6 +57,7 @@ export default {
             }
             return undefined;
         },
+        // @TODO get gasPrice from eth_fee.fast
         gasPriceGwei() {
             const priceItem = this.priceList.find((item) => item.name === `${this.selectedHubNetwork}/gas`);
             let gasPriceGwei;
