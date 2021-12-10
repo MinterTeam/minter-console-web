@@ -62,7 +62,6 @@ export const mutations = {
     setEthAddress(state, address) {
         state.ethAddress = address.toLowerCase();
     },
-    //@TODO check txs with same nonce and filter out pending if another is confirmed
     saveDeposit(state, tx) {
         if (!tx.from) {
             console.warn('hub/saveDeposit: can\'t save because `tx.from` not specified');
@@ -71,6 +70,7 @@ export const mutations = {
         const ethAddress = tx.from.toLowerCase();
         let depositList = state.ethList[ethAddress] || [];
         const index = depositList.findIndex((item) => item.hash === tx.hash);
+        // update list
         if (index >= 0) {
             depositList[index] = {
                 ...depositList[index],
@@ -79,6 +79,20 @@ export const mutations = {
         } else {
             depositList.unshift(tx);
         }
+        // check txs with same nonce and filter out pending if another is confirmed
+        let currentNonce = typeof tx.nonce !== 'undefined' ? tx.nonce : depositList[index]?.nonce;
+        const isConfirmed = depositList.some((item) => item.nonce === currentNonce && item.blockHash);
+        if (isConfirmed) {
+            // find unconfirmed with same nonce
+            const txsToPrune = depositList.filter((item) => {
+                return !item.blockHash && item.nonce === currentNonce;
+            });
+            depositList = depositList.filter((item) => {
+                const shouldPrune = txsToPrune.some((toPrune) => toPrune.hash === item.hash);
+                return !shouldPrune;
+            });
+        }
+        // preserve list length
         if (depositList.length > 5) {
             depositList = depositList.slice(0, 5);
         }
