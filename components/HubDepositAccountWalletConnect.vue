@@ -30,7 +30,7 @@ export default {
         chainId: {
             handler() {
                 if (this.connector.connected && this.connector.chainId !== this.chainId) {
-                    connector.killSession().then(() => {
+                    this.connector.killSession().then(() => {
                         this.connectEth();
                     });
                 }
@@ -42,10 +42,14 @@ export default {
         this.connector = null;
     },
     mounted() {
+        // init only if wallet was already connected
+        if (window.localStorage.getItem(STORAGE_KEY) !== 'walletconnect') {
+            return;
+        }
         this.initConnector();
 
         // Check if connection is already established
-        if (this.connector.connected && window.localStorage.getItem(STORAGE_KEY) === 'walletconnect') {
+        if (this.connector.connected) {
             this.setEthAddress(this.connector.accounts[0]);
             this.$emit('update:network', this.connector.chainId);
         }
@@ -56,7 +60,7 @@ export default {
                 this.initConnector();
             }
 
-            // if (connector.connected) {
+            // if (this.connector.connected) {
             //     await connector.killSession()
             // }
 
