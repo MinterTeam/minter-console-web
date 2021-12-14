@@ -136,16 +136,23 @@ export default {
         isConnected() {
             return !!this.ethAddress;
         },
+        hubChainData() {
+            return HUB_CHAIN_BY_ID[this.chainId];
+        },
         hubAddress() {
-            return HUB_CHAIN_BY_ID[this.chainId]?.hubContractAddress;
+            return this.hubChainData?.hubContractAddress;
         },
         wrappedNativeContractAddress() {
-            return HUB_CHAIN_BY_ID[this.chainId]?.wrappedNativeContractAddress;
+            return this.hubChainData?.wrappedNativeContractAddress;
+        },
+        externalToken() {
+            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
+            return coinItem?.[this.hubChainData?.hubChainId];
         },
         hubFeeRate() {
-            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
             const discountModifier = 1 - this.discount;
-            return new Big(coinItem?.commission || 0.01).times(discountModifier).toString();
+            // commission to deposit is taken from external token data (e.g. chainId: 'ethereum')
+            return new Big(this.externalToken?.commission || 0.01).times(discountModifier).toString();
         },
         hubFeeRatePercent() {
             return new Big(this.hubFeeRate).times(100).toString();
@@ -169,14 +176,7 @@ export default {
             }
         },
         coinContractAddress() {
-            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            if (this.chainId === ETHEREUM_CHAIN_ID) {
-                return coinItem?.ethereum?.externalTokenId;
-            }
-            if (this.chainId === BSC_CHAIN_ID) {
-                return coinItem?.bsc?.externalTokenId;
-            }
-            return undefined;
+            return this.externalToken?.externalTokenId;
         },
         isEthSelected() {
             return (this.coinContractAddress || '').toLowerCase() === this.wrappedNativeContractAddress;

@@ -92,17 +92,19 @@ export default {
         };
     },
     computed: {
+        coinItem() {
+            return this.hubCoinList.find((item) => item.symbol === this.form.coin);
+        },
         coinId() {
-            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem ? coinItem.minterId : undefined;
+            return this.coinItem?.minterId;
         },
         externalToken() {
-            const coinItem = this.hubCoinList.find((item) => item.symbol === this.form.coin);
-            return coinItem?.[this.form.networkTo];
+            return this.coinItem?.[this.form.networkTo];
         },
         hubFeeRate() {
             const discountModifier = 1 - this.discount;
-            return new Big(this.externalToken?.commission || 0.01).times(discountModifier).toString();
+            // commission to withdraw is taken from origin token data (e.g. chainId: 'minter')
+            return new Big(this.coinItem?.commission || 0.01).times(discountModifier).toString();
         },
         hubFeeRatePercent() {
             return new Big(this.hubFeeRate).times(100).toString();
