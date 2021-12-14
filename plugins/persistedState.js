@@ -1,4 +1,7 @@
 import createPersistedState from 'vuex-persistedstate';
+import VuexPersistence from 'vuex-persist';
+import localforage from 'localforage';
+import {pruneTxFields} from '@/store/hub.js';
 
 let isCreated = false;
 
@@ -17,7 +20,8 @@ export default ({store}) => {
     createPersistedState({
         paths: [
             'auth',
-            'hub.ethList',
+            // stored in indexedDB to handle large size data
+            // 'hub.ethList',
         ],
         // filter(mutation) {
         //     // is auth mutation
@@ -26,4 +30,19 @@ export default ({store}) => {
     })(store);
     // isCreated = true;
     // });
+
+
+    new VuexPersistence({
+        key: 'vuex-persist',
+        storage: localforage,
+        asyncStorage: true,
+        reducer(state) {
+            // prune on save to clean already stored data
+            let ethList = state.hub?.ethList || {};
+            ethList = Object.fromEntries(Object.entries(ethList).map(([address, txList]) => {
+                return [address, txList.map(pruneTxFields)];
+            }));
+            return {hub: {ethList}};
+        },
+    }).plugin(store);
 };

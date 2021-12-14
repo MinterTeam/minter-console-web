@@ -961,6 +961,7 @@ function getSwapOutput(receipt) {
     const dataIndex = 3 - 1;
     const amount0StartIndex = 2 + 64 * dataIndex;
     const amount1StartIndex = 2 + 64 * (dataIndex + 1);
+    // @TODO logs pruned from tx for now to save storage space
     const amount0OutHex = receipt.logs[logIndex].data.slice(amount0StartIndex, amount0StartIndex + 64);
     const amount1OutHex = receipt.logs[logIndex].data.slice(amount1StartIndex, amount1StartIndex + 64);
     const amount0Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount0OutHex);

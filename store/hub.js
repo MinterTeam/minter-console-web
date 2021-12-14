@@ -67,6 +67,7 @@ export const mutations = {
             console.warn('hub/saveDeposit: can\'t save because `tx.from` not specified');
             return;
         }
+        tx = pruneTxFields(tx);
         const ethAddress = tx.from.toLowerCase();
         let depositList = state.ethList[ethAddress] || [];
         const index = depositList.findIndex((item) => item.hash === tx.hash);
@@ -135,6 +136,25 @@ function parsePayload(payload) {
     } catch (e) {
         return null;
     }
+}
+
+/**
+ * clean unused fields to save space in storage
+ * @param {HubDeposit} tx
+ * @return {HubDeposit}
+ */
+export function pruneTxFields(tx) {
+    tx = {...tx};
+    tx.hash = tx.hash?.toLowerCase() || tx.transactionHash?.toLowerCase();
+    delete tx.transactionHash;
+    delete tx.v;
+    delete tx.r;
+    delete tx.s;
+    // logs[0].data may be needed to retrieve uniswap output (not used for now)
+    delete tx.logs;
+    delete tx.logsBloom;
+
+    return tx;
 }
 
 /**
