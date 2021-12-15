@@ -13,7 +13,7 @@ import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/uti
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
-import useHubDiscount from '@/composables/useHubDiscount.js';
+import useHubDiscount from '@/composables/use-hub-discount.js';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
 import FieldCoin from '@/components/common/FieldCoin.vue';
