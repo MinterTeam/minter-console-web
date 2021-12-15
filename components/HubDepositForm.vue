@@ -16,7 +16,7 @@ import wethAbi from '~/assets/abi-weth.js';
 import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
-import useHubDiscount from '@/composables/useHubDiscount.js';
+import useHubDiscount from '@/composables/use-hub-discount.js';
 import Loader from '~/components/common/Loader.vue';
 import TxListItem from '~/components/HubDepositTxListItem.vue';
 import Account from '~/components/HubDepositAccount.vue';
