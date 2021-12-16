@@ -11,15 +11,13 @@
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce, replaceCoinSymbol} from '~/api/gate.js';
-    import {getSwapCoinList} from '~/api/explorer.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils.js";
-    import {COIN_TYPE} from '~/assets/variables.js';
     import useFee from '~/composables/use-fee.js';
     import BaseAmount from '~/components/common/BaseAmount.vue';
-    import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
+    import FieldFee from '~/components/common/FieldFee.vue';
     import FieldQr from '~/components/common/FieldQr.vue';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger.vue';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
@@ -31,8 +29,8 @@
         components: {
             QrcodeVue,
             BaseAmount,
-            FieldCoin,
             FieldDomain,
+            FieldFee,
             FieldQr,
             InputMaskedInteger,
             ButtonCopyIcon,
@@ -81,12 +79,6 @@
                 ...useFee(),
             };
         },
-        fetch() {
-            return getSwapCoinList(this.$store.getters.BASE_COIN, 1)
-                .then((swapCoinList) => {
-                    this.swapBaseCoinList = swapCoinList;
-                });
-        },
         data() {
             return {
                 isFormSending: false,
@@ -112,7 +104,6 @@
                 signedTx: null,
                 multisigDomain: '',
                 isMultisigDomainResolving: false,
-                swapBaseCoinList: [],
             };
         },
         validations() {
@@ -161,19 +152,6 @@
                 balance = this.$store.getters.balance;
                 this.$emit('update:addressBalance', balance);
                 return balance;
-            },
-            gasSuitableBalance() {
-                return this.balance.filter((balanceItem) => {
-                    // coin with reserve
-                    if (balanceItem.coin.type === COIN_TYPE.COIN) {
-                        return true;
-                    }
-                    // swapable within pool to base coin
-                    if (this.swapBaseCoinList.find((swapCoinItem) => swapCoinItem.id === balanceItem.coin.id)) {
-                        return true;
-                    }
-                    return false;
-                });
             },
             isShowPayload() {
                 return this.txType !== TX_TYPE.REDEEM_CHECK;
@@ -474,23 +452,15 @@
                     <!-- Tx Data Fields -->
                     <slot :fee="fee" :address-balance="balance"></slot>
 
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced && isShowGasCoin">
-                        <FieldCoin
-                            v-model="form.gasCoin"
-                            :$value="$v.form.gasCoin"
-                            :label="$td('Coin to pay fee', 'form.fee')"
-                            :coin-list="gasSuitableBalance"
-                            :select-mode="true"
-                        />
-                        <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-                        <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
-                        <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
-                        <div class="form-field__help" v-else>
-                            {{ pretty(fee.value) }} {{ fee.coinSymbol }}
-                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
-                        </div>
-                    </div>
+                    <FieldFee
+                        class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2"
+                        v-show="showAdvanced && isShowGasCoin"
+                        v-model="form.gasCoin"
+                        :$value="$v.form.gasCoin"
+                        :label="$td('Coin to pay fee', 'form.fee')"
+                        :address-balance="balance"
+                        :fee="fee"
+                    />
                     <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
                         <label class="form-field" :class="{'is-error': $v.form.payload.$error}">
                             <input
