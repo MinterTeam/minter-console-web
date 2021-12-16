@@ -62,7 +62,7 @@
     "lodash-es": "^4.17.21",
     "minter-coin-block-list": "0.0.7",
     "minter-footer-links": "^3.1.0",
-    "minter-js-sdk": "^0.40.1",
+    "minter-js-sdk": "^0.40.2",
     "minterjs-tx": "^11.0.0",
     "minterjs-util": "^0.22.0",
     "minterjs-wallet": "^6.1.1",
