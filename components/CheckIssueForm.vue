@@ -13,11 +13,11 @@
     import {replaceCoinSymbolByPath} from '~/api/gate.js';
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from '~/assets/server-error';
-    import {pretty} from '~/assets/utils';
     import {NETWORK, TESTNET} from '~/assets/variables';
     import useFee from '~/composables/use-fee.js';
     import Modal from '~/components/common/Modal';
     import FieldCoin from '~/components/common/FieldCoin.vue';
+    import FieldFee from '~/components/common/FieldFee.vue';
     import InputMaskedAmount from '~/components/common/InputMaskedAmount';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon';
@@ -28,6 +28,7 @@
             InlineSvg,
             Modal,
             FieldCoin,
+            FieldFee,
             InputMaskedAmount,
             InputMaskedInteger,
             ButtonCopyIcon,
@@ -113,7 +114,6 @@
             },
         },
         methods: {
-            pretty: (val) => pretty(val, undefined, true),
             submit() {
                 if (this.isFormSending) {
                     return;
@@ -247,24 +247,14 @@
                 </label>
                 <span class="form-field__error" v-if="$v.form.password.$dirty && !$v.form.password.required">{{ $td('Enter password', 'form.checks-issue-pass-error-required') }}</span>
             </div>
-            <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
-                <FieldCoin
-                    v-model="form.gasCoin"
-                    :$value="$v.form.gasCoin"
-                    :label="$td('Coin to pay fee (optional)', 'form.fee')"
-                    :coin-list="balance"
-                    :select-mode="true"
-                />
-                <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-                <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
-                <div class="form-field__help" v-else>
-                    {{ fee.coinSymbol }} {{ pretty(fee.value) }}
-                    <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ $store.getters.COIN_NAME }} {{ pretty(fee.baseCoinValue) }})</span>
-                    <br>
-                    {{ $td('Default:', 'form.help-default') }} {{ fee.isBaseCoinEnough ? $store.getters.COIN_NAME : $td('same as coin to transfer', 'form.wallet-send-fee-same') }}
-                </div>
-            </div>
+            <FieldFee
+                class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4"
+                v-model="form.gasCoin"
+                :$value="$v.form.gasCoin"
+                :label="$td('Coin to pay fee (optional)', 'form.fee')"
+                :address-balance="balance"
+                :fee="fee"
+            />
             <div class="u-cell u-cell--medium--1-3 u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.dueBlock.$error}">
                     <InputMaskedInteger
