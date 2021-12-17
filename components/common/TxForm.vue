@@ -11,15 +11,13 @@
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
     import {postTx, ensureNonce, replaceCoinSymbol} from '~/api/gate.js';
-    import {getSwapCoinList} from '~/api/explorer.js';
-    import FeeBus from '~/assets/fee.js';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error.js";
     import {getExplorerTxUrl, pretty, prettyExact} from "~/assets/utils.js";
-    import {COIN_TYPE} from '~/assets/variables.js';
+    import useFee from '~/composables/use-fee.js';
     import BaseAmount from '~/components/common/BaseAmount.vue';
-    import FieldCoin from '~/components/common/FieldCoin.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
+    import FieldFee from '~/components/common/FieldFee.vue';
     import FieldQr from '~/components/common/FieldQr.vue';
     import InputMaskedInteger from '~/components/common/InputMaskedInteger.vue';
     import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
@@ -28,12 +26,11 @@
     import SignatureList from '~/components/common/SignatureList.vue';
 
     export default {
-        feeBus: null,
         components: {
             QrcodeVue,
             BaseAmount,
-            FieldCoin,
             FieldDomain,
+            FieldFee,
             FieldQr,
             InputMaskedInteger,
             ButtonCopyIcon,
@@ -77,11 +74,10 @@
                 default: false,
             },
         },
-        fetch() {
-            return getSwapCoinList(this.$store.getters.BASE_COIN, 1)
-                .then((swapCoinList) => {
-                    this.swapBaseCoinList = swapCoinList;
-                });
+        setup() {
+            return {
+                ...useFee(),
+            };
         },
         data() {
             return {
@@ -101,8 +97,6 @@
                     payload: '',
                 },
                 isModeAdvanced: false,
-                /** @type FeeData */
-                fee: {},
                 isConfirmModalVisible: false,
                 isSuccessModalVisible: false,
                 isSigning: false,
@@ -110,7 +104,6 @@
                 signedTx: null,
                 multisigDomain: '',
                 isMultisigDomainResolving: false,
-                swapBaseCoinList: [],
             };
         },
         validations() {
@@ -160,19 +153,6 @@
                 this.$emit('update:addressBalance', balance);
                 return balance;
             },
-            gasSuitableBalance() {
-                return this.balance.filter((balanceItem) => {
-                    // coin with reserve
-                    if (balanceItem.coin.type === COIN_TYPE.COIN) {
-                        return true;
-                    }
-                    // swapable within pool to base coin
-                    if (this.swapBaseCoinList.find((swapCoinItem) => swapCoinItem.id === balanceItem.coin.id)) {
-                        return true;
-                    }
-                    return false;
-                });
-            },
             isShowPayload() {
                 return this.txType !== TX_TYPE.REDEEM_CHECK;
             },
@@ -209,11 +189,10 @@
         watch: {
             feeBusParams: {
                 handler(newVal) {
-                    if (this.$options.feeBus && typeof this.$options.feeBus.$emit === 'function') {
-                        this.$options.feeBus.$emit('update-params', newVal);
-                    }
+                    Object.assign(this.feeProps, newVal);
                 },
                 deep: true,
+                immediate: true,
             },
             'form.multisigAddress': {
                 handler(newVal, oldVal) {
@@ -237,13 +216,6 @@
                 },
                 deep: true,
             },
-        },
-        created() {
-            this.$options.feeBus = new FeeBus(this.feeBusParams);
-            this.fee = this.$options.feeBus.fee;
-            this.$options.feeBus.$on('update-fee', (newVal) => {
-                this.fee = newVal;
-            });
         },
         methods: {
             pretty: (val) => pretty(val, undefined, true),
@@ -480,29 +452,22 @@
                     <!-- Tx Data Fields -->
                     <slot :fee="fee" :address-balance="balance"></slot>
 
-                    <div class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2" v-show="showAdvanced && isShowGasCoin">
-                        <FieldCoin
-                            v-model="form.gasCoin"
-                            :$value="$v.form.gasCoin"
-                            :label="$td('Coin to pay fee', 'form.fee')"
-                            :coin-list="gasSuitableBalance"
-                            :select-mode="true"
-                        />
-                        <span class="form-field__error" v-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <!--<span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
-                        <span class="form-field__error" v-else-if="$v.form.gasCoin.$dirty && !$v.form.gasCoin.fee">{{ fee.error }}</span>
-                        <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
-                        <div class="form-field__help" v-else>
-                            {{ pretty(fee.value) }} {{ fee.coinSymbol }}
-                            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
-                        </div>
-                    </div>
+                    <FieldFee
+                        class="u-cell u-cell--xlarge--1-4 u-cell--xlarge--order-2"
+                        v-show="showAdvanced && isShowGasCoin"
+                        v-model="form.gasCoin"
+                        :$value="$v.form.gasCoin"
+                        :label="$td('Coin to pay fee', 'form.fee')"
+                        :address-balance="balance"
+                        :fee="fee"
+                    />
                     <div class="u-cell" :class="{'u-cell--xlarge--3-4': isShowGasCoin}" v-show="showAdvanced && isShowPayload">
                         <label class="form-field" :class="{'is-error': $v.form.payload.$error}">
-                            <input class="form-field__input" type="text" v-check-empty
-                                   data-test-id="walletTxFormInputPayload"
-                                   v-model.trim="form.payload"
-                                   @blur="$v.form.payload.$touch()"
+                            <input
+                                class="form-field__input" type="text" v-check-empty
+                                data-test-id="walletTxFormInputPayload"
+                                v-model.trim="form.payload"
+                                @blur="$v.form.payload.$touch()"
                             >
                             <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                         </label>
@@ -524,10 +489,11 @@
 
                     <!-- Generation -->
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
-                        <FieldQr v-model="form.nonce"
-                                 :$value="$v.form.nonce"
-                                 :label="$td('Nonce', 'form.checks-issue-nonce')"
-                                 :isInteger="true"
+                        <FieldQr
+                            v-model="form.nonce"
+                            :$value="$v.form.nonce"
+                            :label="$td('Nonce', 'form.checks-issue-nonce')"
+                            :isInteger="true"
                         />
                         <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>
@@ -535,9 +501,10 @@
                     </div>
                     <div class="u-cell u-cell--xlarge--1-4 u-cell--small--1-2 u-cell--order-2" v-if="$store.getters.isOfflineMode">
                         <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                            <InputMaskedInteger class="form-field__input" v-check-empty
-                                                v-model="form.gasPrice"
-                                                @blur="$v.form.gasPrice.$touch()"
+                            <InputMaskedInteger
+                                class="form-field__input" v-check-empty
+                                v-model="form.gasPrice"
+                                @blur="$v.form.gasPrice.$touch()"
                             />
                             <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                             <span class="form-field__label">{{ $td('Gas Price', 'form.gas-price') }}</span>
@@ -654,9 +621,12 @@
                     <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> Transaction requires high fee.</div>
                 </div>
                 <div class="panel__section">
-                    <button class="button button--main button--full" type="button" data-test-id="txModalSubmitButton" data-focus-on-open
-                            :class="{'is-loading': isFormSending}"
-                            @click="submit"
+                    <button
+                        class="button button--main button--full" type="button"
+                        data-test-id="txModalSubmitButton"
+                        data-focus-on-open
+                        :class="{'is-loading': isFormSending}"
+                        @click="submit"
                     >
                         <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>

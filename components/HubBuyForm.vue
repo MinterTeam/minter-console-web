@@ -18,12 +18,12 @@ import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hu
 import {getTransaction} from '@/api/explorer.js';
 import {estimateCoinSell, postTx} from '@/api/gate.js';
 import Big from '~/assets/big.js';
-import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl, getEtherscanTxUrl, shortHashFilter} from '~/assets/utils.js';
+import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import peggyABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
 import debounce from '~/assets/lodash5-debounce.js';
-import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_ETHEREUM_CONTRACT_ADDRESS} from '~/assets/variables.js';
+import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import BaseAmount from '@/components/common/BaseAmount.vue';
@@ -65,7 +65,7 @@ function coinContract(coinContractAddress) {
 const hubBridgeAddress = HUB_ETHEREUM_CONTRACT_ADDRESS;
 const hubBridgeContract = new web3.eth.Contract(peggyABI, hubBridgeAddress);
 
-const wethContract = new web3.eth.Contract(wethAbi, WETH_ETHEREUM_CONTRACT_ADDRESS);
+const wethContract = new web3.eth.Contract(wethAbi, WETH_CONTRACT_ADDRESS);
 const wethDepositAbiData = wethContract.methods.deposit().encodeABI();
 
 const wethToken = WETH_TOKEN_DATA[ETHEREUM_CHAIN_ID];
@@ -386,8 +386,6 @@ export default {
         prettyExact,
         prettyRound,
         getExplorerTxUrl,
-        getEtherscanTxUrl,
-        shortHashFilter,
         updateBalance() {
             if (!this.coinContractAddress) {
                 return Promise.reject();
@@ -675,7 +673,7 @@ export default {
         },
         sendWrapTx({nonce, gasPrice} = {}) {
             return this.sendEthTx({
-                to: WETH_ETHEREUM_CONTRACT_ADDRESS,
+                to: WETH_CONTRACT_ADDRESS,
                 value: this.ethToWrap,
                 data: wethDepositAbiData,
                 nonce,
@@ -706,7 +704,7 @@ export default {
             if (currentStep?.finished) {
                 return currentStep.tx;
             } else if (currentStep?.tx && !isSpeedup) {
-                return subscribeTransaction(currentStep.tx.hash, 0)
+                return subscribeTransaction(currentStep.tx.hash, {confirmationCount: 0})
                     .then((receipt) => {
                         console.log('subscribeTransaction', receipt);
                         this.addStepData(loadingStage, {tx: receipt, finished: true});
@@ -963,6 +961,7 @@ function getSwapOutput(receipt) {
     const dataIndex = 3 - 1;
     const amount0StartIndex = 2 + 64 * dataIndex;
     const amount1StartIndex = 2 + 64 * (dataIndex + 1);
+    // @TODO logs pruned from tx for now to save storage space
     const amount0OutHex = receipt.logs[logIndex].data.slice(amount0StartIndex, amount0StartIndex + 64);
     const amount1OutHex = receipt.logs[logIndex].data.slice(amount1StartIndex, amount1StartIndex + 64);
     const amount0Out = web3.eth.abi.decodeParameter('uint256', '0x' + amount0OutHex);

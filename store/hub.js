@@ -7,12 +7,20 @@ import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID} from '~/assets/variables.js';
 import {fromBase64} from '~/assets/utils.js';
 
 export const state = () => ({
+    // minterList fetched on every load
     /** @type {Object.<string, HubWithdraw>} */
     minterList: {},
-    // @TODO store whole tx struct
-    /** @type {Array<string>} */
-    ethList: [],
+    ethAddress: '',
+    // ethList stored in localStorage
+    /** @type {Object.<string, Array<HubDeposit>>} */
+    ethList: {},
 });
+
+export const getters = {
+    depositList(state) {
+        return state.ethList[state.ethAddress] || [];
+    },
+};
 
 export const mutations = {
     setWithdrawList(state, txList) {
@@ -51,14 +59,45 @@ export const mutations = {
             outTxHash,
         });
     },
-    setDepositList(state, itemList) {
-        state.ethList = itemList || [];
-        state.ethList.slice(0, 5);
+    setEthAddress(state, address) {
+        state.ethAddress = address.toLowerCase();
     },
-    //@TODO check txs with same nonce and filter out pending if another is confirmed
-    saveDeposit(state, hash) {
-        state.ethList.unshift(hash);
-        state.ethList = state.ethList.slice(0, 5);
+    saveDeposit(state, tx) {
+        if (!tx.from) {
+            console.warn('hub/saveDeposit: can\'t save because `tx.from` not specified');
+            return;
+        }
+        tx = pruneTxFields(tx);
+        const ethAddress = tx.from.toLowerCase();
+        let depositList = state.ethList[ethAddress] || [];
+        const index = depositList.findIndex((item) => item.hash === tx.hash);
+        // update list
+        if (index >= 0) {
+            depositList[index] = {
+                ...depositList[index],
+                ...tx,
+            };
+        } else {
+            depositList.unshift(tx);
+        }
+        // check txs with same nonce and filter out pending if another is confirmed
+        let currentNonce = typeof tx.nonce !== 'undefined' ? tx.nonce : depositList[index]?.nonce;
+        const isConfirmed = depositList.some((item) => item.nonce === currentNonce && item.blockHash);
+        if (isConfirmed) {
+            // find unconfirmed with same nonce
+            const txsToPrune = depositList.filter((item) => {
+                return !item.blockHash && item.nonce === currentNonce;
+            });
+            depositList = depositList.filter((item) => {
+                const shouldPrune = txsToPrune.some((toPrune) => toPrune.hash === item.hash);
+                return !shouldPrune;
+            });
+        }
+        // preserve list length
+        if (depositList.length > 5) {
+            depositList = depositList.slice(0, 5);
+        }
+        Vue.set(state.ethList, ethAddress, depositList);
     },
 };
 
@@ -100,6 +139,25 @@ function parsePayload(payload) {
 }
 
 /**
+ * clean unused fields to save space in storage
+ * @param {HubDeposit} tx
+ * @return {HubDeposit}
+ */
+export function pruneTxFields(tx) {
+    tx = {...tx};
+    tx.hash = tx.hash?.toLowerCase() || tx.transactionHash?.toLowerCase();
+    delete tx.transactionHash;
+    delete tx.v;
+    delete tx.r;
+    delete tx.s;
+    // logs[0].data may be needed to retrieve uniswap output (not used for now)
+    delete tx.logs;
+    delete tx.logsBloom;
+
+    return tx;
+}
+
+/**
  * @typedef {Object} HubWithdraw
  * @property {Object} tx - minter tx data
  * @property {string} status - withdraw status
@@ -107,4 +165,12 @@ function parsePayload(payload) {
  * @property {number|string} amount
  * @property {HUB_CHAIN_ID} destination
  * @property {string} timestamp
+ */
+
+/**
+ * @typedef {Web3Tx & {chainId: number, tokenInfo: HubDepositTxInfo=, transfer: HubTransfer=}} HubDeposit
+ */
+
+/**
+ * @typedef {{amount: string, tokenContract: string, tokenName: string, type: HUB_DEPOSIT_TX_PURPOSE}|{type: HUB_DEPOSIT_TX_PURPOSE}} HubDepositTxInfo
  */

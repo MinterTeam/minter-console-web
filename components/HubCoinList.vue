@@ -1,10 +1,12 @@
 <script>
 import Big from '~/assets/big.js';
-import {pretty, getExplorerCoinUrl, getEtherscanAddressUrl} from '~/assets/utils.js';
-import {HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
+import {pretty, getExplorerCoinUrl, getEvmAddressUrl} from '~/assets/utils.js';
+import {HUB_CHAIN_ID, HUB_CHAIN_DATA, BSC_CHAIN_ID, ETHEREUM_CHAIN_ID} from '~/assets/variables.js';
 import Loader from '~/components/common/Loader.vue';
 
 export default {
+    HUB_CHAIN_ID,
+    HUB_CHAIN_DATA,
     components: {
         Loader,
     },
@@ -64,7 +66,12 @@ export default {
     methods: {
         pretty,
         getExplorerCoinUrl,
-        getEtherscanAddressUrl,
+        getEthereumAddressUrl(address) {
+            return getEvmAddressUrl(ETHEREUM_CHAIN_ID, address);
+        },
+        getBscAddressUrl(address) {
+            return getEvmAddressUrl(BSC_CHAIN_ID, address);
+        },
     },
 };
 
@@ -76,8 +83,7 @@ export default {
  */
 function getPriceFromList(list, name) {
     const priceItem = list.find((item) => item.name === name);
-    const coinPrice = priceItem ? priceItem.value : '0';
-    return new Big(coinPrice).div(10 ** 18).toString();
+    return priceItem ? priceItem.value : '0';
 }
 </script>
 
@@ -118,12 +124,19 @@ function getPriceFromList(list, name) {
                 <table>
                     <thead>
                         <tr class="u-text-nowrap">
-                            <th width="30%">
+                            <th width="25%">
                                 <span class="u-hidden-small-down">{{ $td('Available tokens', 'hub.coin-table-name') }}</span>
                                 <span class="u-hidden-small-up">{{ $td('Tokens', 'hub.coin-table-name-mobile') }}</span>
                             </th>
-                            <th width="30%">{{ $td('Contract', 'hub.coin-table-contract') }}</th>
-                            <th width="25%">{{ $td('Price', 'hub.coin-table-price') }}</th>
+                            <th width="20%">
+                                {{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].shortName }}
+                                {{ $td('contract', 'hub.coin-table-contract') }}
+                            </th>
+                            <th width="20%">
+                                {{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].shortName }}
+                                {{ $td('contract', 'hub.coin-table-contract') }}
+                            </th>
+                            <th width="20%">{{ $td('Price', 'hub.coin-table-price') }}</th>
                             <th width="15%">
                                 <span class="u-hidden-small-down">{{ $td('Hub fee', 'hub.coin-table-fee') }}</span>
                                 <span class="u-hidden-small-up">{{ $td('Fee', 'hub.coin-table-fee-mobile') }}</span>
@@ -136,7 +149,10 @@ function getPriceFromList(list, name) {
                                 <a class="link--default" :href="getExplorerCoinUrl(coinItem.symbol)" target="_blank" rel="noopener">{{ coinItem.symbol }}</a>
                             </td>
                             <td>
-                                <a class="link--default" :href="getEtherscanAddressUrl(coinItem.ethAddr)" target="_blank" rel="noopener">{{ coinItem.denom.toUpperCase() }}</a>
+                                <a class="link--default" :href="getEthereumAddressUrl(coinItem.ethereum.externalTokenId)" target="_blank" rel="noopener" v-if="coinItem.ethereum">{{ coinItem.denom.toUpperCase() }}</a>
+                            </td>
+                            <td>
+                                <a class="link--default" :href="getBscAddressUrl(coinItem.bsc.externalTokenId)" target="_blank" rel="noopener" v-if="coinItem.bsc">{{ coinItem.denom.toUpperCase() }}</a>
                             </td>
                             <!-- price -->
                             <td>
@@ -144,7 +160,7 @@ function getPriceFromList(list, name) {
                             </td>
                             <!-- fee -->
                             <td>
-                                {{ pretty(coinItem.customCommission * 100) }}%
+                                {{ pretty(coinItem.commission * 100) }}%
                             </td>
                         </tr>
                     </tbody>

@@ -7,7 +7,7 @@ import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';
 import fromExponential from 'from-exponential';
 import {txTypeList} from 'minterjs-util/src/tx-types.js';
-import {EXPLORER_HOST, ETHERSCAN_HOST, BSCSCAN_HOST, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from "~/assets/variables.js";
+import {EXPLORER_HOST, HUB_TRANSFER_STATUS, HUB_CHAIN_BY_ID} from "~/assets/variables.js";
 
 
 
@@ -128,20 +128,31 @@ export function getExplorerCoinUrl(coin) {
     return EXPLORER_HOST + `/coins/${coin}`;
 }
 
-export function getEtherscanTxUrl(hash) {
-    return ETHERSCAN_HOST + '/tx/' + hash;
+/**
+ * @param {number} chainId
+ * @param {string} hash
+ * @return {string}
+ */
+export function getEvmTxUrl(chainId, hash) {
+    const host = HUB_CHAIN_BY_ID[Number(chainId)]?.explorerHost;
+    return host + '/tx/' + hash;
 }
 
-export function getBscscanTxUrl(hash) {
-    return BSCSCAN_HOST + '/tx/' + hash;
+/**
+ * @deprecated
+ */
+export function getEthereumTxUrl(hash) {
+    return '';
 }
 
-export function getEtherscanAddressUrl(hash) {
-    return ETHERSCAN_HOST + '/address/' + hash;
-}
-
-export function getBscscanAddressUrl(hash) {
-    return BSCSCAN_HOST + '/address/' + hash;
+/**
+ * @param {number} chainId
+ * @param {string} hash
+ * @return {string}
+ */
+export function getEvmAddressUrl(chainId, hash) {
+    const host = HUB_CHAIN_BY_ID[Number(chainId)]?.explorerHost;
+    return host + '/address/' + hash;
 }
 
 /**
@@ -257,11 +268,6 @@ export function shortHashFilter(value, endLength = 6, minLengthToShort) {
     return isLong ? value.substr(0, startLength) + '…' + value.substr(-endLength) : value;
 }
 
-/**
- * @deprecated
- * @type {function(string, number=, number=): string}
- */
-export const shortFilter = shortHashFilter;
 
 /**
  * @param {number} value
@@ -335,9 +341,9 @@ function boldenSuggestion(text, query) {
 
 export function isHubTransferFinished(status) {
     const finishedStatus = {
-        [WITHDRAW_STATUS.not_found_long]: true,
-        [WITHDRAW_STATUS.batch_executed]: true,
-        [WITHDRAW_STATUS.refund]: true,
+        [HUB_TRANSFER_STATUS.not_found_long]: true,
+        [HUB_TRANSFER_STATUS.batch_executed]: true,
+        [HUB_TRANSFER_STATUS.refund]: true,
     };
 
     return !!finishedStatus[status];

@@ -6,7 +6,9 @@
         components: {
             HubBuyForm,
         },
-        middleware({ app, store }) {
+        middleware({ app, store, redirect }) {
+            return redirect(app.i18nGetPreferredPath('hub'));
+            // eslint-disable-next-line no-unreachable
             store.commit('SET_SECTION_NAME', app.$td('Buy BIP and HUB', 'common.page-buy'));
         },
         head() {

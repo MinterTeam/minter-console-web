@@ -1,10 +1,11 @@
 <script>
-import {subscribeTransaction, getDepositTxInfo, getBlockNumber, CONFIRMATION_COUNT} from '@/api/web3.js';
+import {subscribeTransaction, getDepositTxInfo, getBlockNumber, getEvmNetworkName, getExternalCoinList, CONFIRMATION_COUNT} from '@/api/web3.js';
 import {subscribeTransfer} from '@/api/hub.js';
-import {shortFilter, getTimeDistance, getTimeStamp as getTime, getEtherscanTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
+import {shortHashFilter, getTimeDistance, getTimeStamp as getTime, getEvmTxUrl, getExplorerTxUrl, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import eventBus from '~/assets/event-bus.js';
-import Loader from '@/components/common/Loader.vue';
 import {HUB_TRANSFER_STATUS, HUB_DEPOSIT_TX_PURPOSE as TX_PURPOSE} from '~/assets/variables.js';
+import {getErrorText} from '~/assets/server-error.js';
+import Loader from '@/components/common/Loader.vue';
 
 const TX_STATUS = {
     NOT_FOUND: 'not_found',
@@ -25,14 +26,13 @@ export default {
         Loader,
     },
     props: {
-        hash: {
-            type: String,
+        /** @type {HubDeposit} */
+        tx: {
+            type: Object,
             required: true,
         },
-        /**
-         * @type Array<HubCoinItem>
-         */
-        coinList: {
+        /** @type {Array<HubCoinItem>} */
+        hubCoinList: {
             type: Array,
             default: () => [],
         },
@@ -40,69 +40,114 @@ export default {
     fetch() {
         this.isLoading = true;
 
-        // prefetch block number
-        getBlockNumber();
+        let txDataPromise;
+        let txConfirmedPromise;
+        const isTxHasData = this.tx.input && this.tx.to && typeof this.tx.value !== 'undefined';
+        const isTxConfirmed = this.tx.confirmations >= CONFIRMATION_COUNT;
 
-        this.txWatcher = subscribeTransaction(this.hash)
-            .once('tx', (tx) => {
-                this.tx = tx;
+        if (isTxConfirmed) {
+            txConfirmedPromise = Promise.resolve(this.tx);
+        } else {
+            this.txWatcher = subscribeTransaction(this.tx.hash, {chainId: Number(this.tx.chainId)});
 
-                this.tokenInfoPromise =  getDepositTxInfo(tx, this.coinList)
-                    .then((tokenInfo) => {
-                        this.tokenInfo = tokenInfo;
-                        this.isLoading = false;
-                    })
-                    .catch((error) => {
+            txConfirmedPromise = this.txWatcher
+                .once('tx', (tx) => {
+                    // tx in block or pending
+                    this.$store.commit('hub/saveDeposit', tx);
+                })
+                .once('confirmation', (tx) => {
+                    // first confirmation
+                    this.$store.commit('hub/saveDeposit', tx);
+                })
+                .then((tx) => {
+                    // enough confirmations
+                    this.$store.commit('hub/saveDeposit', tx);
+
+                    return tx;
+                })
+                .catch((error) => {
+                    if (error.message !== 'unsubscribed') {
                         console.log(error);
-                    });
-            })
-            .once('confirmation', (tx) => {
-                // first confirmation
-                this.tx = tx;
-            })
-            .then((tx) => {
-                // enough confirmations
-                this.tx = tx;
-
-                return tx;
-            })
-            .catch((error) => {
-                if (error.message !== 'unsubscribed') {
-                    console.log(error);
-                }
-            });
-
-        //@TODO this.tokenInfoPromise may be null
-        // subscribe on transfer for send txs
-        this.txWatcher.then((tx) => {
-            this.tokenInfoPromise
-                .then(() => {
-                    if (this.tokenInfo.type === TX_PURPOSE.SEND) {
-                        this.transferWatcher = subscribeTransfer(tx.hash)
-                            .on('update', (transfer) => {
-                                this.transfer = transfer;
-                            })
-                            .catch((error) => {
-                                if (error.message !== 'unsubscribed') {
-                                    console.log(error);
-                                }
-                            });
+                        this.serverError = getErrorText(error);
+                        this.isLoading = false;
                     }
                 });
+        }
+
+        if (isTxHasData) {
+            txDataPromise = Promise.resolve(this.tx);
+        } else {
+            txDataPromise = new Promise((resolve) => {
+                this.txWatcher.once('tx', (tx) => {
+                    // tx in block or pending
+                    resolve(tx);
+                });
+            });
+        }
+
+        let tokenInfoPromise;
+        if (this.tx.tokenInfo) {
+            tokenInfoPromise = Promise.resolve(this.tx.tokenInfo);
+        } else {
+            tokenInfoPromise = txDataPromise
+                .then((tx) => {
+                    if (tx.tokenInfo) {
+                        return tx.tokenInfo;
+                    } else {
+                        return getDepositTxInfo(tx, Number(this.tx.chainId), this.hubCoinList);
+                    }
+                })
+                .then((tokenInfo) => {
+                    this.$store.commit('hub/saveDeposit', {...this.tx, tokenInfo});
+                    return tokenInfo;
+                })
+                .catch((error) => {
+                    console.log(error);
+                    this.serverError = getErrorText(error);
+                });
+        }
+        tokenInfoPromise.finally(() => this.isLoading = false);
+
+        if (this.tx.transfer && isHubTransferFinished(this.tx.transfer.status)) {
+            return;
+        }
+
+        // subscribe on transfer for send txs
+        Promise.all([
+            txConfirmedPromise,
+            tokenInfoPromise,
+        ]).then(([tx, tokenInfo]) => {
+            if (tx && tokenInfo?.type === TX_PURPOSE.SEND) {
+                this.transferWatcher = subscribeTransfer(tx.hash);
+                this.transferWatcher
+                    .on('update', (transfer) => {
+                        this.$store.commit('hub/saveDeposit', {...this.tx, transfer});
+                    })
+                    .catch((error) => {
+                        if (error.message !== 'unsubscribed') {
+                            this.serverError = getErrorText(error);
+                            console.log(error);
+                        }
+                    });
+            }
         });
     },
     data() {
         return {
             isLoading: true,
-            tx: null,
-            tokenInfo: null,
-            tokenInfoPromise: null,
             txWatcher: null,
-            transfer: null,
             transferWatcher: null,
+            serverError: '',
         };
     },
     computed: {
+        tokenInfo() {
+            return this.tx.tokenInfo;
+        },
+        transfer() {
+            return this.tx.transfer;
+        },
+
         // @TODO update distance continuously
         timeDistance() {
             return getTimeDistance(this.tx?.timestamp);
@@ -144,9 +189,10 @@ export default {
             if (!this.tokenInfo) {
                 return '';
             }
-            const coinItem = this.coinList.find((item) => item.ethAddr === this.tokenInfo.tokenContract);
+            const coinItem = getExternalCoinList(this.hubCoinList, Number(this.tx.chainId))
+                .find((item) => item.externalTokenId === this.tokenInfo.tokenContract);
 
-            return coinItem ? coinItem.symbol : '';
+            return coinItem ? coinItem.denom.toUpperCase() : '';
         },
         isInfiniteUnlock() {
             if (!this.tokenInfo) {
@@ -170,9 +216,12 @@ export default {
     },
     methods: {
         pretty,
-        getEtherscanTxUrl,
         getExplorerTxUrl,
-        formatHash: (value) => shortFilter(value, 13),
+        getEvmNetworkName,
+        formatHash: (value) => shortHashFilter(value, 13),
+        getEvmTxUrl(tx) {
+            return getEvmTxUrl(Number(tx.chainId), tx.hash);
+        },
         speedup() {
             const {from, to, value, input, nonce} = this.tx;
             eventBus.emit('account-send-transaction', {from, to, value, data: input, nonce});
@@ -185,17 +234,21 @@ export default {
     <div class="preview__transaction" v-if="!isLoading">
         <div class="hub__preview-transaction-row u-text-overflow">
             <div>
-                <a class="link--main" :href="getEtherscanTxUrl(hash)" target="_blank">{{ formatHash(hash) }}</a>
+                <a class="link--main" :href="getEvmTxUrl(tx)" target="_blank">{{ formatHash(tx.hash) }}</a>
             </div>
             <div class="u-fw-700" v-if="tokenInfo">
                 <template v-if="isInfiniteUnlock">Infinite unlock {{ symbol }}</template>
-                <template v-else>{{ tokenInfo.type }} {{ pretty(tokenInfo.amount) }} {{ symbol }}</template>
+                <template v-else>
+                    {{ tokenInfo.type }}
+                    <template v-if="tokenInfo.amount">{{ pretty(tokenInfo.amount) }} {{ symbol }}</template>
+                </template>
             </div>
         </div>
 
         <div class="hub__preview-transaction-row hub__preview-transaction-meta">
             <div>
                 <template v-if="tx.timestamp">{{ timeDistance }} ago ({{ time }})</template>
+                from {{ getEvmNetworkName(tx.chainId) }}
             </div>
             <div>
                 <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
@@ -218,6 +271,10 @@ export default {
 
                 <Loader class="hub__preview-loader" :is-loading="!isFinished"/>
             </div>
+        </div>
+
+        <div class="hub__preview-transaction-row form__error" v-if="serverError">
+            {{ serverError }}
         </div>
     </div>
 </template>

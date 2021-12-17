@@ -5,7 +5,7 @@ export default {
     props: {
         successTx: {
             type: Object,
-            require: true,
+            required: true,
         },
     },
     computed: {
