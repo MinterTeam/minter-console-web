@@ -259,7 +259,9 @@ export default {
                 .map((item) => item.symbol.toUpperCase());
         },
         stage() {
-            if (this.isUnwrapRequired) {
+            // isUnwrapRequired can't be calculated before form.amount specified
+            const unwrapPossible = this.isEthSelected && this.selectedWrapped > 0 && this.form.amount <= 0;
+            if (this.isUnwrapRequired || unwrapPossible) {
                 return TX_UNWRAP;
             }
             if (!this.isEthSelected && !this.isCoinApproved) {
@@ -650,32 +652,50 @@ export default {
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
                     </div>
                     <div class="u-cell u-cell--large--1-2">
-                        <label class="form-check">
-                            <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
-                            <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
-                        </label>
-                        <label class="form-check" v-if="stage === $options.TX_APPROVE">
-                            <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
-                            <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
-                        </label>
-                        <label class="form-check" v-if="stage === $options.TX_UNWRAP">
-                            <input type="checkbox" class="form-check__input" v-model="form.isUnwrapAll">
-                            <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
-                        </label>
+                        <div class="form-check-group">
+                            <label class="form-check">
+                                <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
+                                <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
+                            </label>
+                            <label class="form-check" v-if="stage === $options.TX_APPROVE">
+                                <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
+                                <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
+                            </label>
+                            <label class="form-check" v-if="stage === $options.TX_UNWRAP">
+                                <input type="checkbox" class="form-check__input" v-model="form.isUnwrapAll">
+                                <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
+                            </label>
+                        </div>
                     </div>
-                    <div class="u-cell u-cell--large--1-2">
+                    <div class="u-cell u-cell--small--1-2 u-cell--large--1-4" v-if="stage !== $options.TX_TRANSFER">
                         <button
                             class="button button--main button--full"
-                            :class="{'is-loading': isFormSending, 'is-disabled': $v.$invalid}"
+                            v-if="!isEthSelected"
+                            :class="{'is-loading': isFormSending && stage === $options.TX_APPROVE, 'is-disabled': $v.$invalid || stage === $options.TX_TRANSFER}"
                         >
-                            <span class="button__content" v-if="stage === $options.TX_TRANSFER">Send</span>
-                            <span class="button__content" v-if="stage === $options.TX_APPROVE">
+                            <span class="button__content">
                                 <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
                                 <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
                             </span>
-                            <span class="button__content" v-if="stage === $options.TX_UNWRAP">
+                            <Loader class="button__loader" :isLoading="true"/>
+                        </button>
+                        <button
+                            class="button button--main button--full"
+                            v-if="isEthSelected"
+                            :class="{'is-loading': isFormSending && stage === $options.TX_UNWRAP, 'is-disabled': $v.$invalid || stage === $options.TX_TRANSFER}"
+                        >
+                            <span class="button__content">
                                 Unwrap <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template> ETH
                             </span>
+                            <Loader class="button__loader" :isLoading="true"/>
+                        </button>
+                    </div>
+                    <div class="u-cell" :class="stage === $options.TX_TRANSFER ? 'u-cell--large--1-2' : 'u-cell--small--1-2 u-cell--large--1-4'">
+                        <button
+                            class="button button--main button--full"
+                            :class="{'is-loading': isFormSending && stage === $options.TX_TRANSFER, 'is-disabled': $v.$invalid || stage !== $options.TX_TRANSFER}"
+                        >
+                            <span class="button__content">Send</span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
@@ -716,13 +736,13 @@ export default {
                             <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
                         </div>
                     </div>
-                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="stage === $options.TX_UNWRAP">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="isEthSelected">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedNative) }}</div>
                             <div class="form-field__label">{{ $td('Native ETH balance', 'form.hub-deposit-weth-balance') }}</div>
                         </div>
                     </div>
-                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="stage === $options.TX_UNWRAP">
+                    <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="isEthSelected">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
                             <div class="form-field__label">{{ $td('Wrapped WETH balance', 'form.hub-deposit-native-eth-balance') }}</div>
