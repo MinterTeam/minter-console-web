@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {CHAINIK_API_URL} from "~/assets/variables";
-import addToCamelInterceptor from '~/assets/to-camel.js';
+import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 
 const instance = axios.create({
     baseURL: CHAINIK_API_URL,
