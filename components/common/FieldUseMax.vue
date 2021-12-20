@@ -64,15 +64,8 @@
                 if (!selectedCoin) {
                     return undefined;
                 }
-                // fee not in selected coins
-                if (!isSelectedCoinSameAsFeeCoin(selectedCoin.coin, this.fee?.coin)) {
-                    return selectedCoin.amount;
-                }
-                // fee in selected coin (handle non-number values)
-                const feeValue = this.fee?.value || 0;
-                // subtract fee
-                const amount = new Big(selectedCoin.amount).minus(feeValue).toString();
-                return amount > 0 ? amount : '0';
+
+                return getAvailableSelectedBalance(selectedCoin, this.fee);
             },
             isMaxValueDefined() {
                 return typeof this.maxValueComputed !== 'undefined' && this.maxValueComputed > 0;
@@ -116,7 +109,23 @@
     };
 
     /**
-     *
+     * @param {BalanceItem} selectedCoin
+     * @param {FeeData} fee
+     * @return {string}
+     */
+    export function getAvailableSelectedBalance(selectedCoin, fee) {
+        // fee not in selected coins
+        if (!isSelectedCoinSameAsFeeCoin(selectedCoin.coin, fee?.coin)) {
+            return selectedCoin.amount;
+        }
+        // fee in selected coin (handle non-number values)
+        const feeValue = fee?.value || 0;
+        // subtract fee
+        const amount = new Big(selectedCoin.amount).minus(feeValue).toString();
+        return amount > 0 ? amount : '0';
+    }
+
+    /**
      * @param {Coin} selectedCoinItem
      * @param {string|number} feeCoinIdOrSymbol
      * @return {boolean}
