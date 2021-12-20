@@ -29,7 +29,7 @@ export default {
     watch: {
         chainId: {
             handler() {
-                if (this.connector.connected && this.connector.chainId !== this.chainId) {
+                if (this.connector?.connected && this.connector?.chainId !== this.chainId) {
                     this.connector.killSession().then(() => {
                         this.connectEth();
                     });

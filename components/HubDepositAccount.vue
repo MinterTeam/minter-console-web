@@ -205,24 +205,30 @@ export default {
         </div>
 
         <div class="panel__section panel__section--tint" v-if="isConnected">
-            Wallet connected to
-            <strong>{{ getEvmNetworkName(chainId) }}</strong>
-            with
-            <template v-if="selectedAccountType === $options.TYPE.WALLETCONNECT">WalletConnect</template>
-            <template v-if="selectedAccountType === $options.TYPE.METAMASK">Metamask</template>
-            <template v-if="selectedAccountType === $options.TYPE.MINTER">Console seed phrase</template>
-            <br>
-            <a class="link--default" :href="getAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a>
-
-            <label class="form-field u-mt-10 u-cell--small--1-2 u-cell--large--1-4">
-                <select class="form-field__input form-field__input--select" v-model="selectedHubNetwork" v-check-empty>
-                    <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
-                    <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
-                </select>
-                <span class="form-field__label">Select network</span>
-            </label>
-
-            <button class="button button--ghost u-mt-10" @click="disconnectEth">Change wallet</button>
+            <div class="u-grid u-grid--small u-grid--vertical-margin--small">
+                <div class="u-cell u-cell--auto">
+                    Wallet connected to
+                    <strong>{{ getEvmNetworkName(chainId) }}</strong>
+                    with
+                    <template v-if="selectedAccountType === $options.TYPE.WALLETCONNECT">WalletConnect</template>
+                    <template v-if="selectedAccountType === $options.TYPE.METAMASK">Metamask</template>
+                    <template v-if="selectedAccountType === $options.TYPE.MINTER">Console seed phrase</template>
+                    <br>
+                    <a class="link--default u-text-break" :href="getAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a>
+                </div>
+                <div class="u-cell u-cell--auto">
+                    <label class="form-field">
+                        <select class="form-field__input form-field__input--select" v-model="selectedHubNetwork" v-check-empty>
+                            <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
+                            <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
+                        </select>
+                        <span class="form-field__label">Select network</span>
+                    </label>
+                </div>
+                <div class="u-cell u-cell--auto">
+                    <button class="button button--ghost" @click="disconnectEth">Change wallet</button>
+                </div>
+            </div>
 
             <div class="form__error u-mt-10" v-if="isConnected && unsupportedNetwork">
                 <div class="u-fw-700">Network {{ chainId }} is not supported, switch to Ethereum or BSC</div>
