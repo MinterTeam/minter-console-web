@@ -7,8 +7,8 @@ import coinBlockList from 'minter-coin-block-list';
 import {_getOracleCoinList} from '~/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
-import addToCamelInterceptor from '~/assets/to-camel.js';
-import {addTimeInterceptor} from '~/assets/time-offset.js';
+import addToCamelInterceptor from '~/assets/axios-to-camel.js';
+import {addTimeInterceptor} from '~/assets/axios-time-offset.js';
 
 
 const coinBlockMap = Object.fromEntries(coinBlockList.map((symbol) => [symbol, true]));

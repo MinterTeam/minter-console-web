@@ -1,6 +1,6 @@
 import Vue from 'vue';
 // import {setAuthToken, resetAuthToken} from "~/api/accounts";
-import {getTimeOffset} from '~/assets/time-offset.js';
+import {getTimeOffset} from '~/assets/axios-time-offset.js';
 
 export default {
     SET_SECTION_NAME: (state, sectionName) => {

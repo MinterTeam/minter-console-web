@@ -13,6 +13,8 @@ import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/uti
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
+import {getAvailableSelectedBalance} from '~/components/common/FieldUseMax.vue';
+import useFee from '~/composables/use-fee.js';
 import useHubDiscount from '@/composables/use-hub-discount.js';
 import FieldQr from '@/components/common/FieldQr.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
@@ -60,9 +62,12 @@ export default {
         },
     },
     setup() {
+        const {fee, feeProps} = useFee();
         const { discount, discountProps } = useHubDiscount();
 
         return {
+            fee,
+            feeProps,
             discount,
             discountProps,
         };
@@ -132,8 +137,15 @@ export default {
         totalFee() {
             return new Big(this.coinFee).plus(this.hubFee).toString();
         },
+        amountToSend() {
+            return new Big(this.form.amount || 0).plus(this.coinFee).plus(this.hubFee).toString();
+        },
         amountToSpend() {
-            return new Big(this.totalFee).plus(this.form.amount || 0).toString();
+            if (this.form.coin === this.fee.coinSymbol) {
+                return new Big(this.amountToSend).plus(this.fee.value).toString();
+            } else {
+                return this.amountToSend;
+            }
         },
         maxAmount() {
             const selectedCoin = this.$store.getters.balance.find((coin) => {
@@ -143,9 +155,10 @@ export default {
             if (!selectedCoin) {
                 return 0;
             }
+            const availableAmount = getAvailableSelectedBalance(selectedCoin, this.fee);
 
-            const maxHubFee = new Big(selectedCoin.amount).times(this.hubFeeRate);
-            const maxAmount = new Big(selectedCoin.amount).minus(maxHubFee).minus(this.coinFee);
+            const maxHubFee = new Big(availableAmount).times(this.hubFeeRate);
+            const maxAmount = new Big(availableAmount).minus(maxHubFee).minus(this.coinFee);
             if (maxAmount.lt(0)) {
                 return 0;
             } else {
@@ -160,6 +173,30 @@ export default {
                 return this.hubCoinList.find((item) => Number(item.minterId) === balanceItem.coin.id);
             });
             */
+        },
+        feeBusParams() {
+            return {
+                txParams: {
+                    // falsy value should be undefined to correct work of txParamsDecorator
+                    // gasCoin: this.form.gasCoin || undefined,
+                    type: TX_TYPE.SEND,
+                    data: {
+                        to: HUB_MINTER_MULTISIG_ADDRESS,
+                        // value: this.amountToSpend,
+                        value: 0,
+                        coin: this.coinId,
+                    },
+                    payload: JSON.stringify({
+                        recipient: this.form.address,
+                        type: 'send_to_' + this.form.networkTo,
+                        // fee for destination network
+                        fee: convertToPip(this.coinFee),
+                    }),
+                },
+                baseCoinAmount: this.$store.getters.baseCoin?.amount,
+                fallbackToCoinToSpend: true,
+                isOffline: this.$store.getters.isOfflineMode,
+            };
         },
     },
     validations() {
@@ -203,6 +240,13 @@ export default {
             handler(newVal) {
                 this.discountProps.minterAddress = newVal;
             },
+            immediate: true,
+        },
+        feeBusParams: {
+            handler(newVal) {
+                Object.assign(this.feeProps, newVal);
+            },
+            deep: true,
             immediate: true,
         },
     },
@@ -285,7 +329,7 @@ export default {
                 type: TX_TYPE.SEND,
                 data: {
                     to: HUB_MINTER_MULTISIG_ADDRESS,
-                    value: this.amountToSpend,
+                    value: this.amountToSend,
                     coin: this.coinId,
                 },
                 payload: JSON.stringify({
@@ -294,6 +338,7 @@ export default {
                     // fee for destination network
                     fee: convertToPip(this.coinFee),
                 }),
+                gasCoin: this.fee.coin,
             };
 
             return postTx(txParams, {privateKey: this.$store.getters.privateKey})
@@ -408,25 +453,31 @@ export default {
         </form>
         <div class="panel__section panel__section--tint">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
-                <div class="u-cell u-cell--medium--1-3">
+                <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
                     </div>
                 </div>
-                <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
+                <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
                     </div>
                 </div>
-                <div class="u-cell u-cell--1-2 u-cell--medium--1-3">
+                <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">
                             {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
                             ({{ hubFeeRatePercent }}%)
                         </span>
+                    </div>
+                </div>
+                <div class="u-cell u-cell--1-2 u-cell--large--1-4">
+                    <div class="form-field form-field--dashed">
+                        <div class="form-field__input is-not-empty">{{ pretty(fee.value) }} {{ fee.coinSymbol }}</div>
+                        <span class="form-field__label">{{ $td('Minter fee', 'form.hub-withdraw-minter-fee') }}</span>
                     </div>
                 </div>
                 <div class="u-cell">
@@ -491,6 +542,12 @@ export default {
                                     {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
                                     ({{ hubFeeRatePercent }}%)
                                 </span>
+                            </div>
+                        </div>
+                        <div class="u-cell">
+                            <div class="form-field form-field--dashed">
+                                <div class="form-field__input is-not-empty">{{ pretty(fee.value) }} {{ fee.coinSymbol }}</div>
+                                <span class="form-field__label">{{ $td('Minter fee', 'form.hub-withdraw-minter-fee') }}</span>
                             </div>
                         </div>
                         <div class="u-cell">

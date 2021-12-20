@@ -2,7 +2,7 @@ import Centrifuge from 'centrifuge/src';
 import throttle from 'lodash-es/throttle.js';
 import {prepareBalance} from '~/api/explorer.js';
 import {EXPLORER_RTM_URL} from "~/assets/variables";
-import {toCamel} from '~/assets/to-camel.js';
+import {toCamel} from '~/assets/axios-to-camel.js';
 
 let centrifuge;
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {ETHERSCAN_API_URL, ETHERSCAN_API_KEY} from "~/assets/variables.js";
-import addToCamelInterceptor from '~/assets/to-camel.js';
+import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 
 const instance = axios.create({
     baseURL: ETHERSCAN_API_URL,
