@@ -16,6 +16,10 @@ export default function useHubDiscount() {
     const discount = computed(() => {
         return Math.max(discountEth.value, discountMinter.value);
     });
+    const discountUpsidePercent = computed(() => {
+        const MAX_DISCOUNT = 0.6;
+        return Math.round((MAX_DISCOUNT - discount.value) * 100);
+    });
 
     const getMinterDiscount = async () => {
         discountMinter.value = await debouncedGetDiscountMinter(discountProps.minterAddress);
@@ -30,6 +34,7 @@ export default function useHubDiscount() {
     return {
         discount,
         discountProps,
+        discountUpsidePercent,
     };
 }
 

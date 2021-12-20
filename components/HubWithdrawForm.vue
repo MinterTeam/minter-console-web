@@ -63,13 +63,14 @@ export default {
     },
     setup() {
         const {fee, feeProps} = useFee();
-        const { discount, discountProps } = useHubDiscount();
+        const { discount, discountProps, discountUpsidePercent } = useHubDiscount();
 
         return {
             fee,
             feeProps,
             discount,
             discountProps,
+            discountUpsidePercent,
         };
     },
     fetch() {
@@ -473,6 +474,12 @@ export default {
                             ({{ hubFeeRatePercent }}%)
                         </span>
                     </div>
+                    <div class="form-field__help">
+                        <a href="https://www.minter.network/hub#tokenomics-discount" class="link--hover link--main" target="_blank">
+                            {{ $td('How to reduce fee up to', 'form.hub-reduce-fee') }}
+                            {{ discountUpsidePercent }}%
+                        </a>
+                    </div>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
@@ -489,7 +496,7 @@ export default {
                             <li>Pay attention to {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} and Minter Hub fees;</li>
                             <li>
                                 {{ $td('Minter Hub is', 'hub.warning-description-2') }}
-                                <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">{{ $td('open-source', 'hub.warning-description-3') }}</a>.
+                                <a class="link--default" href="https://github.com/MinterTeam/mhub2" target="_blank">{{ $td('open-source', 'hub.warning-description-3') }}</a>.
                                 {{ $td('If needed, you may investigate its code before making use of the features offered on this page.', 'hub.warning-description-4') }}
                             </li>
                         </ul>
@@ -500,7 +507,7 @@ export default {
                             <li>Вывод средств возможен только на ваш персональный адрес;</li>
                             <li>Не допускается вывод средств на смарт-контракты, адреса бирж или адреса, к которым у вас нет прямого доступа;</li>
                             <li>Всегда обращайте внимание на комиссии в {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} и Minter Hub;</li>
-                            <li>Minter Hub имеет открытый <a class="link--default" href="https://github.com/MinterTeam/minter-hub" target="_blank">исходный код</a>, изучите его при необходимости.</li>
+                            <li>Minter Hub имеет открытый <a class="link--default" href="https://github.com/MinterTeam/mhub2" target="_blank">исходный код</a>, изучите его при необходимости.</li>
                         </ul>
                     </template>
                 </div>
