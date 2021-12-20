@@ -77,11 +77,12 @@ export default {
         },
     },
     setup() {
-        const { discount, discountProps } = useHubDiscount();
+        const { discount, discountProps, discountUpsidePercent } = useHubDiscount();
 
         return {
             discount,
             discountProps,
+            discountUpsidePercent,
         };
     },
     data() {
@@ -719,6 +720,12 @@ export default {
                                 {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
                                 ({{ hubFeeRatePercent }}%)
                             </span>
+                        </div>
+                        <div class="form-field__help">
+                            <a href="https://www.minter.network/hub#tokenomics-discount" class="link--hover link--main" target="_blank">
+                                {{ $td('How to reduce fee up to', 'form.hub-reduce-fee') }}
+                                {{ discountUpsidePercent }}%
+                            </a>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
