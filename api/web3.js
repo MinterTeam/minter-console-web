@@ -381,6 +381,7 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
         };
     }
 
+    tokenContract = tokenContract?.toLowerCase();
     const coinItem = getExternalCoinList(hubCoinList, chainId)
         .find((item) => item.externalTokenId === tokenContract);
     const tokenName = coinItem?.denom.toUpperCase();

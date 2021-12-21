@@ -3,6 +3,8 @@ import VuexPersistence from 'vuex-persist';
 import localforage from 'localforage';
 import {pruneTxFields} from '@/store/hub.js';
 
+window.localforage = localforage;
+
 let isCreated = false;
 
 const authMutationList = [
@@ -40,7 +42,14 @@ export default ({store}) => {
             // prune on save to clean already stored data
             let ethList = state.hub?.ethList || {};
             ethList = Object.fromEntries(Object.entries(ethList).map(([address, txList]) => {
-                return [address, txList.map(pruneTxFields)];
+                return [address, txList.map(pruneTxFields).map((tx) => {
+                    tx = JSON.parse(JSON.stringify(tx));
+                    // fix already stored tokenInfo
+                    if (tx.tokenInfo?.tokenContract) {
+                        tx.tokenInfo.tokenContract = tx.tokenInfo.tokenContract.toLowerCase();
+                    }
+                    return tx;
+                })];
             }));
             return {hub: {ethList}};
         },
