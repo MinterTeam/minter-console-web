@@ -1,14 +1,22 @@
 <script>
     import {support} from '~/assets/utils-support.js';
+    import useLastUpdateTime from '~/composables/use-last-update-time.js';
 
     const NOTICE_DELAY_STARTUP = 5; // time to app startup
     const NOTICE_DELAY_RECONNECT = 20; // time to reconnect after switching back to the tab
     const NOTICE_TIME = 25;
 
-    let timeInterval = null;
     let operatingDelay = null;
 
     export default {
+        setup() {
+            const {lastUpdateTimeToNow, isLastUpdateTimeChanged} = useLastUpdateTime();
+
+            return {
+                lastUpdateTimeToNow,
+                isLastUpdateTimeChanged,
+            };
+        },
         data() {
             return {
                 isNoticeOpen: false,
@@ -17,7 +25,7 @@
             };
         },
         watch: {
-            "$store.state.lastUpdateTime": function() {
+            lastUpdateTimeToNow: function() {
                 this.checkTime();
             },
             isNoticeOpen(newVal) {
@@ -30,16 +38,11 @@
         },
         beforeMount() {
             this.setStartupDelay();
-            // update timestamps if no new data from server
-            timeInterval = setInterval(() => {
-                this.checkTime();
-            }, 2000);
             if (support.visibilityChange) {
                 document.addEventListener(support.visibilityChange, this.handleVisibilityChange);
             }
         },
         destroyed() {
-            clearInterval(timeInterval);
             clearTimeout(operatingDelay);
             this.$root.$el.classList.remove('is-connection-notice-open');
             if (support.visibilityChange) {
@@ -53,10 +56,10 @@
                 // - no notice
                 // Online device which goes offline:
                 // - notice can be shown if enough time has passed before switched to offline
-                if (this.$store.getters.isOfflineMode) {
+                if (this.$store.getters.isOfflineMode && !this.isLastUpdateTimeChanged) {
                     return;
                 }
-                const shouldOpenNotice = Date.now() - this.$store.state.lastUpdateTime > NOTICE_TIME * 1000;
+                const shouldOpenNotice = this.lastUpdateTimeToNow > NOTICE_TIME * 1000;
                 // show notice only if operating normally
                 if (shouldOpenNotice && this.isOperatingNormally) {
                     this.isNoticeOpen = true;

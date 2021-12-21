@@ -1,8 +1,8 @@
 import Centrifuge from 'centrifuge/src';
-import throttle from 'lodash-es/throttle.js';
 import {prepareBalance} from '~/api/explorer.js';
 import {EXPLORER_RTM_URL} from "~/assets/variables";
 import {toCamel} from '~/assets/axios-to-camel.js';
+import {setLastUpdateTime} from '~/composables/use-last-update-time.js';
 
 let centrifuge;
 
@@ -35,12 +35,11 @@ export default function({app, store, redirect}) {
                         });
                 });
 
-                const throttledCommit = throttle(store.commit, 1000, {leading: true, trailing: true});
                 centrifuge.subscribe("blocks", (response) => {
                     const newBlock = toCamel(response.data);
                     // block timestamp is block's precommit time, fixing it
                     const fixedTimestamp = new Date(newBlock.timestamp).getTime() + Math.round(newBlock.blockTime * 1000);
-                    throttledCommit('SET_LAST_UPDATE_TIME', fixedTimestamp);
+                    setLastUpdateTime(fixedTimestamp);
                 });
 
                 centrifuge.connect();
