@@ -686,7 +686,8 @@ export default {
                             :class="{'is-loading': isFormSending && stage === $options.TX_UNWRAP, 'is-disabled': $v.$invalid || stage === $options.TX_TRANSFER}"
                         >
                             <span class="button__content">
-                                Unwrap <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template> ETH
+                                Unwrap <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template>
+                                {{ hubChainData.coinSymbol }}
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
@@ -746,13 +747,13 @@ export default {
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="isEthSelected">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedNative) }}</div>
-                            <div class="form-field__label">{{ $td('Native ETH balance', 'form.hub-deposit-weth-balance') }}</div>
+                            <div class="form-field__label">{{ $td(`Native ${ hubChainData.coinSymbol } balance`, 'form.hub-deposit-weth-balance', {symbol: hubChainData.coinSymbol}) }}</div>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="isEthSelected">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
-                            <div class="form-field__label">{{ $td('Wrapped WETH balance', 'form.hub-deposit-native-eth-balance') }}</div>
+                            <div class="form-field__label">{{ $td(`Wrapped W${hubChainData.coinSymbol} balance`, 'form.hub-deposit-native-eth-balance', {symbol: hubChainData.coinSymbol}) }}</div>
                         </div>
                     </div>
                 </div>
