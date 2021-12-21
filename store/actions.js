@@ -1,5 +1,6 @@
 // import {getProfile, getProfileAddressEncrypted} from "~/api";
 import {getBalance, getAddressStakeList, getValidatorMetaList} from "~/api/explorer.js";
+import {setLastUpdateTime} from '~/composables/use-last-update-time.js';
 
 export default {
     // FETCH_PROFILE: ({ state, commit }) => {
@@ -64,7 +65,7 @@ export default {
                 });
 
                 commit('SET_BALANCE', balanceList);
-                commit('SET_LAST_UPDATE_TIME', new Date(balanceResponse.latestBlockTime).getTime());
+                setLastUpdateTime(new Date(balanceResponse.latestBlockTime).getTime());
                 return balanceList;
             });
     },
