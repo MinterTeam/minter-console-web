@@ -278,7 +278,6 @@ export default {
                     this.updateBalance();
                     this.getAllowance();
                 }
-                this.$store.commit('hub/setEthAddress', newVal);
                 this.discountProps.ethAddress = this.ethAddress;
             },
             immediate: true,
