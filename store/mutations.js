@@ -1,7 +1,3 @@
-import Vue from 'vue';
-// import {setAuthToken, resetAuthToken} from "~/api/accounts";
-import {getTimeOffset} from '~/assets/axios-time-offset.js';
-
 export default {
     SET_SECTION_NAME: (state, sectionName) => {
         state.sectionName = sectionName;
@@ -32,9 +28,6 @@ export default {
     // },
     SET_BALANCE: (state, balance) => {
         state.balance = Object.freeze(balance);
-    },
-    SET_LAST_UPDATE_TIME: (state, timestamp) => {
-        state.lastUpdateTime = timestamp - getTimeOffset();
     },
     SET_STAKE_LIST: (state, stakeList) => {
         state.stakeList = Object.freeze(stakeList);

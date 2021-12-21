@@ -2,7 +2,7 @@
     import {mapGetters} from 'vuex';
     import {getAddressTransactionList} from "~/api/explorer.js";
     import getTitle from '~/assets/get-title';
-    import {pretty, getTimeDistance} from '~/assets/utils';
+    import {pretty} from '~/assets/utils.js';
     import {NETWORK, TESTNET} from '~/assets/variables';
     import QrcodeVue from 'qrcode.vue';
     import InlineSvg from 'vue-inline-svg';
@@ -11,8 +11,7 @@
     import CoinSendForm from '~/components/SendForm.vue';
     import CoinList from '~/components/CoinList';
     import TransactionLatestList from '~/components/TransactionLatestList';
-
-    let timeInterval = null;
+    import useLastUpdateTime from '~/composables/use-last-update-time.js';
 
     function getAddressLatestTransactionList(addres) {
         return getAddressTransactionList(addres, {limit: 5});
@@ -30,6 +29,14 @@
         },
         filters: {
             pretty,
+        },
+        setup() {
+            const {lastUpdateTime, lastUpdateTimeDistance} = useLastUpdateTime();
+
+            return {
+                lastUpdateTime,
+                lastUpdateTimeDistance,
+            };
         },
         fetch({ app, store }) {
             store.commit('SET_SECTION_NAME', app.$td('Wallet', 'common.page-wallet'));
@@ -69,7 +76,6 @@
                 /** @type Array<Transaction> */
                 txList: [],
                 isAddressQrModalVisible: false,
-                lastUpdateTimeDistance: this.getLastUpdateTimeDistance(),
             };
         },
         computed: {
@@ -89,21 +95,6 @@
                     .then((txListInfo) => {
                         this.txList = txListInfo.data;
                     });
-            },
-        },
-        beforeMount() {
-            // update timestamps if no new data from server
-            timeInterval = setInterval(() => {
-                this.lastUpdateTimeDistance = this.getLastUpdateTimeDistance();
-            }, 1000);
-        },
-        destroyed() {
-            clearInterval(timeInterval);
-        },
-        methods: {
-            getLastUpdateTimeDistance() {
-                // pass this.now to update computed property
-                return getTimeDistance(this.$store.state.lastUpdateTime);
             },
         },
     };
@@ -146,8 +137,9 @@
 
         <TransactionLatestList :tx-list="txList" v-if="txList.length"/>
 
-        <Modal class="qr-modal"
-               v-bind:isOpen.sync="isAddressQrModalVisible"
+        <Modal
+            class="qr-modal"
+            v-bind:isOpen.sync="isAddressQrModalVisible"
         >
             <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
         </Modal>
