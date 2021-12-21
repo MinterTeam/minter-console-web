@@ -3,7 +3,6 @@ import WalletConnect from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/qrcode-modal";
 import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID} from '~/assets/variables.js';
 import {getEvmNetworkName as getNetworkName} from '~/api/web3.js';
-import {STORAGE_KEY} from './HubDepositAccount.vue';
 
 export default {
     ETHEREUM_CHAIN_ID,
@@ -43,7 +42,7 @@ export default {
     },
     mounted() {
         // init only if wallet was already connected
-        if (window.localStorage.getItem(STORAGE_KEY) !== 'walletconnect') {
+        if (this.$store.state.hub.selectedAccountType !== 'walletconnect') {
             return;
         }
         this.initConnector();

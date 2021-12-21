@@ -2,7 +2,6 @@
 import Eth from 'web3-eth';
 import {getEvmNetworkName, getHubNetworkByChain} from '~/api/web3.js';
 import {HUB_CHAIN_DATA} from '~/assets/variables.js';
-import {STORAGE_KEY} from './HubDepositAccount.vue';
 
 export default {
     props: {
@@ -50,7 +49,7 @@ export default {
 
         this.isAvailable = true;
         // set account on page load if some was set previously
-        if (window.localStorage.getItem(STORAGE_KEY) === 'metamask') {
+        if (this.$store.state.hub.selectedAccountType === 'metamask') {
             window.ethereum.request({method: 'eth_accounts'})
                 .then((accounts) => {
                     console.log('eth_accounts', accounts);
