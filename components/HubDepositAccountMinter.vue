@@ -84,17 +84,18 @@ export default {
     },
     mounted() {
         // set account on page load if some was set previously
-        if (window.localStorage.getItem('hub-deposit-connected-account') === 'minter') {
-            this.connectEth();
+        if (this.$store.state.hub.selectedAccountType === 'minter') {
+            this.connectEth(this.$store.state.hub.chainId || undefined);
         }
     },
     methods: {
         pretty,
         prettyExact,
         getEvmNetworkName,
-        connectEth() {
+        connectEth(chainId) {
+            chainId = typeof chainId === 'number' ? chainId : this.chainId;
             this.setEthAddress(this.$store.getters.address.replace('Mx', '0x'));
-            this.$emit('update:network', this.chainId);
+            this.$emit('update:network', chainId);
         },
         disconnectEth() {
             this.cancelConfirmation();

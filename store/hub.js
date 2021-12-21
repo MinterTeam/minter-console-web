@@ -11,6 +11,8 @@ export const state = () => ({
     /** @type {Object.<string, HubWithdraw>} */
     minterList: {},
     ethAddress: '',
+    chainId: 0,
+    selectedAccountType: '',
     // ethList stored in localStorage
     /** @type {Object.<string, Array<HubDeposit>>} */
     ethList: {},
@@ -61,6 +63,12 @@ export const mutations = {
     },
     setEthAddress(state, address) {
         state.ethAddress = address.toLowerCase();
+    },
+    setChainId(state, chainId) {
+        state.chainId = Number(chainId) || 0;
+    },
+    setSelectedAccountType(state, type) {
+        state.selectedAccountType = type;
     },
     saveDeposit(state, tx) {
         if (!tx.from) {
