@@ -245,8 +245,14 @@ export function prettyExactDecrease(value) {
     return decode(prettyNum(value, {precision: 18, /*precisionSetting: PRECISION_SETTING.INCREASE,*/ thousandsSeparator: '&nbsp;'}));
 }
 
-export function decreasePrecisionSignificant(value) {
-    return prettyNum(value, {precision: 4, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT});
+/**
+ * @param {number|string} value
+ * @param {boolean} [roundCeil]
+ * @return {string}
+ */
+export function decreasePrecisionSignificant(value, roundCeil) {
+    const roundingMode = roundCeil ? ROUNDING_MODE.CEIL : ROUNDING_MODE.FLOOR;
+    return prettyNum(value, {precision: 4, precisionSetting: PRECISION_SETTING.REDUCE_SIGNIFICANT, roundingMode});
 }
 
 export function decreasePrecisionFixed(value) {
