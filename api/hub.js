@@ -5,7 +5,7 @@ import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
 import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
 import {getCoinList} from '@/api/explorer.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET} from "~/assets/variables.js";
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET, BASE_COIN} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
 
@@ -41,8 +41,27 @@ export function getOracleCoinList() {
                 const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
                 oracleCoin.symbol = minterCoin?.symbol;
             });
-            // filter out not existent coins
-            return oracleCoinList.filter((item) => item.symbol);
+
+            return oracleCoinList
+                // filter out not existent coins
+                .filter((item) => item.symbol)
+                .sort((a, b) => {
+                    // base coin goes first
+                    if (a.symbol === BASE_COIN) {
+                        return -1;
+                    } else if (b.symbol === BASE_COIN) {
+                        return 1;
+                    }
+
+                    // HUB goes second
+                    if (a.symbol === 'HUB') {
+                        return -1;
+                    } else if (b.symbol === 'HUB') {
+                        return 1;
+                    }
+
+                    return 0;
+                });
         });
 }
 
