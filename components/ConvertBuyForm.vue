@@ -13,7 +13,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {getErrorText} from "~/assets/server-error";
     import {pretty, prettyExact, decreasePrecisionSignificant, decreasePrecisionFixed} from "~/assets/utils.js";
-    import {CONVERT_TYPE, COIN_TYPE, SLIPPAGE_INPUT_TYPE} from '~/assets/variables.js';
+    import {SWAP_TYPE, COIN_TYPE, SLIPPAGE_INPUT_TYPE, DEFAULT_SLIPPAGE} from '~/assets/variables.js';
     import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import FieldCoin from '~/components/common/FieldCoin';
@@ -27,7 +27,7 @@
 
     export default {
         TX_TYPE,
-        CONVERT_TYPE,
+        CONVERT_TYPE: SWAP_TYPE,
         SLIPPAGE_INPUT_TYPE,
         components: {
             BaseAmount,
@@ -60,7 +60,7 @@
                     coinTo: '',
                     maximumValueToSell: '',
                 },
-                formSlippagePercent: '5',
+                formSlippagePercent: DEFAULT_SLIPPAGE,
                 selectedSlippageInput: SLIPPAGE_INPUT_TYPE.PERCENT,
                 estimation: null,
                 estimationType: null,
@@ -70,9 +70,11 @@
                 isEstimationPending: false,
                 debouncedGetEstimation: null,
                 //@TODO disable optimal in offline mode
-                selectedConvertType: CONVERT_TYPE.OPTIMAL,
+                selectedConvertType: SWAP_TYPE.OPTIMAL,
                 txForm: {},
                 addressBalance: [],
+                /** @type {FeeData} */
+                fee: {},
                 poolSwapableMap: {},
             };
         },
@@ -101,8 +103,8 @@
             // replace invalid POOL_DIRECT with POOL
             // used for estimate
             preConvertType() {
-                if (this.selectedConvertType === CONVERT_TYPE.POOL_DIRECT) {
-                    return CONVERT_TYPE.POOL;
+                if (this.selectedConvertType === SWAP_TYPE.POOL_DIRECT) {
+                    return SWAP_TYPE.POOL;
                 } else {
                     return this.selectedConvertType;
                 }
@@ -110,14 +112,14 @@
             // POOL or BANCOR
             // used for tx type
             convertType() {
-                if (this.preConvertType === CONVERT_TYPE.OPTIMAL) {
+                if (this.preConvertType === SWAP_TYPE.OPTIMAL) {
                     return this.estimationType;
                 } else {
                     return this.preConvertType;
                 }
             },
             txType() {
-                if (this.convertType === CONVERT_TYPE.POOL) {
+                if (this.convertType === SWAP_TYPE.POOL) {
                     return TX_TYPE.BUY_SWAP_POOL;
                 }
                 return TX_TYPE.BUY;
@@ -212,7 +214,7 @@
                         }
                         if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.currentEstimation) {
                             const slippage = 1 + (this.formSlippagePercent || 0) / 100;
-                            this.form.maximumValueToSell = decreasePrecisionSignificant(this.currentEstimation * slippage);
+                            this.form.maximumValueToSell = decreasePrecisionSignificant(this.currentEstimation * slippage, true);
                         }
                         if (this.selectedSlippageInput === SLIPPAGE_INPUT_TYPE.PERCENT && this.estimationError) {
                             this.form.maximumValueToSell = 0;
@@ -238,7 +240,7 @@
                 // reset to percent if no amount
                 if (!this.form.maximumValueToSell && (!this.formSlippagePercent || this.formSlippagePercent <= 0)) {
                     this.selectedSlippageInput = SLIPPAGE_INPUT_TYPE.PERCENT;
-                    this.formSlippagePercent = 5;
+                    this.formSlippagePercent = DEFAULT_SLIPPAGE;
                 }
             },
             watchForm() {
@@ -269,8 +271,8 @@
                     valueToBuy: this.form.buyAmount,
                     coinToSell: this.form.coinFrom,
                     swapFrom: this.preConvertType,
-                    findRoute: this.selectedConvertType !== CONVERT_TYPE.POOL_DIRECT,
-                    gasCoin: this.txForm.gasCoin || 0,
+                    findRoute: this.selectedConvertType !== SWAP_TYPE.POOL_DIRECT,
+                    gasCoin: this.txForm.gasCoin || this.fee.coin || 0,
                 }, {
                     cancelToken: new axios.CancelToken((cancelFn) => estimationCancel = cancelFn),
                 })
@@ -317,10 +319,10 @@
                 this.form.maximumValueToSell = '';
                 this.$v.$reset();
 
-                this.selectedConvertType = CONVERT_TYPE.OPTIMAL;
+                this.selectedConvertType = SWAP_TYPE.OPTIMAL;
                 this.selectedSlippageInput = SLIPPAGE_INPUT_TYPE.PERCENT;
-                if (this.formSlippagePercent > 5) {
-                    this.formSlippagePercent = 5;
+                if (this.formSlippagePercent > DEFAULT_SLIPPAGE) {
+                    this.formSlippagePercent = DEFAULT_SLIPPAGE;
                 }
             },
         },
@@ -336,6 +338,7 @@
         :before-confirm-modal-show="beforeConfirm"
         @update:addressBalance="addressBalance = $event"
         @update:txForm="txForm = $event"
+        @update:fee="fee = $event"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
@@ -431,10 +434,11 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.maximumValueToSell"
-                                       @input.native="selectedSlippageInput = $options.SLIPPAGE_INPUT_TYPE.AMOUNT"
-                                       @blur="slippageAmountBlur"
+                    <InputMaskedAmount
+                        class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                        v-model="form.maximumValueToSell"
+                        @input.native="selectedSlippageInput = $options.SLIPPAGE_INPUT_TYPE.AMOUNT"
+                        @blur="slippageAmountBlur"
                     />
                     <span class="form-field__label">{{ $td('Max amount to spend (optional)', 'form.convert-buy-max') }}</span>
                 </label>

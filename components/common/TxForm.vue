@@ -194,6 +194,12 @@
                 deep: true,
                 immediate: true,
             },
+            fee: {
+                handler(newVal) {
+                    this.$emit('update:fee', newVal);
+                },
+                deep: true,
+            },
             'form.multisigAddress': {
                 handler(newVal, oldVal) {
                     if (!!newVal !== !!oldVal) {

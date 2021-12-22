@@ -1,5 +1,4 @@
 <script>
-import Big from '~/assets/big.js';
 import {pretty, getExplorerCoinUrl, getEvmAddressUrl} from '~/assets/utils.js';
 import {HUB_CHAIN_ID, HUB_CHAIN_DATA, BSC_CHAIN_ID, ETHEREUM_CHAIN_ID} from '~/assets/variables.js';
 import Loader from '~/components/common/Loader.vue';
