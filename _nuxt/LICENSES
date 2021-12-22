@@ -1,23 +1,25 @@
 /*!
+ * qrcode.vue v1.7.0
+ * A Vue component to generate QRCode.
+ * © 2017-2019 @scopewu(https://github.com/scopewu)
+ * MIT License.
+ */
+
+
+/*!
 	autosize 4.0.4
 	license: MIT
 	http://www.jacklmoore.com/autosize
 */
 
-/*!
- * v2.1.4-104-gc868b3a
- * 
- */
-
-/*! https://mths.be/punycode v1.4.1 by @mathias */
 
 /**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
  *
- * @version 0.5.7
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2016
- * @license MIT
+ * @typedef {Object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
  */
 
 
@@ -194,14 +196,20 @@ PERFORMANCE OF THIS SOFTWARE.
  * @license MIT
  */
 
+/*!
+ * v2.1.4-104-gc868b3a
+ * 
+ */
+
+/*! https://mths.be/punycode v1.4.1 by @mathias */
 
 /**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
  *
- * @typedef {Object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ * @version 0.5.7
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2016
+ * @license MIT
  */
 
 
@@ -261,25 +269,3 @@ PERFORMANCE OF THIS SOFTWARE.
  * @copyright Chen, Yi-Cyuan 2015-2018
  * @license MIT
  */
-
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-
-
-/*!
- * qrcode.vue v1.7.0
- * A Vue component to generate QRCode.
- * © 2017-2019 @scopewu(https://github.com/scopewu)
- * MIT License.
- */
-
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
