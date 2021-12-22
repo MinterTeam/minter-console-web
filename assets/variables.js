@@ -45,6 +45,7 @@ export const PASSWORD_MAX_LENGTH = 100;
 export const I18N_ROUTE_NAME_SEPARATOR = '___';
 
 export const STAKE_RECALCULATE_BLOCK_COUNT = 720;
+export const DEFAULT_SLIPPAGE = 5;
 
 export const SWAP_TYPE = {
     BANCOR: 'bancor',
@@ -52,10 +53,6 @@ export const SWAP_TYPE = {
     POOL_DIRECT: 'pool_direct',
     OPTIMAL: 'optimal',
 };
-/**
- * @deprecated
- */
-export const CONVERT_TYPE = SWAP_TYPE;
 export const COIN_TYPE = {
     ANY: 'any',
     COIN: 'coin',
