@@ -1,7 +1,9 @@
 import JSBI from 'jsbi';
-import {Fraction as InternalFraction} from '@uniswap/sdk';
+import {Fraction as InternalFraction, Rounding as FRACTION_ROUNDING} from '@uniswap/sdk';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import Big, {COMPUTATION_PRECISION, VISIBLE_PRECISION} from '~/assets/big.js';
+
+export {FRACTION_ROUNDING};
 
 /**
  * @param {number,string,Big,BigintIsh} numerator
@@ -62,12 +64,14 @@ Fraction.prototype.setDenominator = function setDenominator(value) {
 
 /**
  * @param {number,string,Big,BigintIsh|Fraction} value
+ * @return {Fraction}
  */
 Fraction.prototype.mul = function mul(value) {
     return this.multiply(typeof value === 'object' ? value : new Fraction(value));
 };
 /**
  * @param {number,string,Big,BigintIsh|Fraction} value
+ * @return {Fraction}
  */
 Fraction.prototype.div = function div(value) {
     return this.divide(typeof value === 'object' ? value : new Fraction(value));
@@ -90,6 +94,10 @@ Fraction.prototype.lte = function lte(value) {
 
 /**
  * @type {InternalFraction.toFixed}
+ * @param {number} [decimalPlaces]
+ * @param {object} [format]
+ * @param {FRACTION_ROUNDING} [rounding]
+ * @return {string}
  */
 Fraction.prototype.toString = function toString(decimalPlaces, ...otherArgs) {
     try {
