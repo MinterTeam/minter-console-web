@@ -10,7 +10,7 @@ import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import Big, {COMPUTATION_PRECISION, VISIBLE_PRECISION} from '~/assets/big.js';
-import Fraction, {toFraction} from '~/assets/fraction.js';
+import Fraction, {toFraction, FRACTION_ROUNDING} from '~/assets/fraction.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from "~/assets/server-error.js";
 import {pretty, prettyExact, decreasePrecisionSignificant} from "~/assets/utils.js";
@@ -142,7 +142,7 @@ export default {
     },
     computed: {
         isPoolLoaded() {
-            return this.$asyncComputed.poolData.success && this.poolData?.liquidity;
+            return this.$asyncComputed.poolData.success && !!this.poolData?.liquidity;
         },
         whatAffectsPrice() {
             return JSON.stringify({
@@ -212,8 +212,8 @@ export default {
                     ) {
                         this.paramsSellPrice = {numerator: this.form.valueToBuy, denominator: this.form.valueToSell};
                         this.paramsBuyPrice = {numerator: this.form.valueToSell, denominator: this.form.valueToBuy};
-                        this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
-                        this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+                        this.formSellPrice = this.toFractionValue(this.paramsSellPrice, FRACTION_ROUNDING.ROUND_UP);
+                        this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice, FRACTION_ROUNDING.ROUND_DOWN);
                         // unselect price inputs (so price will not recalculate)
                         this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY);
                         return;
@@ -258,9 +258,9 @@ export default {
 
                         // update other price value
                         if (isSell) {
-                            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+                            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice, FRACTION_ROUNDING.ROUND_DOWN);
                         } else {
-                            this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
+                            this.formSellPrice = this.toFractionValue(this.paramsSellPrice, FRACTION_ROUNDING.ROUND_UP);
                         }
                     }
 
@@ -270,12 +270,12 @@ export default {
                         if (this.formSellPrice && !this.formBuyPrice) {
                             this.paramsBuyPrice.numerator = this.paramsSellPrice.denominator;
                             this.paramsBuyPrice.denominator = this.paramsSellPrice.numerator;
-                            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+                            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice, FRACTION_ROUNDING.ROUND_DOWN);
                         }
                         if (this.formBuyPrice && !this.formSellPrice) {
                             this.paramsSellPrice.numerator = this.paramsBuyPrice.denominator;
                             this.paramsSellPrice.denominator = this.paramsBuyPrice.numerator;
-                            this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
+                            this.formSellPrice = this.toFractionValue(this.paramsSellPrice, FRACTION_ROUNDING.ROUND_UP);
                         }
                     }
 
@@ -285,7 +285,7 @@ export default {
                         if (!isPositive(this.paramsSellPrice) || !isPositive(this.form.valueToSell)) {
                             return;
                         }
-                        this.form.valueToBuy = toFraction(this.paramsSellPrice).mul(this.form.valueToSell).toString(VISIBLE_PRECISION);
+                        this.form.valueToBuy = toFraction(this.paramsSellPrice).mul(this.form.valueToSell).toString(VISIBLE_PRECISION, undefined, FRACTION_ROUNDING.ROUND_UP);
                         // this.form.valueToBuy = new Big(this.form.valueToSell).times(this.formSellPrice).toString();
                         return;
                     }
@@ -294,7 +294,7 @@ export default {
                         if (!isPositive(this.paramsBuyPrice) || !isPositive(this.form.valueToBuy)) {
                             return;
                         }
-                        this.form.valueToSell = toFraction(this.paramsBuyPrice).mul(this.form.valueToBuy).toString(VISIBLE_PRECISION);
+                        this.form.valueToSell = toFraction(this.paramsBuyPrice).mul(this.form.valueToBuy).toString(VISIBLE_PRECISION, undefined, FRACTION_ROUNDING.ROUND_DOWN);
                         // this.form.valueToSell = new Big(this.form.valueToBuy).times(this.formBuyPrice).toString();
                         return;
                     }
@@ -310,8 +310,8 @@ export default {
         pretty,
         prettyExact,
         decreasePrecisionSignificant,
-        toFractionValue(fractionParams) {
-            return toFraction(fractionParams).toString();
+        toFractionValue(fractionParams, rounding) {
+            return toFraction(fractionParams).toString(undefined, undefined, rounding);
         },
         /**
          * @param coinSymbol - form.coinToSell || form.coinToBuy
@@ -382,9 +382,9 @@ export default {
             }
             this.paramsSellPrice = sortPoolAmountToFractionParams(this.poolData, this.form.coinToSell);
             this.paramsBuyPrice = sortPoolAmountToFractionParams(this.poolData, this.form.coinToBuy);
-            // by default show 18 digits precision, but form inputs manually may take up to 33
-            this.formSellPrice = this.toFractionValue(this.paramsSellPrice);
-            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice);
+            // by default show 18 digits precision, but form inputs manually may take up to 34
+            this.formSellPrice = this.toFractionValue(this.paramsSellPrice, FRACTION_ROUNDING.ROUND_UP);
+            this.formBuyPrice = this.toFractionValue(this.paramsBuyPrice, FRACTION_ROUNDING.ROUND_DOWN);
             // unselect price inputs (so price will not recalculate)
             // and unselect second amount (so amounts will not be used as source)
             this.lastSelectedInputList = this.lastSelectedInputList.filter((item) => item !== INPUT_TYPE.PRICE_SELL && item !== INPUT_TYPE.PRICE_BUY).slice(0, 1);
