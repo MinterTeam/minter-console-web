@@ -470,10 +470,10 @@ function isPositive(value) {
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Create limit order', 'limit-order.add-title') }}
+                {{ $td('Create limit order', 'order.add-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Create a limit order to buy or sell coins at a specific price.', 'limit-order.add-description') }}
+                {{ $td('Create a limit order to buy or sell coins at a specific price.', 'order.add-description') }}
             </p>
         </template>
 
@@ -482,12 +482,12 @@ function isPositive(value) {
                 <FieldCoin
                     v-model.trim="form.coinToSell"
                     :$value="$v.form.coinToSell"
-                    :label="$td('Coin to sell', 'form.order-add-coin-sell')"
+                    :label="$td('Coin to sell', 'order.add-coin-sell')"
                     :coin-list="availableCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <!--<span class="form-field__error" v-else-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                <span class="form-field__error" v-else-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinToSell.$dirty && !$v.form.coinToSell.maxLength">{{ $td('Max. 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.formSellPrice.$error}">
@@ -498,14 +498,14 @@ function isPositive(value) {
                         @blur="$v.formSellPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_SELL)"
                     />
-                    <span class="form-field__label">{{ form.coinToSell || 'Coin to sell' }} {{ $td('execution price', 'form.order-add-execution-price') }}</span>
+                    <span class="form-field__label">{{ form.coinToSell || 'Coin to sell' }} {{ $td('execution price', 'order.add-sale-execution-price') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.minValue">
-                    {{ $td('Price should be greater than pool price:', 'form.order-add-sell-price-error-min') }}
+                    {{ $td('Price should be greater than pool price:', 'order.add-sell-price-error-min') }}
                     {{ coinToSellCurrentPrice }}
                 </span>
                 <span class="form-field__error" v-if="$v.formSellPrice.$dirty && !$v.formSellPrice.maxValue">
-                    {{ $td('Should not exceed pool price by 5 times:', 'form.order-add-sell-price-error-max') }}
+                    {{ $td('Should not exceed pool price by more than 5 times:', 'order.add-sell-price-error-max') }}
                     {{ coinToSellMaxPrice }}
                 </span>
             </div>
@@ -513,7 +513,7 @@ function isPositive(value) {
                 <FieldUseMax
                     v-model="form.valueToSell"
                     :$value="$v.form.valueToSell"
-                    :label="$td('Sell amount', 'form.order-add-amount-sell')"
+                    :label="$td('Sell amount', 'order.add-amount-sell')"
                     :address-balance="addressBalance"
                     :selected-coin-symbol="form.coinToSell"
                     :fee="fee"
@@ -525,12 +525,12 @@ function isPositive(value) {
                 <FieldCoin
                     v-model.trim="form.coinToBuy"
                     :$value="$v.form.coinToBuy"
-                    :label="$td('Coin to buy', 'form.order-add-coin-buy')"
+                    :label="$td('Coin to buy', 'order.add-coin-buy')"
                     :coin-list="tradableCoinList"
                 />
                 <span class="form-field__error" v-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                <!--<span class="form-field__error" v-else-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                <span class="form-field__error" v-else-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
+                <!--<span class="form-field__error" v-else-if="$v.form.coinToBuy.$dirty && !$v.form.coinToBuy.maxLength">{{ $td('Max. 10 letters', 'form.coin-error-max') }}</span>-->
             </div>
             <div class="u-cell u-cell--medium--1-3">
                 <label class="form-field" :class="{'is-error': $v.formBuyPrice.$error}">
@@ -541,14 +541,14 @@ function isPositive(value) {
                         @blur="$v.formBuyPrice.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.PRICE_BUY)"
                     />
-                    <span class="form-field__label">{{ form.coinToBuy || 'Coin to buy' }} {{ $td('execution price', 'form.order-add-execution-price') }}</span>
+                    <span class="form-field__label">{{ form.coinToBuy || 'Coin to buy' }} {{ $td('execution price', 'order.add-purchase-execution-price') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.maxValue">
-                    {{ $td('Price should be less than pool price:', 'form.order-add-buy-price-error-max') }}
+                    {{ $td('Price should be less than pool price:', 'order.add-buy-price-error-max') }}
                     {{ coinToBuyCurrentPrice }}
                 </span>
                 <span class="form-field__error" v-if="$v.formBuyPrice.$dirty && !$v.formBuyPrice.minValue">
-                    {{ $td('Should not exceed pool price by 5 times:', 'form.order-add-buy-price-error-min') }}
+                    {{ $td('Should not exceed pool price by more than 5 times:', 'order.add-buy-price-error-min') }}
                     {{ coinToBuyMinPrice }}
                 </span>
             </div>
@@ -560,14 +560,14 @@ function isPositive(value) {
                         @blur="$v.form.valueToBuy.$touch()"
                         @input.native="setSelectedInput($options.INPUT_TYPE.AMOUNT_BUY)"
                     />
-                    <span class="form-field__label">{{ $td('Buy amount', 'form.order-add-amount-buy') }}</span>
+                    <span class="form-field__label">{{ $td('Buy amount', 'order.add-amount-buy') }}</span>
                 </label>
                 <span class="form-field__error" v-if="$v.form.valueToBuy.$dirty && !$v.form.valueToBuy.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
             </div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Create limit order', 'form.order-add-button') }}
+            {{ $td('Create limit order', 'order.add-button') }}
         </template>
 
         <template v-slot:panel-footer>
@@ -575,7 +575,7 @@ function isPositive(value) {
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ decreasePrecisionSignificant(coinToSellCurrentPrice) }} {{ form.coinToBuy }}</div>
-                        <div class="form-field__label">{{ form.coinToSell || 'coin to sell' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
+                        <div class="form-field__label">{{ $td('Current price of', 'order.add-current-price') }} {{ form.coinToSell || 'coin to sell' }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
                     <span class="form-field__error" v-if="$v.poolData.$dirty && !$v.poolData.required">{{ poolDataError || $td('Can\'t load pool data', 'form.pool-data-error-required') }}</span>
@@ -583,12 +583,12 @@ function isPositive(value) {
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ decreasePrecisionSignificant(coinToBuyCurrentPrice) }} {{ form.coinToSell }}</div>
-                        <div class="form-field__label">{{ form.coinToBuy || 'coin to buy' }} {{ $td('current price', 'form.order-add-current-price') }}</div>
+                        <div class="form-field__label">{{ $td('Current price of', 'order.add-current-price') }} {{ form.coinToBuy || 'coin to buy' }}</div>
                         <Loader class="form-field__icon form-field__icon--loader" :isLoading="$asyncComputed.poolData.updating"/>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--medium--1-4" v-if="isPoolLoaded">
-                    <button class="button button--ghost-main" type="button" @click="applyCurrentPrice()">Use current price</button>
+                    <button class="button button--ghost-main" type="button" @click="applyCurrentPrice()">{{ $td('Use current price', 'order.use-current-price') }}</button>
                 </div>
             </div>
         </template>
@@ -596,7 +596,7 @@ function isPositive(value) {
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-convert.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Create limit order', 'limit-order.add-title') }}
+                {{ $td('Create limit order', 'order.add-title') }}
             </h1>
         </template>
 
@@ -608,26 +608,26 @@ function isPositive(value) {
                             <BaseAmount :coin="form.coinToSell" :amount="form.valueToSell" :exact="true"/>
                         </div>
                         <div class="form-field__label">
-                            {{ $td('You will pay', 'form.order-add-confirm-pay') }}
+                            {{ $td('You will pay', 'order.add-confirm-pay') }}
                         </div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="form.valueToBuy" :exact="true"/>
-                        <div class="form-field__label">{{ $td('You will get', 'form.order-add-confirm-get') }}</div>
+                        <div class="form-field__label">{{ $td('You will get', 'order.add-confirm-get') }}</div>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToBuy" :amount="formSellPrice" :significant="true"/>
-                        <div class="form-field__label">{{ form.coinToSell }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
+                        <div class="form-field__label">{{ form.coinToSell }} {{ $td('execution price', 'order.add-sale-execution-price') }}</div>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinToSell" :amount="formBuyPrice" :significant="true"/>
-                        <div class="form-field__label">{{ form.coinToBuy }} {{ $td('execution price', 'form.order-add-execution-price') }}</div>
+                        <div class="form-field__label">{{ form.coinToBuy }} {{ $td('execution price', 'order.add-purchase-execution-price') }}</div>
                     </div>
                 </div>
             </div>

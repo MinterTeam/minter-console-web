@@ -71,10 +71,10 @@ export default {
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
-                {{ $td('Cancel limit order', 'limit-order.remove-title') }}
+                {{ $td('Cancel limit order', 'order.remove-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('', 'limit-order.remove-description') }}
+                {{ $td('Withdraw your order—for example, if you’ve come up with a better option.', 'order.remove-description') }}
             </p>
         </template>
 
@@ -88,19 +88,19 @@ export default {
                     />
                     <span class="form-field__label">{{ $td('ID', 'form.order-remove-id') }}</span>
                 </label>
-                <span class="form-field__error" v-if="$v.form.id.$dirty && !$v.form.id.required">{{ $td('Enter ID', 'form.order-remove-id-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.form.id.$dirty && !$v.form.id.required">{{ $td('Enter ID', 'order.remove-id-error-required') }}</span>
             </div>
             <div class="u-cell u-cell--medium--1-2 u-hidden-medium-down"></div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Cancel limit order', 'form.order-remove-button') }}
+            {{ $td('Cancel limit order', 'order.remove-button') }}
         </template>
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-vote.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Cancel limit order', 'limit-order.remove-title') }}
+                {{ $td('Cancel limit order', 'order.remove-title') }}
             </h1>
         </template>
     </TxForm>
