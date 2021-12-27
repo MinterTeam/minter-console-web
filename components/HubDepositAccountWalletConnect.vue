@@ -84,7 +84,8 @@ export default {
         initConnector() {
             // Create a connector
             this.connector = new WalletConnect({
-                bridge: "https://bridge.walletconnect.org", // Required
+                bridge: 'https://walletconnect-bridge.minter.network',
+                // bridge: "https://bridge.walletconnect.org", // Required
                 qrcodeModal: QRCodeModal,
             });
             // window.connector = this.connector;
