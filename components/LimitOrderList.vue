@@ -76,11 +76,11 @@ export default {
             <table class="u-text-nowrap">
                 <thead>
                     <tr>
-                        <th>Pool</th>
-                        <th>Want to sell</th>
-                        <th>Want to buy</th>
-                        <th>Sell price</th>
-                        <th>Buy price</th>
+                        <th>{{ $td('Pool', 'order.pool') }}</th>
+                        <th>{{ $td('Want to sell', 'order.want-to-sell') }}</th>
+                        <th>{{ $td('Want to buy', 'order.want-to-buy') }}</th>
+                        <th>{{ $td('Sell price', 'order.sell-price') }}</th>
+                        <th>{{ $td('Buy price', 'order.buy-price') }}</th>
                         <!-- controls -->
                         <th class="table__controls-cell"></th>
                     </tr>
@@ -129,7 +129,7 @@ export default {
         <div class="panel__content panel__section u-text-center" v-else-if="$fetchState.pending">
             <Loader :isLoading="true"/>
         </div>
-        <div class="panel__content panel__section u-text-center" v-else>You have no active orders</div>
+        <div class="panel__content panel__section u-text-center" v-else>{{ $td('You have no active orders', 'order.no-active-orders') }}</div>
         <div class="panel__section u-text-center">
             <a :href="getExplorerAddressUrl($store.getters.address + '?active_tab=order')" class="button button--ghost-main" target="_blank">{{ $td('Order history', 'order.view-history') }}</a>
         </div>
