@@ -13,9 +13,6 @@ import {addTimeInterceptor} from '~/assets/axios-time-offset.js';
 
 const coinBlockMap = Object.fromEntries(coinBlockList.map((symbol) => [symbol, true]));
 function isBlocked(symbol) {
-    // rely on api being already filtered
-    return false;
-    // eslint-disable-next-line no-unreachable
     return !!coinBlockMap[symbol.replace(/-\d+$/, '')];
 }
 
@@ -272,7 +269,9 @@ export function getCoinList({skipMeta} = {}) {
     })
         .then((response) => {
             const coinList = response.data.data;
-            return coinList.filter((coin) => !isBlocked(coin.symbol));
+            return coinList;
+            // rely on api being already filtered
+            // return coinList.filter((coin) => !isBlocked(coin.symbol));
         });
 
     if (!skipMeta) {
@@ -347,9 +346,13 @@ export function getSwapCoinList(coin, depth) {
             params: {depth},
             cache: coinsCache,
         })
-        .then((response) => response.data.sort((a, b) => {
-            return a.id - b.id;
-        }));
+        .then((response) => {
+            return response.data
+                .filter((coin) => !isBlocked(coin.symbol))
+                .sort((a, b) => {
+                    return a.id - b.id;
+                });
+        });
 }
 
 
