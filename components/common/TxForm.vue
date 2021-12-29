@@ -28,7 +28,7 @@
     export default {
         components: {
             QrcodeVue,
-            BaseAmount,
+            // BaseAmount,
             FieldDomain,
             FieldFee,
             FieldQr,
@@ -619,8 +619,10 @@
                 <div class="panel__section u-text-left">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
-                            <BaseAmount :coin="fee.coinSymbol" :amount="fee.value" :base-coin-amount="fee.baseCoinValue"/>
-                            <span class="u-display-ib" v-if="fee.priceCoin.id > 0">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
+                            {{ pretty(fee.value) }} {{ fee.coinSymbol }}
+                            <!-- don't show usd amount if priceCoin is USD -->
+                            <!-- <BaseAmount :coin="fee.coinSymbol" :amount="fee.value" :base-coin-amount="fee.baseCoinValue"/>-->
+                            <span class="u-display-ib u-text-muted" v-if="fee.priceCoin.id > 0">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
                         </div>
                         <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>
                     </div>
