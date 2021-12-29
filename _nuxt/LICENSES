@@ -1,136 +1,3 @@
-/*!
- * qrcode.vue v1.7.0
- * A Vue component to generate QRCode.
- * © 2017-2019 @scopewu(https://github.com/scopewu)
- * MIT License.
- */
-
-
-/**
- *               AutoNumeric.js
- *
- * @version      4.6.0
- * @date         2020-04-26 UTC 10:45
- *
- * @authors      Bob Knothe, Alexandre Bonneau
- * @contributors Sokolov Yura and others, cf. AUTHORS
- * @copyright    2009 Robert J. Knothe
- * @since        2009-08-09
- *
- * @summary      autoNumeric is a standalone Javascript library
- *               that provides live *as-you-type* formatting for
- *               international numbers and currencies.
- *
- * @link         http://autonumeric.org
- *
- *               Note : Some functions are borrowed from big.js
- * @see          https://github.com/MikeMcl/big.js/
- *
- * Please report any bugs to https://github.com/autoNumeric/autoNumeric
- *
- * @license      Released under the MIT License
- * @link         http://www.opensource.org/licenses/mit-license.php
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sub license, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-
-/*!
-  * vue-router v3.5.2
-  * (c) 2021 Evan You
-  * @license MIT
-  */
-
-/*!
- * JavaScript Cookie v2.2.1
- * https://github.com/js-cookie/js-cookie
- *
- * Copyright 2006, 2015 Klaus Hartl & Fagner Brack
- * Released under the MIT license
- */
-
-/*!
- * Vue.js v2.6.14
- * (c) 2014-2021 Evan You
- * Released under the MIT License.
- */
-
-/*!
- * cookie
- * Copyright(c) 2012-2014 Roman Shtylman
- * Copyright(c) 2015 Douglas Christopher Wilson
- * MIT Licensed
- */
-
-/*!
- * vuex v3.6.2
- * (c) 2021 Evan You
- * @license MIT
- */
-
-
-/**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
- *
- * @typedef {Object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
- */
-
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-
-/*!
- * v2.1.4-104-gc868b3a
- * 
- */
-
-/*! https://mths.be/punycode v1.4.1 by @mathias */
-
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.5.7
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2016
- * @license MIT
- */
-
-
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.8.0
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2018
- * @license MIT
- */
-
-
 /*
 object-assign
 (c) Sindre Sorhus
@@ -269,3 +136,143 @@ PERFORMANCE OF THIS SOFTWARE.
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+/*!
+ * v2.1.4-104-gc868b3a
+ * 
+ */
+
+/*! https://mths.be/punycode v1.4.1 by @mathias */
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.5.7
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2016
+ * @license MIT
+ */
+
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.8.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2018
+ * @license MIT
+ */
+
+
+/*!
+  * vue-router v3.5.2
+  * (c) 2021 Evan You
+  * @license MIT
+  */
+
+/*!
+ * JavaScript Cookie v2.2.1
+ * https://github.com/js-cookie/js-cookie
+ *
+ * Copyright 2006, 2015 Klaus Hartl & Fagner Brack
+ * Released under the MIT license
+ */
+
+/*!
+ * Vue.js v2.6.14
+ * (c) 2014-2021 Evan You
+ * Released under the MIT License.
+ */
+
+/*!
+ * cookie
+ * Copyright(c) 2012-2014 Roman Shtylman
+ * Copyright(c) 2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+/*!
+ * vuex v3.6.2
+ * (c) 2021 Evan You
+ * @license MIT
+ */
+
+
+/*!
+ * qrcode.vue v1.7.0
+ * A Vue component to generate QRCode.
+ * © 2017-2019 @scopewu(https://github.com/scopewu)
+ * MIT License.
+ */
+
+
+/**
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ *
+ * @typedef {Object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ */
+
+
+/**
+ *               AutoNumeric.js
+ *
+ * @version      4.6.0
+ * @date         2020-04-26 UTC 10:45
+ *
+ * @authors      Bob Knothe, Alexandre Bonneau
+ * @contributors Sokolov Yura and others, cf. AUTHORS
+ * @copyright    2009 Robert J. Knothe
+ * @since        2009-08-09
+ *
+ * @summary      autoNumeric is a standalone Javascript library
+ *               that provides live *as-you-type* formatting for
+ *               international numbers and currencies.
+ *
+ * @link         http://autonumeric.org
+ *
+ *               Note : Some functions are borrowed from big.js
+ * @see          https://github.com/MikeMcl/big.js/
+ *
+ * Please report any bugs to https://github.com/autoNumeric/autoNumeric
+ *
+ * @license      Released under the MIT License
+ * @link         http://www.opensource.org/licenses/mit-license.php
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sub license, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
