@@ -474,8 +474,8 @@ export default {
                             ({{ hubFeeRatePercent }}%)
                         </span>
                     </div>
-                    <div class="form-field__help">
-                        <a href="https://www.minter.network/hub#tokenomics-discount" class="link--hover link--main" target="_blank">
+                    <div class="form-field__help" v-if="discountUpsidePercent">
+                        <a href="https://www.minter.network/howto/cross-chain-discounts" class="link--hover link--main" target="_blank">
                             {{ $td('How to reduce fee up to', 'form.hub-reduce-fee') }}
                             {{ discountUpsidePercent }}%
                         </a>
