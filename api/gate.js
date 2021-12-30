@@ -39,7 +39,7 @@ export function estimateCoinSell(params, axiosOptions) {
         return Promise.reject(new Error('Value to sell not specified'));
     }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
-        return explorerGetSwapEstimate(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell}, {...axiosOptions, cache: estimateCache})
+        return explorerGetSwapEstimate(params.coinToSell, params.coinToBuy, {sellAmount: params.valueToSell, swapFrom: params.swapFrom}, {...axiosOptions, cache: estimateCache})
             .then((explorerEstimation) => {
                 return Promise.all([
                         _estimateCoinSell({
@@ -67,7 +67,7 @@ export function estimateCoinBuy(params, axiosOptions) {
         return Promise.reject(new Error('Value to buy not specified'));
     }
     if (params.findRoute && params.swapFrom !== ESTIMATE_SWAP_TYPE.BANCOR) {
-        return explorerGetSwapEstimate(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy}, {...axiosOptions, cache: estimateCache})
+        return explorerGetSwapEstimate(params.coinToSell, params.coinToBuy, {buyAmount: params.valueToBuy, swapFrom: params.swapFrom}, {...axiosOptions, cache: estimateCache})
             .then((explorerEstimation) => {
                 return Promise.all([
                         _estimateCoinBuy({

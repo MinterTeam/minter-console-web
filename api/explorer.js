@@ -1,9 +1,10 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
+import coinBlockList from 'minter-coin-block-list';
+import {ESTIMATE_SWAP_TYPE} from 'minter-js-sdk/src/variables.js';
 import {convertToPip} from 'minterjs-util';
 import Big from '~/assets/big.js';
-import coinBlockList from 'minter-coin-block-list';
 import {_getOracleCoinList} from '~/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
@@ -459,6 +460,7 @@ export function getProviderPoolList(address, params) {
 
 
 /**
+ * @deprecated Use `getSwapEstimate` with swapFrom: 'pool' instead
  * @param {string} coin0
  * @param {string} coin1
  * @param {Object} amountOptions
@@ -486,10 +488,17 @@ export function getSwapRoute(coin0, coin1, {buyAmount, sellAmount}, axiosOptions
  * @param {Object} amountOptions
  * @param {number|string} [amountOptions.buyAmount]
  * @param {number|string} [amountOptions.sellAmount]
+ * @param {ESTIMATE_SWAP_TYPE} [amountOptions.swapFrom]
  * @param {AxiosRequestConfig} [axiosOptions]
- * @return {Promise<{coins: Array<Coin>, amountIn: number|string, amountOut:number|string, swapType:ESTIMATE_SWAP_TYPE}>}
+ * @return {Promise<{coins?: Array<Coin>, amountIn: number|string, amountOut:number|string, swapType:ESTIMATE_SWAP_TYPE}>}
  */
-export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount}, axiosOptions) {
+export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount, swapFrom = ESTIMATE_SWAP_TYPE.OPTIMAL} = {}, axiosOptions) {
+    if (!buyAmount && !sellAmount) {
+        throw new Error('Estimation swap amount not specified');
+    }
+    if (swapFrom === ESTIMATE_SWAP_TYPE.BANCOR) {
+        throw new Error('Estimation through reserves is not supported in Explorer API');
+    }
     const amount = convertToPip(buyAmount || sellAmount);
     let type;
     if (sellAmount) {
@@ -498,7 +507,12 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount}, axiosOpti
     if (buyAmount) {
         type = 'output';
     }
-    return explorer.get(`pools/coins/${coin0}/${coin1}/estimate?type=${type}&amount=${amount}`, axiosOptions)
+    const urlType = {
+        [ESTIMATE_SWAP_TYPE.OPTIMAL]: 'estimate',
+        [ESTIMATE_SWAP_TYPE.POOL]: 'route',
+    }[swapFrom];
+
+    return explorer.get(`pools/coins/${coin0}/${coin1}/${urlType}?type=${type}&amount=${amount}`, axiosOptions)
         .then((response) => response.data);
 }
 
