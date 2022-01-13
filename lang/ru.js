@@ -131,7 +131,7 @@ export default {
         'add-sell-price-error-max': 'Не должна превышать цену в пуле более чем в 5 раз:',
         'add-amount-sell': 'Сколько продаем',
         'add-coin-buy': 'Какую монету покупаем',
-        'add-purchase-execution-price': 'приобретется по цене',
+        'add-purchase-execution-price': 'приобретётся по цене',
         'add-buy-price-error-max': 'Цена должна быть ниже, чем в пуле:',
         'add-buy-price-error-min': 'Не должна превышать цену в пуле более чем в 5 раз',
         'add-amount-buy': 'Сколько покупаем',
@@ -315,7 +315,7 @@ export default {
         'checks-redeem-password': 'Пароль',
         'checks-redeem-password-error-required': 'Введите пароль',
         'checks-redeem-button': 'Обналичить',
-        
+
         'multisig-sign': 'Подписать',
 
         'convert-sell-amount': 'Сколько продаем',
