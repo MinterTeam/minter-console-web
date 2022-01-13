@@ -1,12 +1,14 @@
-import {isCoinId} from 'minter-js-sdk/src/utils.js';
+// import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {getStatus, getCoinList} from '~/api/explorer.js';
-import {ACCOUNTS_API_URL, BASE_URL_PREFIX} from '~/assets/variables.js';
+import {ACCOUNTS_API_URL, BASE_URL_PREFIX, EXPLORER_STATIC_HOST} from '~/assets/variables.js';
 
 export const state = () => ({
     /** @type Status|null */
     status: null,
     /** @type Array<CoinInfo> */
     coinList: [],
+    /** @type {Object.<string, CoinInfo>} */
+    coinMap: {},
     /** @type {Object.<string, string>} */
     coinIconMap: {},
     /** @type {Object.<string, boolean>} */
@@ -32,7 +34,7 @@ export const getters = {
 
             // chainik icon
             if (coinIcon) {
-                return coinIcon;
+                return `${EXPLORER_STATIC_HOST}/coins/${state.coinMap[coinSymbol].id}.png`;
             }
 
             // archived coins
@@ -66,9 +68,11 @@ export const mutations = {
         state.status = statusData;
     },
     SET_COIN_LIST(state, data) {
+        let coinMap = {};
         let coinIconMap = {};
         let coinVerifiedMap = {};
         data.forEach((coin) => {
+            coinMap[coin.symbol] = coin;
             if (coin.icon) {
                 coinIconMap[coin.symbol] = coin.icon;
             }
@@ -78,6 +82,7 @@ export const mutations = {
         });
 
         state.coinList = Object.freeze(data);
+        state.coinMap = Object.freeze(coinMap);
         state.coinIconMap = Object.freeze(coinIconMap);
         state.coinVerifiedMap = Object.freeze(coinVerifiedMap);
     },
