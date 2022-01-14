@@ -92,7 +92,7 @@
         <div class="connection-notice">
             <div class="connection-notice__container u-container u-container--large">
                 <span class="connection-notice__icon u-emoji">⚠️</span>
-                <span class="connection-notice__caption">Not synchronized with network</span>
+                <span class="connection-notice__caption">{{ $td('Not synchronized with network', 'error.not-synchronized-with-network') }}</span>
             </div>
         </div>
     </transition>
