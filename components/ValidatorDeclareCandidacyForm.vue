@@ -44,7 +44,6 @@
         validations() {
             const form = {
                 address: {
-                    isValid: () => false,
                     required,
                     validAddress: this.isAddressDomainResolving ? () => new Promise(() => 0) : isValidAddress,
                 },
@@ -83,7 +82,7 @@
 </script>
 
 <template>
-    <TxForm :txData="{address: form.address, publicKey: form.publicKey, commission: form.commission, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.DECLARE_CANDIDACY" @clear-form="clearForm()" style="display: none;" disabled>
+    <TxForm :txData="{address: form.address, publicKey: form.publicKey, commission: form.commission, coin: form.coinSymbol, stake: form.stake}" :$txData="$v.form" :txType="$options.TX_TYPE.DECLARE_CANDIDACY" @clear-form="clearForm()">
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
                 {{ $td('Declare candidacy', 'masternode.declare-title') }}
