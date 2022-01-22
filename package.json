@@ -66,7 +66,7 @@
     "minterjs-tx": "^11.1.0",
     "minterjs-util": "^0.22.0",
     "minterjs-wallet": "^6.1.1",
-    "nanoid": "^3.1.30",
+    "nanoid": "^3.1.31",
     "nuxt": "^2.15.8",
     "nuxt-i18n": "^6.28.1",
     "nuxt-i18n-default": "^0.0.2",
