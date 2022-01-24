@@ -84,12 +84,12 @@ export default {
             <table class="u-text-nowrap">
                 <thead>
                     <tr>
-                        <th>Your pools</th>
+                        <th>{{ $td('Your pools', 'pool.your-pools') }}</th>
                         <th><!-- LP --></th>
-                        <th colspan="2">Amount</th>
-                        <th>Liquidity</th>
-                        <th>Share</th>
-                        <th title="Based on 24hr volume annualized">APY</th>
+                        <th colspan="2">{{ $td('Amount', 'form.amount') }}</th>
+                        <th>{{ $td('Liquidity', 'pool.liquidity') }}</th>
+                        <th>{{ $td('Share', 'pool.share') }}</th>
+                        <th :title="$td('Based on 24hr volume annualized', 'pool.based-on')">{{ $td('APY', 'pool.apy') }}</th>
                         <!-- controls -->
                         <th class="table__controls-cell table__controls-cell--x2"></th>
                     </tr>
@@ -125,6 +125,6 @@ export default {
         <div class="panel__content panel__section u-text-center" v-else-if="$fetchState.pending">
             <Loader :isLoading="true"/>
         </div>
-        <div class="panel__content panel__section u-text-center" v-else>You have no pools yet</div>
+        <div class="panel__content panel__section u-text-center" v-else>{{ $td('You have no pools yet', 'pool.no-yet') }}</div>
     </section>
 </template>

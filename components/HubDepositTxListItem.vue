@@ -237,7 +237,7 @@ export default {
                 <a class="link--main" :href="getEvmTxUrl(tx)" target="_blank">{{ formatHash(tx.hash) }}</a>
             </div>
             <div class="u-fw-700" v-if="tokenInfo">
-                <template v-if="isInfiniteUnlock">Infinite unlock {{ symbol }}</template>
+                <template v-if="isInfiniteUnlock">{{ $td('Infinite unlock', 'hub.deposit-unlock-infinite') }} {{ symbol }}</template>
                 <template v-else>
                     {{ tokenInfo.type }}
                     <template v-if="tokenInfo.amount">{{ pretty(tokenInfo.amount) }} {{ symbol }}</template>
@@ -247,27 +247,27 @@ export default {
 
         <div class="hub__preview-transaction-row hub__preview-transaction-meta">
             <div>
-                <template v-if="tx.timestamp">{{ timeDistance }} ago ({{ time }})</template>
+                <template v-if="tx.timestamp">{{ timeDistance }} {{ $td('ago', 'hub.ago') }} ({{ time }})</template>
                 from {{ getEvmNetworkName(tx.chainId) }}
             </div>
             <div>
-                <template v-if="status === $options.TX_STATUS.LOADING">Loading</template>
+                <template v-if="status === $options.TX_STATUS.LOADING">{{ $td('Loading', 'hub.loading') }}</template>
                 <template v-if="status === $options.TX_STATUS.PENDING">
-                    <button class="link--default u-semantic-button" @click="speedup()">Speed up</button>
-                    Pending
+                    <button class="link--default u-semantic-button" @click="speedup()">{{ $td('Speed up', 'hub.speed-up') }}</button>
+                    {{ $td('Pending', 'hub.pending') }}
                 </template>
-                <template v-if="status === $options.TX_STATUS.RECEIPT">Received, waiting confirmations</template>
-                <template v-if="status === $options.TX_STATUS.CONFIRMED">Confirmed</template>
-                <template v-if="status === $options.TX_STATUS.CONFIRMED_NOT_FINAL">Confirmed, waiting for bridge</template>
-                <template v-if="status === $options.HUB_TRANSFER_STATUS.deposit_to_hub_received">Bridge collecting batch</template>
-                <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_created">Bridge created batch</template>
+                <template v-if="status === $options.TX_STATUS.RECEIPT">{{ $td('Received, awaiting confirmations', 'hub.tx-status-receipt') }}</template>
+                <template v-if="status === $options.TX_STATUS.CONFIRMED">{{ $td('Confirmed', 'hub.tx-status-confirmed') }}</template>
+                <template v-if="status === $options.TX_STATUS.CONFIRMED_NOT_FINAL">{{ $td('Confirmed, waiting for bridge', 'hub.tx-status-confirmed-not-final') }}</template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.deposit_to_hub_received">{{ $td('Bridge collecting batch', 'hub.bridge-batch') }}</template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_created">{{ $td('Bridge created batch', 'hub.batch-created') }}</template>
                 <template v-if="status === $options.HUB_TRANSFER_STATUS.batch_executed">
-                    Success
+                    {{ $td('Success', 'hub.batch-executed') }}
                     <a class="link--main" :href="getExplorerTxUrl(transfer.outTxHash)" target="_blank">{{ formatHash(transfer.outTxHash) }}</a>
                 </template>
-                <template v-if="status === $options.HUB_TRANSFER_STATUS.refund">Refunded</template>
+                <template v-if="status === $options.HUB_TRANSFER_STATUS.refund">{{ $td('Refunded', 'hub.refunded') }}</template>
 
-                <span v-if="status === $options.TX_STATUS.FAILED" class="u-text-error">Failed</span>
+                <span v-if="status === $options.TX_STATUS.FAILED" class="u-text-error">{{ $td('Failed', 'hub.failed') }}</span>
 
                 <Loader class="hub__preview-loader" :is-loading="!isFinished"/>
             </div>

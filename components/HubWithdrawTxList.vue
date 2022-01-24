@@ -94,7 +94,7 @@ export default {
 
 <template>
     <div class="panel" v-if="hasTx">
-        <div class="panel__header panel__header-title">Transactions</div>
+        <div class="panel__header panel__header-title">{{ $td('Transactions', 'hub.txs') }}</div>
         <div class="panel__section preview__transaction" v-for="withdraw in withdrawList" :key="withdraw.tx.hash">
             <div class="hub__preview-transaction-row u-text-overflow">
                 <div>
@@ -107,20 +107,20 @@ export default {
 
             <div class="hub__preview-transaction-row hub__preview-transaction-meta">
                 <div>
-                    {{ getTimeDistance(withdraw.timestamp || 0, undefined, $now) }} ago ({{ getTime(withdraw.timestamp || 0) }})
-                    to {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}
+                    {{ getTimeDistance(withdraw.timestamp || 0, undefined, $now) }} {{ $td('ago', 'hub.ago') }} ({{ getTime(withdraw.timestamp || 0) }})
+                    {{ $td('to', 'hub.to') }} {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}
                 </div>
                 <div>
-                    <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">Sending to Hub bridge</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">Not found</template>
+                    <template v-if="!withdraw.status || withdraw.status === $options.WITHDRAW_STATUS.not_found">{{ $td('Sending to Hub bridge', 'hub.sending-to-bridge') }}</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">{{ $td('Not found', 'hub.not-found') }}</template>
                     <!--  @TODO combine deposit_to_hub_received & batch_created into "Bridge received tx and wait gas conditions to proceed" -->
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">Bridge collecting batch</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">Sent to {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}, waiting confirmation</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">{{ $td('Bridge collecting batch', 'hub.bridge-batch') }}</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">{{ $td('Sent to', 'hub.sent-to') }} {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}, $td('waiting confirmation', 'hub.waiting-confirmation')</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_executed">
-                        Success
+                        {{ $td('Success', 'form.success-title') }}
                         <a class="link--main" :href="getDestinationUrl(withdraw)" target="_blank">{{ formatHash(withdraw.outTxHash) }}</a>
                     </template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.refund">Refunded</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.refund">{{ $td('Refunded', 'hub.refunded') }}</template>
 
                     <Loader class="hub__preview-loader" :is-loading="!isHubTransferFinished(withdraw.status)"/>
                 </div>

@@ -165,7 +165,7 @@ function getPriceFromList(list, name) {
                     </tbody>
                 </table>
             </div>
-            <div class="panel__content panel__section u-text-center" v-else>No Coins</div>
+            <div class="panel__content panel__section u-text-center" v-else>{{ $td('No Coins', 'hub.no-coins') }}</div>
         </template>
         <div class="panel__content panel__section u-text-center" v-else>
             <Loader :isLoading="true"/>

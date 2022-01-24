@@ -605,7 +605,7 @@ export default {
                     {{ $td('Deposit', 'hub.deposit-title') }}
                 </h1>
                 <p class="panel__header-description">
-                    {{ $td(`Send coins from ${chainId ? getEvmNetworkName(chainId) : 'other network'} to Minter`, 'hub.deposit-description', {network: getEvmNetworkName(chainId)}) }}
+                    {{ $td(`Send coins from ${chainId ? getEvmNetworkName(chainId) : 'another network'} to Minter`, 'hub.deposit-description', {network: chainId ? getEvmNetworkName(chainId) : 'других сетей'}) }}
                 </p>
             </div>
 
@@ -616,12 +616,12 @@ export default {
                         <FieldQr
                             v-model.trim="form.address"
                             :$value="$v.form.address"
-                            :label="$td('Deposit to address', 'form.hub-deposit-address')"
+                            :label="$td('Deposit to address', 'hub.deposit-address')"
                             @blur="$v.form.address.$touch()"
                         />
-                        <span class="form-field__help" v-if="!$v.form.address.$error">Minter address starting with Mx…</span>
-                        <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter Minter address</span>
-                        <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid Minter address</span>
+                        <span class="form-field__help" v-if="!$v.form.address.$error">{{ $td('Minter address starting with Mx…', 'hub.deposit-address-mx') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter Minter address', 'hub.deposit-address-required') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Invalid Minter address', 'hub.deposit-address-invalid') }}</span>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <FieldCoin
@@ -633,9 +633,9 @@ export default {
                             :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                        <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
-                            {{ $td('Can\'t be deposited from', 'form.hub-deposit0coin-error-supported') }}
+                            {{ $td('Can\'t be deposited from', 'hub.deposit0coin-error-supported') }}
                             {{ getEvmNetworkName(chainId) }}
                         </span>
                     </div>
@@ -644,26 +644,26 @@ export default {
                             :readonly="isFormSending"
                             v-model="form.amount"
                             :$value="$v.form.amount"
-                            :label="$td('Amount', 'form.hub-amount')"
+                            :label="$td('Amount', 'hub.amount')"
                             :max-value="maxAmount"
                         />
                         <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                         <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.validAmount || !$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
+                        <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">{{ $td('Not enough', 'form.amount-error-not-enough') }} {{ form.coin }} ({{ $td('max.', 'hub.max') }} {{ pretty(maxAmount) }})</span>
                     </div>
                     <div class="u-cell u-cell--large--1-2">
                         <div class="form-check-group">
                             <label class="form-check">
                                 <input type="checkbox" class="form-check__input" v-model="form.isIgnorePending">
-                                <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'form.hub-deposit-ignore-pending') }}</span>
+                                <span class="form-check__label form-check__label--checkbox">{{ $td('Ignore pending txs', 'hub.deposit-ignore-pending') }}</span>
                             </label>
                             <label class="form-check" v-if="stage === $options.TX_APPROVE">
                                 <input type="checkbox" class="form-check__input" v-model="form.isInfiniteUnlock">
-                                <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'form.hub-deposit-unlock-infinite') }}</span>
+                                <span class="form-check__label form-check__label--checkbox">{{ $td('Infinite unlock', 'hub.deposit-unlock-infinite') }}</span>
                             </label>
                             <label class="form-check" v-if="stage === $options.TX_UNWRAP">
                                 <input type="checkbox" class="form-check__input" v-model="form.isUnwrapAll">
-                                <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'form.hub-deposit-unwrap-all') }}</span>
+                                <span class="form-check__label form-check__label--checkbox">{{ $td('Unwrap all', 'hub.deposit-unwrap-all') }}</span>
                             </label>
                         </div>
                     </div>
@@ -674,8 +674,8 @@ export default {
                             :class="{'is-loading': isFormSending && stage === $options.TX_APPROVE, 'is-disabled': $v.$invalid || stage === $options.TX_TRANSFER}"
                         >
                             <span class="button__content">
-                                <template v-if="form.isInfiniteUnlock">Infinite unlock</template>
-                                <template v-else>Unlock <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
+                                <template v-if="form.isInfiniteUnlock">{{ $td('Infinite unlock', 'hub.deposit-unlock-infinite') }}</template>
+                                <template v-else>{{ $td('Unlock', 'hub.deposit-unlock-button') }} <template v-if="form.coin">{{ pretty(amountToUnlock) }} {{ form.coin }}</template></template>
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
@@ -685,7 +685,7 @@ export default {
                             :class="{'is-loading': isFormSending && stage === $options.TX_UNWRAP, 'is-disabled': $v.$invalid || stage === $options.TX_TRANSFER}"
                         >
                             <span class="button__content">
-                                Unwrap <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template>
+                                {{ $td('Unwrap', 'hub.deposit-unwrap-button') }} <template v-if="amountToUnwrap > 0">{{ pretty(amountToUnwrap) }}</template>
                                 {{ hubChainData.coinSymbol }}
                             </span>
                             <Loader class="button__loader" :isLoading="true"/>
@@ -696,7 +696,7 @@ export default {
                             class="button button--main button--full"
                             :class="{'is-loading': isFormSending && stage === $options.TX_TRANSFER, 'is-disabled': $v.$invalid || stage !== $options.TX_TRANSFER}"
                         >
-                            <span class="button__content">Send</span>
+                            <span class="button__content">{{ $td('Deposit', 'form.hub-deposit-button') }}</span>
                             <Loader class="button__loader" :isLoading="true"/>
                         </button>
                     </div>
@@ -710,14 +710,14 @@ export default {
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
-                            <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                            <span class="form-field__label">{{ $td('Total spend', 'hub.withdraw-estimate') }}</span>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                             <span class="form-field__label">
-                                {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
+                                {{ $td('Bridge fee', 'hub.withdraw-hub-fee') }}
                                 ({{ hubFeeRatePercent }}%)
                             </span>
                         </div>
@@ -731,28 +731,28 @@ export default {
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedBalance) }}</div>
-                            <div class="form-field__label">{{ $td('Token balance', 'form.hub-deposit-selected-balance') }}</div>
+                            <div class="form-field__label">{{ $td('Token balance', 'hub.deposit-selected-balance') }}</div>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">
-                                <template v-if="selectedUnlockedInfinity">Infinity</template>
+                                <template v-if="selectedUnlockedInfinity">{{ $td('Infinity', 'hub.infinity') }}</template>
                                 <template v-else>{{ prettyPrecise(selectedUnlocked) }}</template>
                             </div>
-                            <div class="form-field__label">{{ $td('Token unlocked', 'form.hub-deposit-selected-unlocked') }}</div>
+                            <div class="form-field__label">{{ $td('Tokens unlocked', 'hub.deposit-selected-unlocked') }}</div>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="isEthSelected">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedNative) }}</div>
-                            <div class="form-field__label">{{ $td(`Native ${ hubChainData.coinSymbol } balance`, 'form.hub-deposit-weth-balance', {symbol: hubChainData.coinSymbol}) }}</div>
+                            <div class="form-field__label">{{ $td(`Native ${ hubChainData.coinSymbol }`, 'hub.deposit-native-eth-balance', {symbol: hubChainData.coinSymbol}) }}</div>
                         </div>
                     </div>
                     <div class="u-cell u-cell--large--1-4 u-cell--small--1-2" v-if="isEthSelected">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyPrecise(selectedWrapped) }}</div>
-                            <div class="form-field__label">{{ $td(`Wrapped W${hubChainData.coinSymbol} balance`, 'form.hub-deposit-native-eth-balance', {symbol: hubChainData.coinSymbol}) }}</div>
+                            <div class="form-field__label">{{ $td(`Wrapped W${hubChainData.coinSymbol}`, 'hub.deposit-weth-balance', {symbol: hubChainData.coinSymbol}) }}</div>
                         </div>
                     </div>
                 </div>
@@ -769,7 +769,7 @@ export default {
         </div>
 
         <div class="panel" v-if="$store.getters['hub/depositList'].length">
-            <div class="panel__header panel__header-title">Latest transactions</div>
+            <div class="panel__header panel__header-title">{{ $td('Latest transactions', 'wallet.tx-title') }}</div>
             <TxListItem
                 class="panel__section"
                 v-for="tx in $store.getters['hub/depositList']"
