@@ -348,6 +348,8 @@ export default {
                 return;
             }
 
+            // @TODO pending request not set up
+            // @TODO check chainId and coinContractAddress (so new coin request will not suspended by previous coin)
             if (this.currentBalanceRequest?.promiseStatus === PROMISE_PENDING) {
                 return;
             }
@@ -389,6 +391,10 @@ export default {
             let selectedCoin = this.form.coin;
 
             if (!this.isConnected || !this.coinContractAddress) {
+                return;
+            }
+            // allowance not needed for native coins
+            if (this.isEthSelected) {
                 return;
             }
             if (this.currentAllowanceRequest?.promiseStatus === PROMISE_PENDING) {
