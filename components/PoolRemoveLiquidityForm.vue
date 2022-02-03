@@ -300,9 +300,9 @@ export default {
             <h1 class="panel__header-title">
                 {{ $td('Remove liquidity from swap pool', 'pool.remove-title') }}
             </h1>
-            <!--            <p class="panel__header-description">-->
-            <!--                {{ $td('Choose one of the coins that you own and specify the amount you would like to add.', 'swap.remove-description') }}-->
-            <!--            </p>-->
+            <p class="panel__header-description">
+            {{ $td('Choose the pair of coins that you have previously provided and specify the amount you would like to remove.', 'pool.remove-description') }}
+            </p>
         </template>
 
         <template v-slot:extra-panel="{fee, addressBalance}">
@@ -312,42 +312,42 @@ export default {
                         <FieldCoin
                             v-model="form.coin0"
                             :$value="$v.form.coin0"
-                            :label="$td('First coin', 'form.pool-coin0')"
+                            :label="$td('First coin', 'pool.coin0')"
                             :coin-list="poolCoinList"
                             :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <!--<span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                        <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.maxLength">{{ $td('Max. 10 letters', 'form.coin-error-max') }}</span>-->
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <FieldUseMax
                             v-model="formAmount0"
                             :$value="$v.formAmount0"
-                            :label="(form.coin0 || $td('First coin', 'form.pool-coin0')) + ' ' + $td('amount', 'form.pool-remove-amount')"
+                            :label="(form.coin0 || $td('First coin', 'pool.coin0')) + ' ' + $td('amount', 'pool.to-the-amount')"
                             :max-value="isPoolLoaded ? addressLiquidityData.amount0 : undefined"
                             @input.native="selectedInput = $options.INPUT_TYPE.AMOUNT0"
                             @use-max="selectedInput = $options.INPUT_TYPE.AMOUNT0"
                         />
                         <div class="form-field__help">
-                            {{ $td('Estimated, depends on the pool ratio', 'form.pool-remove-amount-help') }}
+                            {{ $td('Estimated, depends on the pool ratio', 'pool.amount-help') }}
                         </div>
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <FieldPercentage
                             v-model="formSlippagePercent0"
                             :$value="$v.formSlippagePercent0"
-                            :label="(form.coin0 || $td('First coin', 'form.pool-coin0')) + ' ' + $td('slippage tolerance', 'form.pool-remove-slippage')"
+                            :label="(form.coin0 || $td('First coin', 'pool.coin0')) + ' ' + $td('slippage tolerance', 'pool.slippage')"
                             min-value="0"
                             max-value="100"
                             :allow-decimal="true"
                         />
-                        <span class="form-field__error" v-if="!$v.formSlippagePercent0.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
+                        <span class="form-field__error" v-if="!$v.formSlippagePercent0.maxValue">{{ $td('Maximum 100%', 'pool.percent-error-max') }}</span>
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyExact(minimumVolume0) }}</div>
-                            <span class="form-field__label">{{ form.coin0 || $td('First coin', 'form.pool-coin0') }} {{ $td('minimum amount to return', 'form.pool-remove-min') }}</span>
+                            <span class="form-field__label">{{ form.coin0 || $td('First coin', 'pool.coin0') }} {{ $td('minimum amount to return', 'pool.remove-min') }}</span>
                         </div>
                     </div>
                 </div>
@@ -358,42 +358,42 @@ export default {
                         <FieldCoin
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
-                            :label="$td('Second coin', 'form.pool-coin1')"
+                            :label="$td('Second coin', 'pool.coin1')"
                             :coin-list="poolCoinList"
                             :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <!--<span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                        <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.maxLength">{{ $td('Max. 10 letters', 'form.coin-error-max') }}</span>-->
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <FieldUseMax
                             v-model="formAmount1"
                             :$value="$v.formAmount1"
-                            :label="(form.coin1 || $td('Second coin', 'form.pool-coin1')) + ' ' + $td('amount', 'form.pool-remove-amount')"
+                            :label="(form.coin1 || $td('Second coin', 'pool.coin1')) + ' ' + $td('amount', 'pool.to-the-amount')"
                             :max-value="isPoolLoaded ? addressLiquidityData.amount1 : undefined"
                             @input.native="selectedInput = $options.INPUT_TYPE.AMOUNT1"
                             @use-max="selectedInput = $options.INPUT_TYPE.AMOUNT1"
                         />
                         <div class="form-field__help">
-                            {{ $td('Estimated, depends on the pool ratio', 'form.pool-remove-amount-help') }}
+                            {{ $td('Estimated, depends on the pool ratio', 'pool.amount-help') }}
                         </div>
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <FieldPercentage
                             v-model="formSlippagePercent1"
                             :$value="$v.formSlippagePercent1"
-                            :label="(form.coin1 || $td('Second coin', 'form.pool-coin1')) + ' ' + $td('slippage tolerance', 'form.pool-remove-slippage')"
+                            :label="(form.coin1 || $td('Second coin', 'pool.coin1')) + ' ' + $td('slippage tolerance', 'pool.slippage')"
                             min-value="0"
                             max-value="100"
                             :allow-decimal="true"
                         />
-                        <span class="form-field__error" v-if="!$v.formSlippagePercent1.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
+                        <span class="form-field__error" v-if="!$v.formSlippagePercent1.maxValue">{{ $td('Maximum 100%', 'pool.percent-error-max') }}</span>
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <div class="form-field form-field--dashed">
                             <div class="form-field__input is-not-empty">{{ prettyExact(minimumVolume1) }}</div>
-                            <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'form.pool-coin0') }} {{ $td('minimum amount to return', 'form.pool-remove-min') }}</span>
+                            <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'pool.coin1') }} {{ $td('minimum amount to return', 'pool.remove-min') }}</span>
                         </div>
                     </div>
                 </div>
@@ -406,36 +406,36 @@ export default {
                     ref="fieldAmount"
                     v-model="formLiquidityPercent"
                     :$value="$v.formLiquidityPercent"
-                    :label="$td('Liquidity', 'form.pool-remove-liquidity-percent')"
+                    :label="$td('Liquidity', 'pool.liquidity')"
                     min-value="0"
                     max-value="100"
                     :allow-decimal="true"
                     @input.native="selectedInput = $options.INPUT_TYPE.LIQUIDITY_PERCENT"
                 />
-                <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Enter percentage', 'form.pool-remove-liquidity-percent-error-required') }}</span>
-                <span class="form-field__error" v-else-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.minValue">{{ $td('Min value 0%', 'form.percent-error-min') }}</span>
-                <span class="form-field__error" v-else-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.maxValue">{{ $td('Maximum 100%', 'form.percent-error-max') }}</span>
-                <span class="form-field__help" v-else>Percentage of your pool liquidity</span>
+                <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Enter percentage', 'pool.remove-liquidity-percent-error-required') }}</span>
+                <span class="form-field__error" v-else-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.minValue">{{ $td('Min. value 0%', 'pool.percent-error-min') }}</span>
+                <span class="form-field__error" v-else-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.maxValue">{{ $td('Max. value 100%', 'pool.percent-error-max-2') }}</span>
+                <span class="form-field__help" v-else>{{ $td('Percentage of your pool liquidity', 'pool.liquidity-percentage') }}</span>
             </div>
             <div class="u-cell u-cell--small--1-2">
                 <FieldUseMax
                     v-model="form.liquidity"
                     :$value="$v.form.liquidity"
-                    :label="$td('Pool tokens amount', 'form.pool-remove-liquidity')"
+                    :label="$td('Pool tokens amount', 'pool.tokens-amount')"
                     :max-value="isPoolLoaded ? addressLiquidityData.liquidity : undefined"
                     @input.native="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
                     @use-max="selectedInput = $options.INPUT_TYPE.LIQUIDITY_AMOUNT"
                 />
                 <!--                @TODO form.liquidity validation-->
-                <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Required', 'form.pool-remove-liquidity-error-required') }}</span>
+                <span class="form-field__error" v-if="$v.formLiquidityPercent.$dirty && !$v.formLiquidityPercent.required">{{ $td('Required', 'pool.remove-liquidity-error-required') }}</span>
             </div>
             <div class="u-cell">
-                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.isPoolLoaded.$dirty && !$v.isPoolLoaded.success">{{ $td('Provider\'s liquidity not found for selected pair', 'form.pool-remove-liquidity-error-pool') }}</span>
+                <span class="form__error" v-if="form.coin0 && form.coin1 && $v.isPoolLoaded.$dirty && !$v.isPoolLoaded.success">{{ $td('Provider\'s liquidity not found for selected pair', 'pool.remove-liquidity-error-pool') }}</span>
             </div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Remove', 'form.pool-remove-button') }}
+            {{ $td('Remove', 'pool.remove-button') }}
         </template>
 
         <template v-slot:confirm-modal-header>
@@ -452,25 +452,25 @@ export default {
                         <div class="form-field__input is-not-empty">
                             {{ formLiquidityPercent }}%
                         </div>
-                        <div class="form-field__label">{{ $td('Liquidity', 'form.pool-remove-liquidity-percent') }}</div>
+                        <div class="form-field__label">{{ $td('Liquidity', 'pool.liquidity') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
                             ≈<BaseAmount :coin="form.coin0" :amount="formAmount0"/>
-                            <span class="u-text-muted">({{ minimumVolume0 }} minimum)</span>
+                            <span class="u-text-muted">({{ minimumVolume0 }} {{ $td('minimum', 'pool.minimum') }})</span>
                         </div>
-                        <div class="form-field__label">{{ $td('First coin', 'form.pool-coin0') }}</div>
+                        <div class="form-field__label">{{ $td('First coin', 'pool.coin0') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">
                             ≈<BaseAmount :coin="form.coin1" :amount="formAmount1"/>
-                            <span class="u-text-muted">({{ minimumVolume1 }} minimum)</span>
+                            <span class="u-text-muted">({{ minimumVolume1 }} {{ $td('minimum', 'pool.minimum') }})</span>
                         </div>
-                        <div class="form-field__label">{{ $td('Second coin', 'form.pool-coin1') }}</div>
+                        <div class="form-field__label">{{ $td('Second coin', 'pool.coin1') }}</div>
                     </div>
                 </div>
             </div>

@@ -160,7 +160,7 @@ export default {
         <div class="panel__section" v-show="!isConnected">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell">
-                    Connect your wallet
+                    {{ $td('Connect your wallet', 'hub.connect-wallet') }}
                 </div>
                 <div class="u-cell u-cell--small--1-2 u-cell--large--1-4">
                     <label class="form-field">
@@ -168,7 +168,7 @@ export default {
                             <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
                             <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
                         </select>
-                        <span class="form-field__label">Select network</span>
+                        <span class="form-field__label">{{ $td('Select network', 'hub.select-network') }}</span>
                     </label>
                 </div>
                 <div class="u-cell">
@@ -207,12 +207,12 @@ export default {
         <div class="panel__section panel__section--tint" v-if="isConnected">
             <div class="u-grid u-grid--small u-grid--vertical-margin--small">
                 <div class="u-cell u-cell--auto">
-                    Wallet connected to
+                    {{ $td('Wallet connected to', 'hub.wallet-connected-to') }}
                     <strong>{{ getEvmNetworkName(chainId) }}</strong>
-                    with
+                    {{ $td('with', 'hub.with') }}
                     <template v-if="selectedAccountType === $options.TYPE.WALLETCONNECT">WalletConnect</template>
                     <template v-if="selectedAccountType === $options.TYPE.METAMASK">Metamask</template>
-                    <template v-if="selectedAccountType === $options.TYPE.MINTER">Console seed phrase</template>
+                    <template v-if="selectedAccountType === $options.TYPE.MINTER">{{ $td('Console seed phrase', 'hub.console-seed') }}</template>
                     <br>
                     <a class="link--default u-text-break" :href="getAddressUrl(ethAddress)" target="_blank">{{ ethAddress }}</a>
                 </div>
@@ -222,22 +222,22 @@ export default {
                             <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
                             <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
                         </select>
-                        <span class="form-field__label">Select network</span>
+                        <span class="form-field__label">{{ $td('Select network', 'hub.select-network') }}</span>
                     </label>
                 </div>
                 <div class="u-cell u-cell--auto">
-                    <button class="button button--ghost" @click="disconnectEth">Change wallet</button>
+                    <button class="button button--ghost" @click="disconnectEth">{{ $td('Change wallet', 'hub.change-wallet') }}</button>
                 </div>
             </div>
 
             <div class="form__error u-mt-10" v-if="isConnected && unsupportedNetwork">
-                <div class="u-fw-700">Network {{ chainId }} is not supported, switch to Ethereum or BSC</div>
-                <p>Try reconnect if current network is out of sync with selected network in your wallet</p>
+                <div class="u-fw-700">{{ $td('Network', 'hub.unsupported-network-title') }} {{ chainId }} {{ $td('is not supported, switch to Ethereum or BSC', 'hub.unsupported-network-description') }}</div>
+                <p>{{ $td('Try reconnecting if current network is out of sync with selected network in your wallet', 'hub.is-not-connected') }}</p>
             </div>
 
             <div class="form__error u-mt-10" v-if="errorMessage">
                 <div class="u-fw-700">{{ errorMessage }}</div>
-                <p>Switch network and connect again</p>
+                <p>{{ $td('Switch network and connect again', 'hub.switch-network') }}</p>
             </div>
         </div>
     </div>

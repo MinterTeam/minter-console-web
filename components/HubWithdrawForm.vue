@@ -385,13 +385,13 @@ export default {
                     <FieldQr
                         v-model.trim="form.address"
                         :$value="$v.form.address"
-                        :label="$td('Withdraw to address', 'form.hub-withdraw-address')"
+                        :label="$td('Withdraw to address', 'hub.withdraw-address')"
                         @blur="$v.form.address.$touch()"
                     />
 
-                    <span class="form-field__help" v-if="!$v.form.address.$error">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} address starting with 0x…</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">Enter {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} address</span>
-                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">Invalid {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} address</span>
+                    <span class="form-field__help" v-if="!$v.form.address.$error">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('address starting with 0x…', 'hub.withdraw-address-description') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.required">{{ $td('Enter', 'hub.withdraw-address-required') }} {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('address', 'hub.withdraw-address-title') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.address.$dirty && !$v.form.address.validAddress">{{ $td('Invalid', 'hub.withdraw-address-invalid') }} {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('address', 'hub.withdraw-address-title') }}</span>
                 </div>
                 <div class="u-cell u-cell--large--1-4 u-cell--small--1-2">
                     <FieldCoin
@@ -402,9 +402,9 @@ export default {
                         :select-mode="true"
                     />
                     <span class="form-field__error" v-if="$v.form.coin.$dirty && !$v.form.coin.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.coin.$dirty && !$v.form.coin.supported">
-                        {{ $td('Can\'t be transferred to', 'form.hub-coin-error-supported') }}
+                        {{ $td('Can\'t be transferred to', 'hub.coin-error-supported') }}
                         {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }}
                     </span>
                 </div>
@@ -412,12 +412,12 @@ export default {
                     <FieldUseMax
                         v-model="form.amount"
                         :$value="$v.form.amount"
-                        :label="$td('Amount', 'form.hub-amount')"
+                        :label="$td('Amount', 'hub.amount')"
                         :max-value="maxAmount"
                     />
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">Not enough {{ form.coin }} (max {{ pretty(maxAmount) }})</span>
+                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">{{ $td('Not enough', 'form.amount-error-not-enough') }} {{ form.coin }} ({{ $td('max.', 'hub.max') }} {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell u-cell--large--1-2 u-cell--large-down--order-minus">
                     <label class="form-field">
@@ -425,7 +425,7 @@ export default {
                             <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
                             <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
                         </select>
-                        <span class="form-field__label">Destination network</span>
+                        <span class="form-field__label">{{ $td('Destination network', 'hub.destination') }}</span>
                     </label>
                     <!--
                     <div class="form-check-label">Tx speed</div>
@@ -444,11 +444,11 @@ export default {
                         class="button button--main button--full"
                         :class="{'is-disabled': $v.$invalid, 'is-loading': isFormSending}"
                     >
-                        <span class="button__content">{{ $td('Withdraw', 'hub.withdraw-title') }}</span>
+                        <span class="button__content">{{ $td('Withdraw', 'hub.withdraw-button-title') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>
                     </button>
                     <div class="form-field__error" v-if="serverError">{{ serverError }}</div>
-                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} fee has updated</div>
+                    <div class="form-field__help" v-if="serverWarning"><span class="u-emoji">⚠️</span> {{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee has updated', 'hub.fee-updated') }}</div>
                 </div>
             </div>
         </form>
@@ -457,20 +457,20 @@ export default {
                 <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
-                        <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                        <span class="form-field__label">{{ $td('Total spend', 'hub.withdraw-estimate') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
-                        <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
+                        <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'hub.withdraw-eth-fee') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                         <span class="form-field__label">
-                            {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
+                            {{ $td('Bridge fee', 'hub.withdraw-hub-fee') }}
                             ({{ hubFeeRatePercent }}%)
                         </span>
                     </div>
@@ -484,7 +484,7 @@ export default {
                 <div class="u-cell u-cell--1-2 u-cell--large--1-4">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(fee.value) }} {{ fee.coinSymbol }}</div>
-                        <span class="form-field__label">{{ $td('Minter fee', 'form.hub-withdraw-minter-fee') }}</span>
+                        <span class="form-field__label">{{ $td('Minter fee', 'hub.withdraw-minter-fee') }}</span>
                     </div>
                 </div>
                 <div class="u-cell">
@@ -539,14 +539,14 @@ export default {
                         <div class="u-cell">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">{{ pretty(coinFee) }} {{ form.coin }}</div>
-                                <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'form.hub-withdraw-eth-fee') }}</span>
+                                <span class="form-field__label">{{ $options.HUB_CHAIN_DATA[form.networkTo].shortName }} {{ $td('fee', 'hub.withdraw-eth-fee') }}</span>
                             </div>
                         </div>
                         <div class="u-cell">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">{{ pretty(hubFee) }} {{ form.coin }}</div>
                                 <span class="form-field__label">
-                                    {{ $td('Bridge fee', 'form.hub-withdraw-hub-fee') }}
+                                    {{ $td('Bridge fee', 'hub.withdraw-hub-fee') }}
                                     ({{ hubFeeRatePercent }}%)
                                 </span>
                             </div>
@@ -554,13 +554,13 @@ export default {
                         <div class="u-cell">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">{{ pretty(fee.value) }} {{ fee.coinSymbol }}</div>
-                                <span class="form-field__label">{{ $td('Minter fee', 'form.hub-withdraw-minter-fee') }}</span>
+                                <span class="form-field__label">{{ $td('Minter fee', 'hub.withdraw-minter-fee') }}</span>
                             </div>
                         </div>
                         <div class="u-cell">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">{{ prettyPrecise(amountToSpend) }} {{ form.coin }}</div>
-                                <span class="form-field__label">{{ $td('Total spend', 'form.hub-withdraw-estimate') }}</span>
+                                <span class="form-field__label">{{ $td('Total spend', 'hub.withdraw-estimate') }}</span>
                             </div>
                         </div>
                     </div>

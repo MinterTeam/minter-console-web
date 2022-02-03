@@ -5,7 +5,7 @@ import coinBlockList from 'minter-coin-block-list';
 import {ESTIMATE_SWAP_TYPE} from 'minter-js-sdk/src/variables.js';
 import {convertToPip} from 'minterjs-util';
 import Big from '~/assets/big.js';
-import {_getOracleCoinList} from '~/api/hub.js';
+import {getVerifiedMinterCoinList} from '~/api/hub.js';
 import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
@@ -160,17 +160,17 @@ export async function prepareBalance(balanceList) {
  * @return {Promise<Array<Coin>|Array<BalanceItem>>}
  */
 function markVerified(coinListPromise, itemType = 'coin') {
-    const hubCoinListPromise = _getOracleCoinList()
+    const verifiedMinterCoinListPromise = getVerifiedMinterCoinList()
         .catch((error) => {
             console.log(error);
             return [];
         });
 
-    return Promise.all([coinListPromise, hubCoinListPromise])
-        .then(([coinList, hubCoinList]) => {
+    return Promise.all([coinListPromise, verifiedMinterCoinListPromise])
+        .then(([coinList, verifiedMinterCoinList]) => {
             let verifiedMap = {};
-            hubCoinList.forEach((item) => {
-                verifiedMap[Number(item.minterId)] = true;
+            verifiedMinterCoinList.forEach((item) => {
+                verifiedMap[Number(item.externalTokenId)] = true;
             });
 
             return coinList.map((coinItem) => {

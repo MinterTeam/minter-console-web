@@ -181,7 +181,7 @@ export default {
     <div>
         <button class="button" :class="classCustom" @click="connectEth">
             <!--        <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-metamask.svg`">-->
-            <span>Console seed phrase</span>
+            <span>{{ $td('Console seed phrase', 'hub.console-seed-2') }}</span>
         </button>
 
         <portal to="account-minter-confirm-modal">
@@ -190,7 +190,7 @@ export default {
                 <div class="panel u-text-left" v-if="confirmData.tx && confirmData.computed">
                     <div class="panel__header">
                         <h1 class="panel__header-title">
-                            Sign transaction
+                            {{ $td('Sign transaction', 'hub.sign') }}
                         </h1>
                     </div>
                     <div class="panel__section">
@@ -199,7 +199,7 @@ export default {
                                 <div class="form-field__input is-not-empty">
                                     {{ getEvmNetworkName(chainId) }}
                                 </div>
-                                <span class="form-field__label">From network</span>
+                                <span class="form-field__label">{{ $td('From network', 'hub.from-network') }}</span>
                             </div>
                         </div>
                         <div class="form-row">
@@ -207,27 +207,27 @@ export default {
                                 <div class="form-field__input is-not-empty">
                                     {{ ethAddress }}
                                 </div>
-                                <span class="form-field__label">From your address</span>
+                                <span class="form-field__label">{{ $td('From your address', 'hub.from-address') }}</span>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
-                                    <template v-if="confirmData.info.type === $options.HUB_DEPOSIT_TX_PURPOSE.SEND">Transfer to Minter</template>
+                                    <template v-if="confirmData.info.type === $options.HUB_DEPOSIT_TX_PURPOSE.SEND">{{ $td('Transfer to Minter', 'hub.transfer-to-minter') }}</template>
                                     <template v-else>{{ confirmData.info.type }}</template>
                                 </div>
-                                <span class="form-field__label">Method</span>
+                                <span class="form-field__label">{{ $td('Method', 'hub.method') }}</span>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-field form-field--dashed">
                                 <div class="form-field__input is-not-empty">
-                                    <template v-if="isInfiniteUnlock">Infinity</template>
+                                    <template v-if="isInfiniteUnlock">{{ $td('Infinity', 'hub.infinity') }}</template>
                                     <template v-else>
                                         {{ prettyExact(confirmData.info.amount) }} {{ confirmData.info.tokenName }}
                                     </template>
                                 </div>
-                                <span class="form-field__label">Amount</span>
+                                <span class="form-field__label">{{ $td('Amount', 'hub.amount') }}</span>
                             </div>
                         </div>
                     </div>
@@ -238,7 +238,7 @@ export default {
                                     <div class="form-field__input is-not-empty">
                                         {{ pretty(confirmData.computed.gasPriceGwei) }} gwei
                                     </div>
-                                    <span class="form-field__label">Gas price</span>
+                                    <span class="form-field__label">{{ $td('Gas price', 'form.gas-price') }}</span>
                                 </div>
                             </div>
                             <div class="u-cell u-cell--1-2">
@@ -246,7 +246,7 @@ export default {
                                     <div class="form-field__input is-not-empty">
                                         {{ confirmData.tx.gas }}
                                     </div>
-                                    <span class="form-field__label">Gas limit</span>
+                                    <span class="form-field__label">{{ $td('Gas limit', 'form.gas-limit') }}</span>
                                 </div>
                             </div>
                             <div class="u-cell">
@@ -255,12 +255,12 @@ export default {
                                         {{ pretty(confirmData.computed.fee) }}
                                         {{ $options.HUB_CHAIN_DATA[selectedHubNetwork].coinSymbol }}
                                     </div>
-                                    <span class="form-field__label">Fee</span>
+                                    <span class="form-field__label">{{ $td('Fee', 'hub.coin-table-fee-mobile') }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!--                    <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> Transaction requires high fee.</div>-->
+                        <!--                    <div class="u-mt-10 u-fw-700" v-if="fee.isHighFee"><span class="u-emoji">⚠️</span> {{ $td('Transaction requires high fee', 'hub.tx-high-fee') }}.</div>-->
                     </div>
                     <div class="panel__section">
                         <button
