@@ -35,11 +35,15 @@ export function getOracleFee(network) {
  * @return {Promise<Array<HubCoinItem>>}
  */
 export function getOracleCoinList() {
-    return Promise.all([_getOracleCoinList(), getCoinList({skipMeta: true})])
+    return Promise.all([_getOracleCoinListGroupedByMinter(), getCoinList({skipMeta: true})])
         .then(([oracleCoinList, minterCoinList]) => {
             oracleCoinList.forEach((oracleCoin) => {
                 const minterCoin = minterCoinList.find((item) => item.id === Number(oracleCoin.minterId));
-                oracleCoin.symbol = minterCoin?.symbol;
+
+                if (minterCoin) {
+                    oracleCoin.symbol = minterCoin.symbol;
+                    oracleCoin.universalSymbol = getUniversalSymbol(oracleCoin);
+                }
             });
 
             return oracleCoinList
@@ -65,20 +69,45 @@ export function getOracleCoinList() {
         });
 }
 
+/**
+ * @param {HubCoinItem} hubCoin
+ * @return {string|*}
+ */
+function getUniversalSymbol(hubCoin) {
+    if (hubCoin[HUB_CHAIN_ID.ETHEREUM]) {
+        if (hubCoin[HUB_CHAIN_ID.ETHEREUM].denom === 'oneinch') {
+            return '1INCH';
+        }
+
+        return hubCoin[HUB_CHAIN_ID.ETHEREUM].denom.toUpperCase();
+    }
+
+    if (hubCoin[HUB_CHAIN_ID.BSC]) {
+        return hubCoin.symbol.replace(/BSC$/, '');
+    }
+}
+
+
 // 1 min cache
 const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
 
 /**
- * #@return {Promise<TokenInfo.AsObject[]>}
- * @return {Promise<Array<HubCoinItem>>}
+ * @return {Promise<TokenInfo.AsObject[]>}
  */
-export function _getOracleCoinList() {
+function _getOracleCoinList() {
     return instance.get('mhub2/v1/token_infos', {
             cache: coinsCache,
         })
         .then((response) => {
             return response.data.list.tokenInfos;
-        })
+        });
+}
+
+/**
+ * @return {Promise<Array<HubCoinItem>>}
+ */
+function _getOracleCoinListGroupedByMinter() {
+    return _getOracleCoinList()
         .then((tokenList) => {
             tokenList = tokenList.map((item) => {
                 if (typeof item.externalTokenId === 'string') {
@@ -101,6 +130,16 @@ export function _getOracleCoinList() {
                         bsc: findToken(minterToken.denom, HUB_CHAIN_ID.BSC),
                     };
                 });
+        });
+}
+
+/**
+ * @return {Promise<TokenInfo.AsObject[]>}
+ */
+export function getVerifiedMinterCoinList() {
+    return _getOracleCoinList()
+        .then((tokenList) => {
+            return tokenList.filter((token) => token.chainId === HUB_CHAIN_ID.MINTER);
         });
 }
 

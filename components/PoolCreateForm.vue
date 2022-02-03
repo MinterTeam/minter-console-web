@@ -88,7 +88,7 @@
                 {{ $td('Create new swap pool', 'pool.create-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Choose pair of coins the coins that you own and specify the amount to create a pool.', 'pool.create-description') }}
+                {{ $td('Choose the pair of coins that you own and specify their amounts to create a pool.', 'pool.create-description') }}
             </p>
         </template>
 
@@ -99,19 +99,19 @@
                         <FieldCoin
                             v-model="form.coin0"
                             :$value="$v.form.coin0"
-                            :label="$td('Coin', 'form.pool-create-coin')"
+                            :label="$td('Coin', 'pool.create-coin01')"
                             :coin-list="addressBalance"
                             :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin0.$dirty && !$v.form.coin0.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <!--<span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                        <span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.coin0.$dirty && !$v.form.coin0.maxLength">{{ $td('Max. 10 letters', 'form.coin-error-max') }}</span>-->
                     </div>
                     <div class="u-cell u-cell--small--1-2">
                         <FieldUseMax
                             v-model="form.volume0"
                             :$value="$v.form.volume0"
-                            :label="$td('Amount', 'form.pool-create-amount')"
+                            :label="$td('Amount', 'pool.create-amount01')"
                             :selected-coin-symbol="form.coin0"
                             :fee="fee"
                             :address-balance="addressBalance"
@@ -126,19 +126,19 @@
                         <FieldCoin
                             v-model="form.coin1"
                             :$value="$v.form.coin1"
-                            :label="$td('Coin', 'form.pool-create-coin-pair')"
+                            :label="$td('Coin', 'pool.create-coin01')"
                             :coin-list="addressBalance"
                             :select-mode="true"
                         />
                         <span class="form-field__error" v-if="$v.form.coin1.$dirty && !$v.form.coin1.required">{{ $td('Enter coin symbol', 'form.coin-error-required') }}</span>
-                        <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
-                        <!--<span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
+                        <span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.minLength">{{ $td('Min. 3 letters', 'form.coin-error-min') }}</span>
+                        <!--<span class="form-field__error" v-else-if="$v.form.coin1.$dirty && !$v.form.coin1.maxLength">{{ $td('Max. 10 letters', 'form.coin-error-max') }}</span>-->
                     </div>
                     <div class="u-cell u-cell--small--1-2">
                         <FieldUseMax
                             v-model="form.volume1"
                             :$value="$v.form.volume1"
-                            :label="$td('Amount', 'form.pool-create-amount')"
+                            :label="$td('Amount', 'pool.create-amount01')"
                             :selected-coin-symbol="form.coin1"
                             :fee="fee"
                             :address-balance="addressBalance"
@@ -150,7 +150,7 @@
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Create', 'form.pool-create-button') }}
+            {{ $td('Create', 'pool.create-button') }}
         </template>
 
         <template v-slot:panel-footer>
@@ -158,13 +158,13 @@
                 <div class="u-cell u-cell--medium--1-2">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(form.volume1 / form.volume0) }} {{ form.coin1 }}</div>
-                        <span class="form-field__label">{{ form.coin0 || $td('First coin', 'form.pool-coin0') }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
+                        <span class="form-field__label">{{ form.coin0 || $td('First coin', 'pool.coin0') }} {{ $td('price', 'pool.create-coin-price') }}</span>
                     </div>
                 </div>
                 <div class="u-cell u-cell--medium--1-2">
                     <div class="form-field form-field--dashed">
                         <div class="form-field__input is-not-empty">{{ pretty(form.volume0 / form.volume1) }} {{ form.coin0 }}</div>
-                        <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'form.pool-coin1') }} {{ $td('price', 'form.pool-create-coin-price') }}</span>
+                        <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'pool.coin1') }} {{ $td('price', 'pool.create-coin-price') }}</span>
                     </div>
                 </div>
             </div>
@@ -182,25 +182,25 @@
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin0" :amount="form.volume0" :exact="true"/>
-                        <div class="form-field__label">{{ $td('First coin', 'form.pool-create-confirm-coin0') }}</div>
+                        <div class="form-field__label">{{ $td('First coin', 'pool.coin0') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin1" :amount="form.volume1" :exact="true"/>
-                        <div class="form-field__label">{{ $td('Second coin', 'form.pool-create-confirm-coin1') }}</div>
+                        <div class="form-field__label">{{ $td('Second coin', 'pool.coin1') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin1" :amount="form.volume1 / form.volume0"/>
-                        <div class="form-field__label">{{ form.coin0 }} {{ $td('price', 'form.pool-create-coin-price') }}</div>
+                        <div class="form-field__label">{{ form.coin0 }} {{ $td('price', 'pool.create-coin-price') }}</div>
                     </div>
                 </div>
                 <div class="u-cell">
                     <div class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coin0" :amount="form.volume0 / form.volume1"/>
-                        <div class="form-field__label">{{ form.coin1 }} {{ $td('price', 'form.pool-create-coin-price') }}</div>
+                        <div class="form-field__label">{{ form.coin1 }} {{ $td('price', 'pool.create-coin-price') }}</div>
                     </div>
                 </div>
             </div>
