@@ -176,7 +176,7 @@ export function pruneTxFields(tx) {
  */
 
 /**
- * @typedef {Web3Tx & {chainId: number, tokenInfo: HubDepositTxInfo=, transfer: HubTransfer=}} HubDeposit
+ * @typedef {Web3Tx & {chainId: number, tokenInfo: HubDepositTxInfo=, transfer: HubTransferStatus=}} HubDeposit
  */
 
 /**
