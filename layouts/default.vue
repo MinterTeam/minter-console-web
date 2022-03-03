@@ -186,13 +186,13 @@
                                     {{ $td('Broadcast', 'common.page-broadcast') }}
                                 </nuxt-link>
                             </li>
-                            <!--
                             <li class="menu__item u-cell">
-                                <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('pco')" @click.native="linkClick">
-                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-pco.svg`" alt="" role="presentation">
-                                    {{ $td('PCO', 'common.page-pco') }}
+                                <nuxt-link class="menu__link link--hover" :to="$i18nGetPreferredPath('lock')" @click.native="linkClick">
+                                    <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-lock.svg`" alt="" role="presentation">
+                                    {{ $td('Lock', 'common.page-lock') }}
                                 </nuxt-link>
                             </li>
+                            <!--
                             <li class="menu__item u-cell">
                                 <nuxt-link class="menu__link link&#45;&#45;hover" :to="$i18nGetPreferredPath('dao')" @click.native="linkClick">
                                     <img class="menu__icon" :src="`${BASE_URL_PREFIX}/img/icon-feature-vote.svg`" alt="" role="presentation">
