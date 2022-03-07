@@ -18,7 +18,7 @@ export default function({app, store, route, redirect, error}) {
         /^(\/ru)?\/delegation(\/|$)/,
         /^(\/ru)?\/masternode(\/|$)/,
         /^(\/ru)?\/multisig(\/|$)/,
-        /^(\/ru)?\/pco(\/|$)/,
+        /^(\/ru)?\/lock(\/|$)/,
         /^(\/ru)?\/support(\/|$)/,
         /^(\/ru)?\/wallet(\/|$)/,
     ].some((pathRegex) => {

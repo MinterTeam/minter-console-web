@@ -3,6 +3,7 @@
     import Big from '~/assets/big.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types';
     import {getTimeStamp, getTimeZone, pretty, txTypeFilter, shortHashFilter, getExplorerBlockUrl, getExplorerTxUrl, getExplorerAddressUrl, getExplorerValidatorUrl, fromBase64} from '~/assets/utils';
+    import {LOCK_STAKE_PERIOD} from '~/assets/variables.js';
     import Loader from '~/components/common/Loader';
     import TableLink from '~/components/common/TableLink';
 
@@ -182,6 +183,12 @@
                 const validator = this.$store.state.validatorMetaList.find((validatorItem) => validatorItem.publicKey === tx.data.pubKey);
                 return validator?.name;
             },
+            getDueBlockHeight(tx) {
+                if (this.isTxType(tx, TX_TYPE.LOCK_STAKE)) {
+                    return tx.height + LOCK_STAKE_PERIOD;
+                }
+                return tx?.data?.dueBlock || tx?.check?.dueBlock;
+            },
             fromBase64,
             pretty,
             getExplorerBlockUrl,
@@ -229,8 +236,9 @@
                             <td class="u-hidden-xlarge-down">{{ tx.timestamp | time }}</td>
                             <!-- from -->
                             <td class="u-hidden-xlarge-down">
-                                <TableLink :link-text="tx.from"
-                                           :link-path="getExplorerAddressUrl(tx.from)"
+                                <TableLink
+                                    :link-text="tx.from"
+                                    :link-path="getExplorerAddressUrl(tx.from)"
                                 />
                             </td>
                             <!-- type -->
@@ -266,18 +274,20 @@
                                     <!-- from -->
                                     <div class="table__inner-item u-hidden-xlarge-up">
                                         <strong>{{ $td('From', 'wallet.tx-table-from') }}</strong> <br>
-                                        <TableLink :link-text="tx.from"
-                                                   :link-path="getExplorerAddressUrl(tx.from)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.from"
+                                            :link-path="getExplorerAddressUrl(tx.from)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
 
                                     <!-- type SEND -->
                                     <div class="table__inner-item" v-if="tx.data.to">
                                         <strong>{{ $td('To', 'wallet.tx-table-to') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.to"
-                                                   :link-path="getExplorerAddressUrl(tx.data.to)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.to"
+                                            :link-path="getExplorerAddressUrl(tx.data.to)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
 
@@ -359,16 +369,18 @@
                                     <!-- type DECLARE_CANDIDACY, DELEGATE, UNBOND, SET_CANDIDATE_ONLINE, SET_CANDIDATE_OFFLINE -->
                                     <div class="table__inner-item" v-if="getValidatorName(tx)">
                                         <strong>Validator</strong> <br>
-                                        <TableLink :link-text="getValidatorName(tx)"
-                                                   :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="getValidatorName(tx)"
+                                            :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
                                     <div class="table__inner-item" v-if="tx.data.pubKey">
                                         <strong>{{ $td('Public key', 'wallet.tx-table-public') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.pubKey"
-                                                   :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.pubKey"
+                                            :link-path="getExplorerValidatorUrl(tx.data.pubKey)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
                                     <div class="table__inner-item" v-if="isDefined(tx.data.stake)">
@@ -381,23 +393,26 @@
                                     </div>
                                     <div class="table__inner-item" v-if="tx.data.ownerAddress">
                                         <strong>{{ $td('Owner address', 'wallet.tx-table-owner-address') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.ownerAddress"
-                                                   :link-path="getExplorerAddressUrl(tx.data.ownerAddress)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.ownerAddress"
+                                            :link-path="getExplorerAddressUrl(tx.data.ownerAddress)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
                                     <div class="table__inner-item" v-if="tx.data.rewardAddress">
                                         <strong>{{ $td('Reward address', 'wallet.tx-table-reward-address') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.rewardAddress"
-                                                   :link-path="getExplorerAddressUrl(tx.data.rewardAddress)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.rewardAddress"
+                                            :link-path="getExplorerAddressUrl(tx.data.rewardAddress)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
                                     <div class="table__inner-item" v-if="tx.data.controlAddress">
                                         <strong>{{ $td('Control address', 'wallet.tx-table-control-address') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.controlAddress"
-                                                   :link-path="getExplorerAddressUrl(tx.data.controlAddress)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.controlAddress"
+                                            :link-path="getExplorerAddressUrl(tx.data.controlAddress)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
 
@@ -415,26 +430,28 @@
 -->
                                     <div class="table__inner-item" v-if="tx.data.check && tx.data.check.sender">
                                         <strong>{{ $td('Check issuer', 'wallet.tx-table-check-issuer') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.check.sender"
-                                                   :link-path="getExplorerAddressUrl(tx.data.check.sender)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.check.sender"
+                                            :link-path="getExplorerAddressUrl(tx.data.check.sender)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
                                     <div class="table__inner-item" v-if="tx.data.check && tx.data.check.nonce">
                                         <strong>{{ $td('Check nonce', 'wallet.tx-table-check-nonce') }}</strong> <br>
                                         {{ fromBase64(tx.data.check.nonce) }}
                                     </div>
-                                    <div class="table__inner-item" v-if="tx.data.check && tx.data.check.dueBlock">
+                                    <div class="table__inner-item" v-if="getDueBlockHeight(tx)">
                                         <strong>{{ $td('Due block', 'wallet.tx-table-due-block') }}</strong> <br>
-                                        {{ tx.data.check.dueBlock }}
+                                        {{ getDueBlockHeight(tx) }}
                                     </div>
 
                                     <!-- type CREATE_MULTISIG -->
                                     <div class="table__inner-item" v-if="tx.data.multisigAddress">
                                         <strong>{{ $td('Created multisig address', 'wallet.tx-table-multisig-address') }}</strong> <br>
-                                        <TableLink :link-text="tx.data.multisigAddress"
-                                                   :link-path="getExplorerAddressUrl(tx.data.multisigAddress)"
-                                                   :should-not-shorten="true"
+                                        <TableLink
+                                            :link-text="tx.data.multisigAddress"
+                                            :link-path="getExplorerAddressUrl(tx.data.multisigAddress)"
+                                            :should-not-shorten="true"
                                         />
                                     </div>
 
