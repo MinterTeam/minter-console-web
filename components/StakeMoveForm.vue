@@ -8,7 +8,8 @@
     import eventBus from '~/assets/event-bus.js';
     import focusElement from '~/assets/focus-element.js';
     import checkEmpty from '~/assets/v-check-empty.js';
-    import {pretty, prettyExact} from "~/assets/utils.js";
+    import {pretty, prettyExact, prettyRound} from "~/assets/utils.js";
+    import {MOVE_STAKE_PERIOD} from '~/assets/variables.js';
     import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
@@ -18,6 +19,7 @@
 
     export default {
         TX_TYPE,
+        MOVE_STAKE_PERIOD,
         components: {
             BaseAmount,
             TxForm,
@@ -155,6 +157,7 @@
         // },
         methods: {
             prettyExact,
+            prettyRound,
             clearForm() {
                 this.form.publicKeyFrom = '';
                 this.form.publicKeyTo = '';
@@ -278,7 +281,7 @@
             <div v-if="successTx">
                 <TxFormBlocksToUpdateStake :success-tx="successTx"/>
 
-                Coins will be moved in 120&#x202F;960 blocks (~7 days).
+                Coins will be moved in {{ prettyRound($options.MOVE_STAKE_PERIOD) }} blocks (≈7 days).
             </div>
         </template>
     </TxForm>

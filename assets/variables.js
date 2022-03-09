@@ -16,6 +16,8 @@ export const COIN_NAME = BASE_COIN;
 export const CHAIN_ID = NETWORK === MAINNET ? 1 : 2;
 /* 3 year mainnet, 1 hour testnet */
 export const LOCK_STAKE_PERIOD = NETWORK === MAINNET ? 18921600 : 2920 * 2;
+/* 7 days*/
+export const MOVE_STAKE_PERIOD = 120960;
 export const ACCOUNTS_API_URL = process.env.APP_ACCOUNTS_API_URL;
 export const GATE_API_URL = process.env.APP_GATE_API_URL;
 export const AUTO_DELEGATION_API_URL = process.env.APP_AUTO_DELEGATION_API_URL;
