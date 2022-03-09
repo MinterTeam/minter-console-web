@@ -294,38 +294,38 @@
                                     <!-- SELL -->
                                     <div class="table__inner-item" v-if="isSell(tx)">
                                         <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
-                                        {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
+                                        {{ pretty(tx.data.valueToSell) }} {{ tx.data.coinToSell.symbol }}
                                     </div>
                                     <div class="table__inner-item" v-if="isSell(tx)">
                                         <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
-                                        {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
+                                        {{ pretty(tx.data.valueToBuy) }} {{ tx.data.coinToBuy.symbol }}
                                     </div>
                                     <!-- SELL_POOL -->
                                     <div class="table__inner-item" v-if="isSellPool(tx)">
                                         <strong>{{ $td('Sell coins', 'wallet.tx-table-sell') }}</strong> <br>
-                                        {{ tx.data.coins[0].symbol }} {{ tx.data.valueToSell | pretty }}
+                                        {{ pretty(tx.data.valueToSell) }} {{ tx.data.coins[0].symbol }}
                                     </div>
                                     <div class="table__inner-item" v-if="isSellPool(tx)">
                                         <strong>{{ $td('Get coins', 'wallet.tx-table-get') }}</strong> <br>
-                                        {{ tx.data.coins[tx.data.coins.length - 1].symbol }} {{ tx.data.valueToBuy | pretty }}
+                                        {{ pretty(tx.data.valueToBuy) }} {{ tx.data.coins[tx.data.coins.length - 1].symbol }}
                                     </div>
                                     <!-- BUY -->
                                     <div class="table__inner-item" v-if="isBuy(tx)">
                                         <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
-                                        {{ tx.data.coinToBuy.symbol }} {{ tx.data.valueToBuy | pretty }}
+                                        {{ pretty(tx.data.valueToBuy) }} {{ tx.data.coinToBuy.symbol }}
                                     </div>
                                     <div class="table__inner-item" v-if="isBuy(tx)">
                                         <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
-                                        {{ tx.data.coinToSell.symbol }} {{ tx.data.valueToSell | pretty }}
+                                        {{ pretty(tx.data.valueToSell) }} {{ tx.data.coinToSell.symbol }}
                                     </div>
                                     <!-- BUY_POOL -->
                                     <div class="table__inner-item" v-if="isBuyPool(tx)">
                                         <strong>{{ $td('Buy coins', 'wallet.tx-table-buy') }}</strong> <br>
-                                        {{ tx.data.coins[tx.data.coins.length - 1].symbol }} {{ tx.data.valueToBuy | pretty }}
+                                        {{ pretty(tx.data.valueToBuy) }} {{ tx.data.coins[tx.data.coins.length - 1].symbol }}
                                     </div>
                                     <div class="table__inner-item" v-if="isBuyPool(tx)">
                                         <strong>{{ $td('Spend coins', 'wallet.tx-table-spend') }}</strong> <br>
-                                        {{ tx.data.coins[0].symbol }} {{ tx.data.valueToSell | pretty }}
+                                        {{ pretty(tx.data.valueToSell) }} {{ tx.data.coins[0].symbol }}
                                     </div>
 
                                     <!-- ADD_LIMIT_ORDER -->

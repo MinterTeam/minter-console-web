@@ -44,7 +44,7 @@
     <TxForm
         :txData="{}"
         :$txData="$v.form"
-        :txType="$options.TX_TYPE.LOCK"
+        :txType="$options.TX_TYPE.LOCK_STAKE"
         @clear-form="clearForm()"
     >
         <template v-slot:panel-header>
@@ -57,6 +57,9 @@
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
+            <div class="u-cell">
+                You will lock ALL your current and future stakes from ALL validators for ≈3 years ({{ prettyRound($options.LOCK_STAKE_PERIOD) }} blocks)
+            </div>
         </template>
 
         <template v-slot:submit-title>
@@ -71,7 +74,12 @@
         </template>
 
         <template v-slot:confirm-modal-body>
-            Warning! You are about to lock ALL your current and future stakes from ALL validators for ~3 years ({{ prettyRound($options.LOCK_STAKE_PERIOD) }})
+            <div class="u-text-left">
+                <span class="u-emoji">⚠️</span>
+                <span class="u-fw-700">Warning!</span>
+                <br>
+                You are about to lock <strong>ALL</strong> your current and future stakes from <strong>ALL</strong> validators for <strong>≈3 years</strong> ({{ prettyRound($options.LOCK_STAKE_PERIOD) }} blocks)
+            </div>
         </template>
     </TxForm>
 </template>

@@ -64,7 +64,7 @@
     "minter-footer-links": "^3.1.0",
     "minter-js-sdk": "^0.42.0-alpha.1",
     "minterjs-tx": "^12.0.0-alpha.2",
-    "minterjs-util": "^0.23.0-alpha.2",
+    "minterjs-util": "^0.23.0-alpha.3",
     "minterjs-wallet": "^6.1.1",
     "nanoid": "^3.3.1",
     "nuxt": "^2.15.8",
