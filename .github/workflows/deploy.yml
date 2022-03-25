@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ master, testnet, taconet ]
+    branches: [ master, testnet, toronet ]
 env:
   INGRESS_DOMAIN_master: "console.minter.network"
   INGRESS_DOMAIN_testnet: "console.testnet.minter.network"
-  INGRESS_DOMAIN_taconet: "console.taconet.minter.network"
+  INGRESS_DOMAIN_toronet: "console.toronet.minter.network"
   KUBE_NAMESPACE_master: "mainnet"
   KUBE_NAMESPACE_testnet: "testnet"
-  KUBE_NAMESPACE_taconet: "taconet"
+  KUBE_NAMESPACE_toronet: "toronet"
 jobs:
   ci:
     runs-on: ubuntu-latest
