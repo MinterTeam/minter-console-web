@@ -20,6 +20,7 @@ export const LOCK_STAKE_PERIOD = NETWORK === MAINNET ? 18921600 : 2920 * 2;
 export const MOVE_STAKE_PERIOD = 120960;
 export const ACCOUNTS_API_URL = process.env.APP_ACCOUNTS_API_URL;
 export const GATE_API_URL = process.env.APP_GATE_API_URL;
+//@TODO not used
 export const AUTO_DELEGATION_API_URL = process.env.APP_AUTO_DELEGATION_API_URL;
 export const EXPLORER_API_URL = process.env.APP_EXPLORER_API_URL;
 export const EXPLORER_RTM_URL = process.env.APP_EXPLORER_RTM_URL;
