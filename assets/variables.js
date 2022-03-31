@@ -53,12 +53,18 @@ export const I18N_ROUTE_NAME_SEPARATOR = '___';
 export const STAKE_RECALCULATE_BLOCK_COUNT = 720;
 export const DEFAULT_SLIPPAGE = 1;
 
+/**
+ * @enum {string}
+ */
 export const SWAP_TYPE = {
     BANCOR: 'bancor',
     POOL: 'pool',
     POOL_DIRECT: 'pool_direct',
     OPTIMAL: 'optimal',
 };
+/**
+ * @enum {string}
+ */
 export const COIN_TYPE = {
     ANY: 'any',
     COIN: 'coin',
@@ -66,6 +72,9 @@ export const COIN_TYPE = {
     TOKEN: 'token',
     POOL_TOKEN: 'pool_token',
 };
+/**
+ * @enum {string}
+ */
 export const SLIPPAGE_INPUT_TYPE = {
     AMOUNT: 'amount',
     PERCENT: 'percent',

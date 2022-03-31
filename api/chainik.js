@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
-import {CHAINIK_API_URL} from "~/assets/variables";
+import {CHAINIK_API_URL, NETWORK, MAINNET} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 
 const instance = axios.create({
@@ -15,6 +15,9 @@ const coinsCache = new Cache({maxAge: 10 * 60 * 1000});
  * @return {Promise<Object.<number, string|null>>}
  */
 export function getCoinIconList() {
+    if (NETWORK !== MAINNET) {
+        return Promise.resolve({});
+    }
     return instance.get('coins.json', {
             cache: coinsCache,
         })
