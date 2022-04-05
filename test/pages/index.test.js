@@ -1,4 +1,4 @@
-import faker from 'faker';
+import faker from '@faker-js/faker';
 import {USERNAME_MAX_LENGTH, TESTNET, NETWORK} from '~/assets/variables';
 import {APP_URL_BASE, ROUTES} from '~/test/variables';
 import {logout} from '~/test/utils';
