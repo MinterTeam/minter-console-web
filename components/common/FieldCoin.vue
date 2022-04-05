@@ -158,6 +158,10 @@
      */
     function ofType(item, selectedType) {
         const coinType = item.coin?.type || item.type;
+        // don't filter if coinType can't be determined
+        if (!coinType) {
+            return true;
+        }
         if (selectedType === COIN_TYPE.ANY) {
             return true;
         } else if (selectedType === COIN_TYPE.ANY_TOKEN) {

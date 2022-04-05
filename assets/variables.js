@@ -14,8 +14,13 @@ export const BASE_COIN = NETWORK === MAINNET ? 'BIP' : 'MNT';
  */
 export const COIN_NAME = BASE_COIN;
 export const CHAIN_ID = NETWORK === MAINNET ? 1 : 2;
+/* 3 year mainnet, 1 hour testnet */
+export const LOCK_STAKE_PERIOD = NETWORK === MAINNET ? 18921600 : 2920 * 2;
+/* 7 days*/
+export const MOVE_STAKE_PERIOD = 120960;
 export const ACCOUNTS_API_URL = process.env.APP_ACCOUNTS_API_URL;
 export const GATE_API_URL = process.env.APP_GATE_API_URL;
+//@TODO not used
 export const AUTO_DELEGATION_API_URL = process.env.APP_AUTO_DELEGATION_API_URL;
 export const EXPLORER_API_URL = process.env.APP_EXPLORER_API_URL;
 export const EXPLORER_RTM_URL = process.env.APP_EXPLORER_RTM_URL;
@@ -48,12 +53,18 @@ export const I18N_ROUTE_NAME_SEPARATOR = '___';
 export const STAKE_RECALCULATE_BLOCK_COUNT = 720;
 export const DEFAULT_SLIPPAGE = 1;
 
+/**
+ * @enum {string}
+ */
 export const SWAP_TYPE = {
     BANCOR: 'bancor',
     POOL: 'pool',
     POOL_DIRECT: 'pool_direct',
     OPTIMAL: 'optimal',
 };
+/**
+ * @enum {string}
+ */
 export const COIN_TYPE = {
     ANY: 'any',
     COIN: 'coin',
@@ -61,6 +72,9 @@ export const COIN_TYPE = {
     TOKEN: 'token',
     POOL_TOKEN: 'pool_token',
 };
+/**
+ * @enum {string}
+ */
 export const SLIPPAGE_INPUT_TYPE = {
     AMOUNT: 'amount',
     PERCENT: 'percent',

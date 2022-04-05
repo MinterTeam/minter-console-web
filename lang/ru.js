@@ -12,7 +12,7 @@ export default {
         'page-masternode': 'Мастернода',
         'page-multisig': 'Мультисиг адрес',
         'page-coiner': 'Создание монет',
-        'page-pco': undefined,
+        'page-lock': undefined,
         'page-dao': undefined,
         'page-support': 'Поддержка',
         'page-account': 'Аккаунт',

@@ -8,7 +8,9 @@
     import eventBus from '~/assets/event-bus.js';
     import focusElement from '~/assets/focus-element.js';
     import checkEmpty from '~/assets/v-check-empty.js';
-    import {pretty, prettyExact} from "~/assets/utils.js";
+    import {pretty, prettyExact, prettyRound} from "~/assets/utils.js";
+    import {MOVE_STAKE_PERIOD} from '~/assets/variables.js';
+    import BaseAmount from '~/components/common/BaseAmount.vue';
     import TxForm from '~/components/common/TxForm.vue';
     import TxFormBlocksToUpdateStake from '~/components/common/TxFormBlocksToUpdateStake.vue';
     import FieldDomain from '~/components/common/FieldDomain.vue';
@@ -17,7 +19,9 @@
 
     export default {
         TX_TYPE,
+        MOVE_STAKE_PERIOD,
         components: {
+            BaseAmount,
             TxForm,
             TxFormBlocksToUpdateStake,
             FieldDomain,
@@ -69,7 +73,7 @@
         computed: {
             maxAmount() {
                 // no validator selected
-                if (!this.stakeList.length) {
+                if (!this.stakeList?.length) {
                     return;
                 }
                 // no coinSymbol entered
@@ -153,6 +157,7 @@
         // },
         methods: {
             prettyExact,
+            prettyRound,
             clearForm() {
                 this.form.publicKeyFrom = '';
                 this.form.publicKeyTo = '';
@@ -177,7 +182,7 @@
                 {{ $td('Move stake', 'delegation.move-title') }}
             </h1>
             <p class="panel__header-description">
-                {{ $td('Move your stake from one validator to another. The process will be finalized within 30 days after the request has been sent.', 'delegation.move-description') }}
+                {{ $td('Move your stake from one validator to another. The process will be finalized within 7 days after the request has been sent.', 'delegation.move-description') }}
             </p>
         </template>
 
@@ -210,7 +215,8 @@
                     :$value="$v.form.coinSymbol"
                     :label="$td('Coin', 'form.coin')"
                     :coinList="stakeList"
-                    :select-mode="true"
+                    :select-mode="stakeList && !!stakeList.length"
+                    coin-type="coin"
                 />
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.required">{{ $td('Enter coin', 'form.coin-error-required') }}</span>
                 <span class="form-field__error" v-if="$v.form.coinSymbol.$dirty && !$v.form.coinSymbol.minLength">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
@@ -244,9 +250,7 @@
                 <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-move-confirm-description')"></div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly tabindex="-1"
-                               :value="form.coinSymbol + ' ' + prettyExact(form.stake)"
-                        >
+                        <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinSymbol" :amount="form.stake" :exact="true"/>
                         <span class="form-field__label">{{ $td('You move', 'form.delegation-move-confirm-amount') }}</span>
                     </label>
                 </div>
@@ -277,7 +281,7 @@
             <div v-if="successTx">
                 <TxFormBlocksToUpdateStake :success-tx="successTx"/>
 
-                Coins will be moved in 518&#x202F;400 blocks (~30 days).
+                Coins will be moved in {{ prettyRound($options.MOVE_STAKE_PERIOD) }} blocks (≈7 days).
             </div>
         </template>
     </TxForm>
