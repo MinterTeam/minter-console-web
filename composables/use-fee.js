@@ -37,6 +37,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         /** @type {Boolean} - by default fallback to baseCoin, additionally it can try to fallback to coinToSpend, if baseCoin is not enough */
         fallbackToCoinToSpend: false,
         isOffline: false,
+        looseEstimation: false,
     });
     /** @type {Object.<number, string>}*/
     const coinMap = ref({});
@@ -113,7 +114,8 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
     function getSecondaryCoinToCheck() {
         // 1. only check if fallback flag activated
         // 2. if gasCoin is defined - no need to check something else
-        if (!feeProps.fallbackToCoinToSpend || isCoinDefined(feeProps.txParams.gasCoin)) {
+        // 3. exact estimation used (no need to guess)
+        if (!feeProps.fallbackToCoinToSpend || isCoinDefined(feeProps.txParams.gasCoin) || !feeProps.looseEstimation) {
             return '';
         }
 
@@ -135,17 +137,18 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
             return;
         }
 
+        const cleanTxParams = cleanObject(feeProps.txParams);
         // save current coins to check if it will be actual after resolution
         const primaryCoinToCheck = getPrimaryCoinToCheck();
         const secondaryCoinToCheck = getSecondaryCoinToCheck();
         const primaryEstimate = estimateTxCommission({
-            ...feeProps.txParams,
+            ...cleanTxParams,
             chainId: CHAIN_ID,
             gasCoin: primaryCoinToCheck,
         });
         //@TODO secondary check may be redundant
         const secondaryEstimate = secondaryCoinToCheck && secondaryCoinToCheck !== primaryCoinToCheck ? estimateTxCommission({
-            ...feeProps.txParams,
+            ...cleanTxParams,
             chainId: CHAIN_ID,
             gasCoin: secondaryCoinToCheck,
         }) : Promise.reject();
@@ -174,7 +177,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
 
                 state.priceCoinFeeValue = feeData.priceCoinCommission;
                 state.baseCoinFeeValue = feeData.baseCoinCommission;
-                state.isBaseCoinEnough = new Big(feeProps.baseCoinAmount || 0).gte(state.baseCoinFeeValue);
+                state.isBaseCoinEnough = new Big(feeProps.baseCoinAmount || 0).gte(state.baseCoinFeeValue || 0);
                 // select between primary fallback and secondary fallback
                 // secondaryFeeData may be defined only if primary is fallback base coin
                 const isSecondarySelected = secondaryFeeData && !state.isBaseCoinEnough;
@@ -215,4 +218,21 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         feeProps,
         fee,
     };
+}
+
+function cleanObject(txParams) {
+    let clean = {};
+    for (const key in txParams) {
+        if (typeof txParams[key] === 'object') {
+            clean[key] = cleanObject(txParams[key]);
+        } else {
+            clean[key] = isEmpty(txParams[key]) ? undefined : txParams[key];
+        }
+    }
+
+    return clean;
+
+    function isEmpty(value) {
+        return value === '' || value === null;
+    }
 }

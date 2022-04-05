@@ -156,6 +156,7 @@
             isShowPayload() {
                 return this.txType !== TX_TYPE.REDEEM_CHECK;
             },
+          // @TODO show fee value, but disable field
             isShowGasCoin() {
                 return this.txType !== TX_TYPE.REDEEM_CHECK && this.txType !== TX_TYPE.SELL_ALL && this.txType !== TX_TYPE.SELL_ALL_SWAP_POOL;
             },

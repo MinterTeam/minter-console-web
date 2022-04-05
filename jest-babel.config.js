@@ -1,7 +1,9 @@
 // Custom Jest transform implementation that wraps babel-jest and injects our
 // babel presets, so we don't have to use .babelrc.
 
-module.exports = require('babel-jest').createTransformer({
+const babelJest = require('babel-jest');
+const createTransformer = babelJest.createTransformer || babelJest.default.createTransformer;
+module.exports = createTransformer({
     babelrc: false,
     "presets": [
         [
