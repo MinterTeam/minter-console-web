@@ -35,7 +35,7 @@ export async function login(page) {
  *
  * @param {Page} page
  * @param {string} formTestId
- * @param {boolean} [shouldFail]
+ * @param {boolean|'estimation'} [shouldFailPost]
  * @param {boolean} [shouldFailModal]
  * @return {Promise<void>}
  */
@@ -46,11 +46,14 @@ export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModa
     // submit (opens modal)
     await page.click(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]`);
 
+    const modalButtonSelector = `[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`;
     if (!shouldFailModal) {
         // wait for modal
-        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`);
+        await page.waitForSelector(modalButtonSelector);
         // post tx
-        await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`);
+        await page.click(modalButtonSelector);
+    } else {
+        await waitForNoSelector(page, modalButtonSelector);
     }
 
     if (!shouldFailPost) {
@@ -58,6 +61,9 @@ export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModa
         await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
         // close modal
         await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
+    } else if (shouldFailPost === 'estimation') {
+        // wait for error
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="estimationError"]`, {timeout: 1020000});
     } else {
         // wait for error
         await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txErrorMessage"]`);
@@ -72,4 +78,27 @@ export function wait(time = 100) {
     return new Promise((resolve) => {
         setTimeout(resolve, time);
     });
+}
+
+/**
+ *
+ * @param {Page} page
+ * @param {string} selector
+ * @param [options]
+ * @return {Promise}
+ */
+export function waitForNoSelector(page, selector, options) {
+    const foundMessage = `Selector ${selector} found but should not`;
+
+    return page.waitForSelector(selector, {timeout: 5000, ...options})
+        .then(() => {
+            throw new Error(foundMessage);
+        })
+        .catch((error) => {
+            if (error.message === foundMessage) {
+                throw error;
+            } else {
+                return 'OK';
+            }
+        });
 }

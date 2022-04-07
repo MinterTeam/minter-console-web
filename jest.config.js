@@ -1,5 +1,3 @@
-//@TODO jest can't see jest-babel.config.js without this console.log. WTF?
-console.log(require('./jest-babel.config.js'));
 module.exports = {
     moduleNameMapper: {
         '~(.*)$': '<rootDir>/$1',
