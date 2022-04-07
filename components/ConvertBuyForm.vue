@@ -1,5 +1,4 @@
 <script>
-    import axios from 'axios';
     import {validationMixin} from 'vuelidate';
     import required from 'vuelidate/lib/validators/required';
     import minLength from 'vuelidate/lib/validators/minLength';
@@ -22,8 +21,6 @@
     import Loader from '~/components/common/Loader';
 
     let watcherTimer;
-    let estimationCancel;
-    const CANCEL_MESSAGE = 'Cancel previous request';
 
     export default {
         TX_TYPE,
@@ -253,11 +250,8 @@
                 this.debouncedGetEstimation();
                 this.isEstimationPending = true;
             },
-            getEstimation() {
+            async getEstimation() {
                 this.isEstimationPending = false;
-                if (this.isEstimationLoading && typeof estimationCancel === 'function') {
-                    estimationCancel(CANCEL_MESSAGE);
-                }
                 if (this.$store.getters.isOfflineMode) {
                     return;
                 }
@@ -274,7 +268,7 @@
                     findRoute: this.selectedConvertType !== SWAP_TYPE.POOL_DIRECT,
                     gasCoin: this.txForm.gasCoin || this.fee.coin || 0,
                 }, {
-                    cancelToken: new axios.CancelToken((cancelFn) => estimationCancel = cancelFn),
+                    idPreventConcurrency: 'convertBuy',
                 })
                     .then((result) => {
                         this.estimation = result.will_pay;
@@ -283,7 +277,7 @@
                         this.isEstimationLoading = false;
                     })
                     .catch((error) => {
-                        if (error.message === CANCEL_MESSAGE) {
+                        if (error.isCanceled) {
                             return;
                         }
                         this.isEstimationLoading = false;
@@ -416,7 +410,7 @@
                     <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinFrom" :amount="currentEstimation" prefix="≈"/>
                     <div class="form-field__label">{{ $td('You will pay approximately', 'form.convert-buy-pay-estimation') }}</div>
                     <Loader class="form-field__icon form-field__icon--loader" :isLoading="isEstimationWaiting"/>
-                    <span class="form-field__error" v-if="isEstimationErrorVisible">{{ estimationError }}</span>
+                    <span class="form-field__error" v-if="isEstimationErrorVisible" data-test-id="estimationError">{{ estimationError }}</span>
                 </div>
             </div>
             <div class="u-cell u-cell--medium--1-2" v-if="!$store.getters.isOfflineMode">
