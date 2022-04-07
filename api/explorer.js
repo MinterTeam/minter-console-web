@@ -231,7 +231,13 @@ export function getAddressOrderList(address, params) {
  */
 export function getAddressStakeList(address) {
     return explorer.get(`addresses/${address}/delegations`, {params: {limit: 999}})
-        .then((response) => response.data.data);
+        .then((response) => response.data.data.map((item) => {
+            return {
+                ...item,
+                value: stripZeros(item.value),
+                bipValue: stripZeros(item.bipValue),
+            };
+        }));
 }
 
 
