@@ -143,18 +143,18 @@
                 }
             },
         },
-        // mounted() {
-        //     eventBus.on('activate-move-stake', ({hash, coin}) => {
-        //         this.form.publicKeyFrom = hash;
-        //         this.form.coinSymbol = coin;
-        //
-        //         const inputEl = this.$refs.fieldStake.$el.querySelector('input');
-        //         focusElement(inputEl);
-        //     });
-        // },
-        // destroyed() {
-        //     eventBus.off('activate-move-stake');
-        // },
+        mounted() {
+            eventBus.on('activate-move-stake', ({hash, coin}) => {
+                this.form.publicKeyFrom = hash;
+                this.form.coinSymbol = coin;
+
+                const inputEl = this.$refs.fieldStake.$el.querySelector('input');
+                focusElement(inputEl);
+            });
+        },
+        destroyed() {
+            eventBus.off('activate-move-stake');
+        },
         methods: {
             prettyExact,
             prettyRound,
