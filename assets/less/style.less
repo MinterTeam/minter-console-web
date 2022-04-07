@@ -185,12 +185,13 @@ td, th {
 }
 .table__controls-cell {padding: (@table-cell-padding / 2); width: @table-expand-button-size; box-sizing: content-box; font-size: 0; text-align: right;}
 .table__controls-cell--x2 {width: (@table-expand-button-size * 2);}
+.table__controls-cell--x3 {width: (@table-expand-button-size * 3);}
 .table__controls-cell--copy {
     & + td, & + th {padding-left: 0;}
 }
 .table__controls-button {width: @table-expand-button-size; height: @table-expand-button-size; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;}
 .table__controls-button--expand {
-    width: @table-expand-button-size; height: @table-expand-button-size; font-size: 0; position: relative; left: 0; top: 0;
+    width: @table-expand-button-size; height: @table-expand-button-size; font-size: 0; position: relative; left: 0; top: 0; margin-left: @table-expand-button-size;
     &::before, &::after {content: ''; width: 12px; height: 2px; position: absolute; top: 50%; margin-top: 4px; background: #707070;}
     &::before {transform: rotate(45deg); right: 50%; transform-origin: 100% 100%;}
     &::after {transform: rotate(-45deg); left: 50%; transform-origin: 0 100%;}
@@ -208,8 +209,10 @@ td, th {
     //.table__cell-overflow--middle {margin-left: -2px; margin-right: -2px;}
     .table__controls-cell {padding: (@table-cell-vertical-padding-large / 2); width: @table-expand-button-size-large;}
     .table__controls-cell--x2 {width: (@table-expand-button-size-large * 2);}
+    .table__controls-cell--x3 {width: (@table-expand-button-size-large * 3);}
     //.table__controls-cell--copy + td {padding-left: (@table-expand-button-size-large / 2);}
     .table__controls-button {width: @table-expand-button-size-large; height: @table-expand-button-size-large;}
+    .table__controls-button--expand {margin-left: @table-expand-button-size-large;}
 }
 @media (max-width: @breakpoint-medium-down) {
     .table__row-lead--medium-down {

@@ -228,6 +228,9 @@ export default {
             activateDelegate({hash}) {
                 eventBus.emit('activate-delegate', {hash});
             },
+        activateMove({hash, coin}) {
+            eventBus.emit('activate-move-stake', {hash, coin});
+        },
             activateUnbond({hash, coin}) {
                 eventBus.emit('activate-unbond', {hash, coin});
             },
@@ -315,7 +318,7 @@ function makeSortQueue(fnArray) {
                     -->
                     </th>
                     <!-- controls -->
-                    <th class="table__controls-cell table__controls-cell--x2"></th>
+                    <th class="table__controls-cell table__controls-cell--x3"></th>
                 </tr>
             </thead>
             <tbody>
@@ -349,10 +352,11 @@ function makeSortQueue(fnArray) {
                         </td>
                         <!-- waitlist-->
                         <td class="table__cell-waitlist">
-                            <span class="u-emoji u-hidden-medium-down"
-                                  :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
-                                  title="Stake is dropped to wait list, top up or unbond it"
-                                  v-if="isGroupHasWaitlisted(stakeGroup)"
+                            <span
+                                class="u-emoji u-hidden-medium-down"
+                                :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
+                                title="Stake is dropped to wait list, top up or unbond it"
+                                v-if="isGroupHasWaitlisted(stakeGroup)"
                             >⚠️</span>
                         </td>
                         <!-- coin list -->
@@ -375,22 +379,32 @@ function makeSortQueue(fnArray) {
                             </template>
                         </td>
                         <!-- controls -->
-                        <td class="table__controls-cell table__controls-cell--x2">
-                            <button class="table__controls-button u-semantic-button link--opacity"
-                                    @click="activateDelegate({hash: stakeGroup.hash})"
+                        <td class="table__controls-cell table__controls-cell--x3">
+                            <button
+                                class="table__controls-button u-semantic-button link--opacity"
+                                @click="activateDelegate({hash: stakeGroup.hash})"
                             >
                                 <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Delegate to validator">
                             </button>
-                            <button class="table__controls-button u-semantic-button link--opacity"
-                                    @click="activateUnbond({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
-                                    v-if="!isGroupCanExpand(stakeGroup)"
+                            <button
+                                class="table__controls-button u-semantic-button link--opacity"
+                                @click="activateMove({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
+                                v-if="!isGroupCanExpand(stakeGroup)"
                             >
-                                <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake">
                             </button>
-                            <button class="table__controls-button table__controls-button--expand u-semantic-button link--opacity"
-                                    :class="{'is-expanded': isExpandedList[stakeGroup.hash]}"
-                                    v-if="isGroupCanExpand(stakeGroup)"
-                                    @click="toggleExpand(stakeGroup.hash)"
+                            <button
+                                class="table__controls-button u-semantic-button link--opacity"
+                                @click="activateUnbond({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
+                                v-if="!isGroupCanExpand(stakeGroup)"
+                            >
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond stake">
+                            </button>
+                            <button
+                                class="table__controls-button table__controls-button--expand u-semantic-button link--opacity"
+                                :class="{'is-expanded': isExpandedList[stakeGroup.hash]}"
+                                v-if="isGroupCanExpand(stakeGroup)"
+                                @click="toggleExpand(stakeGroup.hash)"
                             >
                                 Toggle Stakes
                             </button>
@@ -413,10 +427,11 @@ function makeSortQueue(fnArray) {
                             <div v-else>{{ stakeGroup.stakeList[0].coin.symbol }} {{ $options.pretty(stakeGroup.stakeList[0].value) }}</div>
                         </td>
                         <td class="table__cell-waitlist">
-                            <span class="u-emoji"
-                                  :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
-                                  title="Stake is dropped to wait list, top up or unbond it"
-                                  v-if="isGroupHasWaitlisted(stakeGroup)"
+                            <span
+                                class="u-emoji"
+                                :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
+                                title="Stake is dropped to wait list, top up or unbond it"
+                                v-if="isGroupHasWaitlisted(stakeGroup)"
                             >⚠️</span>
                         </td>
                         <!-- controls placeholder -->
@@ -449,9 +464,16 @@ function makeSortQueue(fnArray) {
                                 <span class="u-emoji" v-if="stakeItem.isWaitlisted">⚠️</span>
                             </td>
                             <!-- controls -->
-                            <td class="table__controls-cell table__controls-cell--x2">
-                                <button class="table__controls-button u-semantic-button link--opacity"
-                                        @click="activateUnbond({hash: stakeGroup.hash, coin: stakeItem.coin.symbol})"
+                            <td class="table__controls-cell table__controls-cell--x3">
+                                <button
+                                    class="table__controls-button u-semantic-button link--opacity"
+                                    @click="activateMove({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
+                                >
+                                    <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake">
+                                </button>
+                                <button
+                                    class="table__controls-button u-semantic-button link--opacity"
+                                    @click="activateUnbond({hash: stakeGroup.hash, coin: stakeItem.coin.symbol})"
                                 >
                                     <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
                                 </button>
