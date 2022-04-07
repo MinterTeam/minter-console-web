@@ -53,7 +53,7 @@ describe('convert page', () => {
         await page.type('[data-test-id="convertBuyInputBuyCoin"]', 'MNT');
         await page.type('[data-test-id="convertBuyInputBuyAmount"]', '9999999999999999999999999');
         await page.type('[data-test-id="convertBuyInputSellCoin"]', 'TESTCOIN01');
-        await txSubmit(page, 'convertBuy', {shouldFailPost: true, shouldFailModal: true});
+        await txSubmit(page, 'convertBuy', {shouldFailPost: 'estimation', shouldFailModal: true});
     }, 30000);
 
     test('sell all coins', async () => {
@@ -65,6 +65,6 @@ describe('convert page', () => {
     test('fail sell all to not existent coin', async () => {
         await page.type('[data-test-id="convertSellAllInputSellCoin"]', 'MNT');
         await page.type('[data-test-id="convertSellAllInputBuyCoin"]', 'NOTEXIST01');
-        await txSubmit(page, 'convertSellAll', {shouldFailPost: true, shouldFailModal: true});
+        await txSubmit(page, 'convertSellAll', {shouldFailPost: 'estimation', shouldFailModal: true});
     }, 30000);
 });
