@@ -33,7 +33,7 @@ export default {
 <template>
     <div class="u-mt-10">
         <slot :blocksToUpdate="blocksToUpdate" :timeToUpdate="timeToUpdate">
-            Your stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (~{{ timeToUpdate }} minutes)
+            Your stake will be changed in <strong>{{ blocksToUpdate }}</strong> blocks (≈{{ timeToUpdate }} minutes)
         </slot>
     </div>
 </template>

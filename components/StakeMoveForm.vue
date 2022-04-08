@@ -240,14 +240,14 @@
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
-                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-unbond.svg`" alt="" role="presentation" width="40" height="40">
+                <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-send.svg`" alt="" role="presentation" width="40" height="40">
                 {{ $td('Move', 'delegation.move-title') }}
             </h1>
         </template>
 
         <template v-slot:confirm-modal-body>
-            <div class="u-grid u-grid--small u-grid--vertical-margin">
-                <div class="u-cell u-text-left" v-html="$td('', 'form.delegation-move-confirm-description')"></div>
+            <div class="u-grid u-grid--small u-grid--vertical-margin u-text-left">
+                <div class="u-cell" v-html="$td('', 'form.delegation-move-confirm-description')"></div>
                 <div class="u-cell">
                     <label class="form-field form-field--dashed">
                         <BaseAmount tag="div" class="form-field__input is-not-empty" :coin="form.coinSymbol" :amount="form.stake" :exact="true"/>
