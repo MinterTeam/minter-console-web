@@ -833,6 +833,8 @@ export default {
                 // gasCoin: 0,
             }, {
                 idPreventConcurrency: 'hubBuy',
+                //@TODO debounceAdapter can be reworked to support flush, cancel, and pending
+                // idDebounce: 'hubBuy',
             })
                 .then((result) => {
                     this.estimation = result.will_get;

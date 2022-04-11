@@ -269,6 +269,8 @@ export default {
                 sellAll: true,
             }, {
                 idPreventConcurrency: 'convertSellAll',
+                //@TODO debounceAdapter can be reworked to support flush, cancel, and pending
+                // idDebounce: 'convertSellAll',
             })
                 .then((result) => {
                     this.estimation = result.will_get;

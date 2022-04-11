@@ -97,11 +97,12 @@
         <button class="form-field__icon u-semantic-button link--opacity" type="button" @click.prevent="scanQr">
             <img :src="`${BASE_URL_PREFIX}/img/icon-qr.svg`" alt="Scan QR Code" width="24" height="24">
         </button>
-        <Modal class="qr-scan__modal"
-               modal-container-class="qr-scan__modal-container"
-               v-bind:isOpen.sync="isModalVisible"
-               :keepMarkup="true"
-               @modal-close="stopScanQr"
+        <Modal
+            class="qr-scan__modal"
+            modal-container-class="qr-scan__modal-container"
+            v-bind:isOpen.sync="isModalVisible"
+            :keepMarkup="true"
+            @modal-close="stopScanQr"
         >
             <div class="qr-scan__wrap">
                 <div class="qr-scan__notice">

@@ -52,9 +52,10 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.mnemonic.$error, 'is-success': !$v.mnemonic.$invalid}">
-                    <textarea class="form-field__input" rows="1" autocomplete="off" autocapitalize="off" spellcheck="false" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
-                              v-model.trim="mnemonic"
-                              @blur="$v.mnemonic.$touch()"
+                    <textarea
+                        class="form-field__input" rows="1" autocomplete="off" autocapitalize="off" spellcheck="false" v-check-empty v-autosize data-test-id="authAdvancedLoginInputMnemonic"
+                        v-model.trim="mnemonic"
+                        @blur="$v.mnemonic.$touch()"
                     ></textarea>
                     <span class="form-field__label">{{ $td('Your seed phrase', 'index.auth-sign-in-seed-text') }}</span>
                 </label>

@@ -30,6 +30,8 @@ import {getErrorText} from '~/assets/server-error.js';
  */
 
 export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinToSpend, isOffline}*/) {
+    const idPrimary = Math.random().toString();
+    const idSecondary = Math.random().toString();
     const feeProps = reactive({
         /** @type {TxParams} */
         txParams: {},
@@ -37,6 +39,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         /** @type {Boolean} - by default fallback to baseCoin, additionally it can try to fallback to coinToSpend, if baseCoin is not enough */
         fallbackToCoinToSpend: false,
         isOffline: false,
+        //@TODO throttle is used but maybe we should use exact estimation only before confirmation
         looseEstimation: false,
     });
     /** @type {Object.<number, string>}*/
@@ -145,13 +148,13 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
             ...cleanTxParams,
             chainId: CHAIN_ID,
             gasCoin: primaryCoinToCheck,
-        });
+        }, {loose: feeProps.looseEstimation}, {idDebounce: idPrimary});
         //@TODO secondary check may be redundant
         const secondaryEstimate = secondaryCoinToCheck && secondaryCoinToCheck !== primaryCoinToCheck ? estimateTxCommission({
             ...cleanTxParams,
             chainId: CHAIN_ID,
             gasCoin: secondaryCoinToCheck,
-        }) : Promise.reject();
+        }, {loose: feeProps.looseEstimation}, {idDebounce: idSecondary}) : Promise.reject();
 
         state.isLoading = true;
         state.feeError = '';
@@ -189,7 +192,11 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
                 state.isLoading = false;
             })
             .catch((error) => {
-                if (primaryCoinToCheck !== getPrimaryCoinToCheck() || secondaryCoinToCheck !== getSecondaryCoinToCheck()) {
+                if (
+                    primaryCoinToCheck !== getPrimaryCoinToCheck()
+                    || secondaryCoinToCheck !== getSecondaryCoinToCheck()
+                    || error.isCanceled
+                ) {
                     return;
                 }
                 state.feeError = getErrorText(error);

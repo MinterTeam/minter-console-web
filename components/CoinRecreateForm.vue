@@ -174,9 +174,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.name.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.name"
-                           @blur="$v.form.name.$touch()"
+                    <input
+                        class="form-field__input" type="text" v-check-empty
+                        v-model.trim="form.name"
+                        @blur="$v.form.name.$touch()"
                     >
                     <span class="form-field__label">{{ $td('Coin name (optional)', 'form.coiner-create-name') }}</span>
                 </label>
@@ -185,9 +186,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.symbol.$error}">
-                    <InputUppercase class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
-                                    v-model.trim="form.symbol"
-                                    @blur="$v.form.symbol.$touch()"
+                    <InputUppercase
+                        class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
+                        v-model.trim="form.symbol"
+                        @blur="$v.form.symbol.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Coin symbol', 'form.coiner-create-symbol') }}</span>
                 </label>
@@ -199,9 +201,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.initialAmount.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.initialAmount"
-                                       @blur="$v.form.initialAmount.$touch()"
+                    <InputMaskedAmount
+                        class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                        v-model="form.initialAmount"
+                        @blur="$v.form.initialAmount.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Initial amount', 'form.coiner-create-amount') }}</span>
                 </label>
@@ -215,9 +218,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2" v-show="txType === $options.TX_TYPE.RECREATE_COIN">
                 <label class="form-field" :class="{'is-error': $v.form.initialReserve.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.initialReserve"
-                                       @blur="$v.form.initialReserve.$touch()"
+                    <InputMaskedAmount
+                        class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                        v-model="form.initialReserve"
+                        @blur="$v.form.initialReserve.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Initial reserve', 'form.coiner-create-reserve') }}</span>
                 </label>
@@ -238,9 +242,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.maxSupply.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.maxSupply"
-                                       @blur.native="$v.form.maxSupply.$touch()"
+                    <InputMaskedAmount
+                        class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                        v-model="form.maxSupply"
+                        @blur.native="$v.form.maxSupply.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Max supply (optional)', 'form.coiner-create-max-supply') }}</span>
                 </label>
@@ -269,8 +274,9 @@
             <div class="u-grid u-grid--small">
                 <div class="u-cell u-cell--large--1-2">
                     <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" type="text" readonly
-                               :value="$options.prettyPreciseFloor(coinPrice)"
+                        <input
+                            class="form-field__input is-not-empty" type="text" readonly
+                            :value="$options.prettyPreciseFloor(coinPrice)"
                         >
                         <span class="form-field__label">{{ $td('Initial price', 'form.coiner-create-price') }}</span>
                     </label>
@@ -299,8 +305,9 @@
                 </div>
                 <div class="u-cell" v-if="txType === $options.TX_TYPE.RECREATE_COIN">
                     <label class="form-field form-field--dashed">
-                        <input class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
-                               :value="form.constantReserveRatio + '%'"
+                        <input
+                            class="form-field__input is-not-empty" autocapitalize="off" spellcheck="false" readonly tabindex="-1"
+                            :value="form.constantReserveRatio + '%'"
                         />
                         <span class="form-field__label">{{ $td('With CRR', 'form.coiner-create-confirm-crr') }}</span>
                     </label>

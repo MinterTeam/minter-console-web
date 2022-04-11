@@ -566,9 +566,10 @@ export default {
                     </div>
                 </div>
                 <div class="panel__section">
-                    <button class="button button--main button--full" type="button" data-focus-on-open
-                            :class="{'is-loading': isFormSending}"
-                            @click="submit"
+                    <button
+                        class="button button--main button--full" type="button" data-focus-on-open
+                        :class="{'is-loading': isFormSending}"
+                        @click="submit"
                     >
                         <span class="button__content">{{ $td('Confirm', 'form.submit-confirm-button') }}</span>
                         <Loader class="button__loader" :isLoading="true"/>

@@ -116,8 +116,9 @@ export default {
                         </td>
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
-                            <button class="table__controls-button u-semantic-button link--opacity"
-                                    @click="cancelOrder(order.id)"
+                            <button
+                                class="table__controls-button u-semantic-button link--opacity"
+                                @click="cancelOrder(order.id)"
                             >
                                 <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Cancel limit order">
                             </button>

@@ -55,11 +55,12 @@
                     <img class="mdc-list-item__meta" :src="`${BASE_URL_PREFIX}/img/icon-flag-${currentLocale.code}.png`" :srcset="`/img/icon-flag-${currentLocale.code}@2x.png 2x`" alt="" width="24" height="24" role="presentation">
                 </nuxt-link>
                 <!--list of other locales -->
-                <nuxt-link class="mdc-list-item mdc-list-item--with-one-line"
-                           v-for="locale in otherLocaleList"
-                           :key="locale.code"
-                           :to="switchLocalePath(locale.code)"
-                           @click.native="switchLocaleCookie(locale.code)"
+                <nuxt-link
+                    class="mdc-list-item mdc-list-item--with-one-line"
+                    v-for="locale in otherLocaleList"
+                    :key="locale.code"
+                    :to="switchLocalePath(locale.code)"
+                    @click.native="switchLocaleCookie(locale.code)"
                 >
                     <span class="mdc-list-item__text header__language-text">{{ locale.name }}</span>
                     <img class="mdc-list-item__meta" :src="`${BASE_URL_PREFIX}/img/icon-flag-${locale.code}.png`" :srcset="`/img/icon-flag-${locale.code}@2x.png 2x`" alt="" width="24" height="24" role="presentation">

@@ -107,13 +107,15 @@ export default {
                         <td>{{ pretty(pool.apy) }}%</td>
                         <!-- controls -->
                         <td class="table__controls-cell table__controls-cell--x2">
-                            <button class="table__controls-button u-semantic-button link--opacity"
-                                    @click="addLiquidity({coin0: pool.coin0.symbol, coin1: pool.coin1.symbol})"
+                            <button
+                                class="table__controls-button u-semantic-button link--opacity"
+                                @click="addLiquidity({coin0: pool.coin0.symbol, coin1: pool.coin1.symbol})"
                             >
                                 <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Add liquidity">
                             </button>
-                            <button class="table__controls-button u-semantic-button link--opacity"
-                                    @click="removeLiquidity({coin0: pool.coin0.symbol, coin1: pool.coin1.symbol})"
+                            <button
+                                class="table__controls-button u-semantic-button link--opacity"
+                                @click="removeLiquidity({coin0: pool.coin0.symbol, coin1: pool.coin1.symbol})"
                             >
                                 <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Remove liquidity">
                             </button>

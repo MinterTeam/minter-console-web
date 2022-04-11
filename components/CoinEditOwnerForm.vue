@@ -83,9 +83,10 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--xlarge--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.symbol.$error}">
-                    <InputUppercase class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
-                                    v-model.trim="form.symbol"
-                                    @blur="$v.form.symbol.$touch()"
+                    <InputUppercase
+                        class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
+                        v-model.trim="form.symbol"
+                        @blur="$v.form.symbol.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Coin symbol', 'form.coiner-create-symbol') }}</span>
                 </label>
