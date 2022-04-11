@@ -81,10 +81,11 @@ export default {
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.id.$error}">
-                    <InputMaskedInteger class="form-field__input" v-check-empty
-                                        ref="orderIdInput"
-                                        v-model="form.id"
-                                        @blur="$v.form.id.$touch()"
+                    <InputMaskedInteger
+                        class="form-field__input" v-check-empty
+                        ref="orderIdInput"
+                        v-model="form.id"
+                        @blur="$v.form.id.$touch()"
                     />
                     <span class="form-field__label">{{ $td('ID', 'form.order-remove-id') }}</span>
                 </label>

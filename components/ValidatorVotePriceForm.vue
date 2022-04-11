@@ -60,9 +60,10 @@
         <template v-slot:default="{fee, addressBalance}">
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.price.$error}">
-                    <InputMaskedAmount class="form-field__input" v-check-empty
-                                       v-model="form.price"
-                                       @blur="$v.form.price.$touch()"
+                    <InputMaskedAmount
+                        class="form-field__input" v-check-empty
+                        v-model="form.price"
+                        @blur="$v.form.price.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Price', 'form.masternode-price-vote-price') }}</span>
                 </label>

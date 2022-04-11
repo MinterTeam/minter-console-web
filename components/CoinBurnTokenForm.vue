@@ -87,9 +87,10 @@ export default {
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.value.$error}">
-                    <InputMaskedAmount class="form-field__input" v-check-empty
-                                       v-model="form.value"
-                                       @blur="$v.form.value.$touch()"
+                    <InputMaskedAmount
+                        class="form-field__input" v-check-empty
+                        v-model="form.value"
+                        @blur="$v.form.value.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Amount', 'form.amount') }}</span>
                 </label>

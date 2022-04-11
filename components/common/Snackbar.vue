@@ -38,9 +38,10 @@
 <template>
     <div class="mdc-snackbar">
         <div class="mdc-snackbar__surface">
-            <div class="mdc-snackbar__label"
-                 role="status"
-                 aria-live="polite"
+            <div
+                class="mdc-snackbar__label"
+                role="status"
+                aria-live="polite"
             >
                 Copied to clipboard
             </div>
