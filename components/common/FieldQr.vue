@@ -112,12 +112,13 @@
                 @blur="$value.$touch(); $emit('blur', $event)"
                 v-if="isInteger"
             />
-            <input class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
-                   v-bind="$attrs"
-                   :value="value"
-                   @input="$emit('input', $event.target.value)"
-                   @blur="$value.$touch(); $emit('blur', $event)"
-                   v-else
+            <input
+                class="form-field__input" type="text" autocapitalize="off" spellcheck="false" v-check-empty
+                v-bind="$attrs"
+                :value="value"
+                @input="$emit('input', $event.target.value)"
+                @blur="$value.$touch(); $emit('blur', $event)"
+                v-else
             >
             <span class="form-field__label">{{ label }}</span>
         </template>

@@ -153,8 +153,9 @@
                 <div class="multisig-participant u-grid u-grid--small u-grid--vertical-margin--small">
                     <div class="multisig-participant__number-cell u-cell">
                         <label class="form-field form-field--dashed">
-                            <input class="form-field__input is-not-empty" type="text" readonly
-                                   :value="`#${Number(index) + 1}`"
+                            <input
+                                class="form-field__input is-not-empty" type="text" readonly
+                                :value="`#${Number(index) + 1}`"
                             >
                         </label>
                     </div>
@@ -169,9 +170,10 @@
                     </div>
                     <div class="multisig-participant__weight-cell u-cell u-cell--small--1-4">
                         <label class="form-field" :class="{'is-error': v.weight.$error}">
-                            <input class="form-field__input" type="text" v-check-empty
-                                   v-model.trim="v.weight.$model"
-                                   @blur="v.weight.$touch()"
+                            <input
+                                class="form-field__input" type="text" v-check-empty
+                                v-model.trim="v.weight.$model"
+                                @blur="v.weight.$touch()"
                             >
                             <span class="form-field__label">{{ $td('Weight', 'form.multisig-create-weight') }}</span>
                         </label>
@@ -181,9 +183,10 @@
                         <span class="form-field__error" v-else-if="v.weight.$dirty && !v.weight.minValue">{{ $td('Minimum weight:', 'form.multisig-create-weight-error-min') }} {{ $options.MULTISIG_WEIGHT_MIN }}</span>
                     </div>
                     <div class="multisig-participant__remove-cell u-cell">
-                        <button class="multisig-participant__remove u-semantic-button link--opacity" type="button"
-                                v-if="index > 0"
-                                @click="removeParticipant(index)"
+                        <button
+                            class="multisig-participant__remove u-semantic-button link--opacity" type="button"
+                            v-if="index > 0"
+                            @click="removeParticipant(index)"
                         >
                             <img :src="`${BASE_URL_PREFIX}/img/icon-remove.svg`" alt="Remove address">
                         </button>
@@ -202,9 +205,10 @@
             <div class="u-cell u-cell--xlarge--1-4 u-hidden-xlarge-down"></div>
             <div class="u-cell u-cell--small--1-2 u-cell--large--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.threshold.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           v-model.trim="form.threshold"
-                           @blur="$v.form.threshold.$touch()"
+                    <input
+                        class="form-field__input" type="text" v-check-empty
+                        v-model.trim="form.threshold"
+                        @blur="$v.form.threshold.$touch()"
                     >
                     <span class="form-field__label">{{ $td('Threshold', 'form.multisig-create-threshold') }}</span>
                 </label>
@@ -214,8 +218,9 @@
             </div>
             <div class="u-cell u-cell--small--1-2 u-cell--large--1-4">
                 <label class="form-field form-field--dashed">
-                    <input class="form-field__input" type="text" readonly v-check-empty
-                           :value="$options.prettyRound(weightSum)"
+                    <input
+                        class="form-field__input" type="text" readonly v-check-empty
+                        :value="$options.prettyRound(weightSum)"
                     >
                     <span class="form-field__label">{{ $td('Total weights sum', 'form.multisig-create-weight-sum') }}</span>
                 </label>

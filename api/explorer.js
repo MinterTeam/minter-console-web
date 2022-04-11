@@ -10,7 +10,8 @@ import {getCoinIconList as getChainikIconList} from '~/api/chainik.js';
 import {BASE_COIN, EXPLORER_API_URL, TX_STATUS} from '~/assets/variables.js';
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 import {addTimeInterceptor} from '~/assets/axios-time-offset.js';
-import preventConcurrencyAdapter from '~/assets/axios-prevent-concurrency';
+import preventConcurrencyAdapter from '~/assets/axios-prevent-concurrency.js';
+import debounceAdapter from '~/assets/axios-debounce.js';
 
 
 const coinBlockMap = Object.fromEntries(coinBlockList.map((symbol) => [symbol, true]));
@@ -43,9 +44,18 @@ function restoreErrorAdapter(adapter) {
     };
 }
 
+const adapter = (($ = axios.defaults.adapter) => {
+    $ = save404Adapter($);
+    $ = cacheAdapterEnhancer($, { enabledByDefault: false});
+    $ = restoreErrorAdapter($);
+    // $ = debounceAdapter($, {time: 700, leading: false});
+    $ = preventConcurrencyAdapter($);
+    return $;
+})();
+
 const instance = axios.create({
     baseURL: EXPLORER_API_URL,
-    adapter: preventConcurrencyAdapter(restoreErrorAdapter(cacheAdapterEnhancer(save404Adapter(axios.defaults.adapter), { enabledByDefault: false}))),
+    adapter,
 });
 addToCamelInterceptor(instance);
 addTimeInterceptor(instance);

@@ -384,21 +384,21 @@ function makeSortQueue(fnArray) {
                                 class="table__controls-button u-semantic-button link--opacity"
                                 @click="activateDelegate({hash: stakeGroup.hash})"
                             >
-                                <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Delegate to validator">
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-plus.svg`" alt="Delegate to validator" title="Delegate to validator">
                             </button>
                             <button
                                 class="table__controls-button u-semantic-button link--opacity"
                                 @click="activateMove({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
                                 v-if="!isGroupCanExpand(stakeGroup)"
                             >
-                                <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake">
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake" title="Move stake">
                             </button>
                             <button
                                 class="table__controls-button u-semantic-button link--opacity"
                                 @click="activateUnbond({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
                                 v-if="!isGroupCanExpand(stakeGroup)"
                             >
-                                <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond stake">
+                                <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond stake" title="Unbond stake">
                             </button>
                             <button
                                 class="table__controls-button table__controls-button--expand u-semantic-button link--opacity"
@@ -469,13 +469,13 @@ function makeSortQueue(fnArray) {
                                     class="table__controls-button u-semantic-button link--opacity"
                                     @click="activateMove({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
                                 >
-                                    <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake">
+                                    <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake" title="Move stake">
                                 </button>
                                 <button
                                     class="table__controls-button u-semantic-button link--opacity"
                                     @click="activateUnbond({hash: stakeGroup.hash, coin: stakeItem.coin.symbol})"
                                 >
-                                    <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond coin">
+                                    <img :src="`${BASE_URL_PREFIX}/img/icon-minus.svg`" alt="Unbond stake" title="Unbond stake">
                                 </button>
                             </td>
                         </tr>

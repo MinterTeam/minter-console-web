@@ -80,9 +80,10 @@
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.height.$error}">
-                    <InputMaskedInteger class="form-field__input" v-check-empty
-                                        v-model="form.height"
-                                        @blur="$v.form.height.$touch()"
+                    <InputMaskedInteger
+                        class="form-field__input" v-check-empty
+                        v-model="form.height"
+                        @blur="$v.form.height.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Height', 'form.masternode-halt-block-height') }}</span>
                 </label>

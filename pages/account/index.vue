@@ -107,8 +107,9 @@
             </dl>
         </div>
 
-        <Modal class="qr-modal"
-               v-bind:isOpen.sync="isAddressQrModalVisible"
+        <Modal
+            class="qr-modal"
+            v-bind:isOpen.sync="isAddressQrModalVisible"
         >
             <QrcodeVue class="qr-modal__layer" :value="address" :size="280" level="L"></QrcodeVue>
         </Modal>

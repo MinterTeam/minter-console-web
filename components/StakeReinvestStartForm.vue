@@ -93,9 +93,10 @@
         <div class="u-grid u-grid--small u-grid--vertical-margin--small">
             <div class="u-cell">
                 <label class="form-field" :class="{'is-error': $v.formSignedTxList.$error}">
-                    <textarea class="reinvest__upload-textarea form-field__input" rows="1" autocapitalize="off" v-autosize v-check-empty
-                              v-model="formSignedTxList"
-                              @blur="$v.formSignedTxList.$touch()"
+                    <textarea
+                        class="reinvest__upload-textarea form-field__input" rows="1" autocapitalize="off" v-autosize v-check-empty
+                        v-model="formSignedTxList"
+                        @blur="$v.formSignedTxList.$touch()"
                     ></textarea>
                     <span class="form-field__label">{{ $td('Signed tx list', 'form.delegation-reinvest-start-list') }}</span>
                 </label>
@@ -103,11 +104,12 @@
             </div>
             <div class="u-cell">
                 <label class="link link--default u-relative">
-                    <FileInput accept="text/plain" v-if="!fileApiError"
-                               @on-add="handleFileUpdate"
-                               @on-error="fileApiError = true"
-                               @on-drag-start="isDragLayerVisible = true"
-                               @on-drag-end="isDragLayerVisible = false"
+                    <FileInput
+                        accept="text/plain" v-if="!fileApiError"
+                        @on-add="handleFileUpdate"
+                        @on-error="fileApiError = true"
+                        @on-drag-start="isDragLayerVisible = true"
+                        @on-drag-end="isDragLayerVisible = false"
                     />
                     {{ $td('Select or drop file', 'delegation.reinvest-upload-input') }}
                 </label>
@@ -126,10 +128,11 @@
             </div>
         </div>
 
-        <Modal :isOpen.sync="isDragLayerVisible"
-               :hideCloseButton="true"
-               modal-class="file-input__drag-layer"
-               modal-container-class="file-input__drag-layer-container"
+        <Modal
+            :isOpen.sync="isDragLayerVisible"
+            :hideCloseButton="true"
+            modal-class="file-input__drag-layer"
+            modal-container-class="file-input__drag-layer-container"
         >
             <h3 class="modal__title u-h2">{{ $td('Upload file', 'delegation.reinvest-upload-title') }}</h3>
             <p class="modal__text">{{ $td('Drop file anywhere to upload', 'delegation.reinvest-upload-description') }}</p>

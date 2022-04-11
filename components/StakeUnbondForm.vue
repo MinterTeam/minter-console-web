@@ -250,7 +250,7 @@
             <div v-if="successTx">
                 <TxFormBlocksToUpdateStake :success-tx="successTx"/>
 
-                Coins will return to your address in 518&#x202F;400 blocks (~30 days).
+                Coins will return to your address in 518&#x202F;400 blocks (≈30 days).
             </div>
         </template>
     </TxForm>

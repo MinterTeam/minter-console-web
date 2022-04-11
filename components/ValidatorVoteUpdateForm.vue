@@ -85,9 +85,10 @@ export default {
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.height.$error}">
-                    <InputMaskedInteger class="form-field__input" v-check-empty
-                                        v-model="form.height"
-                                        @blur="$v.form.height.$touch()"
+                    <InputMaskedInteger
+                        class="form-field__input" v-check-empty
+                        v-model="form.height"
+                        @blur="$v.form.height.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Height', 'form.masternode-vote-update-height') }}</span>
                 </label>
@@ -95,10 +96,11 @@ export default {
             </div>
             <div class="u-cell u-cell--medium--1-2">
                 <label class="form-field" :class="{'is-error': $v.form.version.$error}">
-                    <input class="form-field__input" type="text" v-check-empty
-                           data-test-id="walletTxFormInputPayload"
-                           v-model.trim="form.version"
-                           @blur="$v.form.version.$touch()"
+                    <input
+                        class="form-field__input" type="text" v-check-empty
+                        data-test-id="walletTxFormInputPayload"
+                        v-model.trim="form.version"
+                        @blur="$v.form.version.$touch()"
                     >
                     <span class="form-field__label">{{ $td('Version', 'form.masternode-vote-update-version') }}</span>
                 </label>

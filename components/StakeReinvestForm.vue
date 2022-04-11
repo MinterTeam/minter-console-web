@@ -215,9 +215,10 @@
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.form.data.stake.$error}">
-                    <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                       v-model="form.data.stake"
-                                       @blur="$v.form.data.stake.$touch()"
+                    <InputMaskedAmount
+                        class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                        v-model="form.data.stake"
+                        @blur="$v.form.data.stake.$touch()"
                     />
                     <span class="form-field__label">{{ $store.getters.BASE_COIN }} {{ $td('stake per tx', 'form.delegation-reinvest-stake') }}</span>
                 </label>
@@ -225,9 +226,10 @@
             </div>
             <div class="u-cell u-cell--small--1-2  u-cell--xlarge--1-4">
                 <label class="form-field" :class="{'is-error': $v.formTxCount.$error}">
-                    <InputMaskedInteger class="form-field__input" type="text" v-check-empty
-                                        v-model="formTxCount"
-                                        @blur="$v.formTxCount.$touch()"
+                    <InputMaskedInteger
+                        class="form-field__input" type="text" v-check-empty
+                        v-model="formTxCount"
+                        @blur="$v.formTxCount.$touch()"
                     />
                     <span class="form-field__label">{{ $td('Tx count', 'form.delegation-reinvest-tx-count') }}</span>
                 </label>
@@ -236,9 +238,10 @@
             </div>
             <div class="u-cell u-cell--order-2" :class="$store.getters.isOfflineMode ? 'u-cell--small--1-2 u-cell--xlarge--1-4' : 'u-cell--large--1-2'">
                 <label class="form-field" :class="{'is-error': $v.form.gasPrice.$error}">
-                    <InputMaskedInteger class="form-field__input" v-check-empty
-                                        v-model="form.gasPrice"
-                                        @blur="$v.form.gasPrice.$touch()"
+                    <InputMaskedInteger
+                        class="form-field__input" v-check-empty
+                        v-model="form.gasPrice"
+                        @blur="$v.form.gasPrice.$touch()"
                     />
                     <span class="form-field__error" v-if="$v.form.gasPrice.$dirty && !$v.form.gasPrice.minValue">{{ $td(`Minimum gas price is 1`, 'form.gas-price-error-min') }}</span>
                     <span class="form-field__label">{{ $td('Gas price (optional)', 'form.gas-price') }}</span>
@@ -248,10 +251,11 @@
 
             <!-- Generation -->
             <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="$store.getters.isOfflineMode">
-                <FieldQr v-model="form.nonce"
-                         :$value="$v.form.nonce"
-                         :label="$td('Nonce', 'form.checks-issue-nonce')"
-                         :isInteger="true"
+                <FieldQr
+                    v-model="form.nonce"
+                    :$value="$v.form.nonce"
+                    :label="$td('Nonce', 'form.checks-issue-nonce')"
+                    :isInteger="true"
                 />
                 <span class="form-field__error" v-if="$v.form.nonce.$error && !$v.form.nonce.required">{{ $td('Enter nonce', 'form.checks-issue-nonce-error-required') }}</span>
                 <span class="form-field__error" v-else-if="$v.form.nonce.$dirty && !$v.form.nonce.minValue">{{ $td(`Minimum nonce is 1`, 'form.generate-nonce-error-min') }}</span>

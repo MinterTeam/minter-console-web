@@ -370,10 +370,11 @@ export default {
                     </div>
                     <div class="u-cell u-cell--small--1-2 u-cell--xlarge--1-4" v-if="!$store.getters.isOfflineMode">
                         <label class="form-field">
-                            <InputMaskedAmount class="form-field__input" type="text" inputmode="decimal" v-check-empty
-                                               v-model="form.maximumVolume1"
-                                               @input.native="selectedSlippageInput = $options.SLIPPAGE_INPUT_TYPE.AMOUNT"
-                                               @blur="slippageAmountBlur"
+                            <InputMaskedAmount
+                                class="form-field__input" type="text" inputmode="decimal" v-check-empty
+                                v-model="form.maximumVolume1"
+                                @input.native="selectedSlippageInput = $options.SLIPPAGE_INPUT_TYPE.AMOUNT"
+                                @blur="slippageAmountBlur"
                             />
                             <span class="form-field__label">{{ form.coin1 || $td('Second coin', 'pool.coin1') }} {{ $td('max. amount to spend', 'pool.add-max-amount') }}</span>
                         </label>

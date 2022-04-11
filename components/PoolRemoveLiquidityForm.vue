@@ -301,7 +301,7 @@ export default {
                 {{ $td('Remove liquidity from swap pool', 'pool.remove-title') }}
             </h1>
             <p class="panel__header-description">
-            {{ $td('Choose the pair of coins that you have previously provided and specify the amount you would like to remove.', 'pool.remove-description') }}
+                {{ $td('Choose the pair of coins that you have previously provided and specify the amount you would like to remove.', 'pool.remove-description') }}
             </p>
         </template>
 

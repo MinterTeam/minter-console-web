@@ -275,6 +275,8 @@
                     gasCoin: this.txForm.gasCoin || this.fee.coin || 0,
                 }, {
                     idPreventConcurrency: 'convertSell',
+                    //@TODO debounceAdapter can be reworked to support flush, cancel, and pending
+                    // idDebounce: 'convertSell',
                 })
                     .then((result) => {
                         this.estimation = result.will_get;

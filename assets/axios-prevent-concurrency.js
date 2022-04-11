@@ -8,7 +8,8 @@ const CANCEL_MESSAGE = 'Cancel previous request';
 const activeList = {};
 
 /**
- * Prevent concurrent request for given id. It will cancel previous request if it is pending when new request is received. It will prevent situations when newer request finishes later than old request.
+ * Prevent concurrent request for given id. It will cancel previous request if it is pending upon new request is received. It will prevent situations when newer request finishes later than old request.
+ * Useful when input fires different requests and newer request always make older request obsolete, so requests are identified by ID key and not by path.
  * Must be used in front of cache adapter to work properly.
  * @param {import('axios').AxiosAdapter} adapter
  * @return {import('axios').AxiosAdapter}
@@ -24,7 +25,7 @@ export default function preventConcurrencyAdapter(adapter) {
 
         //@TODO handle unsorted query params and duplicate slashes (maybe use buildSortedUrl from axios-extensions)
         const url = config.baseURL = config.url;
-        // do nothing for duplicates, their cancelation will occur with original request, because it will be cached
+        // do nothing for sequential duplicates, they will get response from the cache (anyway if 3rd request will come, this 2nd will be canceled with original request, because 2nd will be same as 1st cached)
         if (activeList[id]?.url === url) {
             return adapter(config);
         }
