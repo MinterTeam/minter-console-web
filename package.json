@@ -1,6 +1,6 @@
 {
   "name": "minter-console-web",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Minter Console Website",
   "author": "shrpne <shrpne@gmail.com>",
   "private": true,
