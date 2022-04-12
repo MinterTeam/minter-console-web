@@ -231,10 +231,12 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
 function cleanObject(txParams) {
     let clean = {};
     for (const key in txParams) {
-        if (typeof txParams[key] === 'object') {
+        if (isEmpty(txParams[key])) {
+            clean[key] = undefined;
+        } else if (typeof txParams[key] === 'object') {
             clean[key] = cleanObject(txParams[key]);
         } else {
-            clean[key] = isEmpty(txParams[key]) ? undefined : txParams[key];
+            clean[key] = txParams[key];
         }
     }
 
