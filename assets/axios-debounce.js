@@ -25,7 +25,6 @@ export default function debounceAdapter(adapter, options) {
         if (!store[id]) {
             const time = config.debounceOptions?.time || options.time || 1000;
             store[id] = debounce(function(config) {
-                console.log('run debounced');
                 return adapter(config);
             }, time, {...options, ...config.debounceOptions});
         }
