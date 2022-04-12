@@ -192,6 +192,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
                 state.isLoading = false;
             })
             .catch((error) => {
+                console.log(error);
                 if (
                     primaryCoinToCheck !== getPrimaryCoinToCheck()
                     || secondaryCoinToCheck !== getSecondaryCoinToCheck()
