@@ -4,6 +4,24 @@
 	http://www.jacklmoore.com/autosize
 */
 
+/*!
+ * v2.1.4-104-gc868b3a
+ * 
+ */
+
+/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
+
+/*! https://mths.be/punycode v1.4.1 by @mathias */
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.5.7
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2016
+ * @license MIT
+ */
+
 
 /*!
  * qrcode.vue v1.7.0
@@ -13,12 +31,20 @@
  */
 
 
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+
 /**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
- * @typedef {object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.8.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2018
+ * @license MIT
  */
 
 
@@ -71,20 +97,12 @@
 
 
 /**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.8.0
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2018
- * @license MIT
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ * @typedef {object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
  */
-
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
 
 
 /*!
@@ -117,25 +135,6 @@
 /*!
  * vuex v3.6.2
  * (c) 2021 Evan You
- * @license MIT
- */
-
-
-/*!
- * v2.1.4-104-gc868b3a
- * 
- */
-
-/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
-
-/*! https://mths.be/punycode v1.4.1 by @mathias */
-
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.5.7
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2016
  * @license MIT
  */
 
