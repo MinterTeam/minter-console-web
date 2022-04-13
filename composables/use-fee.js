@@ -233,7 +233,7 @@ function cleanObject(txParams) {
     for (const key in txParams) {
         if (isEmpty(txParams[key])) {
             clean[key] = undefined;
-        } else if (typeof txParams[key] === 'object') {
+        } else if (isObject(txParams[key])) {
             clean[key] = cleanObject(txParams[key]);
         } else {
             clean[key] = txParams[key];
@@ -244,5 +244,9 @@ function cleanObject(txParams) {
 
     function isEmpty(value) {
         return value === '' || value === null;
+    }
+
+    function isObject(value) {
+        return Object.prototype.toString.call(value) === '[object Object]';
     }
 }
