@@ -7,7 +7,9 @@
         components: {
             CoinLockForm,
         },
-        fetch({ app, store }) {
+        fetch({ app, store, redirect }) {
+            return redirect(app.i18nGetPreferredPath('coiner'));
+            // eslint-disable-next-line no-unreachable
             store.commit('SET_SECTION_NAME', app.$td('Lock coins', 'common.page-lock'));
         },
         head() {
