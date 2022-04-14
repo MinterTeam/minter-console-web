@@ -1,50 +1,8 @@
 /*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-
-/*!
- * v2.1.4-104-gc868b3a
- * 
- */
-
-/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
-
-/*! https://mths.be/punycode v1.4.1 by @mathias */
-
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.5.7
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2016
- * @license MIT
- */
-
-
-/*!
  * qrcode.vue v1.7.0
  * A Vue component to generate QRCode.
  * © 2017-2019 @scopewu(https://github.com/scopewu)
  * MIT License.
- */
-
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-
-
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.8.0
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2018
- * @license MIT
  */
 
 
@@ -105,6 +63,41 @@
  */
 
 
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.8.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2018
+ * @license MIT
+ */
+
+
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+/*!
+ * v2.1.4-104-gc868b3a
+ * 
+ */
+
+/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
+
+/*! https://mths.be/punycode v1.4.1 by @mathias */
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.5.7
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2016
+ * @license MIT
+ */
+
+
 /*!
   * vue-router v3.5.2
   * (c) 2021 Evan You
@@ -137,6 +130,13 @@
  * (c) 2021 Evan You
  * @license MIT
  */
+
+
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
 
 
 /*
