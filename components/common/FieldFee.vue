@@ -27,6 +27,7 @@ export default {
             type: Array,
             default: () => [],
         },
+        /** @type {Array<FeeData>} */
         fee: {
             type: Object,
             required: true,
@@ -73,6 +74,7 @@ export default {
             :label="label"
             :coin-list="gasSuitableBalance"
             :select-mode="true"
+            :is-loading="fee.isLoading"
         />
         <span class="form-field__error" v-if="$value.$dirty && $value.minLength === false">{{ $td('Min 3 letters', 'form.coin-error-min') }}</span>
         <!--<span class="form-field__error" v-else-if="$value.$dirty && !$value.maxLength">{{ $td('Max 10 letters', 'form.coin-error-max') }}</span>-->
@@ -80,7 +82,7 @@ export default {
         <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
         <div class="form-field__help" v-else>
             {{ pretty(fee.value) }} {{ fee.coinSymbol }}
-            <span class="u-display-ib" v-if="!fee.isBaseCoin">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
+            <span class="u-display-ib" v-if="!fee.isBaseCoin && fee.baseCoinValue">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
         </div>
     </div>
 </template>

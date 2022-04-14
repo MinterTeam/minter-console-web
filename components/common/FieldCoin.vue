@@ -3,6 +3,7 @@
     import checkEmpty from '~/assets/v-check-empty';
     import {pretty} from '~/assets/utils.js';
     import {COIN_TYPE} from '~/assets/variables.js';
+    import Loader from '~/components/common/Loader.vue';
     import InputUppercase from '~/components/common/InputUppercase';
 
     const MAX_ITEM_COUNT = 6;
@@ -12,6 +13,7 @@
         MAX_ITEM_COUNT,
         components: {
             VueSimpleSuggest,
+            Loader,
             InputUppercase,
         },
         directives: {
@@ -45,6 +47,10 @@
             // false - work as autocomplete: show little options
             // true - work as select: show full (almost) list of options
             selectMode: {
+                type: Boolean,
+                default: false,
+            },
+            isLoading: {
                 type: Boolean,
                 default: false,
             },
@@ -204,5 +210,6 @@
                 <span v-if="getSuggestionAmount(suggestion)">{{ getSuggestionAmount(suggestion) }}</span>
             </div>
         </VueSimpleSuggest>
+        <Loader class="form-field__icon form-field__icon--loader" :isLoading="isLoading"/>
     </label>
 </template>
