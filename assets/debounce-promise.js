@@ -69,7 +69,10 @@ function defer() {
     return deferred;
 }
 
-function CancelError(message = 'Canceled') {
-    Error.call(this, message);
-    this.isCanceled = true;
+class CancelError extends Error {
+    constructor(message = 'Canceled') {
+        super(message);
+        this.name = 'CancelError';
+        this.isCanceled = true;
+    }
 }
