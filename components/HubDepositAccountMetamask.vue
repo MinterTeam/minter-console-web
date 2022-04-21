@@ -85,8 +85,10 @@ export default {
                     // can't rely on 'accountsChanged' here, because user may select the same account and event will not fire
                     const accountsPermission = permissions.find((permission) => permission.parentCapability === 'eth_accounts');
                     const caveats = accountsPermission?.caveats || [];
-                    const exposedAccounts = caveats.find((caveat) => caveat.name === 'exposedAccounts');
-                    const accounts = exposedAccounts?.value || [];
+                    // const exposedAccounts = caveats.find((caveat) => caveat.name === 'exposedAccounts');
+                    // const accounts = exposedAccounts?.value || [];
+                    // don't check caveats type and just use first
+                    const accounts = caveats[0]?.value;
                     console.log('wallet_requestPermissions', permissions, accounts);
                     if (accounts.length) {
                         this.setEthAddress(accounts[0]);
