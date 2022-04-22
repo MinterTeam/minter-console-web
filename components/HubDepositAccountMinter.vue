@@ -85,7 +85,7 @@ export default {
     mounted() {
         // set account on page load if some was set previously
         if (this.$store.state.hub.selectedAccountType === 'minter') {
-            this.connectEth(this.$store.state.hub.chainId || undefined);
+            this.connectEth();
         }
     },
     methods: {

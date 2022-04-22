@@ -88,7 +88,7 @@ export default {
     data() {
         return {
             ethAddress: "",
-            chainId: 0,
+            chainId: Number(this.$route.query.chainId || 0),
             balances: {},
             decimals: {},
             balanceRequest: null,
@@ -96,7 +96,7 @@ export default {
             allowanceList: {},
             allowanceRequest: null,
             form: {
-                coin: '',
+                coin: this.$route.query.coin || '',
                 amount: "",
                 address: this.$store.getters.address,
                 isInfiniteUnlock: true,
@@ -305,7 +305,14 @@ export default {
                     this.updateBalance();
                     this.getAllowance();
                 }
+                if (this.chainId === ETHEREUM_CHAIN_ID) {
+                    web3.eth.setProvider(ETHEREUM_API_URL);
+                }
+                if (this.chainId === BSC_CHAIN_ID) {
+                    web3.eth.setProvider(BSC_API_URL);
+                }
             },
+            immediate: true,
         },
         // @TODO isUnwrapRequired may not change, because native token balance will be less than expected, because it will be spent on tx gas
         // @TODO including gas fee to unwrap amount should fix it
@@ -591,12 +598,6 @@ export default {
         },
         handleChainId(chainId) {
             this.chainId = chainId;
-            if (chainId === ETHEREUM_CHAIN_ID) {
-                web3.eth.setProvider(ETHEREUM_API_URL);
-            }
-            if (chainId === BSC_CHAIN_ID) {
-                web3.eth.setProvider(BSC_API_URL);
-            }
             this.serverError = '';
         },
     },
@@ -770,6 +771,7 @@ export default {
                 @update:network="handleChainId"
                 :hub-coin-list="hubCoinList"
                 :price-list="priceList"
+                :preferred-chain-id="chainId"
             />
             <portal-target name="account-minter-confirm-modal"/>
         </div>

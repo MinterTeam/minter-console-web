@@ -53,6 +53,10 @@ a, .link {&:hover, &:focus {/*text-decoration: underline; */outline: none;}}
     //text-decoration: none;
     &:hover, &:focus {text-decoration: underline;}
 }
+.link--underline {
+    text-decoration: underline;
+    &:hover, &:focus {text-decoration: none;}
+}
 .link--default {.link--main(); .link--hover(); font-weight: 700;}
 button {cursor: pointer; outline: none;}
 p, ul, ol {margin: 0;}
