@@ -319,6 +319,21 @@ td, th {
 
 
 
+.bnb-notice {padding: 20px 16px; color: #fff; background: no-repeat 50% 50% #2c2c2c;}
+.bnb-notice__container {max-width: 574px; margin: auto;}
+.bnb-notice__content {margin-bottom: 16px;}
+.bnb-notice__title {font-size: 20px; font-weight: 700; margin-bottom: 8px;}
+.bnb-notice__color-bnb {color: #f0b90a;}
+.bnb-notice__link {font-size: 16px;}
+.bnb-notice__button {flex-shrink: 0; align-self: center; padding-inline: 18px;}
+
+@media (min-width: @breakpoint-large-up) {
+    .bnb-notice {background-image: url(../img/bg-bnb-notice.svg);}
+    .bnb-notice__container {display: flex; justify-content: space-between;}
+    .bnb-notice__content {margin-bottom: 0; margin-right: 24px;}
+}
+
+
 
 .wallet__info {background: #2C2C2C; color: #fff; }
 .wallet__value {font-size: 20px; line-height: 1.25; font-weight: 700; margin-top: 1px;}
@@ -329,7 +344,8 @@ td, th {
 .wallet__address-icon {margin-right: 24px; flex-shrink: 0; margin-top: 4px;}
 .wallet__address-content {overflow: hidden;}
 .wallet__balance {width: max-content;}
-.wallet__balance-caption {display: flex; justify-content: space-between;}
+.wallet__balance-caption {display: flex;}
+.wallet__balance-top-up {margin-left: 16px;}
 .wallet__coin-icon {margin-right: 10px; margin-top: -6px; margin-bottom: -5px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2); vertical-align: middle;}
 .wallet__coin-name {font-weight: 700; vertical-align: middle;}
 .wallet__coin-verified {vertical-align: middle; margin-left: 4px;}
