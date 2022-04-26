@@ -5,6 +5,7 @@
     import CoinEditOwnerForm from '~/components/CoinEditOwnerForm.vue';
     import CoinMintTokenForm from '~/components/CoinMintTokenForm.vue';
     import CoinBurnTokenForm from '~/components/CoinBurnTokenForm.vue';
+    import CoinLockList from '~/components/CoinLockList.vue';
     import CoinLockForm from '~/components/CoinLockForm.vue';
 
     export default {
@@ -14,6 +15,7 @@
             CoinEditOwnerForm,
             CoinMintTokenForm,
             CoinBurnTokenForm,
+            CoinLockList,
             CoinLockForm,
         },
         fetch({ app, store }) {
@@ -51,5 +53,7 @@
         <CoinBurnTokenForm/>
 
         <CoinLockForm/>
+
+        <CoinLockList/>
     </section>
 </template>

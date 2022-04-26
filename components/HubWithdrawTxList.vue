@@ -115,7 +115,7 @@ export default {
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.not_found_long">{{ $td('Not found', 'hub.not-found') }}</template>
                     <!--  @TODO combine deposit_to_hub_received & batch_created into "Bridge received tx and wait gas conditions to proceed" -->
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.deposit_to_hub_received">{{ $td('Bridge collecting batch', 'hub.bridge-batch') }}</template>
-                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">{{ $td('Sent to', 'hub.sent-to') }} {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}, $td('waiting confirmation', 'hub.waiting-confirmation')</template>
+                    <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_created">{{ $td('Sent to', 'hub.sent-to') }} {{ $options.HUB_CHAIN_DATA[withdraw.destination].shortName }}, {{ $td('waiting confirmation', 'hub.waiting-confirmation') }}</template>
                     <template v-if="withdraw.status === $options.WITHDRAW_STATUS.batch_executed">
                         {{ $td('Success', 'form.success-title') }}
                         <a class="link--main" :href="getDestinationUrl(withdraw)" target="_blank">{{ formatHash(withdraw.outTxHash) }}</a>

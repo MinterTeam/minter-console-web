@@ -102,6 +102,19 @@
 
 <template>
     <section class="u-section u-container">
+        <div class="panel panel__header bnb-notice">
+            <div class="bnb-notice__container">
+                <div class="bnb-notice__content">
+                    <div class="bnb-notice__title">
+                        Withdraw your <span class="bnb-notice__color-bnb">BNB</span> from centralised exchanges
+                        <span class="u-display-ib">before it’s too late!</span>
+                    </div>
+                    <a class="bnb-notice__link link--main link--underline" href="https://www.minter.network/ru/earn/bnb-yf" target="_blank">Learn how to earn in Minter DEX 120% APR</a>
+                </div>
+                <nuxt-link :to="$i18nGetPreferredPath({name: 'hub', query: {coin: 'BNB', chainId: 56}})" class="button button--main bnb-notice__button">Deposit BNB Now!</nuxt-link>
+            </div>
+        </div>
+
         <div class="panel panel__header wallet__info">
             <div class="wallet__address">
                 <img class="wallet__address-icon u-hidden-small-down" :src="`${BASE_URL_PREFIX}/img/icon-wallet.svg`" width="40" height="40" alt="" role="presentation">
@@ -119,7 +132,7 @@
             <div class="wallet__balance" v-if="!$store.getters.isOfflineMode">
                 <div class="wallet__balance-caption">
                     <div>{{ $td('Balance', 'wallet.balance') }}</div>
-                    <nuxt-link class="link--default" :to="$i18nGetPreferredPath({name: 'buy', query: {coin: $store.getters.BASE_COIN}})">{{ $td('Top-up with ETH', 'wallet.top-up') }}</nuxt-link>
+                    <nuxt-link class="wallet__balance-top-up link--default" :to="$i18nGetPreferredPath({name: 'buy', query: {coin: $store.getters.BASE_COIN}})">{{ $td('Top-up', 'wallet.top-up') }}</nuxt-link>
                 </div>
                 <div class="wallet__value" data-test-id="walletBalanceValue">
                     {{ baseCoin ? baseCoin.amount : 0 | pretty }} {{ $store.getters.COIN_NAME }}
