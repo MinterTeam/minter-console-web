@@ -10,6 +10,8 @@ export default function() {
         balance: [],
         /** @type Array<StakeItem> */
         stakeList: [],
+        /** @type Readonly<DelegationData.lock> */
+        stakeLock: null,
         /** @type Array<ValidatorMeta> */
         validatorMetaList: [],
         // transactionListInfo: {

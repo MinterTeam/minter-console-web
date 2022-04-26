@@ -29,9 +29,15 @@ export default {
     SET_BALANCE: (state, balance) => {
         state.balance = Object.freeze(balance);
     },
-    SET_STAKE_LIST: (state, stakeList) => {
-        state.stakeList = Object.freeze(stakeList);
+    /**
+     * @param state
+     * @param {DelegationData} stakeData
+     */
+    SET_STAKE_LIST: (state, stakeData) => {
+        state.stakeList = Object.freeze(stakeData.list);
+        SET_STAKE_LOCK(state, stakeData.lock);
     },
+    SET_STAKE_LOCK,
     SET_VALIDATOR_META_LIST(state, validatorList) {
         state.validatorMetaList = Object.freeze(validatorList);
     },
@@ -63,6 +69,14 @@ function LOGOUT(state) {
     // state.auth.password = null;
     state.auth.advanced = null;
     // resetAuthToken();
+}
+
+/**
+ * @param state
+ * @param {DelegationData.lock} stakeLock
+ */
+function SET_STAKE_LOCK(state, stakeLock) {
+    state.stakeLock = Object.freeze(stakeLock);
 }
 
 // function SET_PROFILE_USER(state, profile) {

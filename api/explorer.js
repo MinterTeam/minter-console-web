@@ -80,9 +80,12 @@ const statusCache = new Cache({maxAge: 5 * 1000});
  * @return {Promise<Status>}
  */
 export function getStatus() {
-    return explorer.get('status', {cache: statusCache})
+    return explorer.get('status', {
+            cache: statusCache,
+        })
         .then((response) => response.data.data);
 }
+
 
 /**
  * @param {string} hash
@@ -105,6 +108,8 @@ export function getTransaction(hash) {
             return tx;
         });
 }
+
+
 
 /**
  * @param {string} address
@@ -153,6 +158,24 @@ export async function prepareBalance(balanceList) {
                 return 1;
             }
 
+            // archived coins go last
+            const aIsArchived = isArchived(a.coin);
+            const bIsArchived = isArchived(b.coin);
+            if (aIsArchived && !bIsArchived) {
+                return 1;
+            } else if (bIsArchived && !aIsArchived) {
+                return -1;
+            }
+
+            // pool tokens go before archived
+            const aIsLP = isPoolToken(a.coin);
+            const bIsLP = isPoolToken(b.coin);
+            if (aIsLP && !bIsLP) {
+                return 1;
+            } else if (bIsLP && !aIsLP) {
+                return -1;
+            }
+
             // sort coins by name, instead of reserve
             return a.coin.symbol.localeCompare(b.coin.symbol);
         })
@@ -162,6 +185,16 @@ export async function prepareBalance(balanceList) {
                 amount: stripZeros(coinItem.amount),
             };
         });
+}
+
+function isPoolToken(coin) {
+    return coin.type === 'pool_token';
+}
+function isArchived(coin) {
+    if (coin.type === 'pool_token') {
+        return false;
+    }
+    return /-\d+$/.test(coin.symbol);
 }
 
 /**
@@ -201,9 +234,58 @@ function markVerified(coinListPromise, itemType = 'coin') {
 
 /**
  * @param {string} address
+ * @param {Object} [options]
+ * @param {'coin'|'block'} [options.squashKeep]
+ * @return {Promise<Array<BalanceLockItem>>}
+ */
+export async function getBalanceLock(address, {squashKeep} = {}) {
+    const response = await explorer.get(`addresses/${address}/locks`);
+    const lockList = response.data;
+
+    if (!squashKeep) {
+        return lockList;
+    }
+    const lockMap = lockList.reduce((accumulator, item) => {
+        let key;
+        // keep different coins
+        if (squashKeep === 'coin') {
+            key = item.coin.symbol;
+        }
+        // keep different due blocks
+        else if (squashKeep === 'block') {
+            key = item.dueBlock.toString() + item.coin.symbol;
+        } else {
+            throw new Error('Invalid squashKeep option value');
+        }
+        if (!accumulator[key]) {
+            accumulator[key] = item;
+        } else {
+            const storedItem = accumulator[key];
+            storedItem.value = new Big(storedItem.value).plus(item.value).toString();
+            storedItem.dueBlock = Math.min(storedItem.dueBlock, item.dueBlock);
+            storedItem.startBlock = Math.min(storedItem.startBlock, item.startBlock);
+        }
+
+        return accumulator;
+    }, {});
+
+    return Object.values(lockMap);
+}
+
+/**
+ * @typedef {Object} BalanceLockItem
+ * @property {Coin} coin
+ * @property {string|number} value
+ * @property {string|number} dueBlock
+ * @property {string|number} startBlock
+ */
+
+/**
+ * @param {string} address
  * @param {Object} [params]
  * @param {number|string} [params.page]
  * @param {number|string} [params.limit]
+ * @param {"failed"} [params.type]
  * @return {Promise<TransactionListInfo>}
  */
 export function getAddressTransactionList(address, params) {
@@ -237,18 +319,25 @@ export function getAddressOrderList(address, params) {
 
 /**
  * @param {string} address
- * @return {Promise<Array<StakeItem>>}
+ * @return {Promise<DelegationData>}
  */
-export function getAddressStakeList(address) {
+export function getAddressStake(address) {
     return explorer.get(`addresses/${address}/delegations`, {params: {limit: 999}})
-        .then((response) => response.data.data.map((item) => {
+        .then((response) => {
             return {
-                ...item,
-                value: stripZeros(item.value),
-                bipValue: stripZeros(item.bipValue),
+                list: response.data.data.map((item) => {
+                    return {
+                        ...item,
+                        value: stripZeros(item.value),
+                        bipValue: stripZeros(item.bipValue),
+                    };
+                }),
+                totalDelegatedBipValue: response.data.meta.additional.totalDelegatedBipValue,
+                lock: response.data.meta.additional.lockedData,
             };
-        }));
+        });
 }
+
 
 
 
@@ -257,12 +346,7 @@ export function getAddressStakeList(address) {
  */
 export function getValidatorList() {
     return explorer.get(`validators`)
-        .then((response) => {
-            return response.data.data.sort((a, b) => {
-                // Sort by stake descending
-                return b.stake - a.stake;
-            });
-        });
+        .then((response) => response.data.data);
 }
 
 /**
@@ -272,6 +356,8 @@ export function getValidatorMetaList() {
     return explorer.get(`validators/meta`)
         .then((response) => response.data.data);
 }
+
+
 
 
 // 1 min cache
@@ -388,14 +474,47 @@ const poolCache = new Cache({maxAge: 10 * 1000});
  * @param {string} [params.provider] - search by Mx address
  * @param {number|string} [params.page]
  * @param {number|string} [params.limit]
+ * @param {Object} [options]
+ * @param {boolean} [options.filterBlocked]
  * @return {Promise<PoolListInfo>}
  */
-export function getPoolList(params) {
-    return explorer.get('pools', {
+export function getPoolList(params, options = {}) {
+    let poolPromise;
+    if (params?.limit !== 0) {
+        poolPromise = explorer.get('pools', {
             params,
             cache: poolCache,
-        })
-        .then((response) => response.data);
+        });
+    } else {
+        poolPromise = explorer.get('pools/all', {
+                params: {
+                    ...params,
+                    limit: undefined,
+                },
+                cache: poolCache,
+            })
+            .then((response) => {
+                response.data = {
+                    data: response.data,
+                    meta: {
+                        currentPage: 1,
+                        lastPage: 1,
+                        perPage: 0,
+                        total: response.data.length,
+                    },
+                };
+                return response;
+            });
+    }
+    return poolPromise
+        .then((response) => {
+            if (options.filterBlocked) {
+                response.data.data = response.data.data.filter((pool) => {
+                    return !isBlocked(pool.coin0.symbol) && !isBlocked(pool.coin1.symbol);
+                });
+            }
+            return response.data;
+        });
 }
 
 /**
@@ -413,6 +532,8 @@ export function getPool(coin0, coin1) {
         .then((response) => response.data.data);
 }
 
+
+
 /**
  * Get limit order list by pool
  * @param {string|number} coin0
@@ -420,6 +541,7 @@ export function getPool(coin0, coin1) {
  * @param {Object} [params]
  * @param {number|string} [params.page]
  * @param {number|string} [params.limit]
+ * @param {string} [params.type] - sell or buy
  * @param {string} [params.status]
  * @return {Promise<LimitOrderListInfo>}
  */
@@ -440,6 +562,7 @@ export function getPoolOrderList(coin0, coin1, params) {
             return response.data;
         });
 }
+
 
 /**
  * @param {string|number} coin0
@@ -550,6 +673,31 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount, swapFrom =
  */
 
 /**
+ * @typedef {Object} DelegationData
+ * @property {Array<StakeItem>} list
+ * @property {number|string} totalDelegatedBipValue
+ * @property {{startBlock: number, endBlock: number, startTimestamp: string|timestamp}} lock
+ */
+
+/**
+ * @typedef {Object} StakeLockItem
+ * @property {Coin} coin
+ * @property {string|number} value
+ * @property {Validator} validator
+ * @property {Validator} [toValidator]
+ * @property {string} address
+ * @property {number} startHeight
+ * @property {number} endHeight
+ * @property {string|timestamp} createdAt - timestamp of startHeight
+ * @property {string} type
+ */
+/**
+ * @typedef {object} StakeLockItemInfo
+ * @property {Array<StakeLockItem>} data
+ * @property {PaginationMeta} meta
+ */
+
+/**
  * @typedef {Object} ValidatorListItem
  * @property {Validator} validator
  * @property {boolean} signed
@@ -639,6 +787,8 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount, swapFrom =
  * @property {string} from
  * @property {string} timestamp
  * @property {Coin} gasCoin
+ * @property {string} rawTx
+ * @property {string} payload
  * @property {number} commissionInBaseCoin
  * @property {number} commissionInGasCoin
  * @property {number} commissionPrice
@@ -686,6 +836,9 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount, swapFrom =
  * @property {string} [data.pubKey]
  * @property {Coin} [data.coin]
  * @property {number} [data.value]
+ * -- type: TX_TYPE.MOVE_STAKE
+ * @property {string} [data.fromPubKey]
+ * @property {string} [data.toPubKey]
  * -- type: TX_TYPE.REDEEM_CHECK
  * @property {string} [data.rawCheck]
  * @property {string} [data.proof]
@@ -705,6 +858,7 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount, swapFrom =
  * @property {Array<string|number>} [data.weights]
  * @property {string|number} [data.threshold]
  */
+
 
 /**
  * @typedef {Object} Coin
@@ -728,6 +882,9 @@ export function getSwapEstimate(coin0, coin1, {buyAmount, sellAmount, swapFrom =
  * @property {string|null} ownerAddress
  * @property {boolean} [verified] - filled from hub api
  * @property {boolean} [icon] - filled from chainik app
+ * @property {number|string} priceUsd
+ * @property {number|string} tradingVolume24H
+ * @property {number|string} tradingVolume1Mo
  */
 
 /**
