@@ -1,5 +1,5 @@
 // import {getProfile, getProfileAddressEncrypted} from "~/api";
-import {getBalance, getAddressStakeList, getValidatorMetaList} from "~/api/explorer.js";
+import {getBalance, getAddressStake, getValidatorMetaList} from "~/api/explorer.js";
 import {setLastUpdateTime} from '~/composables/use-last-update-time.js';
 
 export default {
@@ -70,10 +70,10 @@ export default {
             });
     },
     FETCH_STAKE_LIST: ({ commit, getters }) => {
-        return getAddressStakeList(getters.address)
-            .then((stakeList) => {
-                commit('SET_STAKE_LIST', stakeList);
-                return stakeList;
+        return getAddressStake(getters.address)
+            .then((stakeData) => {
+                commit('SET_STAKE_LIST', stakeData);
+                return stakeData.list;
             });
     },
     FETCH_VALIDATOR_META_LIST({ commit }) {

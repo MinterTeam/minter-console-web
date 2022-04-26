@@ -36,6 +36,17 @@
             clearForm() {
                 this.$v.$reset();
             },
+            onSuccess(tx) {
+                if (!tx.tags?.unlock_block_id) {
+                    return;
+                }
+
+                this.$store.commit('SET_STAKE_LOCK', {
+                    startBlock: tx.height,
+                    startTimestamp: new Date().toISOString(),
+                    endBlock: tx.tags.unlock_block_id,
+                });
+            },
         },
     };
 </script>
@@ -46,6 +57,7 @@
         :$txData="$v.form"
         :txType="$options.TX_TYPE.LOCK_STAKE"
         @clear-form="clearForm()"
+        @success-tx="onSuccess"
     >
         <template v-slot:panel-header>
             <h1 class="panel__header-title">
@@ -57,19 +69,22 @@
         </template>
 
         <template v-slot:default="{fee, addressBalance}">
+            <div class="u-cell" v-if="$store.state.stakeLock">
+                You already locked your stake until <strong>{{ prettyRound($store.state.stakeLock.endBlock) }}</strong> block. Do you want to renew?
+            </div>
             <div class="u-cell">
                 You will lock ALL your current and future stakes from ALL validators for ≈3 years ({{ prettyRound($options.LOCK_STAKE_PERIOD) }} blocks)
             </div>
         </template>
 
         <template v-slot:submit-title>
-            {{ $td('Lock', `form.delegation-lock-button`) }}
+            {{ $td('Lock stake', `form.delegation-lock-button`) }}
         </template>
 
         <template v-slot:confirm-modal-header>
             <h1 class="panel__header-title">
                 <img class="panel__header-title-icon" :src="`${BASE_URL_PREFIX}/img/icon-delegate.svg`" alt="" role="presentation" width="40" height="40">
-                {{ $td('Lock', 'delegation.lock-title') }}
+                {{ $td('Lock stake', 'delegation.lock-title') }}
             </h1>
         </template>
 
