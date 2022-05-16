@@ -50,8 +50,9 @@ export function toErcDecimals(balance, ercDecimals = 18) {
 
 /**
  * @param {string} hash
- * @param {number} [confirmationCount = CONFIRMATION_COUNT]
- * @param {number} [chainId]
+ * @param {object} options
+ * @param {number} [options.confirmationCount = CONFIRMATION_COUNT]
+ * @param {number} [options.chainId]
  * @return {PromiseWithEmitter<Web3Tx>}
  */
 export function subscribeTransaction(hash, {
@@ -65,7 +66,7 @@ export function subscribeTransaction(hash, {
         const providerHost = getProviderHostByChain(chainId);
         if (providerHost) {
             // keep provider for this tx, because later it can be changed
-            const ethSaved = new Eth(getProviderHostByChain(chainId));
+            const ethSaved = new Eth(providerHost);
             txPromise = _subscribeTransaction(hash, confirmationCount, ethSaved, emitter);
         } else {
             txPromise = Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
