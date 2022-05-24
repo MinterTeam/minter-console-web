@@ -1,7 +1,6 @@
 <script>
 import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
-import * as web3 from '@/api/web3.js';
-import {getDepositTxInfo, getEvmNetworkName} from '@/api/web3.js';
+import web3, {getDepositTxInfo, getEvmNetworkName} from '~/api/web3.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import Modal from '@/components/common/Modal.vue';
 

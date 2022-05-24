@@ -7,10 +7,15 @@ import erc20ABI from '~/assets/abi-erc20.js';
 
 export const CONFIRMATION_COUNT = 5;
 
-export const utils = Utils;
-export const ethEth = new Eth(ETHEREUM_API_URL);
-export const ethBsc = new Eth(BSC_API_URL);
-export const eth = new Eth(ETHEREUM_API_URL);
+export const web3Utils = Utils;
+export const web3Eth = new Eth(BSC_API_URL);
+export const web3EthEth = new Eth(ETHEREUM_API_URL);
+export const web3EthBsc = new Eth(BSC_API_URL);
+
+export default {
+    eth: web3Eth,
+    utils: Utils,
+};
 
 const WEI_DECIMALS = 18;
 /**
@@ -21,7 +26,7 @@ const WEI_DECIMALS = 18;
 export function fromErcDecimals(balance, ercDecimals = 18) {
     const decimalsDelta = Math.max(WEI_DECIMALS - ercDecimals, 0);
     balance = new Big(10).pow(decimalsDelta).times(balance).toFixed(0);
-    return utils.fromWei(balance, "ether");
+    return Utils.fromWei(balance, "ether");
 }
 
 /**
@@ -31,7 +36,7 @@ export function fromErcDecimals(balance, ercDecimals = 18) {
  */
 export function toErcDecimals(balance, ercDecimals = 18) {
     balance = new Big(balance).toFixed(Number(ercDecimals));
-    balance = utils.toWei(balance, "ether");
+    balance = Utils.toWei(balance, "ether");
     const decimalsDelta = Math.max(WEI_DECIMALS - ercDecimals, 0);
     const tens = new Big(10).pow(decimalsDelta);
     return new Big(balance).div(tens).toFixed(0);
@@ -53,11 +58,17 @@ export function toErcDecimals(balance, ercDecimals = 18) {
  * @param {object} options
  * @param {number} [options.confirmationCount = CONFIRMATION_COUNT]
  * @param {number} [options.chainId]
+ * @param {boolean} [options.needReceipt=true]
+ * @param {boolean} [options.needExactConfirmationCount]
+ * @param {boolean} [options.needExactTimestamp=true]
  * @return {PromiseWithEmitter<Web3Tx>}
  */
 export function subscribeTransaction(hash, {
     confirmationCount = CONFIRMATION_COUNT,
     chainId,
+    needReceipt = true,
+    needExactConfirmationCount = CONFIRMATION_COUNT > 1,
+    needExactTimestamp = true,
 } = {}) {
     let isUnsubscribed = false;
     const emitter = new Emitter();
@@ -67,7 +78,14 @@ export function subscribeTransaction(hash, {
         if (providerHost) {
             // keep provider for this tx, because later it can be changed
             const ethSaved = new Eth(providerHost);
-            txPromise = _subscribeTransaction(hash, confirmationCount, ethSaved, emitter);
+            txPromise = _subscribeTransaction(hash, {
+                confirmationCount,
+                ethProvider: ethSaved,
+                emitter,
+                needReceipt,
+                needExactConfirmationCount,
+                needExactTimestamp,
+            });
         } else {
             txPromise = Promise.reject(new Error(`Can't subscribe to tx, chainId ${chainId} is not supported`));
         }
@@ -112,40 +130,46 @@ export function subscribeTransaction(hash, {
 /**
  *
  * @param {string} hash
- * @param {number} confirmationCount
- * @param {Eth} ethProvider
- * @param {Emitter} emitter
+ * @param {object} options
+ * @param {number} options.confirmationCount
+ * @param {Eth} options.ethProvider
+ * @param {Emitter} options.emitter
+ * @param {boolean} [options.needReceipt]
+ * @param {boolean} [options.needExactConfirmationCount]
+ * @param {boolean} [options.needExactTimestamp]
  * @return {Promise<Web3Tx>}
  * @private
  */
-function _subscribeTransaction(hash, confirmationCount, ethProvider, emitter) {
+function _subscribeTransaction(hash, {confirmationCount, ethProvider, emitter, needReceipt, needExactConfirmationCount, needExactTimestamp}) {
     let isUnsubscribed = false;
 
     return waitTxInBlock(hash)
         .then((tx) => {
             return Promise.all([
-                ethProvider.getTransactionReceipt(hash),
-                ethProvider.getBlock(tx.blockNumber),
-                getConfirmations(tx),
+                needReceipt ? ethProvider.getTransactionReceipt(hash) : Promise.resolve(),
+                needExactTimestamp ? ethProvider.getBlock(tx.blockNumber) : Promise.resolve(),
+                needExactConfirmationCount ? getConfirmations(tx) : Promise.resolve(1),
                 Promise.resolve(tx),
             ]);
         })
         .then(([receipt, block, confirmations, txData]) => {
+            // console.debug({receipt, block, confirmations, txData});
             const tx = {
                 // input, hash from tx
                 ...txData,
-                // logs, status from receipt
+                // logs, status, gasUsed from receipt
                 ...receipt,
                 confirmations,
-                timestamp: block.timestamp * 1000,
+                timestamp: needExactTimestamp ? block.timestamp * 1000 : Date.now(),
             };
             emitter.emit('confirmation', tx);
 
-            if (!tx.status) {
+            // status only available of receipt was requested
+            if (needReceipt && !tx.status) {
                 throw new Error('Transaction failed');
             }
 
-            if (confirmations >= confirmationCount) {
+            if (confirmations >= confirmationCount || !needExactConfirmationCount) {
                 return tx;
             } else {
                 return waitConfirmations(tx);
@@ -225,7 +249,7 @@ let cachedBlock = {
  * @param {Eth} [web3Eth]
  * @return {Promise<number>}
  */
-export function getBlockNumber(web3Eth = eth) {
+export function getBlockNumber(web3Eth = web3Eth) {
     const savedProviderHost = web3Eth.currentProvider.host;
     const isSameProviderHost = savedProviderHost === cachedBlock.providerHost;
     if (cachedBlock.isLoading && isSameProviderHost) {
@@ -344,7 +368,7 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
     if (itemCount === 2) {
         // unlock
         const beneficiaryHex = '0x' + input.slice(0, 64);
-        const beneficiaryAddress = eth.abi.decodeParameter('address', beneficiaryHex);
+        const beneficiaryAddress = web3Eth.abi.decodeParameter('address', beneficiaryHex);
         const isUnlockedForBridge = beneficiaryAddress.toLowerCase() === hubContractAddress;
         if (isUnlockedForBridge) {
             type = HUB_DEPOSIT_TX_PURPOSE.UNLOCK;
@@ -359,7 +383,7 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
         // transferToChain
         type = HUB_DEPOSIT_TX_PURPOSE.SEND;
         const tokenContractHex = '0x' + input.slice(0, 64);
-        tokenContract = eth.abi.decodeParameter('address', tokenContractHex);
+        tokenContract = web3Eth.abi.decodeParameter('address', tokenContractHex);
         amount = skipAmount ? 0 : await getAmountFromInputValue(input.slice((itemCount - 2) * 64), tokenContract, chainId, hubCoinList);
     } else if (tx.to.toLowerCase() === hubContractAddress && itemCount === 3) {
         // transferETHToChain
@@ -406,7 +430,7 @@ export async function getDepositTxInfo(tx, chainId, hubCoinList, skipAmount) {
 async function getAmountFromInputValue(hex, tokenContract, chainId, hubCoinList) {
     const amountHex = '0x' + hex;
     const decimals = await getTokenDecimals(tokenContract, chainId, hubCoinList);
-    const amount = fromErcDecimals(eth.abi.decodeParameter('uint256', amountHex), decimals);
+    const amount = fromErcDecimals(web3Eth.abi.decodeParameter('uint256', amountHex), decimals);
 
     return amount;
 }
@@ -440,13 +464,13 @@ export function getExternalCoinList(hubCoinList, chainId) {
 function getProviderByChain(chainId) {
     validateChainId(chainId);
     if (!chainId) {
-        return eth;
+        return web3Eth;
     }
     if (chainId === ETHEREUM_CHAIN_ID) {
-        return ethEth;
+        return web3EthEth;
     }
     if (chainId === BSC_CHAIN_ID) {
-        return ethBsc;
+        return web3EthBsc;
     }
 }
 
@@ -457,7 +481,7 @@ function getProviderByChain(chainId) {
 function getProviderHostByChain(chainId) {
     validateChainId(chainId);
     if (!chainId) {
-        return eth.currentProvider.host;
+        return web3Eth.currentProvider.host;
     }
 
     return HUB_CHAIN_DATA[getHubNetworkByChain(chainId)]?.apiUrl;

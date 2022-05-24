@@ -467,7 +467,7 @@ function makeSortQueue(fnArray) {
                             <td class="table__controls-cell table__controls-cell--x3">
                                 <button
                                     class="table__controls-button u-semantic-button link--opacity"
-                                    @click="activateMove({hash: stakeGroup.hash, coin: stakeGroup.stakeList[0].coin.symbol})"
+                                    @click="activateMove({hash: stakeGroup.hash, coin: stakeItem.coin.symbol})"
                                 >
                                     <img :src="`${BASE_URL_PREFIX}/img/icon-move.svg`" alt="Move stake" title="Move stake">
                                 </button>
