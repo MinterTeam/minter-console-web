@@ -105,13 +105,21 @@
         <div class="panel panel__header bnb-notice">
             <div class="bnb-notice__container">
                 <div class="bnb-notice__content">
-                    <div class="bnb-notice__title">
-                        Withdraw your <span class="bnb-notice__color-bnb">BNB</span> from centralised exchanges
-                        <span class="u-display-ib">before it’s too late!</span>
-                    </div>
-                    <a class="bnb-notice__link link--main link--underline" href="https://www.minter.network/ru/earn/bnb-yf" target="_blank">Learn how to earn in Minter DEX 120% APR</a>
+                    <template v-if="$i18n.locale === 'ru'">
+                        <div class="bnb-notice__title">
+                            Выводите свои <span class="bnb-notice__color-bnb">BNB</span> с&nbsp;бирж, пока не&nbsp;стало слишком&nbsp;поздно!
+                        </div>
+                        <a class="bnb-notice__link link--main link--underline" href="https://www.minter.network/ru/earn/bnb-yf" target="_blank">Как зарабатывать в Minter DEX 120% годовых</a>
+                    </template>
+                    <template v-else>
+                        <div class="bnb-notice__title">
+                            Withdraw your <span class="bnb-notice__color-bnb">BNB</span> from centralised exchanges
+                            <span class="u-display-ib">before it’s too late!</span>
+                        </div>
+                        <a class="bnb-notice__link link--main link--underline" href="https://www.minter.network/ru/earn/bnb-yf" target="_blank">Learn how to earn in Minter DEX 120% APR</a>
+                    </template>
                 </div>
-                <nuxt-link :to="$i18nGetPreferredPath({name: 'hub', query: {coin: 'BNB', chainId: 56}})" class="button button--main bnb-notice__button">Deposit BNB Now!</nuxt-link>
+                <nuxt-link :to="$i18nGetPreferredPath({name: 'hub', query: {coin: 'BNB', chainId: 56}})" class="button button--main bnb-notice__button">{{ $td('Deposit BNB Now!', 'bnb-banner.deposit-button') }}</nuxt-link>
             </div>
         </div>
 

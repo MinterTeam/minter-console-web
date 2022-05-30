@@ -1,45 +1,45 @@
 <script>
-    import {MDCMenu} from '@material/menu/index';
-    import Cookies from 'js-cookie';
-    import {LANGUAGE_COOKIE_KEY} from '~/assets/variables';
+import {MDCMenu} from '@material/menu/index.js';
+import Cookies from 'js-cookie';
+import {LANGUAGE_COOKIE_KEY} from '~/assets/variables.js';
 
-    export default {
-        data() {
-            return {
-                mdcMenu: {
-                    open: false,
-                },
-            };
-        },
-        computed: {
-            currentLocale() {
-                return this.$i18n.locales.find((locale) => locale.code === this.$i18n.locale);
+export default {
+    data() {
+        return {
+            mdcMenu: {
+                open: false,
             },
-            otherLocaleList() {
-                return this.$i18n.locales.filter((localeItem) => localeItem.code !== this.currentLocale.code);
-            },
+        };
+    },
+    computed: {
+        currentLocale() {
+            return this.$i18n.locales.find((locale) => locale.code === this.$i18n.locale);
         },
-        mounted() {
-            this.mdcMenu = new MDCMenu(this.$el.querySelector('.mdc-menu'));
-            this.mdcMenu.setAnchorMargin({top: -20, left: -16, right: -16});
+        otherLocaleList() {
+            return this.$i18n.locales.filter((localeItem) => localeItem.code !== this.currentLocale.code);
         },
-        beforeDestroy() {
-            if (this.mdcMenu.destroy) {
-                this.mdcMenu.destroy();
-            }
+    },
+    mounted() {
+        this.mdcMenu = new MDCMenu(this.$el.querySelector('.mdc-menu'));
+        this.mdcMenu.setAnchorMargin({top: -20, left: -16, right: -16});
+    },
+    beforeDestroy() {
+        if (this.mdcMenu.destroy) {
+            this.mdcMenu.destroy();
+        }
+    },
+    methods: {
+        switchLocaleCookie(localeCode) {
+            this.$store.commit('i18n/preferred/SET_LOCALE', localeCode);
+            const date = new Date();
+            Cookies.set(LANGUAGE_COOKIE_KEY, localeCode, {
+                expires: new Date(date.setDate(date.getDate() + 365)),
+                domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
+                sameSite: 'Lax',
+            });
         },
-        methods: {
-            switchLocaleCookie(localeCode) {
-                this.$store.commit('i18n/preferred/SET_LOCALE', localeCode);
-                const date = new Date();
-                Cookies.set(LANGUAGE_COOKIE_KEY, localeCode, {
-                    expires: new Date(date.setDate(date.getDate() + 365)),
-                    domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
-                    sameSite: 'Lax',
-                });
-            },
-        },
-    };
+    },
+};
 </script>
 
 <template>
@@ -60,7 +60,7 @@
                     v-for="locale in otherLocaleList"
                     :key="locale.code"
                     :to="switchLocalePath(locale.code)"
-                    @click.native="switchLocaleCookie(locale.code)"
+                    @click.native="switchLocaleCookie(locale.code); mdcMenu.open = false"
                 >
                     <span class="mdc-list-item__text header__language-text">{{ locale.name }}</span>
                     <img class="mdc-list-item__meta" :src="`${BASE_URL_PREFIX}/img/icon-flag-${locale.code}.png`" :srcset="`/img/icon-flag-${locale.code}@2x.png 2x`" alt="" width="24" height="24" role="presentation">

@@ -8,6 +8,7 @@ const beeper = require('beeper');
 const less = require('gulp-less');
 const postcss = require('gulp-postcss');
 const postcssNormalize = require('postcss-normalize');
+const postcssPresetEnv = require('postcss-preset-env');
 const autoprefixer = require('autoprefixer');
 const cleanCss = require('gulp-clean-css');
 // images
@@ -47,6 +48,21 @@ gulp.task('less', function() {
         .pipe(postcss([
             autoprefixer({cascade: false}),
             postcssNormalize({forceImport: true}),
+            postcssPresetEnv({
+                stage: 2,
+                features: {
+                    // not performant
+                    'all-property': false,
+                    'case-insensitive-attributes': false,
+                    // requires js polyfill
+                    // 'blank-pseudo-class': false,
+                    // 'focus-visible-pseudo-class': false,
+                    // 'focus-within-pseudo-class': false,
+                    // 'has-pseudo-class': false,
+                    // 'prefers-color-scheme-query': false,
+                },
+                enableClientSidePolyfills: false,
+            }),
         ]))
         .pipe(cleanCss({
             level: {

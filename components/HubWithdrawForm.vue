@@ -85,7 +85,8 @@ export default {
             form: {
                 coin: '',
                 amount: "",
-                address: "",
+                // @TODO use eth address from deposit form
+                address: this.$store.getters.address.replace('Mx', '0x'),
                 speed: SPEED_FAST,
                 networkTo: HUB_CHAIN_ID.ETHEREUM,
             },
@@ -167,7 +168,10 @@ export default {
             }
         },
         suggestionList() {
-            return this.hubCoinList.map((item) => item.symbol);
+            return this.hubCoinList
+                // show only available coins for selected network
+                .filter((item) => !!item[this.form.networkTo])
+                .map((item) => item.symbol);
             // intersection of address balance and hub supported coins
             /*
             return this.$store.getters.balance.filter((balanceItem) => {
