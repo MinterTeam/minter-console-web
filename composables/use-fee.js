@@ -3,6 +3,7 @@ import Big from '~/assets/big.js';
 import {FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import decorateTxParams from 'minter-js-sdk/src/tx-decorator/index.js';
+import getTxData from 'minter-js-sdk/src/tx-data/index.js';
 import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {BASE_COIN, CHAIN_ID} from '~/assets/variables.js';
@@ -42,7 +43,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         fallbackToCoinToSpend: false,
         isOffline: false,
         //@TODO throttle is used but we should use exact estimation only before confirmation
-        looseEstimation: false,
+        // looseEstimation: false,
     });
     /** @type {Object.<number, string>}*/
     const coinMap = ref({});
@@ -137,12 +138,15 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
 
     function estimateFee(gasCoin, idDebounce, savedPropsString) {
         const cleanTxParams = cleanObject(feeProps.txParams);
+        // const useApproxEstimation = feeProps.looseEstimation;
+        const useApproxEstimation = !isValidTxData(cleanTxParams.type, cleanTxParams.data);
+
         return estimateTxCommission({
             ...cleanTxParams,
             chainId: CHAIN_ID,
             gasCoin,
         }, {
-            needGasCoinFee: feeProps.looseEstimation ? FEE_PRECISION_SETTING.IMPRECISE : FEE_PRECISION_SETTING.PRECISE,
+            needGasCoinFee: useApproxEstimation ? FEE_PRECISION_SETTING.IMPRECISE : FEE_PRECISION_SETTING.PRECISE,
             needBaseCoinFee: FEE_PRECISION_SETTING.IMPRECISE,
             needPriceCoinFee: FEE_PRECISION_SETTING.PRECISE,
         }, {idDebounce})
@@ -238,6 +242,15 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         feeProps,
         fee,
     };
+}
+
+function isValidTxData(txType, txData) {
+    try {
+        getTxData(txType)(txData);
+        return true;
+    } catch (error) {
+        return false;
+    }
 }
 
 function cleanObject(txParams) {

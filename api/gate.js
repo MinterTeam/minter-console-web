@@ -97,7 +97,6 @@ export function estimateCoinBuy(params, axiosOptions) {
     }
 }
 
-//@TODO use same `getCommissionPrice` in `estimateTxCommission` (update sdk)
 const estimateCommissionCache = new Cache({maxAge: 30 * 1000});
 export const estimateTxCommission = (params, options, axiosOptions) => EstimateTxCommission(minterApi)(params, options, {...axiosOptions, cache: estimateCommissionCache}, {cache: estimateCommissionCache});
 
