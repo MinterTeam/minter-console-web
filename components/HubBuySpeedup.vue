@@ -1,7 +1,7 @@
 <script>
 import {VueNowMixinFactory} from 'vue-now';
 import Big from '~/assets/big.js';
-import {utils as web3Utils} from '~/api/web3.js';
+import {web3Utils} from '~/api/web3.js';
 import {getOraclePriceList, getGasPriceGwei} from '~/api/hub.js';
 import {pretty, getEvmTxUrl, shortHashFilter} from '~/assets/utils.js';
 import {HUB_BUY_STAGE as LOADING_STAGE} from '~/assets/variables.js';

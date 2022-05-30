@@ -69,7 +69,7 @@ function defer() {
     return deferred;
 }
 
-class CancelError extends Error {
+export class CancelError extends Error {
     constructor(message = 'Canceled') {
         super(message);
         this.name = 'CancelError';

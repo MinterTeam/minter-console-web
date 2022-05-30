@@ -235,7 +235,7 @@ export default {
             </div>
 
             <div class="form__error u-mt-10" v-if="isConnected && unsupportedNetwork">
-                <div class="u-fw-700">{{ $td('Network', 'hub.unsupported-network-title') }} {{ chainId }} {{ $td('is not supported, switch to Ethereum or BSC', 'hub.unsupported-network-description') }}</div>
+                <div class="u-fw-700">{{ $td(`Network ${chainId} is not supported, switch to Ethereum or BSC`, 'hub.unsupported-network', {network: chainId}) }}</div>
                 <p>{{ $td('Try reconnecting if current network is out of sync with selected network in your wallet', 'hub.is-not-connected') }}</p>
             </div>
 
