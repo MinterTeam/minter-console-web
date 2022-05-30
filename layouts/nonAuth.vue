@@ -2,13 +2,13 @@
     import {NETWORK, TESTNET} from '~/assets/variables';
     import Snackbar from '~/components/common/Snackbar';
     import Language from '~/layouts/_language';
-    import Footer from '~/layouts/_footer';
+    import TheFooter from '~/layouts/_footer';
 
     export default {
         components: {
             Snackbar,
             Language,
-            Footer,
+            TheFooter,
         },
         computed: {
             isTestnet() {
@@ -33,7 +33,7 @@
 
         <nuxt class="main-content"/>
 
-        <Footer containerClass="u-container--medium"/>
+        <TheFooter containerClass="u-container--medium"/>
 
         <Snackbar/>
     </div>

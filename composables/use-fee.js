@@ -3,11 +3,13 @@ import Big from '~/assets/big.js';
 import {FeePrice} from 'minterjs-util/src/fee.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import decorateTxParams from 'minter-js-sdk/src/tx-decorator/index.js';
+import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {BASE_COIN, CHAIN_ID} from '~/assets/variables.js';
 import {estimateTxCommission} from '~/api/gate.js';
 import {getCoinList} from '~/api/explorer.js';
 import {getErrorText} from '~/assets/server-error.js';
+import {CancelError} from '~/assets/debounce-promise.js';
 
 
 /**
@@ -39,7 +41,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         /** @type {Boolean} - by default fallback to baseCoin, additionally it can try to fallback to coinToSpend, if baseCoin is not enough */
         fallbackToCoinToSpend: false,
         isOffline: false,
-        //@TODO throttle is used but maybe we should use exact estimation only before confirmation
+        //@TODO throttle is used but we should use exact estimation only before confirmation
         looseEstimation: false,
     });
     /** @type {Object.<number, string>}*/
@@ -116,14 +118,13 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
     // secondary it will try to check coinToSpend and use if primary coin is not enough to pay fee
     function getSecondaryCoinToCheck() {
         // 1. only check if fallback flag activated
-        // 2. if gasCoin is defined - no need to check something else
-        // 3. exact estimation used (no need to guess)
-        if (!feeProps.fallbackToCoinToSpend || isCoinDefined(feeProps.txParams.gasCoin) || !feeProps.looseEstimation) {
+        // 2. if gasCoin is defined - no need to guess
+        if (!feeProps.fallbackToCoinToSpend || isCoinDefined(feeProps.txParams.gasCoin)) {
             return '';
         }
 
         try {
-            const txParamsClone = {...feeProps.txParams};
+            const txParamsClone = cloneObject(feeProps.txParams);
             const {gasCoin} = decorateTxParams(txParamsClone, {setGasCoinAsCoinToSpend: true});
             if (typeof gasCoin !== 'undefined' && !isBaseCoin(gasCoin)) {
                 return gasCoin;
@@ -134,27 +135,36 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         return '';
     }
 
-    function fetchCoinData() {
+    function estimateFee(gasCoin, idDebounce, savedPropsString) {
+        const cleanTxParams = cleanObject(feeProps.txParams);
+        return estimateTxCommission({
+            ...cleanTxParams,
+            chainId: CHAIN_ID,
+            gasCoin,
+        }, {
+            needGasCoinFee: feeProps.looseEstimation ? FEE_PRECISION_SETTING.IMPRECISE : FEE_PRECISION_SETTING.PRECISE,
+            needBaseCoinFee: FEE_PRECISION_SETTING.IMPRECISE,
+            needPriceCoinFee: FEE_PRECISION_SETTING.PRECISE,
+        }, {idDebounce})
+            .then((result) => {
+                if (isPropsChanged(savedPropsString)) {
+                    return Promise.reject(new CancelError());
+                }
+                // console.debug({...result, gasCoin});
+                return {...result, gasCoin};
+            });
+    }
+
+    async function fetchCoinData() {
         if (feeProps.isOffline) {
             state.feeCoin = getPrimaryCoinToCheck();
             return;
         }
 
-        const cleanTxParams = cleanObject(feeProps.txParams);
         // save current coins to check if it will be actual after resolution
+        const savedFeePropsString = JSON.stringify(feeProps);
         const primaryCoinToCheck = getPrimaryCoinToCheck();
         const secondaryCoinToCheck = getSecondaryCoinToCheck();
-        const primaryEstimate = estimateTxCommission({
-            ...cleanTxParams,
-            chainId: CHAIN_ID,
-            gasCoin: primaryCoinToCheck,
-        }, {loose: feeProps.looseEstimation}, {idDebounce: idPrimary});
-        //@TODO secondary check may be redundant
-        const secondaryEstimate = secondaryCoinToCheck && secondaryCoinToCheck !== primaryCoinToCheck ? estimateTxCommission({
-            ...cleanTxParams,
-            chainId: CHAIN_ID,
-            gasCoin: secondaryCoinToCheck,
-        }, {loose: feeProps.looseEstimation}, {idDebounce: idSecondary}) : Promise.reject();
 
         state.isLoading = true;
         state.feeError = '';
@@ -164,48 +174,46 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         // state.feeCoin = primaryCoinToCheck;
         // state.feeValue = '';
 
-        return Promise.allSettled([
-                primaryEstimate,
-                secondaryEstimate,
-            ])
-            .then(([primaryResult, secondaryResult]) => {
-                if (primaryCoinToCheck !== getPrimaryCoinToCheck() || secondaryCoinToCheck !== getSecondaryCoinToCheck()) {
-                    return;
-                }
-                const feeData = primaryResult.value;
-                const secondaryFeeData = secondaryResult.value;
-                if (!feeData) {
-                    return Promise.reject(primaryResult.reason);
-                }
+        try {
+            let feeData = await estimateFee(primaryCoinToCheck, idPrimary, savedFeePropsString);
 
-                state.priceCoinFeeValue = feeData.priceCoinCommission;
-                state.baseCoinFeeValue = feeData.baseCoinCommission;
-                state.isBaseCoinEnough = new Big(feeProps.baseCoinAmount || 0).gte(state.baseCoinFeeValue || 0);
-                // select between primary fallback and secondary fallback
-                // secondaryFeeData may be defined only if primary is fallback base coin
-                const isSecondarySelected = secondaryFeeData && !state.isBaseCoinEnough;
-                state.feeCoin = isSecondarySelected ? secondaryCoinToCheck : primaryCoinToCheck;
-                state.feeValue = isSecondarySelected ? secondaryFeeData.commission : feeData.commission;
-                state.commissionPriceData = feeData.commissionPriceData;
-                // feeError must be cleaned after promise because several promises can be processed parallel and some may fail
-                state.feeError = '';
-                state.isLoading = false;
-            })
-            .catch((error) => {
-                if (
-                    primaryCoinToCheck !== getPrimaryCoinToCheck()
-                    || secondaryCoinToCheck !== getSecondaryCoinToCheck()
-                    || error.isCanceled
-                ) {
-                    return;
-                }
-                state.feeError = getErrorText(error);
-                if (state.feeError.toLowerCase() === 'not possible to exchange') {
-                    state.feeError += ' to pay fee';
-                }
-                state.isLoading = false;
-                console.debug(error);
-            });
+            const isBaseCoinEnough = new Big(feeProps.baseCoinAmount || 0).gte(feeData.baseCoinCommission || 0);
+            // select between primary fallback and secondary fallback
+            // secondaryFeeData may be defined only if primary is fallback base coin
+            const isSecondarySelected = !isBaseCoinEnough && secondaryCoinToCheck && secondaryCoinToCheck !== primaryCoinToCheck;
+
+            if (isSecondarySelected) {
+                feeData = await estimateFee(secondaryCoinToCheck, idSecondary, savedFeePropsString)
+                    .catch((error) => {
+                        if (error.isCanceled) {
+                            throw error;
+                        } else {
+                            // fallback to primaryCoinToCheck
+                            return feeData;
+                        }
+                    });
+            }
+
+            state.priceCoinFeeValue = feeData.priceCoinCommission;
+            state.baseCoinFeeValue = feeData.baseCoinCommission;
+            state.isBaseCoinEnough = isBaseCoinEnough;
+            state.feeCoin = feeData.gasCoin;
+            state.feeValue = feeData.commission;
+            state.commissionPriceData = feeData.commissionPriceData;
+            // feeError must be cleaned after promise because several promises can be processed parallel and some may fail
+            state.feeError = '';
+            state.isLoading = false;
+        } catch (error) {
+            if (error.isCanceled) {
+                return;
+            }
+            state.feeError = getErrorText(error);
+            if (state.feeError.toLowerCase() === 'not possible to exchange') {
+                state.feeError += ' to pay fee';
+            }
+            state.isLoading = false;
+            console.debug(error);
+        }
     }
     /**
      * @param {string|number} coinIdOrSymbol
@@ -220,6 +228,10 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
      */
     function isBaseCoin(coinIdOrSymbol) {
         return coinIdOrSymbol === BASE_COIN || coinIdOrSymbol === 0 || coinIdOrSymbol === '0';
+    }
+
+    function isPropsChanged(savedPropsString) {
+        return savedPropsString !== JSON.stringify(feeProps);
     }
 
     return {
@@ -249,4 +261,8 @@ function cleanObject(txParams) {
     function isObject(value) {
         return Object.prototype.toString.call(value) === '[object Object]';
     }
+}
+
+function cloneObject(obj) {
+    return JSON.parse(JSON.stringify(obj));
 }

@@ -5,7 +5,7 @@
     import Snackbar from '~/components/common/Snackbar';
     import ConnectionNotice from '~/components/ConnectionNotice.vue';
     import Language from '~/layouts/_language';
-    import Footer from '~/layouts/_footer';
+    import TheFooter from '~/layouts/_footer';
 
     export default {
         EXPLORER_HOST,
@@ -13,7 +13,7 @@
             Snackbar,
             ConnectionNotice,
             Language,
-            Footer,
+            TheFooter,
         },
         data() {
             return {
@@ -250,7 +250,7 @@
             </main>
         </div>
 
-        <Footer/>
+        <TheFooter/>
 
         <ConnectionNotice/>
         <Snackbar/>
