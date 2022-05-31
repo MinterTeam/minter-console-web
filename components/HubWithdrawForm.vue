@@ -5,6 +5,7 @@ import required from 'vuelidate/lib/validators/required.js';
 import maxValue from 'vuelidate/lib/validators/maxValue.js';
 import minLength from 'vuelidate/lib/validators/minLength.js';
 import autosize from 'v-autosize';
+import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
@@ -182,8 +183,7 @@ export default {
         feeBusParams() {
             return {
                 txParams: {
-                    // falsy value should be undefined to correct work of txParamsDecorator
-                    // gasCoin: this.form.gasCoin || undefined,
+                    // gasCoin: this.form.gasCoin,
                     type: TX_TYPE.SEND,
                     data: {
                         to: HUB_MINTER_MULTISIG_ADDRESS,
@@ -201,6 +201,7 @@ export default {
                 baseCoinAmount: this.$store.getters.baseCoin?.amount,
                 fallbackToCoinToSpend: true,
                 isOffline: this.$store.getters.isOfflineMode,
+                precision: FEE_PRECISION_SETTING.PRECISE,
             };
         },
     },
