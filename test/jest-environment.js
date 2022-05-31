@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const NodeEnvironment = require('jest-environment-node');
+const NodeEnvironment = require('jest-environment-node').default;
 const { receiveData } = require('./jest-utils');
 
 class TestEnvironment extends NodeEnvironment {
