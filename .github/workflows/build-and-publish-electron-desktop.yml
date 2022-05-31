@@ -55,13 +55,6 @@ jobs:
       - name: Build
         run: npm run electron:build
 #        run: npm run electron:build-x64
-      
-      - name: Fix mac zip asset
-        run: |
-          cd tmp/electron
-          rm minter-console-$(echo ${{ env.BUILD_TAG }} | sed 's:v::')-x64-mac.zip
-          cp -a mac/ ./
-          zip -r -y minter-console-$(echo ${{ env.BUILD_TAG }} | sed 's:v::')-x64-mac.zip "./Minter Console.app"
 
       - name: Release
         uses: softprops/action-gh-release@35d938cf01f60fbe522917c81be1e892074f6ad6

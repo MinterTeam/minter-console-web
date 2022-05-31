@@ -37,9 +37,9 @@ export const ensureNonce = EnsureNonce(minterApi);
 
 const estimateCache = new Cache({maxAge: 5 * 1000});
 const _estimateCoinSell = (params, axiosOptions) => params.sellAll
-    ? EstimateCoinSellAll(minterApi)(params, {...axiosOptions, cache: estimateCache})
-    : EstimateCoinSell(minterApi)(params, {...axiosOptions, cache: estimateCache});
-const _estimateCoinBuy = (params, axiosOptions) => EstimateCoinBuy(minterApi)(params, {...axiosOptions, cache: estimateCache});
+    ? EstimateCoinSellAll(minterApi, {cache: estimateCache})(params, axiosOptions)
+    : EstimateCoinSell(minterApi, {cache: estimateCache})(params, axiosOptions);
+const _estimateCoinBuy = new EstimateCoinBuy(minterApi, {cache: estimateCache});
 export function estimateCoinSell(params, axiosOptions) {
     // 0, '0', false, undefined
     if (!params.valueToSell || !Number(params.valueToSell)) {
@@ -98,12 +98,12 @@ export function estimateCoinBuy(params, axiosOptions) {
 }
 
 const estimateCommissionCache = new Cache({maxAge: 30 * 1000});
-export const estimateTxCommission = (params, options, axiosOptions) => EstimateTxCommission(minterApi)(params, options, {...axiosOptions, cache: estimateCommissionCache}, {cache: estimateCommissionCache});
+export const estimateTxCommission = new EstimateTxCommission(minterApi, {cache: estimateCommissionCache}, {cache: estimateCommissionCache});
 
 const coinCache = new Cache({maxAge: 1 * 60 * 1000});
-export const replaceCoinSymbol = ReplaceCoinSymbol(minterApi);
-export const replaceCoinSymbolByPath = ReplaceCoinSymbolByPath(minterApi);
-export const getCoinId = (symbol) => GetCoinId(minterApi)(symbol, undefined, {cache: coinCache});
+export const replaceCoinSymbol = ReplaceCoinSymbol(minterApi, {cache: coinCache});
+export const replaceCoinSymbolByPath = ReplaceCoinSymbolByPath(minterApi, {cache: coinCache});
+export const getCoinId = new GetCoinId(minterApi, {cache: coinCache});
 
 const commissionCache = new Cache({maxAge: 60 * 60 * 1000});
-export const getCommissionPrice = () => GetCommissionPrice(minterApi)({cache: commissionCache});
+export const getCommissionPrice = new GetCommissionPrice(minterApi, {cache: commissionCache});

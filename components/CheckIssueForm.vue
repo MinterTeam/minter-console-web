@@ -9,6 +9,7 @@
     import maxLength from 'vuelidate/lib/validators/maxLength';
     import issueCheck from 'minter-js-sdk/src/check';
     import {prepareLink} from 'minter-js-sdk/src/link';
+    import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {replaceCoinSymbolByPath} from '~/api/gate.js';
     import checkEmpty from '~/assets/v-check-empty';
@@ -98,6 +99,7 @@
                     },
                     baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     isOffline: this.$store.getters.isOfflineMode,
+                    precision: FEE_PRECISION_SETTING.PRECISE,
                 };
             },
             deeplinkPretty() {
