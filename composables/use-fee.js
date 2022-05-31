@@ -7,7 +7,7 @@ import getTxData from 'minter-js-sdk/src/tx-data/index.js';
 import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {isCoinId} from 'minter-js-sdk/src/utils.js';
 import {BASE_COIN, CHAIN_ID} from '~/assets/variables.js';
-import {estimateTxCommission} from '~/api/gate.js';
+import {estimateTxCommission, replaceCoinSymbol} from '~/api/gate.js';
 import {getCoinList} from '~/api/explorer.js';
 import {getErrorText} from '~/assets/server-error.js';
 import {CancelError} from '~/assets/debounce-promise.js';
@@ -43,7 +43,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         fallbackToCoinToSpend: false,
         isOffline: false,
         //@TODO throttle is used but we should use exact estimation only before confirmation
-        // looseEstimation: false,
+        precision: FEE_PRECISION_SETTING.AUTO,
     });
     /** @type {Object.<number, string>}*/
     const coinMap = ref({});
@@ -136,10 +136,11 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         return '';
     }
 
-    function estimateFee(gasCoin, idDebounce, savedPropsString) {
-        const cleanTxParams = cleanObject(feeProps.txParams);
-        // const useApproxEstimation = feeProps.looseEstimation;
-        const useApproxEstimation = !isValidTxData(cleanTxParams.type, cleanTxParams.data);
+    async function estimateFee(gasCoin, idDebounce, savedPropsString) {
+        const cleanTxParams = await replaceCoinSymbol(cleanObject(feeProps.txParams));
+        const useApproxEstimation = feeProps.precision === FEE_PRECISION_SETTING.AUTO
+            ? !isValidTxData(cleanTxParams.type, cleanTxParams.data)
+            : feeProps.precision;
 
         return estimateTxCommission({
             ...cleanTxParams,
@@ -246,7 +247,8 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
 
 function isValidTxData(txType, txData) {
     try {
-        getTxData(txType)(txData);
+        const TxDataConstructor = getTxData(txType);
+        new TxDataConstructor(txData);
         return true;
     } catch (error) {
         return false;
