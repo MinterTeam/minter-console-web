@@ -82,7 +82,7 @@ export default {
         <div class="form-field__help" v-else-if="$store.getters.isOfflineMode">{{ $td(`Equivalent of ${$store.getters.COIN_NAME} ${pretty(fee.baseCoinValue)}`, 'form.fee-help', {value: pretty(fee.baseCoinValue), coin: $store.getters.COIN_NAME}) }}</div>
         <div class="form-field__help" v-else>
             {{ pretty(fee.value) }} {{ fee.coinSymbol }}
-            <span class="u-display-ib" v-if="!fee.isBaseCoin && fee.baseCoinValue">({{ pretty(fee.baseCoinValue) }} {{ $store.getters.COIN_NAME }})</span>
+            <span class="u-display-ib" v-if="fee.priceCoinValue && fee.priceCoin.symbol !== fee.coinSymbol">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
         </div>
     </div>
 </template>
