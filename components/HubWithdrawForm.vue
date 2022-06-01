@@ -187,7 +187,7 @@ export default {
                     type: TX_TYPE.SEND,
                     data: {
                         to: HUB_MINTER_MULTISIG_ADDRESS,
-                        // value: this.amountToSpend,
+                        // value: this.amountToSend,
                         value: 0,
                         coin: this.coinId,
                     },

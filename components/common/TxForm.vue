@@ -623,7 +623,7 @@
                             {{ pretty(fee.value) }} {{ fee.coinSymbol }}
                             <!-- don't show usd amount because priceCoin is USDTE -->
                             <!-- <BaseAmount :coin="fee.coinSymbol" :amount="fee.value" :base-coin-amount="fee.baseCoinValue"/>-->
-                            <span class="u-display-ib u-text-muted" v-if="fee.priceCoin.id > 0 && fee.priceCoin.symbol !== fee.coinSymbol">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
+                            <span class="u-display-ib u-text-muted" v-if="fee.priceCoin.symbol !== fee.coinSymbol">({{ pretty(fee.priceCoinValue) }} {{ fee.priceCoin.symbol }})</span>
                         </div>
                         <span class="form-field__label">{{ $td('Fee', 'form.fee-amount') }}</span>
                     </div>
