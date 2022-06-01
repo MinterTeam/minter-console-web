@@ -91,6 +91,7 @@
             ...mapGetters({
                 balance: 'balance',
             }),
+            //@TODO use form.coinSymbol as fallback
             feeBusParams() {
                 return {
                     txParams: {
