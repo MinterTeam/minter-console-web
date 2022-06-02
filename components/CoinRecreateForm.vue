@@ -104,16 +104,16 @@
                     maxValue: maxValue(this.form.maxSupply || COIN_MAX_MAX_SUPPLY),
                 },
                 constantReserveRatio: {
-                    required: this.txType === TX_TYPE.RECREATE_COIN ? required : () => true,
-                    between: this.txType === TX_TYPE.RECREATE_COIN ? constantReserveRatioValidator : () => true,
+                    required: (value) => this.txType === TX_TYPE.RECREATE_COIN ? required(value) :  true,
+                    between: (value) => this.txType === TX_TYPE.RECREATE_COIN ? constantReserveRatioValidator(value) : true,
                 },
                 initialReserve: {
-                    required: this.txType === TX_TYPE.RECREATE_COIN ? required : () => true,
-                    minValue: this.txType === TX_TYPE.RECREATE_COIN ? minValue(MIN_CREATE_RESERVE) : () => true,
+                    required: (value) => this.txType === TX_TYPE.RECREATE_COIN ? required(value) : true,
+                    minValue: (value) => this.txType === TX_TYPE.RECREATE_COIN ? minValue(MIN_CREATE_RESERVE)(value) : true,
                 },
                 maxSupply: {
-                    minValue: this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY) : () => true,
-                    maxValue: this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY) : () => true,
+                    minValue: (value) => this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY)(value) : true,
+                    maxValue: (value) => this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY)(value) : true,
                 },
             };
 
