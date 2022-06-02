@@ -120,16 +120,16 @@ export default {
                 maxValue: maxValue(this.form.maxSupply || COIN_MAX_MAX_SUPPLY),
             },
             constantReserveRatio: {
-                required: this.txType === TX_TYPE.CREATE_COIN ? required : () => true,
-                between: this.txType === TX_TYPE.CREATE_COIN ? constantReserveRatioValidator : () => true,
+                required: (value) => this.txType === TX_TYPE.CREATE_COIN ? required(value) :  true,
+                between: (value) => this.txType === TX_TYPE.CREATE_COIN ? constantReserveRatioValidator(value) : true,
             },
             initialReserve: {
-                required: this.txType === TX_TYPE.CREATE_COIN ? required : () => true,
-                minValue: this.txType === TX_TYPE.CREATE_COIN ? minValueOrZero : () => true,
+                required: (value) => this.txType === TX_TYPE.CREATE_COIN ? required(value) : true,
+                minValue: (value) => this.txType === TX_TYPE.CREATE_COIN ? minValueOrZero(value) : true,
             },
             maxSupply: {
-                minValue: this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY) : () => true,
-                maxValue: this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY) : () => true,
+                minValue: (value) => this.form.maxSupply ? minValue(COIN_MIN_MAX_SUPPLY)(value) : true,
+                maxValue: (value) => this.form.maxSupply ? maxValue(COIN_MAX_MAX_SUPPLY)(value) : true,
             },
         };
 

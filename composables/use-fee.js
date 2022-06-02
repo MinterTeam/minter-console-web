@@ -39,7 +39,7 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
         /** @type {TxParams} */
         txParams: {},
         baseCoinAmount: 0,
-        // @TODO accept array of fallback coins (also accept balances) it will be usefull for issueCheck and for create/add pool
+        // @TODO accept array of fallback coins (also accept balances) it will be useful for issueCheck and for create/add pool
         // @TODO consider fallbackToCoinToReceive
         /** @type {Boolean} - by default fallback to baseCoin, additionally it can try to fallback to coinToSpend, if baseCoin is not enough */
         fallbackToCoinToSpend: false,
