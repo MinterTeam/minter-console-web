@@ -41,7 +41,7 @@ jobs:
 #        run: wine --version
       
       
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - run: cp .env$BUILD_BRANCH_ENV_PREFIX .env
 

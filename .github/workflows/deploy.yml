@@ -34,7 +34,7 @@ jobs:
           KUBE_NAMESPACE_KEY: KUBE_NAMESPACE_${{ env.BUILD_BRANCH }}
         run: echo "KUBE_NAMESPACE=$(echo ${!KUBE_NAMESPACE_KEY})" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: build and push docker image
         uses: opspresso/action-docker@v0.2.13
         env:
