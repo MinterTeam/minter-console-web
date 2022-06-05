@@ -1,7 +1,7 @@
 # Minter Console Website
 
-[![Build Status](https://img.shields.io/travis/MinterTeam/minter-console-web.svg?style=flat-square)](https://travis-ci.org/MinterTeam/minter-console-web)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/MinterTeam/minter-console-web/blob/master/LICENSE)
+[![Build Status](https://img.shields.io/github/workflow/status/MinterTeam/minter-console-web/Test?label=test&style=flat-square)](https://github.com/MinterTeam/minter-console-web/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square&label=license)](https://github.com/MinterTeam/minter-console-web/blob/master/LICENSE)
 
 This is the repository containing the code for the official Minter Console website [console.minter.network](https://console.minter.network)
 
