@@ -174,13 +174,13 @@
             },
             feeBusParams() {
                 return {
-                    txParams: {
+                    txParams: Object.freeze({
                         // falsy value should be undefined to correct work of txParamsDecorator
                         gasCoin: this.form.gasCoin || undefined,
                         payload: this.form.payload,
                         type: this.txType,
-                        data: this.txData,
-                    },
+                        data: Object.freeze(this.txData),
+                    }),
                     baseCoinAmount: this.$store.getters.baseCoin?.amount,
                     fallbackToCoinToSpend: true,
                     isOffline: this.$store.getters.isOfflineMode,
