@@ -21,15 +21,14 @@ jobs:
           node-version: '16.x'
           cache: 'npm'
       
-#      - name: Cache dependencies
-#        uses: actions/cache@v1
-#        with:
-#          path: ~/.npm
-#          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-#          restore-keys: |
-#            ${{ runner.os }}-node-
-      
       - run: npm ci
+
+      - name: Cache imagemin
+        uses: actions/cache@v3
+        with:
+          path: tmp/gulp-cache/imagemin
+          key: gulp-imagemin-${{ hashFiles('node_modules/imagemin-?*/package.json') }}
+
 
       - run: cp .env.master .env
       - name: Build
