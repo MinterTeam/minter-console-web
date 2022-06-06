@@ -1,3 +1,4 @@
+const mkdirp = require('mkdirp');
 import {ROUTES, USER_MNEMONIC} from '~/test/variables';
 
 /**
@@ -40,33 +41,46 @@ export async function login(page) {
  * @return {Promise<void>}
  */
 export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModal} = {}) {
-    await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
-    await wait();
+    try {
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
+        await wait();
 
-    // submit (opens modal)
-    await page.click(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]`);
+        // submit (opens modal)
+        await page.click(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]`);
 
-    const modalButtonSelector = `[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`;
-    if (!shouldFailModal) {
-        // wait for modal
-        await page.waitForSelector(modalButtonSelector);
-        // post tx
-        await page.click(modalButtonSelector);
-    } else {
-        await waitForNoSelector(page, modalButtonSelector);
-    }
+        const modalButtonSelector = `[data-test-id="${formTestId}"] [data-test-id="txModalSubmitButton"]`;
+        if (!shouldFailModal) {
+            // wait for modal
+            await page.waitForSelector(modalButtonSelector);
+            // post tx
+            await page.click(modalButtonSelector);
+        } else {
+            await waitForNoSelector(page, modalButtonSelector);
+        }
 
-    if (!shouldFailPost) {
-        // wait for success modal
-        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
-        // close modal
-        await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
-    } else if (shouldFailPost === 'estimation') {
-        // wait for error
-        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="estimationError"]`, {timeout: 1020000});
-    } else {
-        // wait for error
-        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txErrorMessage"]`);
+        if (!shouldFailPost) {
+            // wait for success modal
+            await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
+            // close modal
+            await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
+        } else if (shouldFailPost === 'estimation') {
+            // wait for error
+            await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="estimationError"]`, {timeout: 1020000});
+        } else {
+            // wait for error
+            await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txErrorMessage"]`);
+        }
+    } catch (error) {
+        const TMP_DIR = './tmp/test-failed';
+        await mkdirp(TMP_DIR);
+        const testName = expect.getState().currentTestName.replaceAll(' ', '-');
+        await page.screenshot({
+            path: `${TMP_DIR}/screenshot-${testName}.jpg`,
+            type: 'jpeg',
+            fullPage: true,
+        });
+
+        throw error;
     }
 }
 

@@ -29,3 +29,11 @@ jobs:
 
       - name: Test
         run: npm run test
+        
+      - name: Upload failed tests
+        if: ${{ failure() }}
+        uses: edunad/actions-image@v1.0.1
+        with:
+          path: './tmp/test-failed/*.jpg'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Failed E2E tests 🙀'
