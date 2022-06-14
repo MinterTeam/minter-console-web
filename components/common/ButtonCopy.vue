@@ -15,7 +15,7 @@
         },
         methods: {
             copy(str) {
-                const isCopied = clipboard.copy(str);
+                const isCopied = clipboard.copy(str.toString());
                 if (isCopied) {
                     // show snackbar
                     this.$store.commit('SET_SNACKBAR_ACTIVE');
