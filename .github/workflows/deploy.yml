@@ -11,7 +11,7 @@ env:
   KUBE_NAMESPACE_testnet: "testnet"
   KUBE_NAMESPACE_toronet: "toronet"
 jobs:
-  ci:
+  deploy:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'skip deploy')"
     steps:
