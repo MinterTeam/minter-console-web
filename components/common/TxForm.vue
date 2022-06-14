@@ -237,15 +237,7 @@
                     return;
                 }
 
-                let beforeShowPromise;
-                if (typeof this.beforeConfirmModalShow === 'function') {
-                    beforeShowPromise = this.beforeConfirmModalShow(this);
-                }
-                // ensure beforeShowPromise to be promise
-                if (!beforeShowPromise || typeof beforeShowPromise.then !== 'function') {
-                    beforeShowPromise = Promise.resolve();
-                }
-                beforeShowPromise.then(() => {
+                ensurePromise(this.beforeConfirmModalShow, this).then(() => {
                     if (this.$store.getters.isOfflineMode) {
                         this.submit();
                     } else {
@@ -426,6 +418,24 @@
             getExplorerTxUrl,
         },
     };
+
+    /**
+     * @template T
+     * @param {function(txFormContext?: Vue): Promise<T>} fn
+     * @param {Vue} [txFormContext]
+     * @return {Promise<T>}
+     */
+    function ensurePromise(fn, txFormContext) {
+        let fnPromise;
+        if (typeof fn === 'function') {
+            fnPromise = fn(txFormContext);
+        }
+        // ensure beforeShowPromise to be promise
+        if (!fnPromise || typeof fnPromise.then !== 'function') {
+            fnPromise = Promise.resolve();
+        }
+        return fnPromise;
+    }
 
     /**
      * Ensure empty fields to be undefined

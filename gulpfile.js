@@ -36,6 +36,7 @@ let paths = {
     cache: {
         tmpDir: 'tmp/',
         cacheDirName: 'gulp-cache',
+        imagemin: 'imagemin',
     },
 };
 
@@ -97,7 +98,7 @@ gulp.task('imagemin', function() {
                 verbose: true,
             }), {
                 fileCache: new cache.Cache(paths.cache),
-                name: 'default',
+                name: paths.cache.imagemin,
             }))
         .pipe(gulp.dest(paths.dest.img));
 });
@@ -107,7 +108,7 @@ gulp.task('imagemin:clean-dest', function(cb) {
 });
 gulp.task('imagemin:clean-cache', function(cb) {
     del.sync([
-        paths.cache.tmpDir + '/' + paths.cache.cacheDirName + '/default',
+        paths.cache.tmpDir + '/' + paths.cache.cacheDirName + '/' + paths.cache.imagemin,
     ]);
     cb();
 });

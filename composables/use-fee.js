@@ -142,16 +142,19 @@ export default function useFee(/*{txParams, baseCoinAmount = 0, fallbackToCoinTo
     async function estimateFee(gasCoin, idDebounce, savedPropsString) {
         // clone is needed because clean doesn't handle arrays
         const cleanTxParams = await replaceCoinSymbol(cloneObject(cleanObject(feeProps.txParams)));
-        const useApproxEstimation = feeProps.precision === FEE_PRECISION_SETTING.AUTO
-            ? !isValidTxData(cleanTxParams.type, cleanTxParams.data)
-            : feeProps.precision;
+        let needGasCoinFee;
+        if (feeProps.precision === FEE_PRECISION_SETTING.AUTO) {
+            needGasCoinFee = isValidTxData(cleanTxParams.type, cleanTxParams.data) ? FEE_PRECISION_SETTING.PRECISE : FEE_PRECISION_SETTING.IMPRECISE;
+        } else {
+            needGasCoinFee = feeProps.precision;
+        }
 
         return estimateTxCommission({
             ...cleanTxParams,
             chainId: CHAIN_ID,
             gasCoin,
         }, {
-            needGasCoinFee: useApproxEstimation ? FEE_PRECISION_SETTING.IMPRECISE : FEE_PRECISION_SETTING.PRECISE,
+            needGasCoinFee,
             needBaseCoinFee: FEE_PRECISION_SETTING.IMPRECISE,
             needPriceCoinFee: FEE_PRECISION_SETTING.PRECISE,
         }, {idDebounce})
