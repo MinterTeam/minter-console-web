@@ -17,6 +17,12 @@ export default {
     utils: Utils,
 };
 
+
+const transactionPollingInterval = 5000;
+[web3Eth, web3EthEth, web3EthBsc]
+    .forEach((eth) => eth.transactionPollingInterval = transactionPollingInterval);
+
+
 const WEI_DECIMALS = 18;
 /**
  * @param {number|string} balance - balance in erc20 decimals

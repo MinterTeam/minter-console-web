@@ -1,16 +1,24 @@
 import { ref, reactive, computed, watch } from '@vue/composition-api';
 import debounce from 'debounce-promise';
-import {getDiscountForHolder as _getDiscountForHolder} from '@/api/hub.js';
+import {getDiscountForHolder as _getDiscountForHolder} from '~/api/hub.js';
 
 export default function useHubDiscount() {
     // two different debounced functions
     const debouncedGetDiscountMinter = makeDebouncedGetDiscount();
     const debouncedGetDiscountEth = makeDebouncedGetDiscount();
 
-    const discountProps = reactive({
+    const props = reactive({
         minterAddress: '',
         ethAddress: '',
     });
+
+    /**
+     * @param {{minterAddress?: string, ethAddress?: string}} newProps
+     */
+    function setProps(newProps) {
+        Object.assign(props, newProps);
+    }
+
     const discountMinter = ref(0);
     const discountEth = ref(0);
     const discount = computed(() => {
@@ -22,19 +30,20 @@ export default function useHubDiscount() {
     });
 
     const getMinterDiscount = async () => {
-        discountMinter.value = await debouncedGetDiscountMinter(discountProps.minterAddress);
+        discountMinter.value = await debouncedGetDiscountMinter(props.minterAddress);
     };
     const getEthDiscount = async () => {
-        discountEth.value = await debouncedGetDiscountEth(discountProps.ethAddress);
+        discountEth.value = await debouncedGetDiscountEth(props.ethAddress);
     };
 
-    watch(() => discountProps.minterAddress, getMinterDiscount);
-    watch(() => discountProps.ethAddress, getEthDiscount);
+    watch(() => props.minterAddress, getMinterDiscount);
+    watch(() => props.ethAddress, getEthDiscount);
 
     return {
         discount,
-        discountProps,
         discountUpsidePercent,
+
+        setDiscountProps: setProps,
     };
 }
 

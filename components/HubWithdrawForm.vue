@@ -64,14 +64,14 @@ export default {
     },
     setup() {
         const {fee, feeProps} = useFee();
-        const { discount, discountProps, discountUpsidePercent } = useHubDiscount();
+        const { discount, discountUpsidePercent, setDiscountProps } = useHubDiscount();
 
         return {
             fee,
             feeProps,
             discount,
-            discountProps,
             discountUpsidePercent,
+            setDiscountProps,
         };
     },
     fetch() {
@@ -130,7 +130,7 @@ export default {
 
             return new Big(destinationFee).div(this.coinPrice).toString();
         },
-        // fee to HUB bridge calculated in COIN
+        // fee to Hub bridge calculated in COIN
         hubFee() {
             const amount = new Big(this.coinFee).plus(this.form.amount || 0);
             // x / (1 - x)
@@ -238,13 +238,13 @@ export default {
         },
         'form.address': {
             handler(newVal) {
-                this.discountProps.ethAddress = newVal;
+                this.setDiscountProps({ethAddress: newVal});
             },
             immediate: true,
         },
         '$store.getters.address': {
             handler(newVal) {
-                this.discountProps.minterAddress = newVal;
+                this.setDiscountProps({minterAddress: newVal});
             },
             immediate: true,
         },

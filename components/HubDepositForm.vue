@@ -76,12 +76,12 @@ export default {
         },
     },
     setup() {
-        const { discount, discountProps, discountUpsidePercent } = useHubDiscount();
+        const { discount, discountUpsidePercent, setDiscountProps } = useHubDiscount();
 
         return {
             discount,
-            discountProps,
             discountUpsidePercent,
+            setDiscountProps,
         };
     },
     data() {
@@ -277,13 +277,13 @@ export default {
                     this.updateBalance();
                     this.getAllowance();
                 }
-                this.discountProps.ethAddress = this.ethAddress;
+                this.setDiscountProps({ethAddress: this.ethAddress});
             },
             immediate: true,
         },
         'form.address': {
             handler(newVal) {
-                this.discountProps.minterAddress = newVal;
+                this.setDiscountProps({minterAddress: newVal});
             },
             immediate: true,
         },
