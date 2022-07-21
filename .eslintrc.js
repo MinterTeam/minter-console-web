@@ -10,8 +10,7 @@ module.exports = {
     },
     extends: [
         'eslint:recommended',
-        // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
-        // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
+        // https://github.com/vuejs/eslint-plugin-vue
         'plugin:vue/recommended',
     ],
     // required to lint *.vue files
