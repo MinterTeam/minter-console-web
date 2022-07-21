@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import Big from '~/assets/big.js';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {TX_TYPE, normalizeTxType} from 'minterjs-util/src/tx-types.js';
 import {getAddressTransactionList} from '@/api/explorer.js';
@@ -33,12 +32,15 @@ export const mutations = {
     saveWithdraw(state, tx) {
         const hubPayload = tx.hubPayload || parsePayload(tx.payload);
         const hubNetworkFee = convertFromPip(hubPayload.fee);
-        const hubBridgeFee = new Big(tx.data.value).times(0.01).toString();
-        const amount = new Big(tx.data.value).minus(hubBridgeFee).minus(hubNetworkFee).toString();
+        // don't fallback to 0.01 bridgeFeeRate, use 0 instead
+        const hubBridgeFee = tx.bridgeFee || 0;
+        // const hubBridgeFee = new Big(tx.data.value).times(0.01).toString();
 
         Vue.set(state.minterList, tx.hash, {
             tx,
-            amount,
+            payload: hubPayload,
+            networkFee: hubNetworkFee,
+            bridgeFee: hubBridgeFee,
             destination: hubPayload.type.replace('send_to_', ''),
             timestamp: tx.timestamp,
         });
@@ -54,11 +56,12 @@ export const mutations = {
             timestamp: (new Date()).toISOString(),
         });
     },
-    updateWithdraw(state, {inTxHash, status, outTxHash}) {
+    updateWithdraw(state, {inTxHash, status, outTxHash, bridgeFee}) {
         Vue.set(state.minterList, inTxHash, {
             ...state.minterList[inTxHash],
             status,
             outTxHash,
+            ...(bridgeFee ? {bridgeFee} : {}),
         });
     },
     setEthAddress(state, address) {

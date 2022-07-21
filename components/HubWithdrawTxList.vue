@@ -1,8 +1,9 @@
 <script>
 import {VueNowMixinFactory} from 'vue-now';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
-import {subscribeTransfer} from '@/api/hub.js';
+import {getTransferFee, subscribeTransfer} from '~/api/hub.js';
 import {getChainIdByHubNetwork} from '~/api/web3.js';
+import Big from '~/assets/big.js';
 import {getExplorerTxUrl, getEvmTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import {HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
 import Loader from '@/components/common/Loader.vue';
@@ -54,8 +55,18 @@ export default {
                         .on('update', (transfer) => {
                             this.$store.commit('hub/updateWithdraw', transfer);
                         })
-                        .then(() => {
+                        .then((transfer) => {
                             delete this.txPollList[hash];
+                            return getTransferFee(hash)
+                                .then((transferFee) => {
+                                    return {
+                                        ...transfer,
+                                        bridgeFee: transferFee.valCommission,
+                                    };
+                                });
+                        })
+                        .then((transfer) => {
+                            this.$store.commit('hub/updateWithdraw', transfer);
                         })
                         .catch((error) => {
                             if (error.message !== 'unsubscribed') {
@@ -85,6 +96,9 @@ export default {
         pretty,
         formatHash: (value) => shortHashFilter(value || '', 13),
         isHubTransferFinished,
+        getAmount(withdraw) {
+            return new Big(withdraw.tx.data.value).minus(withdraw.bridgeFee || 0).minus(withdraw.networkFee || 0).toString();
+        },
         getDestinationUrl(withdraw) {
             return getEvmTxUrl(getChainIdByHubNetwork(withdraw.destination), withdraw.outTxHash);
         },
@@ -101,7 +115,7 @@ export default {
                     <a class="link--main" :href="getExplorerTxUrl(withdraw.tx.hash)" target="_blank">{{ formatHash(withdraw.tx.hash) }}</a>
                 </div>
                 <div class="u-fw-700">
-                    {{ pretty(withdraw.amount) }} {{ withdraw.tx.data.coin.symbol }}
+                    {{ pretty(getAmount(withdraw)) }} {{ withdraw.tx.data.coin.symbol }}
                 </div>
             </div>
 

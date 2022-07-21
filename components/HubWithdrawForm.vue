@@ -79,6 +79,7 @@ export default {
     },
     data() {
         return {
+            // fee for destination network calculated in dollars
             destinationFee: {
                 min: 0,
                 fast: 0,
@@ -117,6 +118,7 @@ export default {
         hubFeeRatePercent() {
             return new Big(this.hubFeeRate).times(100).toString();
         },
+        // coin price in dollar
         coinPrice() {
             const priceItem = this.priceList.find((item) => item.name === this.externalToken?.denom);
             return priceItem ? priceItem.value : '0';
@@ -276,7 +278,7 @@ export default {
             return getOracleFee(this.form.networkTo)
                 .then((fee) => {
                     if (checkWarning && new Big(fee.fast).gt(this.destinationFee.fast)) {
-                        // don't send form, show warning to user so he has to press Submit again
+                        // don't send form, show warning to user, so he has to press Submit again
                         this.serverWarning = true;
                     }
                     this.destinationFee = fee;
@@ -349,11 +351,14 @@ export default {
 
             return postTx(txParams, {privateKey: this.$store.getters.privateKey})
                 .then((tx) => {
+                    this.$store.commit('hub/saveWithdrawFromGate', {
+                        ...tx,
+                        bridgeFee: this.hubFee,
+                    });
                     this.isFormSending = false;
                     this.serverSuccess = tx;
                     this.isSuccessModalVisible = true;
                     this.clearForm();
-                    this.$store.commit('hub/saveWithdrawFromGate', tx);
                 })
                 .catch((error) => {
                     console.log(error);
