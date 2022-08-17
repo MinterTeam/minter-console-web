@@ -3,7 +3,6 @@
     import {IMaskDirective} from 'vue-imask';
 
     export default {
-        ideFix: null,
         imaskAmount: {
             mask: Number,
             scale: 18, // digits after point, 0 for integers
@@ -26,6 +25,9 @@
                 type: [String, Number],
             },
         },
+        emits: [
+            'input',
+        ],
         data() {
             return {
                 // inner value set by imask
@@ -41,7 +43,7 @@
             imaskOptions() {
                 return {
                     ...this.$options.imaskAmount,
-                    scale: this.scale || this.$options.imaskAmount.scale,
+                    scale: this.scale ?? this.$options.imaskAmount.scale,
                 };
             },
         },
@@ -75,5 +77,5 @@
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" inputmode="decimal" v-imask="imaskOptions" v-on="listeners" @accept="onAcceptInput" ref="input"/>
+    <input type="text" autocapitalize="off" inputmode="decimal" v-imask="imaskOptions" v-on="listeners" @accept="onAcceptInput($event)" ref="input"/>
 </template>

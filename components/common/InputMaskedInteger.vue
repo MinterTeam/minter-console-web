@@ -1,69 +1,34 @@
 <script>
-    import 'core-js/features/global-this.js';
-    import {IMaskDirective} from 'vue-imask';
+import InputMaskedAmount from '~/components/common/InputMaskedAmount.vue';
 
-    export default {
-        ideFix: null,
-        imaskAmount: {
-            mask: Number,
-            scale: 0, // digits after point, 0 for integers
-            signed: false,  // disallow negative
-            thousandsSeparator: '',  // any single char
-            padFractionalZeros: false,  // if true, then pads zeros at end to the length of scale
-            normalizeZeros: false, // appends or removes zeros at ends
-            radix: '.',  // fractional delimiter
-            mapToRadix: [','],  // symbols to process as radix
+export default {
+    components: {
+        InputMaskedAmount,
+    },
+    props: {
+        value: {
+            type: [String, Number],
+            default: '',
         },
-        directives: {
-            imask: IMaskDirective,
+    },
+    computed: {
+        // pass native events
+        inputListeners: function() {
+            let listeners = Object.assign({}, this.$listeners);
+            // input event fires separately
+            delete listeners.input;
+            return listeners;
         },
-        props: {
-            value: {
-                type: [String, Number],
-                default: '',
-            },
-        },
-        data() {
-            return {
-                // inner value set by imask
-                maskedValue: '',
-            };
-        },
-        computed: {
-            // pass native events
-            inputListeners: function() {
-                let listeners = Object.assign({}, this.$listeners);
-                // input event fires separately
-                delete listeners.input;
-                return listeners;
-            },
-        },
-        watch: {
-            value(newVal) {
-                // typed value has to be updated if prop value changed programmatically
-                if (newVal !== this.maskedValue) {
-                    this.updateMaskState(newVal);
-                }
-            },
-        },
-        mounted() {
-            this.updateMaskState(this.value);
-        },
-        methods: {
-            updateMaskState(value) {
-                this.$refs.input.maskRef.typedValue = value;
-                const maskedValue = this.$refs.input.maskRef._value;
-                const cursorPos = maskedValue.length;
-                this.$refs.input.maskRef._selection = {start: cursorPos, end: cursorPos};
-            },
-            onAcceptInput(e) {
-                this.maskedValue = e.detail._unmaskedValue;
-                this.$emit('input', e.detail._unmaskedValue);
-            },
-        },
-    };
+    },
+};
 </script>
 
 <template>
-    <input type="text" autocapitalize="off" inputmode="numeric" v-imask="$options.imaskAmount" v-on="inputListeners" @accept="onAcceptInput" ref="input"/>
+    <InputMaskedAmount
+        inputmode="numeric"
+        :value="value"
+        :scale="0"
+        v-on="inputListeners"
+        @input="$emit('input', $event)"
+    />
 </template>

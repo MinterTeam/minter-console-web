@@ -112,7 +112,7 @@
                     <InputMaskedInteger
                         class="form-field__input" v-check-empty
                         v-model="form.dueBlock"
-                        @blur="$v.form.dueBlock.$touch()"
+                        @blur="$v.form.dueBlock.$touch(); $emit('my-blur')"
                     />
                     <span class="form-field__label">{{ $td('Due block', 'form.lock-due-block') }}</span>
                 </label>
