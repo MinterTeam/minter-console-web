@@ -1,5 +1,5 @@
-import {ROUTES} from '~/test/variables';
-import {login, logout, txSubmit} from '~/test/utils';
+import {ROUTES} from '~/test/variables.js';
+import {login, logout, txSubmit, wait} from '~/test/utils.js';
 
 /** @type Browser */
 let browser;
@@ -26,6 +26,9 @@ describe('convert page', () => {
     beforeAll(async () => {
         await page.goto(ROUTES.private.convert);
         await page.waitForSelector('[data-test-id="convertSellInputSellCoin"]');
+    });
+    beforeEach(async () => {
+        await wait(500);
     });
 
     test('sell coins', async () => {

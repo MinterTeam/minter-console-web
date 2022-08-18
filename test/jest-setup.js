@@ -31,6 +31,7 @@ const initNuxt = async () => {
     }
     config.dev = false;
     config.ssr = false;
+    config.modern = false;
     nuxt = new Nuxt(config);
     await nuxt.ready();
     if (!process.env.NUXT_SKIP_SELF_BUILD) {
