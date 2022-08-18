@@ -258,6 +258,13 @@ object-assign
 /*! js-cookie v3.0.1 | MIT */
 
 
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
  *
