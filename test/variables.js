@@ -1,6 +1,9 @@
 export const HOST_NAME = 'localhost';
 export const PORT = 4000;
 
+export const DEFAULT_TEST_TIMEOUT = 60000;
+export const DEFAULT_SELECTOR_TIMEOUT = 15000;
+
 export const APP_URL_BASE = `http://${HOST_NAME}:${PORT}`;
 export const ROUTES = {
     public: {

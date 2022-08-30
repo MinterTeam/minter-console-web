@@ -109,8 +109,8 @@
         validations() {
             const form = {
                 gasCoin: {
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                    fee: () => this.$store.getters.isOfflineMode ? true : !this.fee.error,
+                    minLength: (value) => this.isShowGasCoin && !this.$store.getters.isOfflineMode ? minLength(3)(value) : true,
+                    fee: () => this.isShowGasCoin && !this.$store.getters.isOfflineMode ? !this.fee.error : true,
                 },
                 payload: {
                     // considers unicode bytes @see https://stackoverflow.com/a/42684638/4936667

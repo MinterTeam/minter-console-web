@@ -41,7 +41,9 @@ export async function login(page) {
 export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModal} = {}) {
     try {
         await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
-        await wait();
+        // button state can blink (because of extra estimation loading), so double check
+        await wait(500);
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
 
         // submit (opens modal)
         await page.click(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]`);
@@ -95,7 +97,7 @@ export function wait(time = 100) {
 }
 
 /**
- *
+ * Ensure absence of element by selector
  * @param {Page} page
  * @param {string} selector
  * @param [options]
