@@ -1,8 +1,8 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required.js';
-    import minLength from 'vuelidate/lib/validators/minLength.js';
-    import maxLength from 'vuelidate/lib/validators/maxLength.js';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
     import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty';
 

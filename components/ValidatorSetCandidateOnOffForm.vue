@@ -1,6 +1,6 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util/src/public";
     import TxForm from '~/components/common/TxForm.vue';

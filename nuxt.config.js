@@ -244,6 +244,7 @@ export default {
             'vue-autonumeric/src',
             'vue-async-computed/src',
             'vue-simple-suggest/lib',
+            'vuelidate/src',
             'nuxt-i18n/src',
             'qr-scanner',
             'query-string',

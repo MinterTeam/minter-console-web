@@ -3,10 +3,10 @@
     import QrcodeVue from 'qrcode.vue';
     import { nanoid } from 'nanoid/non-secure';
     import InlineSvg from 'vue-inline-svg';
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
     import issueCheck from 'minter-js-sdk/src/check';
     import {prepareLink} from 'minter-js-sdk/src/link';
     import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';

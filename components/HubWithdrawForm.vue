@@ -1,26 +1,26 @@
 <script>
 import Big from '~/assets/big.js';
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import minValue from 'vuelidate/lib/validators/minValue.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import minValue from 'vuelidate/src/validators/minValue.js';
+import maxValue from 'vuelidate/src/validators/maxValue.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
 import autosize from 'v-autosize';
 import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getOracleFee} from '@/api/hub.js';
+import {getOracleFee} from '~/api/hub.js';
 import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import {getAvailableSelectedBalance} from '~/components/common/FieldUseMax.vue';
 import useFee from '~/composables/use-fee.js';
-import useHubDiscount from '@/composables/use-hub-discount.js';
-import FieldQr from '@/components/common/FieldQr.vue';
+import useHubDiscount from '~/composables/use-hub-discount.js';
+import FieldQr from '~/components/common/FieldQr.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
-import FieldCoin from '@/components/common/FieldCoin.vue';
+import FieldCoin from '~/components/common/FieldCoin.vue';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 

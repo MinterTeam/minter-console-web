@@ -1,7 +1,7 @@
 import parseISO from "date-fns/esm/parseISO";
 import format from "date-fns/esm/format";
 import formatDistanceStrict from "date-fns/esm/formatDistanceStrict";
-import withParams from 'vuelidate/lib/withParams.js';
+import withParams from 'vuelidate/src/withParams.js';
 import decode from 'entity-decode';
 import prettyNum, {PRECISION_SETTING, ROUNDING_MODE} from 'pretty-num';
 import stripZeros from 'pretty-num/src/strip-zeros';

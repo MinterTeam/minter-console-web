@@ -1,12 +1,12 @@
 <script>
 import debounce from 'debounce-promise';
 import {AsyncComputedMixin} from 'vue-async-computed/src/index.js';
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
-import maxLength from 'vuelidate/lib/validators/maxLength.js';
-import minValue from 'vuelidate/lib/validators/minValue.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
+import maxLength from 'vuelidate/src/validators/maxLength.js';
+import minValue from 'vuelidate/src/validators/minValue.js';
+import maxValue from 'vuelidate/src/validators/maxValue.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {getPool, getSwapCoinList} from '@/api/explorer.js';
 import Big, {COMPUTATION_PRECISION, VISIBLE_PRECISION} from '~/assets/big.js';

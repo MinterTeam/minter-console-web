@@ -1,6 +1,6 @@
 <script>
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import focusElement from '~/assets/focus-element.js';

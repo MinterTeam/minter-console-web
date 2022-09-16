@@ -6,7 +6,7 @@ import {getChainIdByHubNetwork} from '~/api/web3.js';
 import Big from '~/assets/big.js';
 import {getExplorerTxUrl, getEvmTxUrl, getTimeDistance, getTimeStamp as getTime, shortHashFilter, pretty, isHubTransferFinished} from '~/assets/utils.js';
 import {HUB_CHAIN_DATA, HUB_TRANSFER_STATUS as WITHDRAW_STATUS} from '~/assets/variables.js';
-import Loader from '@/components/common/Loader.vue';
+import Loader from '~/components/common/Loader.vue';
 
 
 

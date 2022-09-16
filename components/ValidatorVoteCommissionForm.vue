@@ -1,9 +1,9 @@
 <script>
 import JSON5 from 'json5';
 import camelcaseKeys from 'camelcase-keys';
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {isValidPublic, convertFromPip} from "minterjs-util";
 import autosize from 'v-autosize';

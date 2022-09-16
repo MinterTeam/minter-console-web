@@ -1,6 +1,6 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
     import FileInput from 'v-file-input/src/FileInput';
     import {postAutoDelegationTxList} from '~/api/auto-delegation.js';
     import autosize from 'v-autosize';

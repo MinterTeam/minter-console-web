@@ -1,7 +1,7 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required.js';
-    import minLength from 'vuelidate/lib/validators/minLength.js';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
     import autosize from 'v-autosize';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util/src/public.js";
