@@ -12,15 +12,17 @@ import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, APP_BASE_URL, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 
 const NUXT_LOADING_INLINE_SCRIPT_SHA = [
-        // loader (minified)
-        'yX/iyX7D+2AX+qF0YUk4EXLqu5fIbl/NS5QXjj9BX4M=',
-        // loader (not minified)
-        '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
-        // module (minified)
-        'neJJRT9ngKMnTX+uFtBNIwqppbcLV8fQlLvXZM64z04=',
-        // window.___NUXT___
-        'uMkuBZ4FQVVBqzs6NHOoGr/1vOLA1h9acPURz3E39HA=',
-    ];
+    // loader (minified)
+    'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=',
+    // loader (not minified)
+    '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
+    // module (minified)
+    'yX/iyX7D+2AX+qF0YUk4EXLqu5fIbl/NS5QXjj9BX4M=',
+    // window.___NUXT___ (prod)
+    'YvYJ5WVzt8kOVVuSB9YcyVJLN4a6HcbOgQpzrg0BLUI=',
+    // window.___NUXT___ (dev)
+    'uMkuBZ4FQVVBqzs6NHOoGr/1vOLA1h9acPURz3E39HA=',
+];
 
 
 /**
