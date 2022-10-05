@@ -169,6 +169,8 @@ export default {
             }
         },
         getShouldShortenLabel() {
+            return true;
+            /* eslint-disable-next-line no-unreachable */
             if (this.stakeItemType === STAKE_TYPE_VALIDATOR) {
                 return process.client && window.innerWidth < 1280;
             }
@@ -298,6 +300,7 @@ function makeSortQueue(fnArray) {
                                         </button>
                     -->
                     </th>
+                    <th>Fee</th>
                     <th class="table__cell-waitlist"><!-- Waitlist--></th>
                     <th>
                         Coins
@@ -350,10 +353,11 @@ function makeSortQueue(fnArray) {
                                                 <div class="u-hidden-medium-up" v-else>{{ stakeGroup.stakeList[0].coin }} {{ $options.pretty(stakeGroup.stakeList[0].value) }}</div>
                         -->
                         </td>
+                        <td class="u-hidden-medium-down">{{ stakeGroup.stakeList[0].validator.commission }}%</td>
                         <!-- waitlist-->
                         <td class="table__cell-waitlist">
                             <span
-                                class="u-emoji u-hidden-medium-down"
+                                class="u-emoji"
                                 :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
                                 title="Stake is dropped to wait list, top up or unbond it"
                                 v-if="isGroupHasWaitlisted(stakeGroup)"
@@ -426,14 +430,8 @@ function makeSortQueue(fnArray) {
                             </div>
                             <div v-else>{{ stakeGroup.stakeList[0].coin.symbol }} {{ $options.pretty(stakeGroup.stakeList[0].value) }}</div>
                         </td>
-                        <td class="table__cell-waitlist">
-                            <span
-                                class="u-emoji"
-                                :class="{'u-visually-hidden': isExpandedList[stakeGroup.hash]}"
-                                title="Stake is dropped to wait list, top up or unbond it"
-                                v-if="isGroupHasWaitlisted(stakeGroup)"
-                            >⚠️</span>
-                        </td>
+                        <!-- waitlist -->
+                        <td class="table__cell-waitlist"></td>
                         <!-- controls placeholder -->
                         <td></td>
                     </tr>
@@ -443,6 +441,8 @@ function makeSortQueue(fnArray) {
                             <!-- copy -->
                             <td class="table__controls-cell table__controls-cell--copy"></td>
                             <!-- hash -->
+                            <td class="u-hidden-medium-down"></td>
+                            <!-- fee -->
                             <td class="u-hidden-medium-down"></td>
                             <!-- waitlist-->
                             <td class="u-hidden-medium-down table__cell-waitlist">
@@ -486,8 +486,8 @@ function makeSortQueue(fnArray) {
                 <tr>
                     <!-- hash (colspan copy) -->
                     <td colspan="2">Total</td>
-                    <!-- placeholder for waitlist and coin-->
-                    <td colspan="2" class="u-hidden-medium-down"></td>
+                    <!-- placeholder for fee, waitlist, and coin-->
+                    <td colspan="3" class="u-hidden-medium-down"></td>
                     <!-- amount (colspan controls)-->
                     <td colspan="2">{{ $options.pretty(totalStake) }} {{ $store.getters.COIN_NAME }}</td>
                 </tr>
