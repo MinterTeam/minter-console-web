@@ -4,9 +4,9 @@ import {TinyEmitter as Emitter} from 'tiny-emitter';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
 import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
-import {getCoinList} from '@/api/explorer.js';
+import {getCoinList} from '~/api/explorer.js';
 import Big from '~/assets/big.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET, BASE_COIN} from "~/assets/variables.js";
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET, BASE_COIN, HUB_CHAIN_BY_ID, HUB_CHAIN_DATA} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
 
@@ -146,6 +146,7 @@ export function getVerifiedMinterCoinList() {
 }
 
 /**
+ * Prices of tokens in $
  * @return {Promise<Array<HubPriceItem>>}
  */
 export function getOraclePriceList() {
@@ -328,6 +329,24 @@ export function getGasPriceGwei(priceList) {
     }
 
     return NETWORK === MAINNET ? gasPriceGwei : new Big(gasPriceGwei).times(10).toNumber();
+}
+
+/**
+ *
+ * @param {Array<HubCoinItem>} hubCoinList
+ * @param {string} tokenSymbol
+ * @param {number} chainId
+ * @return {TokenInfo.AsObject}
+ */
+export function findTokenInfo(hubCoinList, tokenSymbol, chainId) {
+    const coinItem = hubCoinList.find((item) => item.symbol === tokenSymbol);
+    return coinItem?.[HUB_CHAIN_BY_ID[chainId]?.hubChainId];
+}
+
+export function findNativeCoinSymbol(hubCoinList, network) {
+    const contractAddress = HUB_CHAIN_DATA[network].wrappedNativeContractAddress.toLowerCase();
+    const coinItem = hubCoinList.find((item) => item[network]?.externalTokenId.toLowerCase() === contractAddress);
+    return coinItem?.symbol;
 }
 
 function wait(time) {

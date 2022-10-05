@@ -160,12 +160,14 @@ export default {
     buildModules: [
         setVueAliasesModule,
     ],
-    modern: 'client',
+    modern: process.env.NODE_ENV === 'development' ? false : 'client',
     /*
     ** Build configuration
     */
     build: {
         extractCSS: true,
+        // optimizeCSS: false,
+        postcss: false,
         optimization: {
             // minimize: false,
             // splitChunks: {
