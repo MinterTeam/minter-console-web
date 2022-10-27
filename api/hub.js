@@ -16,7 +16,7 @@ const instance = axios.create({
 });
 addToCamelInterceptor(instance);
 
-const fastCache = new Cache({maxAge: 5 * 1000});
+const fastCache = new Cache({ttl: 5 * 1000, max: 100});
 
 /**
  * Withdraw tx fee in dollars
@@ -91,7 +91,7 @@ function getUniversalSymbol(hubCoin) {
 
 
 // 1 min cache
-const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
+const coinsCache = new Cache({ttl: 1 * 60 * 1000, max: 100});
 
 /**
  * @return {Promise<TokenInfo.AsObject[]>}
@@ -194,7 +194,7 @@ export function getTransferStatus(inputTxHash) {
 
 
 // 1 day
-const persistentCache = new Cache({maxAge: 24 * 60 * 60 * 1000});
+const persistentCache = new Cache({ttl: 24 * 60 * 60 * 1000, max: 100});
 
 /**
  * @param {string} inputTxHash
