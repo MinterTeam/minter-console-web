@@ -16,6 +16,7 @@ spec:
                 port:
                   number: {{ .Values.service.port }}
             path: /
+            pathType: ImplementationSpecific
   tls:
     - hosts:
         - "{{ .Values.ingress.domain }}"
