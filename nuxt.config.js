@@ -10,19 +10,23 @@ envConfigParsed.APP_BASE_URL = process.env.APP_BASE_URL;
 import langEn from './lang/en';
 import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, APP_BASE_URL, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
+import * as varsConfig from "./assets/variables.js";
 
-const NUXT_LOADING_INLINE_SCRIPT_SHA = [
-    // loader (minified)
-    'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=',
-    // loader (not minified)
-    '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
-    // module (minified)
-    'yX/iyX7D+2AX+qF0YUk4EXLqu5fIbl/NS5QXjj9BX4M=',
-    // window.___NUXT___ (prod)
-    'YvYJ5WVzt8kOVVuSB9YcyVJLN4a6HcbOgQpzrg0BLUI=',
-    // window.___NUXT___ (dev)
-    'uMkuBZ4FQVVBqzs6NHOoGr/1vOLA1h9acPURz3E39HA=',
-];
+const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production'
+    ? [
+        // loader (minified)
+        'tempUn1btibnrWwQxEk37lMGV1Nf8FO/GXxNhLEsPdg=',
+        // module (minified)
+        'yX/iyX7D+2AX+qF0YUk4EXLqu5fIbl/NS5QXjj9BX4M=',
+        // window.___NUXT___ (prod)
+        'YvYJ5WVzt8kOVVuSB9YcyVJLN4a6HcbOgQpzrg0BLUI=',
+    ]
+    : [
+        // loader (not minified)
+        '9VDmhXS8/iybLLyD3tql7v7NU5hn5+qvu9RRG41mugM=',
+        // window.___NUXT___ (dev)
+        'uMkuBZ4FQVVBqzs6NHOoGr/1vOLA1h9acPURz3E39HA=',
+    ];
 
 
 /**
@@ -33,7 +37,7 @@ const NUXT_LOADING_INLINE_SCRIPT_SHA = [
 function prepareCSP(env, keyFilter) {
     // make array of filtered URLs
     const filteredKeys = Object.keys(env).filter(keyFilter);
-    const filtered = filteredKeys.map((key) => env[key]);
+    const filtered = filteredKeys.map((key) => env[key]).filter((item) => typeof item === 'string');
 
     const parsed = filtered.map((item) => {
         // remove path, remove query
@@ -55,10 +59,10 @@ function prepareCSP(env, keyFilter) {
     return parsedUnique.join(' ');
 }
 
-const connectCSP = prepareCSP(envConfigParsed, (item) => {
+const connectCSP = prepareCSP(varsConfig, (item) => {
     return item.indexOf('API_URL') >= 0 || item.indexOf('RTM_URL') >= 0 || item.indexOf('API_HOST') >= 0;
 });
-const imageCSP = prepareCSP(envConfigParsed, (item) => {
+const imageCSP = prepareCSP(varsConfig, (item) => {
     return item === 'APP_ACCOUNTS_API_URL';
 });
 const scriptCSP = NUXT_LOADING_INLINE_SCRIPT_SHA.map((item) => {
@@ -76,14 +80,16 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy', content: `
+            { 'http-equiv': 'Content-Security-Policy-Report-Only', content: `
                     default-src 'self' ${connectCSP};
                     script-src 'self' ${scriptCSP};
                     style-src 'self' 'unsafe-inline';
-                    img-src 'self' ${imageCSP} data:;
+                    img-src 'self' ${imageCSP} *.minter.network data:;
                     font-src 'self' data:;
                     base-uri 'none';
                     form-action 'none';
+                    report-uri https://csp-report-collector.minter.network https://1ba68dd21788a2dfc5522a62c6674f25.report-uri.com/r/d/csp/reportOnly;
+                    report-to default;
                 `,
             },
             { hid: 'description', name: 'description', content: BASE_DESCRIPTION },
