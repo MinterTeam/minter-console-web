@@ -1,8 +1,8 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {LOCK_STAKE_PERIOD} from '~/assets/variables.js';
     import {prettyRound} from "~/assets/utils";

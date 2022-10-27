@@ -1,7 +1,7 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minValue from 'vuelidate/lib/validators/minValue';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minValue from 'vuelidate/src/validators/minValue.js';
     import {isValidPublic} from "minterjs-util/src/public";
     import prepareSignedTx from 'minter-js-sdk/src/tx';
     import {privateToAddressString, toBuffer, TX_TYPE} from 'minterjs-util';

@@ -1,12 +1,12 @@
 <script>
     import {mapGetters} from 'vuex';
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minValue from 'vuelidate/lib/validators/minValue';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import maxValue from 'vuelidate/lib/validators/maxValue';
-    import integer from 'vuelidate/lib/validators/integer.js';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minValue from 'vuelidate/src/validators/minValue.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
+    import maxValue from 'vuelidate/src/validators/maxValue.js';
+    import integer from 'vuelidate/src/validators/integer.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util";
     import autosize from 'v-autosize';

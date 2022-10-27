@@ -1,25 +1,26 @@
 <script>
 import Big from '~/assets/big.js';
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import minValue from 'vuelidate/src/validators/minValue.js';
+import maxValue from 'vuelidate/src/validators/maxValue.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
 import autosize from 'v-autosize';
 import {FEE_PRECISION_SETTING} from 'minter-js-sdk/src/api/estimate-tx-commission.js';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertToPip} from 'minterjs-util/src/converter.js';
 import {postTx} from '~/api/gate.js';
-import {getOracleFee} from '@/api/hub.js';
+import {getOracleFee} from '~/api/hub.js';
 import {getExplorerTxUrl, pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {getErrorText} from '~/assets/server-error.js';
 import {getAvailableSelectedBalance} from '~/components/common/FieldUseMax.vue';
 import useFee from '~/composables/use-fee.js';
-import useHubDiscount from '@/composables/use-hub-discount.js';
-import FieldQr from '@/components/common/FieldQr.vue';
+import useHubDiscount from '~/composables/use-hub-discount.js';
+import FieldQr from '~/components/common/FieldQr.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
-import FieldCoin from '@/components/common/FieldCoin.vue';
+import FieldCoin from '~/components/common/FieldCoin.vue';
 import Loader from '~/components/common/Loader.vue';
 import Modal from '~/components/common/Modal.vue';
 
@@ -139,9 +140,11 @@ export default {
             const inverseRate = new Big(this.hubFeeRate).div(new Big(1).minus(this.hubFeeRate));
             return amount.times(inverseRate).toString();
         },
+        /*
         totalFee() {
             return new Big(this.coinFee).plus(this.hubFee).toString();
         },
+        */
         amountToSend() {
             return new Big(this.form.amount || 0).plus(this.coinFee).plus(this.hubFee).toString();
         },
@@ -169,6 +172,9 @@ export default {
             } else {
                 return maxAmount.toString();
             }
+        },
+        minAmount() {
+            return getHubMinAmount(this.coinFee, this.hubFeeRate);
         },
         suggestionList() {
             return this.hubCoinList
@@ -224,7 +230,7 @@ export default {
                 amount: {
                     required,
                     // validAmount: isValidAmount,
-                    minValue: (value) => value > 0,
+                    minValue: minValue(this.minAmount),
                     maxValue: maxValue(this.maxAmount || 0),
                 },
             },
@@ -375,6 +381,48 @@ export default {
         },
     },
 };
+
+/**
+ * // Minter Hub not consider discount in amount validation, so we need compensate amount for discount difference
+ * @param {number|string} destinationNetworkFee
+ * @param {number|string} hubFeeRate
+ * @param {number|string} hubFeeBaseRate - hub fee rate without discount (0.01)
+ * @return {number|string}
+ */
+function getHubMinAmount(destinationNetworkFee, hubFeeRate, hubFeeBaseRate = 0.01) {
+    // minAmount = hubFeeBase - hubFee
+    // But while form.amount increase hubFee increase too, so we need to find such formAmount which will be equal minAmount, it will be maximum minAmount
+
+    // Some 7 grade math below
+    // hubFeeBase = (destinationNetworkFee + formAmount) * (0.01 / (1 - 0.01));
+    // hubFee = (destinationNetworkFee + formAmount) * (hubFeeRate / (1 - hubFeeRate))
+    // define (a = hubFeeBaseRate; b = hubFeeRate)
+    // minAmount = (destinationNetworkFee + formAmount) * (a / (1 - a)) - (destinationNetworkFee + formAmount) * (b / (1 - b))
+    // minAmount = (destinationNetworkFee + formAmount) * ((a / (1 - a) - (b / (1 - b));
+    // minAmount = (destinationNetworkFee + formAmount) * x;
+
+    // Let's calculate factor x
+    // x = a / (1 - a) - b / (1 - b)
+    // x = a * (1-b) / ((1-a)*(1-b)) - b * (1-a) / ((1-a)*(1-b))
+    // x = (a * (1-b) - b * (1-a)) / ((1-a)*(1-b))
+    // x = (a - ab - b + ab) / ((1-a)*(1-b))
+    // x = (a - b) / ((1-a)*(1-b))
+    // const factor = (hubFeeBaseRate - hubFeeRate) / ((1 - hubFeeBaseRate) * (1 - hubFeeRate));
+    const factor = new Big(hubFeeBaseRate).minus(hubFeeRate).div(new Big(1).minus(hubFeeBaseRate).times(new Big(1).minus(hubFeeRate))).toString();
+
+    // We are finding formAmount equal to minAmount (fa = formAmount, dnf = destinationNetworkFee)
+    // fa = minAmount
+    // fa = (fa + dnf) * x
+    // fa = fa * x + dnf * x
+    // fa - fa * x = dnf * x
+    // fa * 1 - fa * x = dnf * x
+    // fa * (1 -x) = dnf * x
+    // fa = dnf * x / (1 - x)
+    // const minAmount = destinationNetworkFee * factor / (1 - factor);
+    const minAmount = new Big(destinationNetworkFee).times(factor).div(new Big(1).minus(factor)).toString();
+    // add 1 pip because 0 will not pass validation too
+    return new Big(minAmount).plus(1e-18).toString();
+}
 </script>
 
 <template>
@@ -426,7 +474,7 @@ export default {
                         :max-value="maxAmount"
                     />
                     <span class="form-field__error" v-if="$v.form.amount.$dirty && !$v.form.amount.required">{{ $td('Enter amount', 'form.amount-error-required') }}</span>
-                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td('Invalid amount', 'form.amount-error-invalid') }}</span>
+                    <span class="form-field__error" v-else-if="$v.form.amount.$dirty && (!$v.form.amount.minValue)">{{ $td(`Minimum ${minAmount}`, 'form.amount-error-min', {min: minAmount}) }}</span>
                     <span class="form-field__error" v-else-if="$v.form.amount.$dirty && !$v.form.amount.maxValue">{{ $td('Not enough', 'form.amount-error-not-enough') }} {{ form.coin }} ({{ $td('max.', 'hub.max') }} {{ pretty(maxAmount) }})</span>
                 </div>
                 <div class="u-cell u-cell--large--1-2 u-cell--large-down--order-minus">

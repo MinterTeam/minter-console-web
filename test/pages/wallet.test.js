@@ -1,5 +1,5 @@
-import {ROUTES, USER_MNEMONIC} from '~/test/variables';
-import {login, logout, txSubmit} from '~/test/utils';
+import {ROUTES, USER_MNEMONIC} from '~/test/variables.js';
+import {login, logout, txSubmit, wait} from '~/test/utils.js';
 
 /** @type Browser */
 let browser;
@@ -31,6 +31,8 @@ describe('wallet page', () => {
     });
 
     test('has address, has balance', async () => {
+        // wait request fetch balance
+        await wait(1500);
         let balance = await page.$eval('[data-test-id="walletBalanceValue"]', (el) => el.textContent);
         balance = balance.replace(/[^0-9.]/g, '');
         console.log({address, balance});

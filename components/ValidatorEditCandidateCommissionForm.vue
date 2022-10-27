@@ -1,7 +1,7 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required.js';
-    import between from 'vuelidate/lib/validators/between.js';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import between from 'vuelidate/src/validators/between.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidPublic} from "minterjs-util";
     import checkEmpty from '~/assets/v-check-empty.js';

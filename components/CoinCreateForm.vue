@@ -1,11 +1,11 @@
 <script>
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import minValue from 'vuelidate/lib/validators/minValue.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
-import maxLength from 'vuelidate/lib/validators/maxLength.js';
-import withParams from 'vuelidate/lib/withParams.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import minValue from 'vuelidate/src/validators/minValue.js';
+import maxValue from 'vuelidate/src/validators/maxValue.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
+import maxLength from 'vuelidate/src/validators/maxLength.js';
+import withParams from 'vuelidate/src/withParams.js';
 import {COIN_MIN_MAX_SUPPLY, COIN_MAX_MAX_SUPPLY} from "minterjs-util/src/variables.js";
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {sellCoin} from 'minterjs-util/src/coin-math';

@@ -4,9 +4,9 @@ import {TinyEmitter as Emitter} from 'tiny-emitter';
 import stripZeros from 'pretty-num/src/strip-zeros.js';
 import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
 import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
-import {getCoinList} from '@/api/explorer.js';
+import {getCoinList} from '~/api/explorer.js';
 import Big from '~/assets/big.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET, BASE_COIN} from "~/assets/variables.js";
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET, BASE_COIN, HUB_CHAIN_BY_ID, HUB_CHAIN_DATA} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
 
@@ -16,7 +16,7 @@ const instance = axios.create({
 });
 addToCamelInterceptor(instance);
 
-const fastCache = new Cache({maxAge: 5 * 1000});
+const fastCache = new Cache({ttl: 5 * 1000, max: 100});
 
 /**
  * Withdraw tx fee in dollars
@@ -91,7 +91,7 @@ function getUniversalSymbol(hubCoin) {
 
 
 // 1 min cache
-const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
+const coinsCache = new Cache({ttl: 1 * 60 * 1000, max: 100});
 
 /**
  * @return {Promise<TokenInfo.AsObject[]>}
@@ -146,6 +146,7 @@ export function getVerifiedMinterCoinList() {
 }
 
 /**
+ * Prices of tokens in $
  * @return {Promise<Array<HubPriceItem>>}
  */
 export function getOraclePriceList() {
@@ -193,7 +194,7 @@ export function getTransferStatus(inputTxHash) {
 
 
 // 1 day
-const persistentCache = new Cache({maxAge: 24 * 60 * 60 * 1000});
+const persistentCache = new Cache({ttl: 24 * 60 * 60 * 1000, max: 100});
 
 /**
  * @param {string} inputTxHash
@@ -328,6 +329,24 @@ export function getGasPriceGwei(priceList) {
     }
 
     return NETWORK === MAINNET ? gasPriceGwei : new Big(gasPriceGwei).times(10).toNumber();
+}
+
+/**
+ *
+ * @param {Array<HubCoinItem>} hubCoinList
+ * @param {string} tokenSymbol
+ * @param {number} chainId
+ * @return {TokenInfo.AsObject}
+ */
+export function findTokenInfo(hubCoinList, tokenSymbol, chainId) {
+    const coinItem = hubCoinList.find((item) => item.symbol === tokenSymbol);
+    return coinItem?.[HUB_CHAIN_BY_ID[chainId]?.hubChainId];
+}
+
+export function findNativeCoinSymbol(hubCoinList, network) {
+    const contractAddress = HUB_CHAIN_DATA[network].wrappedNativeContractAddress.toLowerCase();
+    const coinItem = hubCoinList.find((item) => item[network]?.externalTokenId.toLowerCase() === contractAddress);
+    return coinItem?.symbol;
 }
 
 function wait(time) {

@@ -1,10 +1,10 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import minValue from 'vuelidate/lib/validators/minValue.js';
-    import maxValue from 'vuelidate/lib/validators/maxValue.js';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
+    import minValue from 'vuelidate/src/validators/minValue.js';
+    import maxValue from 'vuelidate/src/validators/maxValue.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {estimateCoinBuy} from '~/api/gate';
     import {getSwapCoinList} from '@/api/explorer.js';

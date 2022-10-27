@@ -1,14 +1,20 @@
 import Vue from 'vue';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import {TX_TYPE, normalizeTxType} from 'minterjs-util/src/tx-types.js';
-import {getAddressTransactionList} from '@/api/explorer.js';
+import {getAddressTransactionList} from '~/api/explorer.js';
 import {HUB_MINTER_MULTISIG_ADDRESS, HUB_CHAIN_ID} from '~/assets/variables.js';
 import {fromBase64} from '~/assets/utils.js';
 
+const WITHDRAW_LIST_LENGTH = 5;
+const DEPOSIT_LIST_LENGTH = 5;
+
 export const state = () => ({
+    /* Withdraw list */
     // minterList fetched on every load
     /** @type {Object.<string, HubWithdraw>} */
     minterList: {},
+
+    /* Deposit state */
     ethAddress: '',
     chainId: 0,
     selectedAccountType: '',
@@ -24,6 +30,7 @@ export const getters = {
 };
 
 export const mutations = {
+    /* Withdraw methods */
     setWithdrawList(state, txList) {
         txList.forEach((tx) => {
             mutations.saveWithdraw(state, tx);
@@ -64,6 +71,8 @@ export const mutations = {
             ...(bridgeFee ? {bridgeFee} : {}),
         });
     },
+
+    /* Deposit methods */
     setEthAddress(state, address) {
         state.ethAddress = address.toLowerCase();
     },
@@ -105,8 +114,8 @@ export const mutations = {
             });
         }
         // preserve list length
-        if (depositList.length > 5) {
-            depositList = depositList.slice(0, 5);
+        if (depositList.length > DEPOSIT_LIST_LENGTH) {
+            depositList = depositList.slice(0, DEPOSIT_LIST_LENGTH);
         }
         Vue.set(state.ethList, ethAddress, depositList);
     },
@@ -132,7 +141,7 @@ export const actions = {
                     return isSendToHubType && payload?.fee;
                 });
 
-                commit('setWithdrawList', txList.slice(0, 5));
+                commit('setWithdrawList', txList.slice(0, WITHDRAW_LIST_LENGTH));
             });
     },
 };

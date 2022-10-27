@@ -1,9 +1,9 @@
 <script>
     // Uni8Array.fill needed for wallet
     // import 'core-js/modules/es6.typed.uint8-array';
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import withParams from 'vuelidate/lib/withParams';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import withParams from 'vuelidate/src/withParams.js';
     import autosize from 'v-autosize';
     import {isValidMnemonic} from 'minterjs-wallet';
     import checkEmpty from '~/assets/v-check-empty';

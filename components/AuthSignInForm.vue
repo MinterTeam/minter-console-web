@@ -1,9 +1,9 @@
 <script>
     /*
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
     import {login} from "~/api/index";
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
     import checkEmpty from '~/assets/v-check-empty';

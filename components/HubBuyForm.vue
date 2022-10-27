@@ -1,11 +1,11 @@
 <script>
 import axios from 'axios';
 import QrcodeVue from 'qrcode.vue';
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
-import withParams from 'vuelidate/lib/withParams.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import maxValue from 'vuelidate/src/validators/maxValue.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
+import withParams from 'vuelidate/src/withParams.js';
 import { ChainId, Token, WETH as WETH_TOKEN_DATA, Fetcher, Route, Trade, TokenAmount, TradeType } from '@uniswap/sdk';
 import IUniswapV2Router from '@uniswap/v2-periphery/build/IUniswapV2Router02.json';
 import {CloudflareProvider, JsonRpcProvider} from '@ethersproject/providers';
@@ -14,8 +14,8 @@ import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import web3, {fromErcDecimals, subscribeTransaction, toErcDecimals} from '~/api/web3.js';
 import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hub.js';
-import {getTransaction} from '@/api/explorer.js';
-import {estimateCoinSell, postTx} from '@/api/gate.js';
+import {getTransaction} from '~/api/explorer.js';
+import {estimateCoinSell, postTx} from '~/api/gate.js';
 import Big from '~/assets/big.js';
 import {pretty, prettyPrecise, prettyRound, prettyExact, getExplorerTxUrl} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
@@ -25,14 +25,14 @@ import debounce from '~/assets/lodash5-debounce.js';
 import {HUB_ETHEREUM_CONTRACT_ADDRESS, NETWORK, MAINNET, ETHEREUM_CHAIN_ID, ETHEREUM_API_URL, HUB_TRANSFER_STATUS, SWAP_TYPE, HUB_BUY_STAGE as LOADING_STAGE, WETH_CONTRACT_ADDRESS} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
-import BaseAmount from '@/components/common/BaseAmount.vue';
+import BaseAmount from '~/components/common/BaseAmount.vue';
 import Loader from '~/components/common/Loader.vue';
-import Modal from '@/components/common/Modal.vue';
+import Modal from '~/components/common/Modal.vue';
 import ButtonCopyIcon from '~/components/common/ButtonCopyIcon.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
-import FieldCoin from '@/components/common/FieldCoin.vue';
-import HubBuyTxListItem from '@/components/HubBuyTxListItem.vue';
-import HubBuySpeedup from '@/components/HubBuySpeedup.vue';
+import FieldCoin from '~/components/common/FieldCoin.vue';
+import HubBuyTxListItem from '~/components/HubBuyTxListItem.vue';
+import HubBuySpeedup from '~/components/HubBuySpeedup.vue';
 
 
 const uniswapV2Abi = IUniswapV2Router.abi;

@@ -1,10 +1,10 @@
 <script>
     import QrcodeVue from 'qrcode.vue';
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minValue from 'vuelidate/lib/validators/minValue';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minValue from 'vuelidate/src/validators/minValue.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
     import autosize from 'v-autosize';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
@@ -109,8 +109,8 @@
         validations() {
             const form = {
                 gasCoin: {
-                    minLength: this.$store.getters.isOfflineMode ? () => true : minLength(3),
-                    fee: () => this.$store.getters.isOfflineMode ? true : !this.fee.error,
+                    minLength: (value) => this.isShowGasCoin && !this.$store.getters.isOfflineMode ? minLength(3)(value) : true,
+                    fee: () => this.isShowGasCoin && !this.$store.getters.isOfflineMode ? !this.fee.error : true,
                 },
                 payload: {
                     // considers unicode bytes @see https://stackoverflow.com/a/42684638/4936667

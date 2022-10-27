@@ -1,8 +1,8 @@
 <script>
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
     import autosize from 'v-autosize';
     import checkEmpty from '~/assets/v-check-empty.js';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
@@ -112,7 +112,7 @@
                     <InputMaskedInteger
                         class="form-field__input" v-check-empty
                         v-model="form.dueBlock"
-                        @blur="$v.form.dueBlock.$touch()"
+                        @blur="$v.form.dueBlock.$touch(); $emit('my-blur')"
                     />
                     <span class="form-field__label">{{ $td('Due block', 'form.lock-due-block') }}</span>
                 </label>

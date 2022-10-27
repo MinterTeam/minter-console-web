@@ -10,7 +10,7 @@ const instance = axios.create({
 addToCamelInterceptor(instance);
 
 // 10 min cache
-const coinsCache = new Cache({maxAge: 10 * 60 * 1000});
+const coinsCache = new Cache({ttl: 10 * 60 * 1000, max: 100});
 /**
  * @return {Promise<Object.<number, string|null>>}
  */

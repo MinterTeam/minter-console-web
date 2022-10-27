@@ -1,4 +1,4 @@
-import withParams from 'vuelidate/lib/withParams';
+import withParams from 'vuelidate/src/withParams.js';
 
 
 /**

@@ -1,9 +1,9 @@
 <script>
-import {validationMixin} from 'vuelidate';
-import required from 'vuelidate/lib/validators/required.js';
-import maxValue from 'vuelidate/lib/validators/maxValue.js';
-import minLength from 'vuelidate/lib/validators/minLength.js';
-import withParams from 'vuelidate/lib/withParams.js';
+import {validationMixin} from 'vuelidate/src/index.js';
+import required from 'vuelidate/src/validators/required.js';
+import maxValue from 'vuelidate/src/validators/maxValue.js';
+import minLength from 'vuelidate/src/validators/minLength.js';
+import withParams from 'vuelidate/src/withParams.js';
 import QrcodeVue from 'qrcode.vue';
 import autosize from 'v-autosize';
 import web3, {getTokenDecimals, getEvmNetworkName, fromErcDecimals, toErcDecimals, getHubNetworkByChain} from '~/api/web3.js';
@@ -15,13 +15,13 @@ import wethAbi from '~/assets/abi-weth.js';
 import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
-import useHubDiscount from '@/composables/use-hub-discount.js';
+import useHubDiscount from '~/composables/use-hub-discount.js';
 import Loader from '~/components/common/Loader.vue';
 import TxListItem from '~/components/HubDepositTxListItem.vue';
 import Account from '~/components/HubDepositAccount.vue';
 import FieldUseMax from '~/components/common/FieldUseMax';
-import FieldQr from '@/components/common/FieldQr.vue';
-import FieldCoin from '@/components/common/FieldCoin.vue';
+import FieldQr from '~/components/common/FieldQr.vue';
+import FieldCoin from '~/components/common/FieldCoin.vue';
 
 const PROMISE_FINISHED = 'finished';
 const PROMISE_REJECTED = 'rejected';

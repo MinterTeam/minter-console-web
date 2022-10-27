@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: lts/*
           cache: 'npm'
-          
+
       - run: cp .env.test .env
 
       - run: npm ci
@@ -29,9 +29,9 @@ jobs:
 
       - name: Test
         run: npm run test
-        
+
       - name: Upload failed tests
-        if: ${{ failure() }}
+        if: failure() && github.event_name == 'pull_request'
         uses: edunad/actions-image@v1.0.1
         with:
           path: './tmp/test-failed/*.jpg'

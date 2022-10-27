@@ -75,7 +75,7 @@ const explorer = instance;
  * @property {number} transactionsPerSecond - tps
  */
 
-const statusCache = new Cache({maxAge: 5 * 1000});
+const statusCache = new Cache({ttl: 5 * 1000, max: 100});
 
 /**
  * @return {Promise<Status>}
@@ -362,7 +362,7 @@ export function getValidatorMetaList() {
 
 
 // 1 min cache
-const coinsCache = new Cache({maxAge: 1 * 60 * 1000});
+const coinsCache = new Cache({ttl: 1 * 60 * 1000, max: 100});
 
 /**
  * @param {boolean} [skipMeta]
@@ -461,7 +461,7 @@ export function getSwapCoinList(coin, depth) {
 }
 
 
-const poolCache = new Cache({maxAge: 10 * 1000});
+const poolCache = new Cache({ttl: 10 * 1000, max: 100});
 
 /**
  * @typedef {Object} PoolListInfo

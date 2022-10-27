@@ -6,9 +6,7 @@ import {ROUTES, USER_MNEMONIC} from '~/test/variables';
  * @return {Promise<void>}
  */
 export async function logout(page) {
-    await new Promise((resolve) => {
-        setTimeout(resolve, 100);
-    });
+    await wait(100);
     await page.waitForSelector('[data-test-id="headerLogoutButton"]');
     await page.click('[data-test-id="headerLogoutButton"]');
     await page.waitForSelector('[data-test-id="authSection"]');
@@ -43,7 +41,9 @@ export async function login(page) {
 export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModal} = {}) {
     try {
         await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
-        await wait();
+        // button state can blink (because of extra estimation loading), so double check
+        await wait(500);
+        await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]:not(.is-disabled)`);
 
         // submit (opens modal)
         await page.click(`[data-test-id="${formTestId}"] [data-test-id="txSubmitButton"]`);
@@ -61,6 +61,8 @@ export async function txSubmit(page, formTestId, {shouldFailPost, shouldFailModa
         if (!shouldFailPost) {
             // wait for success modal
             await page.waitForSelector(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
+            // wait to allow click tx link
+            await wait(1000);
             // close modal
             await page.click(`[data-test-id="${formTestId}"] [data-test-id="txModalSuccessClose"]`);
         } else if (shouldFailPost === 'estimation') {
@@ -95,7 +97,7 @@ export function wait(time = 100) {
 }
 
 /**
- *
+ * Ensure absence of element by selector
  * @param {Page} page
  * @param {string} selector
  * @param [options]

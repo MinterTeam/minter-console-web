@@ -1,11 +1,11 @@
 <script>
 /*
-    import {validationMixin} from 'vuelidate';
-    import required from 'vuelidate/lib/validators/required';
-    import minLength from 'vuelidate/lib/validators/minLength';
-    import maxLength from 'vuelidate/lib/validators/maxLength';
-    import email from 'vuelidate/lib/validators/email';
-    import sameAs from 'vuelidate/lib/validators/sameAs';
+    import {validationMixin} from 'vuelidate/src/index.js';
+    import required from 'vuelidate/src/validators/required.js';
+    import minLength from 'vuelidate/src/validators/minLength.js';
+    import maxLength from 'vuelidate/src/validators/maxLength.js';
+    import email from 'vuelidate/src/validators/email.js';
+    import sameAs from 'vuelidate/src/validators/sameAs.js';
     import {register} from '~/api/index';
     import checkEmpty from '~/assets/v-check-empty';
     import {getServerValidator, fillServerErrors, getErrorText} from "~/assets/server-error";
