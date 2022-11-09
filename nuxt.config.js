@@ -80,15 +80,16 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy-Report-Only', content: `
+            // unsafe-eval polluted by 'setimmediate' package
+            { 'http-equiv': 'Content-Security-Policy', content: `
                     default-src 'self' ${connectCSP};
-                    script-src 'self' ${scriptCSP};
+                    script-src 'self' ${scriptCSP} 'unsafe-eval';
                     style-src 'self' 'unsafe-inline';
                     img-src 'self' ${imageCSP} *.minter.network data:;
                     font-src 'self' data:;
                     base-uri 'none';
                     form-action 'none';
-                    report-uri https://csp-report-collector.minter.network https://1ba68dd21788a2dfc5522a62c6674f25.report-uri.com/r/d/csp/reportOnly;
+                    report-uri https://csp-report-collector.minter.network https://1ba68dd21788a2dfc5522a62c6674f25.report-uri.com/r/d/csp/enforce;
                     report-to default;
                 `,
             },
