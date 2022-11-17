@@ -401,7 +401,7 @@ export default {
         'gas-price-error-min': 'Минимум 1',
         'gas-limit': 'Лимит газа',
         'message': 'Сообщение',
-        'message-error-max': 'Максимум 10000 байт',
+        'message-error-max': 'Максимум {max} байт, текущий размер: {length}',
         'message-error-contains-seed': 'Сообщение содержит seed-фразу',
         'message-help': 'Сообщение к транзакции. Произвольный набор символов. Обратите внимание, что информация, находящаяся здесь, будет видна всем участникам&nbsp;сети.',
         'help-default': 'По-умолчанию:',

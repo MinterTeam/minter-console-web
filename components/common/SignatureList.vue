@@ -4,6 +4,7 @@
     import minLength from 'vuelidate/src/validators/minLength.js';
     import maxLength from 'vuelidate/src/validators/maxLength.js';
     import autosize from 'v-autosize';
+    import {MULTISIG_SIGNATURE_MAX_COUNT} from 'minterjs-util/src/variables.js';
     import checkEmpty from '~/assets/v-check-empty';
 
 
@@ -32,7 +33,7 @@
             return {
                 list: {
                     minLength: minLength(1),
-                    maxLength: maxLength(32),
+                    maxLength: maxLength(MULTISIG_SIGNATURE_MAX_COUNT),
                     $each: {
                         signature: {
                             required,

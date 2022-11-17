@@ -7,6 +7,7 @@
     import maxLength from 'vuelidate/src/validators/maxLength.js';
     import autosize from 'v-autosize';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
+    import {PAYLOAD_MAX_LENGTH} from 'minterjs-util/src/tx-types.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
@@ -26,6 +27,7 @@
     import SignatureList from '~/components/common/SignatureList.vue';
 
     export default {
+        PAYLOAD_MAX_LENGTH,
         components: {
             QrcodeVue,
             // BaseAmount,
@@ -114,7 +116,7 @@
                 },
                 payload: {
                     // considers unicode bytes @see https://stackoverflow.com/a/42684638/4936667
-                    maxLength: (value) => this.payloadLength <= 10000,
+                    maxLength: (value) => this.payloadLength <= PAYLOAD_MAX_LENGTH,
                     isNotMnemonic: (value) => !isValidMnemonic(value),
                 },
                 multisigAddress: {
@@ -488,7 +490,7 @@
                             >
                             <span class="form-field__label">{{ $td('Message', 'form.message') }}</span>
                         </label>
-                        <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td(`Max 10000 symbols, given ${payloadLength}`, 'form.message-error-max') }}</span>
+                        <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.maxLength">{{ $td(`Max ${$options.PAYLOAD_MAX_LENGTH} symbols, given ${payloadLength}`, 'form.message-error-max', {max: $options.PAYLOAD_MAX_LENGTH, length: payloadLength}) }}</span>
                         <span class="form-field__error" v-if="$v.form.payload.$dirty && !$v.form.payload.isNotMnemonic" data-test-id="payloadIsMnemonicErrorMessage">{{ $td('Message contains seed phrase', 'form.message-error-contains-seed') }}</span>
                         <div class="form-field__help">{{ $td('Any additional information about the transaction. Please&nbsp;note it will be stored on the blockchain and visible to&nbsp;anyone.', 'form.message-help') }}</div>
                     </div>
