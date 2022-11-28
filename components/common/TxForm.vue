@@ -7,7 +7,7 @@
     import maxLength from 'vuelidate/src/validators/maxLength.js';
     import autosize from 'v-autosize';
     import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
-    import {PAYLOAD_MAX_LENGTH} from 'minterjs-util/src/tx-types.js';
+    import {PAYLOAD_MAX_LENGTH} from 'minterjs-util/src/variables.js';
     import {isValidAddress} from "minterjs-util/src/prefix";
     import {isValidMnemonic} from 'minterjs-wallet';
     import {prepareTx, makeSignature} from 'minter-js-sdk/src/tx';
