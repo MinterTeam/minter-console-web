@@ -1,33 +1,4 @@
 /*!
- * @overview es6-promise - a tiny implementation of Promises/A+.
- * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
- * @license   Licensed under MIT license
- *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
- * @version   v4.2.8+1e68dce6
- */
-
-/*!
- * v2.1.4-104-gc868b3a
- * 
- */
-
-/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
-
-/*! https://mths.be/punycode v1.4.1 by @mathias */
-
-/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
-
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.5.7
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2016
- * @license MIT
- */
-
-
-/*!
 	autosize 4.0.4
 	license: MIT
 	http://www.jacklmoore.com/autosize
@@ -41,14 +12,34 @@
  * MIT License.
  */
 
-/**
- * [js-sha3]{@link https://github.com/emn178/js-sha3}
- *
- * @version 0.8.0
- * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2015-2018
+
+/*!
+  * vue-router v3.5.4
+  * (c) 2022 Evan You
+  * @license MIT
+  */
+
+/*!
+ * Vue.js v2.6.14
+ * (c) 2014-2021 Evan You
+ * Released under the MIT License.
+ */
+
+/*!
+ * cookie
+ * Copyright(c) 2012-2014 Roman Shtylman
+ * Copyright(c) 2015 Douglas Christopher Wilson
+ * MIT Licensed
+ */
+
+/*!
+ * vuex v3.6.2
+ * (c) 2021 Evan You
  * @license MIT
  */
+
+/*! js-cookie v3.0.1 | MIT */
+
 
 /**
  *               AutoNumeric.js
@@ -95,6 +86,44 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+
+/**
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ * @typedef {object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ */
+
+
+/*!
+ * @overview es6-promise - a tiny implementation of Promises/A+.
+ * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+ * @license   Licensed under MIT license
+ *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
+ * @version   v4.2.8+1e68dce6
+ */
+
+/*!
+ * v2.1.4-104-gc868b3a
+ * 
+ */
+
+/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
+
+/*! https://mths.be/punycode v1.4.1 by @mathias */
+
+/*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.5.7
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2016
+ * @license MIT
  */
 
 
@@ -221,42 +250,37 @@ object-assign
  */
 
 
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+
 /**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
- * @typedef {object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
- */
-
-
-/*!
-  * vue-router v3.5.4
-  * (c) 2022 Evan You
-  * @license MIT
-  */
-
-/*!
- * Vue.js v2.6.14
- * (c) 2014-2021 Evan You
- * Released under the MIT License.
- */
-
-/*!
- * cookie
- * Copyright(c) 2012-2014 Roman Shtylman
- * Copyright(c) 2015 Douglas Christopher Wilson
- * MIT Licensed
- */
-
-/*!
- * vuex v3.6.2
- * (c) 2021 Evan You
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.8.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2018
  * @license MIT
  */
 
-/*! js-cookie v3.0.1 | MIT */
 
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+
+/*!
+ * @overview es6-promise - a tiny implementation of Promises/A+.
+ * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+ * @license   Licensed under MIT license
+ *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
+ * @version   v4.2.8+1e68dce6
+ */
 
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
