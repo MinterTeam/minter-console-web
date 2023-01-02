@@ -57,7 +57,7 @@
     "entity-decode": "^2.0.2",
     "ethereumjs-util": "^7.1.5",
     "js-cookie": "^3.0.1",
-    "json5": "^2.2.1",
+    "json5": "^2.2.2",
     "localforage": "^1.10.0",
     "lodash-es": "^4.17.21",
     "minter-coin-block-list": "0.0.10",
