@@ -22,5 +22,7 @@ module.exports = {
       'gulp-imagemin',
       'imagemin-mozjpeg',
       'nanoid',
+      // broken
+      'nuxt-i18n-default',
   ],
 };

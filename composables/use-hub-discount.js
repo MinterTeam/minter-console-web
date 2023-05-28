@@ -1,4 +1,4 @@
-import { ref, reactive, computed, watch } from '@vue/composition-api';
+import { ref, reactive, computed, watch } from 'vue';
 import debounce from 'debounce-promise';
 import {getDiscountForHolder as _getDiscountForHolder} from '~/api/hub.js';
 

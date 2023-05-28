@@ -130,7 +130,7 @@ export default {
     },
     plugins: [
         { src: '~/plugins/base-url-prefix.js'},
-        { src: '~/plugins/composition-api.js'},
+        // { src: '~/plugins/composition-api.js'},
         { src: '~/plugins/persisted-state.js', ssr: false },
         { src: '~/plugins/online.js', ssr: false },
         { src: '~/plugins/click-blur.js', ssr: false },
