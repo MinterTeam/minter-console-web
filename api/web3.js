@@ -525,10 +525,14 @@ export function getEvmNetworkName(chainId) {
             return 'Rinkeby';
         case 42:
             return 'Kovan';
+        case 11155111:
+            return 'Sepolia';
         case 56:
             return 'BSC';
         case 97:
             return 'BSC Testnet';
+        case 9000:
+            return 'Megachain Testnet';
         default:
             return chainId.toString();
     }

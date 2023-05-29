@@ -2,7 +2,7 @@
 import eventBus from '~/assets/event-bus.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import {shortHashFilter, getEvmAddressUrl} from '~/assets/utils.js';
-import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_CHAIN_ID, HUB_CHAIN_DATA, HUB_CHAIN_BY_ID} from '~/assets/variables.js';
+import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MEGACHAIN_CHAIN_ID, HUB_NETWORK_SLUG, HUB_CHAIN_DATA, HUB_CHAIN_BY_ID} from '~/assets/variables.js';
 import {getEvmNetworkName, getHubNetworkByChain} from '@/api/web3.js';
 import HubDepositAccountWalletConnect from '~/components/HubDepositAccountWalletConnect.vue';
 import HubDepositAccountMetamask from '~/components/HubDepositAccountMetamask.vue';
@@ -18,7 +18,8 @@ export default {
     TYPE,
     ETHEREUM_CHAIN_ID,
     BSC_CHAIN_ID,
-    HUB_CHAIN_ID,
+    MEGACHAIN_CHAIN_ID,
+    HUB_NETWORK_SLUG,
     HUB_CHAIN_DATA,
     components: {
         HubDepositAccountWalletConnect,
@@ -50,7 +51,7 @@ export default {
     data() {
         const preferredChainId = this.preferredChainId || this.$store.state.hub.chainId;
         return {
-            selectedHubNetwork: HUB_CHAIN_BY_ID[preferredChainId]?.hubChainId || HUB_CHAIN_ID.BSC,
+            selectedHubNetwork: HUB_CHAIN_BY_ID[preferredChainId]?.hubChainId || HUB_NETWORK_SLUG.BSC,
             selectedAccountType: '',
             accountData: {
                 [TYPE.WALLETCONNECT]: {},
@@ -77,7 +78,7 @@ export default {
             return HUB_CHAIN_DATA[this.selectedHubNetwork]?.chainId;
         },
         unsupportedNetwork() {
-            return this.chainId !== ETHEREUM_CHAIN_ID && this.chainId !== BSC_CHAIN_ID;
+            return this.chainId !== ETHEREUM_CHAIN_ID && this.chainId !== BSC_CHAIN_ID && this.chainId !== MEGACHAIN_CHAIN_ID;
         },
     },
     watch: {
@@ -169,8 +170,9 @@ export default {
                 <div class="u-cell u-cell--small--1-2 u-cell--large--1-4">
                     <label class="form-field">
                         <select class="form-field__input form-field__input--select" v-model="selectedHubNetwork" v-check-empty>
-                            <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
-                            <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
+                            <option :value="$options.HUB_NETWORK_SLUG.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_NETWORK_SLUG.ETHEREUM].name }}</option>
+                            <option :value="$options.HUB_NETWORK_SLUG.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_NETWORK_SLUG.BSC].name }}</option>
+                            <option :value="$options.HUB_NETWORK_SLUG.MEGACHAIN">{{ $options.HUB_CHAIN_DATA[$options.HUB_NETWORK_SLUG.MEGACHAIN].name }}</option>
                         </select>
                         <span class="form-field__label">{{ $td('Select network', 'hub.select-network') }}</span>
                     </label>
@@ -223,8 +225,9 @@ export default {
                 <div class="u-cell u-cell--auto">
                     <label class="form-field">
                         <select class="form-field__input form-field__input--select" v-model="selectedHubNetwork" v-check-empty>
-                            <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
-                            <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
+                            <option :value="$options.HUB_NETWORK_SLUG.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_NETWORK_SLUG.ETHEREUM].name }}</option>
+                            <option :value="$options.HUB_NETWORK_SLUG.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_NETWORK_SLUG.BSC].name }}</option>
+                            <option :value="$options.HUB_NETWORK_SLUG.MEGACHAIN">{{ $options.HUB_CHAIN_DATA[$options.HUB_NETWORK_SLUG.MEGACHAIN].name }}</option>
                         </select>
                         <span class="form-field__label">{{ $td('Select network', 'hub.select-network') }}</span>
                     </label>
@@ -235,7 +238,7 @@ export default {
             </div>
 
             <div class="form__error u-mt-10" v-if="isConnected && unsupportedNetwork">
-                <div class="u-fw-700">{{ $td(`Network ${chainId} is not supported, switch to Ethereum or BSC`, 'hub.unsupported-network', {network: chainId}) }}</div>
+                <div class="u-fw-700">{{ $td(`Network ${chainId} is not supported, switch to Ethereum, BSC, or Megachain`, 'hub.unsupported-network', {network: chainId}) }}</div>
                 <p>{{ $td('Try reconnecting if current network is out of sync with selected network in your wallet', 'hub.is-not-connected') }}</p>
             </div>
 
