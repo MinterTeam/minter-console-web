@@ -945,7 +945,7 @@ function wait(time) {
 function _fetchUniswapPair(coinContractAddress, coinDecimals) {
     // const token = new Token(ETHEREUM_CHAIN_ID, '0xdbc941fec34e8965ebc4a25452ae7519d6bdfc4e', 6)
     const token = new Token(ETHEREUM_CHAIN_ID, coinContractAddress, coinDecimals);
-    const provider = NETWORK === MAINNET ? new CloudflareProvider('homestead') : new JsonRpcProvider(ETHEREUM_API_URL, 'ropsten');
+    const provider = NETWORK === MAINNET ? new CloudflareProvider('homestead') : new JsonRpcProvider(ETHEREUM_API_URL, 'sepolia');
 
     return Fetcher.fetchPairData(token, wethToken, provider)
         .then((pair) => {

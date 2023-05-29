@@ -1,10 +1,10 @@
-import { ref, computed } from '@vue/composition-api';
+import { ref, computed } from 'vue';
 import throttle from 'lodash-es/throttle.js';
 import {getTimeOffset} from '~/assets/axios-time-offset.js';
 import {getTimeDistance} from '~/assets/utils';
 import useNow from '~/composables/use-now.js';
 // ensure composition api is installed
-import '~/plugins/composition-api.js';
+// import '~/plugins/composition-api.js';
 
 
 // data

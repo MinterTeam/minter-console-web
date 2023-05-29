@@ -12,7 +12,7 @@ import {pretty, prettyPrecise, prettyRound} from '~/assets/utils.js';
 import erc20ABI from '~/assets/abi-erc20.js';
 import hubABI from '~/assets/abi-hub.js';
 import wethAbi from '~/assets/abi-weth.js';
-import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL} from '~/assets/variables.js';
+import {HUB_CHAIN_BY_ID, ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MEGACHAIN_CHAIN_ID, ETHEREUM_API_URL, BSC_API_URL, MEGACHAIN_API_URL} from '~/assets/variables.js';
 import {getErrorText} from '~/assets/server-error.js';
 import checkEmpty from '~/assets/v-check-empty.js';
 import useHubDiscount from '~/composables/use-hub-discount.js';
@@ -295,7 +295,7 @@ export default {
         },
         chainId: {
             handler(newVal) {
-                if (newVal === ETHEREUM_CHAIN_ID || newVal === BSC_CHAIN_ID) {
+                if (newVal === ETHEREUM_CHAIN_ID || newVal === BSC_CHAIN_ID || newVal === MEGACHAIN_CHAIN_ID) {
                     // @TODO store balances for each chainId
                     // - then no need to flush them
                     // - then no need to handle pending balance request for the wrong chain
@@ -309,6 +309,9 @@ export default {
                 }
                 if (this.chainId === BSC_CHAIN_ID) {
                     web3.eth.setProvider(BSC_API_URL);
+                }
+                if (this.chainId === MEGACHAIN_CHAIN_ID) {
+                    web3.eth.setProvider(MEGACHAIN_API_URL);
                 }
             },
             immediate: true,

@@ -482,6 +482,7 @@ function getHubMinAmount(destinationNetworkFee, hubFeeRate, hubFeeBaseRate = 0.0
                         <select class="form-field__input form-field__input--select" v-model="form.networkTo" v-check-empty>
                             <option :value="$options.HUB_CHAIN_ID.ETHEREUM">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.ETHEREUM].name }}</option>
                             <option :value="$options.HUB_CHAIN_ID.BSC">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.BSC].name }}</option>
+                            <option :value="$options.HUB_CHAIN_ID.MEGACHAIN">{{ $options.HUB_CHAIN_DATA[$options.HUB_CHAIN_ID.MEGACHAIN].name }}</option>
                         </select>
                         <span class="form-field__label">{{ $td('Destination network', 'hub.destination') }}</span>
                     </label>

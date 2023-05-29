@@ -6,7 +6,7 @@ import {isValidAddress as isValidMinterAddress} from 'minterjs-util';
 import {isValidAddress as isValidEthAddress} from 'ethereumjs-util';
 import {getCoinList} from '~/api/explorer.js';
 import Big from '~/assets/big.js';
-import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, NETWORK, MAINNET, BASE_COIN, HUB_CHAIN_BY_ID, HUB_CHAIN_DATA} from "~/assets/variables.js";
+import {HUB_API_URL, HUB_TRANSFER_STATUS, HUB_CHAIN_ID, HUB_NETWORK_SLUG, NETWORK, MAINNET, BASE_COIN, HUB_CHAIN_BY_ID, HUB_CHAIN_DATA} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
 import {isHubTransferFinished} from '~/assets/utils.js';
 
@@ -87,6 +87,8 @@ function getUniversalSymbol(hubCoin) {
     if (hubCoin[HUB_CHAIN_ID.BSC]) {
         return hubCoin.symbol.replace(/BSC$/, '');
     }
+
+    return hubCoin.symbol;
 }
 
 
@@ -128,8 +130,9 @@ function _getOracleCoinListGroupedByMinter() {
                     return {
                         minterId: Number(minterToken.externalTokenId),
                         ...minterToken,
-                        ethereum: findToken(minterToken.denom, HUB_CHAIN_ID.ETHEREUM),
-                        bsc: findToken(minterToken.denom, HUB_CHAIN_ID.BSC),
+                        [HUB_NETWORK_SLUG.ETHEREUM]: findToken(minterToken.denom, HUB_NETWORK_SLUG.ETHEREUM),
+                        [HUB_NETWORK_SLUG.BSC]: findToken(minterToken.denom, HUB_NETWORK_SLUG.BSC),
+                        [HUB_NETWORK_SLUG.MEGACHAIN]: findToken(minterToken.denom, HUB_NETWORK_SLUG.MEGACHAIN),
                     };
                 });
         });

@@ -33,8 +33,9 @@ const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production'
  * prepare CSP string from env config
  * @param {Object} env - env config
  * @param {Function} keyFilter
+ * @param {Array<string>} [extraValues]
  */
-function prepareCSP(env, keyFilter) {
+function prepareCSP(env, keyFilter, extraValues) {
     // make array of filtered URLs
     const filteredKeys = Object.keys(env).filter(keyFilter);
     const filtered = filteredKeys.map((key) => env[key]).filter((item) => typeof item === 'string');
@@ -50,7 +51,7 @@ function prepareCSP(env, keyFilter) {
         //     return topLevelDomain;
         // }
         return hostname;
-    });
+    }).concat(extraValues);
 
     const parsedUnique = parsed.filter((item, pos) => {
         return parsed.indexOf(item) === pos && parsed.indexOf('*.' + item) === -1;
@@ -61,10 +62,15 @@ function prepareCSP(env, keyFilter) {
 
 const connectCSP = prepareCSP(varsConfig, (item) => {
     return item.indexOf('API_URL') >= 0 || item.indexOf('RTM_URL') >= 0 || item.indexOf('API_HOST') >= 0;
-});
+}, [
+    'wss://*.bridge.walletconnect.org',
+    'https://registry.walletconnect.com',
+]);
 const imageCSP = prepareCSP(varsConfig, (item) => {
     return item === 'APP_ACCOUNTS_API_URL';
-});
+}, [
+    '*.minter.network',
+]);
 const scriptCSP = NUXT_LOADING_INLINE_SCRIPT_SHA.map((item) => {
     return `'sha256-${item}'`;
 }).join(' ');
@@ -80,15 +86,17 @@ export default {
         meta: [
             { charset: 'utf-8' },
             { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-            { 'http-equiv': 'Content-Security-Policy-Report-Only', content: `
+            // unsafe-eval polluted by 'setimmediate' package
+            { 'http-equiv': 'Content-Security-Policy', content: `
                     default-src 'self' ${connectCSP};
-                    script-src 'self' ${scriptCSP};
+                    script-src 'self' ${scriptCSP} 'unsafe-eval';
                     style-src 'self' 'unsafe-inline';
-                    img-src 'self' ${imageCSP} *.minter.network data:;
+                    img-src 'self' ${imageCSP} data:;
                     font-src 'self' data:;
                     base-uri 'none';
                     form-action 'none';
-                    report-uri https://csp-report-collector.minter.network https://1ba68dd21788a2dfc5522a62c6674f25.report-uri.com/r/d/csp/reportOnly;
+                    object-src 'none';
+                    report-uri https://csp-report-collector.minter.network https://1ba68dd21788a2dfc5522a62c6674f25.report-uri.com/r/d/csp/enforce;
                     report-to default;
                 `,
             },
@@ -122,7 +130,7 @@ export default {
     },
     plugins: [
         { src: '~/plugins/base-url-prefix.js'},
-        { src: '~/plugins/composition-api.js'},
+        // { src: '~/plugins/composition-api.js'},
         { src: '~/plugins/persisted-state.js', ssr: false },
         { src: '~/plugins/online.js', ssr: false },
         { src: '~/plugins/click-blur.js', ssr: false },

@@ -31,18 +31,23 @@ export const MNS_PUBLIC_KEY = process.env.APP_MNS_PUBLIC_KEY;
 export const CHAINIK_API_URL = 'https://chainik.io/json/';
 export const HUB_ETHEREUM_CONTRACT_ADDRESS = process.env.APP_HUB_ETHEREUM_CONTRACT_ADDRESS;
 export const HUB_BSC_CONTRACT_ADDRESS = process.env.APP_HUB_BSC_CONTRACT_ADDRESS;
+export const HUB_MEGACHAIN_CONTRACT_ADDRESS = process.env.APP_HUB_MEGACHAIN_CONTRACT_ADDRESS;
 export const HUB_MINTER_MULTISIG_ADDRESS = process.env.APP_HUB_MINTER_MULTISIG_ADDRESS;
 export const HUB_API_URL = process.env.APP_HUB_API_URL;
 export const ETHEREUM_API_URL = process.env.APP_ETHEREUM_API_URL;
 export const BSC_API_URL = process.env.APP_BSC_API_URL;
+export const MEGACHAIN_API_URL = process.env.APP_MEGACHAIN_API_URL;
 export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
 export const BSC_CHAIN_ID = NETWORK === MAINNET ? 56 : 97;
-export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-ropsten.etherscan.io/api/';
+export const MEGACHAIN_CHAIN_ID = NETWORK === MAINNET ? 0 : 9000;
+export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-sepolia.etherscan.io/api/';
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
-export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://ropsten.etherscan.io';
+export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://sepolia.etherscan.io';
 export const BSCSCAN_HOST = NETWORK === MAINNET ? 'https://bscscan.com' : 'https://testnet.bscscan.com';
-export const WETH_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0x0a180a76e4466bf68a7f86fb029bed3cccfaaac5';// '0xc778417e063141139fce010982780140aa0cd5ab';
-export const WBNB_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c' : '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd';
+export const MEGASCAN_HOST = NETWORK === MAINNET ? '' : 'https://scan.testnet.metagarden.io';
+export const WETH_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0x7b79995e5f793a07bc00c21412e50ecae098e7f9';// '0xc778417e063141139fce010982780140aa0cd5ab';
+export const WBNB_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c' : '0x2a416168cea12820e288d36f77c1b7f936f4e228'; // 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd
+export const WMEGANET_CONTRACT_ADDRESS = NETWORK === MAINNET ? 'todo' : '0x64e2d183A4Ba20D06fa6B76c991FfB8b5766b2FD';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';
 export const USERNAME_MIN_LENGTH = 5;
 export const USERNAME_MAX_LENGTH = 16;
@@ -84,11 +89,18 @@ export const SLIPPAGE_INPUT_TYPE = {
  * @readonly
  * @enum {string}
  */
-export const HUB_CHAIN_ID = {
+export const HUB_NETWORK_SLUG = {
     ETHEREUM: 'ethereum',
     BSC: 'bsc',
+    MEGACHAIN: 'metagarden',
     MINTER: 'minter',
 };
+
+/**
+ * @deprecated
+ * @type {typeof HUB_NETWORK_SLUG}
+ */
+export const HUB_CHAIN_ID = HUB_NETWORK_SLUG;
 
 /**
  * @typedef {{coinSymbol: string, name: string, shortName: string, chainId: number, hubChainId: HUB_CHAIN_ID, apiUrl: string, explorerHost: string, hubContractAddress: string, wrappedNativeContractAddress: string}} HubChainDataItem
@@ -99,27 +111,38 @@ export const HUB_CHAIN_ID = {
  * @type {{[HUB_CHAIN_ID]: HubChainDataItem}}}
  */
 export const HUB_CHAIN_DATA = {
-    [HUB_CHAIN_ID.ETHEREUM]: {
+    [HUB_NETWORK_SLUG.ETHEREUM]: {
         name: 'Ethereum',
         shortName: 'Ethereum',
         coinSymbol: 'ETH',
         chainId: ETHEREUM_CHAIN_ID,
-        hubChainId: HUB_CHAIN_ID.ETHEREUM,
+        hubChainId: HUB_NETWORK_SLUG.ETHEREUM,
         apiUrl: ETHEREUM_API_URL,
         explorerHost: ETHERSCAN_HOST,
         hubContractAddress: HUB_ETHEREUM_CONTRACT_ADDRESS.toLowerCase(),
         wrappedNativeContractAddress: WETH_CONTRACT_ADDRESS.toLowerCase(),
     },
-    [HUB_CHAIN_ID.BSC]: {
+    [HUB_NETWORK_SLUG.BSC]: {
         name: 'Binance Smart Chain',
         shortName: 'BSC',
         coinSymbol: 'BNB',
         chainId: BSC_CHAIN_ID,
-        hubChainId: HUB_CHAIN_ID.BSC,
+        hubChainId: HUB_NETWORK_SLUG.BSC,
         apiUrl: BSC_API_URL,
         explorerHost: BSCSCAN_HOST,
         hubContractAddress: HUB_BSC_CONTRACT_ADDRESS.toLowerCase(),
         wrappedNativeContractAddress: WBNB_CONTRACT_ADDRESS.toLowerCase(),
+    },
+    [HUB_NETWORK_SLUG.MEGACHAIN]: {
+        name: 'Metagarden Chain',
+        shortName: 'Megachain',
+        coinSymbol: 'MEGANET',
+        chainId: MEGACHAIN_CHAIN_ID,
+        hubChainId: HUB_NETWORK_SLUG.MEGACHAIN,
+        apiUrl: MEGACHAIN_API_URL,
+        explorerHost: MEGASCAN_HOST,
+        hubContractAddress: HUB_MEGACHAIN_CONTRACT_ADDRESS.toLowerCase(),
+        wrappedNativeContractAddress: WMEGANET_CONTRACT_ADDRESS.toLowerCase(),
     },
 };
 
