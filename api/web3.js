@@ -531,7 +531,7 @@ export function getEvmNetworkName(chainId) {
             return 'BSC';
         case 97:
             return 'BSC Testnet';
-        case 9000:
+        case 3333:
             return 'Megachain Testnet';
         default:
             return chainId.toString();

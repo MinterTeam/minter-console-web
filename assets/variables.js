@@ -39,7 +39,7 @@ export const BSC_API_URL = process.env.APP_BSC_API_URL;
 export const MEGACHAIN_API_URL = process.env.APP_MEGACHAIN_API_URL;
 export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
 export const BSC_CHAIN_ID = NETWORK === MAINNET ? 56 : 97;
-export const MEGACHAIN_CHAIN_ID = NETWORK === MAINNET ? 0 : 9000;
+export const MEGACHAIN_CHAIN_ID = NETWORK === MAINNET ? 0 : 3333;
 export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-sepolia.etherscan.io/api/';
 export const ETHERSCAN_API_KEY = 'I3VTWM2AX8BXS2ZX1FYRXINCWHQVVGEBJM';
 export const ETHERSCAN_HOST = NETWORK === MAINNET ? 'https://etherscan.io' : 'https://sepolia.etherscan.io';
@@ -47,7 +47,7 @@ export const BSCSCAN_HOST = NETWORK === MAINNET ? 'https://bscscan.com' : 'https
 export const MEGASCAN_HOST = NETWORK === MAINNET ? '' : 'https://scan.testnet.metagarden.io';
 export const WETH_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' : '0x7b79995e5f793a07bc00c21412e50ecae098e7f9';// '0xc778417e063141139fce010982780140aa0cd5ab';
 export const WBNB_CONTRACT_ADDRESS = NETWORK === MAINNET ? '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c' : '0x2a416168cea12820e288d36f77c1b7f936f4e228'; // 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd
-export const WMEGANET_CONTRACT_ADDRESS = NETWORK === MAINNET ? 'todo' : '0x64e2d183A4Ba20D06fa6B76c991FfB8b5766b2FD';
+export const WMEGANET_CONTRACT_ADDRESS = NETWORK === MAINNET ? 'todo' : '0xcD58EAAe6F88e21843c77D45AFD68914953e5aCC';
 export const LANGUAGE_COOKIE_KEY = 'minter-language';
 export const USERNAME_MIN_LENGTH = 5;
 export const USERNAME_MAX_LENGTH = 16;
