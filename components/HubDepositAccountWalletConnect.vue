@@ -42,7 +42,7 @@ export default {
     },
     mounted() {
         // init only if wallet was already connected
-        if (this.$store.state.hub.selectedAccountType !== 'walletconnect') {
+        if (this.$store.state.web3Account.selectedAccountType !== 'walletconnect') {
             return;
         }
         this.initConnector();
@@ -150,7 +150,7 @@ export default {
 </script>
 
 <template>
-    <button class="button" @click="connectEth">
+    <button type="button" class="button" @click="connectEth()">
         <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-walletconnect.svg`">
         <span>WalletConnect</span>
     </button>

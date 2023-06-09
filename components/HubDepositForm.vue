@@ -86,8 +86,8 @@ export default {
     },
     data() {
         return {
-            ethAddress: "",
-            chainId: Number(this.$route.query.chainId || 0),
+            // ethAddress: "",
+            // chainId: 0,
             balances: {},
             decimals: {},
             balanceRequest: null,
@@ -133,6 +133,12 @@ export default {
         };
     },
     computed: {
+        ethAddress() {
+            return this.$store.state.web3Account.ethAddress;
+        },
+        chainId() {
+            return this.$store.state.web3Account.chainId;
+        },
         isConnected() {
             return !!this.ethAddress;
         },
@@ -595,11 +601,11 @@ export default {
         },
         handleAccount(ethAddress) {
             // ethAddress = '0xf4bbd85fad8fbd28422f3a969196ab648e8ee888'
-            this.ethAddress = ethAddress;
+            // this.ethAddress = ethAddress;
             this.serverError = '';
         },
         handleChainId(chainId) {
-            this.chainId = chainId;
+            // this.chainId = chainId;
             this.serverError = '';
         },
     },
@@ -773,7 +779,7 @@ export default {
                 @update:network="handleChainId"
                 :hub-coin-list="hubCoinList"
                 :price-list="priceList"
-                :preferred-chain-id="chainId"
+                :preferred-chain-id="Number($route.query.chainId || 0)"
             />
             <portal-target name="account-minter-confirm-modal"/>
         </div>

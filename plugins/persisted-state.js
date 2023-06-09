@@ -22,8 +22,8 @@ export default ({store}) => {
     createPersistedState({
         paths: [
             'auth',
-            'hub.selectedAccountType',
-            'hub.chainId',
+            'web3Account.selectedAccountType',
+            'web3Account.chainId',
             // stored in indexedDB to handle large size data
             // 'hub.ethList',
         ],

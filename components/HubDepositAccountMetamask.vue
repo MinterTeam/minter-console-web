@@ -49,7 +49,7 @@ export default {
 
         this.isAvailable = true;
         // set account on page load if some was set previously
-        if (this.$store.state.hub.selectedAccountType === 'metamask') {
+        if (this.$store.state.web3Account.selectedAccountType === 'metamask') {
             window.ethereum.request({method: 'eth_accounts'})
                 .then((accounts) => {
                     console.log('eth_accounts', accounts);
@@ -199,7 +199,7 @@ export default {
 </script>
 
 <template>
-    <button class="button" @click="connectEth" v-if="isAvailable">
+    <button type="button" class="button" v-if="isAvailable" @click="connectEth()">
         <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-metamask.svg`">
         <span>Metamask</span>
     </button>
