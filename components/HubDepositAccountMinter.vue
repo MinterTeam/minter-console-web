@@ -1,6 +1,6 @@
 <script>
-import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE, HUB_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
-import web3, {getDepositTxInfo, getEvmNetworkName} from '~/api/web3.js';
+import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE, HUB_NETWORK_SLUG, HUB_CHAIN_DATA} from '~/assets/variables.js';
+import {getDepositTxInfo, getEvmNetworkName, getProviderByChain, web3Utils} from '~/api/web3.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import Modal from '@/components/common/Modal.vue';
 
@@ -49,10 +49,10 @@ export default {
         },
         selectedHubNetwork() {
             if (this.chainId === ETHEREUM_CHAIN_ID) {
-                return HUB_CHAIN_ID.ETHEREUM;
+                return HUB_NETWORK_SLUG.ETHEREUM;
             }
             if (this.chainId === BSC_CHAIN_ID) {
-                return HUB_CHAIN_ID.BSC;
+                return HUB_NETWORK_SLUG.BSC;
             }
             return undefined;
         },
@@ -83,7 +83,7 @@ export default {
     },
     mounted() {
         // set account on page load if some was set previously
-        if (this.$store.state.hub.selectedAccountType === 'minter') {
+        if (this.$store.state.web3Account.selectedAccountType === 'minter') {
             this.connectEth();
         }
     },
@@ -105,8 +105,9 @@ export default {
             this.$emit('update:address', ethAddress);
         },
         async sendTransaction(txParams) {
+            const web3Eth = getProviderByChain(this.chainId);
             let nonce = txParams.nonce;
-            nonce = (nonce || nonce === 0) ? nonce : await web3.eth.getTransactionCount(this.ethAddress, 'latest');
+            nonce = (nonce || nonce === 0) ? nonce : await web3Eth.getTransactionCount(this.ethAddress, 'latest');
             let gasLimit = await this.estimateTxGas(txParams);
             gasLimit = Math.ceil(gasLimit * 1.5);
             const gasPriceGwei = (this.gasPriceGwei || 1).toString();
@@ -115,23 +116,24 @@ export default {
                 value: txParams.value || "0x00",
                 data: txParams.data,
                 nonce,
-                gasPrice: web3.utils.toWei(gasPriceGwei, 'gwei'),
+                gasPrice: web3Utils.toWei(gasPriceGwei, 'gwei'),
                 gas: gasLimit,
                 chainId: this.chainId,
             };
 
             await this.showConfirmation(txParamsFinal, this.chainId);
             console.log('send', JSON.parse(JSON.stringify(txParamsFinal)));
-            const { rawTransaction } = await web3.eth.accounts.signTransaction(txParamsFinal, this.$store.getters.privateKey);
+            const { rawTransaction } = await web3Eth.accounts.signTransaction(txParamsFinal, this.$store.getters.privateKey);
 
             return new Promise((resolve, reject) => {
-                web3.eth.sendSignedTransaction(rawTransaction)
+                web3Eth.sendSignedTransaction(rawTransaction)
                     // resolve with hash
                     .on('transactionHash', resolve)
                     .on('error', reject);
             });
         },
         estimateTxGas({to, value, data}) {
+            const web3Eth = getProviderByChain(this.chainId);
             const txParams = {
                 from: this.ethAddress,
                 to,
@@ -140,7 +142,7 @@ export default {
             };
 
             //@TODO
-            return web3.eth.estimateGas(txParams);
+            return web3Eth.estimateGas(txParams);
         },
         async showConfirmation(txParams, chainId) {
             // cancel previous active confirmation, if exists
@@ -149,8 +151,8 @@ export default {
             this.confirmData.tx = txParams;
             this.confirmData.info = await getDepositTxInfo({...txParams, input: txParams.data}, chainId, this.hubCoinList);
             this.confirmData.computed = {
-                gasPriceGwei: web3.utils.fromWei(txParams.gasPrice, 'gwei'),
-                fee: txParams.gas * web3.utils.fromWei(txParams.gasPrice),
+                gasPriceGwei: web3Utils.fromWei(txParams.gasPrice, 'gwei'),
+                fee: txParams.gas * web3Utils.fromWei(txParams.gasPrice),
             };
             this.isConfirmModalVisible = true;
 
@@ -178,14 +180,14 @@ export default {
 
 <template>
     <div>
-        <button class="button" :class="classCustom" @click="connectEth">
+        <button type="button" class="button" :class="classCustom" @click="connectEth($event)">
             <!--        <img class="button__icon" alt="" role="presentation" :src="`${BASE_URL_PREFIX}/img/icon-metamask.svg`">-->
             <span>{{ $td('Console seed phrase', 'hub.console-seed-2') }}</span>
         </button>
 
         <portal to="account-minter-confirm-modal">
             <!-- Confirm Modal -->
-            <Modal v-bind:isOpen.sync="isConfirmModalVisible" @modal-close="cancelConfirmation()">
+            <Modal :isOpen.sync="isConfirmModalVisible" @modal-close="cancelConfirmation()">
                 <div class="panel u-text-left" v-if="confirmData.tx && confirmData.computed">
                     <div class="panel__header">
                         <h1 class="panel__header-title">

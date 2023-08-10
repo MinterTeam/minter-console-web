@@ -467,7 +467,7 @@ export function getExternalCoinList(hubCoinList, chainId) {
  * @param {number} chainId
  * @return {Eth}
  */
-function getProviderByChain(chainId) {
+export function getProviderByChain(chainId) {
     validateChainId(chainId);
     if (!chainId) {
         return web3Eth;

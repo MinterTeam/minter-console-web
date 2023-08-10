@@ -49,9 +49,9 @@ export default {
         },
     },
     data() {
-        const preferredChainId = this.preferredChainId || this.$store.state.hub.chainId;
+        const preferredChainId = this.preferredChainId || this.$store.state.web3Account.chainId;
         return {
-            selectedHubNetwork: HUB_CHAIN_BY_ID[preferredChainId]?.hubChainId || HUB_NETWORK_SLUG.BSC,
+            selectedHubNetwork: HUB_CHAIN_BY_ID[preferredChainId]?.hubNetworkSlug || HUB_NETWORK_SLUG.BSC,
             selectedAccountType: '',
             accountData: {
                 [TYPE.WALLETCONNECT]: {},
@@ -84,14 +84,14 @@ export default {
     watch: {
         ethAddress(newVal) {
             this.$emit('update:address', newVal);
-            this.$store.commit('hub/setEthAddress', newVal);
+            this.$store.commit('web3Account/setEthAddress', newVal);
         },
         chainId(newVal) {
             this.$emit('update:network', newVal);
-            this.$store.commit('hub/setChainId', newVal);
+            this.$store.commit('web3Account/setChainId', newVal);
         },
         selectedAccountType(newVal) {
-            this.$store.commit('hub/setSelectedAccountType', newVal);
+            this.$store.commit('web3Account/setSelectedAccountType', newVal);
         },
     },
     mounted() {

@@ -15,17 +15,14 @@ export const state = () => ({
     minterList: {},
 
     /* Deposit state */
-    ethAddress: '',
-    chainId: 0,
-    selectedAccountType: '',
-    // ethList stored in localStorage
+    // ethList stored in indexedDB
     /** @type {Object.<string, Array<HubDeposit>>} */
     ethList: {},
 });
 
 export const getters = {
-    depositList(state) {
-        return state.ethList[state.ethAddress] || [];
+    depositList(state, getters, rootState) {
+        return state.ethList[rootState.web3Account.ethAddress] || [];
     },
 };
 
@@ -73,15 +70,6 @@ export const mutations = {
     },
 
     /* Deposit methods */
-    setEthAddress(state, address) {
-        state.ethAddress = address.toLowerCase();
-    },
-    setChainId(state, chainId) {
-        state.chainId = Number(chainId) || 0;
-    },
-    setSelectedAccountType(state, type) {
-        state.selectedAccountType = type;
-    },
     saveDeposit(state, tx) {
         if (!tx.from) {
             console.warn('hub/saveDeposit: can\'t save because `tx.from` not specified');
@@ -178,8 +166,8 @@ export function pruneTxFields(tx) {
 }
 
 /**
- * @typedef {Object} HubWithdraw
- * @property {Object} tx - minter tx data
+ * @typedef {object} HubWithdraw
+ * @property {object} tx - minter tx data
  * @property {string} status - withdraw status
  * @property {string} outTxHash
  * @property {number|string} amount
@@ -193,4 +181,8 @@ export function pruneTxFields(tx) {
 
 /**
  * @typedef {{amount: string, tokenContract: string, tokenName: string, type: HUB_DEPOSIT_TX_PURPOSE}|{type: HUB_DEPOSIT_TX_PURPOSE}} HubDepositTxInfo
+ */
+
+/**
+ // * @typedef {import('~/api/web3.js').Web3Tx} Web3Tx
  */

@@ -63,13 +63,16 @@ function prepareCSP(env, keyFilter, extraValues) {
 const connectCSP = prepareCSP(varsConfig, (item) => {
     return item.indexOf('API_URL') >= 0 || item.indexOf('RTM_URL') >= 0 || item.indexOf('API_HOST') >= 0;
 }, [
-    'wss://*.bridge.walletconnect.org',
-    'https://registry.walletconnect.com',
+    'wss://relay.walletconnect.com',
+    'https://verify.walletconnect.com',
+    'https://explorer-api.walletconnect.com',
+    // 'https://registry.walletconnect.com',
 ]);
 const imageCSP = prepareCSP(varsConfig, (item) => {
     return item === 'APP_ACCOUNTS_API_URL';
 }, [
     '*.minter.network',
+    'https://explorer-api.walletconnect.com',
 ]);
 const scriptCSP = NUXT_LOADING_INLINE_SCRIPT_SHA.map((item) => {
     return `'sha256-${item}'`;
