@@ -12,6 +12,8 @@ import langRu from './lang/ru';
 import {BASE_TITLE, BASE_DESCRIPTION, APP_BASE_URL, I18N_ROUTE_NAME_SEPARATOR, LANGUAGE_COOKIE_KEY} from "./assets/variables";
 import * as varsConfig from "./assets/variables.js";
 
+console.log('envConfig', envConfig);
+
 const NUXT_LOADING_INLINE_SCRIPT_SHA = process.env.NODE_ENV === 'production'
     ? [
         // loader (minified)

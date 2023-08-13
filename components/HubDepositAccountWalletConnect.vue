@@ -1,11 +1,11 @@
 <script>
 import { EthereumProvider } from '@walletconnect/ethereum-provider';
-import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, HUB_CHAIN_DATA} from '~/assets/variables.js';
+// consumed by ethereum-provider
+import '@walletconnect/modal';
+import {HUB_CHAIN_DATA} from '~/assets/variables.js';
 import {web3Utils, getEvmNetworkName as getNetworkName} from '~/api/web3.js';
 
 export default {
-    ETHEREUM_CHAIN_ID,
-    BSC_CHAIN_ID,
     props: {
         // chainId is needed for trustwallet's walletconnect
         chainId: {
