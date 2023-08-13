@@ -13,10 +13,11 @@ import {ReplaceCoinSymbol, ReplaceCoinSymbolByPath, GetCoinId} from 'minter-js-s
 import GetCoinInfo from 'minter-js-sdk/src/api/get-coin-info.js';
 import GetCommissionPrice from 'minter-js-sdk/src/api/get-commission-price.js';
 import {GATE_API_URL, CHAIN_ID} from '~/assets/variables.js';
+import {getDefaultAdapter} from '~/assets/axios-default-adapter.js';
 import debounceAdapter from '~/assets/axios-debounce.js';
 import {getSwapEstimate as explorerGetSwapEstimate} from '~/api/explorer.js';
 
-const adapter = (($ = axios.defaults.adapter) => {
+const adapter = (($ = getDefaultAdapter()) => {
     $ = cacheAdapterEnhancer($, { enabledByDefault: false});
     $ = debounceAdapter($, {time: 500, leading: false});
     return $;

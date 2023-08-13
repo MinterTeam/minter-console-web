@@ -2,10 +2,11 @@ import axios from 'axios';
 import {cacheAdapterEnhancer, Cache} from 'axios-extensions';
 import {CHAINIK_API_URL, NETWORK, MAINNET} from "~/assets/variables.js";
 import addToCamelInterceptor from '~/assets/axios-to-camel.js';
+import {getDefaultAdapter} from '~/assets/axios-default-adapter.js';
 
 const instance = axios.create({
     baseURL: CHAINIK_API_URL,
-    adapter: cacheAdapterEnhancer(axios.defaults.adapter, { enabledByDefault: false}),
+    adapter: cacheAdapterEnhancer(getDefaultAdapter(), { enabledByDefault: false}),
 });
 addToCamelInterceptor(instance);
 

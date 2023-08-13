@@ -279,6 +279,7 @@ export default {
             '@walletconnect/',
             '@ethersproject/',
             'jsbi', // @uniswap/sdk
+            'axios-prevent-concurrency/src',
             'v-autosize/src',
             'v-file-input/src',
             'vue-inline-svg/src/',
