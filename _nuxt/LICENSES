@@ -44,6 +44,15 @@
 /*! https://mths.be/punycode v1.4.1 by @mathias */
 
 /**
+     * @license
+     * Lodash <https://lodash.com/>
+     * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+     * Released under MIT license <https://lodash.com/license>
+     * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+     * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+     */
+
+/**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
  *
  * @version 0.5.7
@@ -60,22 +69,6 @@
  * @copyright Chen, Yi-Cyuan 2015-2018
  * @license MIT
  */
-
-/**
-     * @license
-     * Lodash <https://lodash.com/>
-     * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
-     * Released under MIT license <https://lodash.com/license>
-     * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-     * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-     */
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-
 
 /**
  *               AutoNumeric.js
@@ -128,33 +121,11 @@
 
 
 /**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-/**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-/**
- * @license
- * Copyright 2021 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-/**
- * @license
- * Copyright 2022 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
+ * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
+ * @typedef {object} PostTxOptionsExtra
+ * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
+ * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
+ * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
  */
 
 
@@ -286,67 +257,54 @@ object-assign
 
 
 /**
- * @typedef {TxOptions & PostTxOptionsExtra} PostTxOptions
- * @typedef {object} PostTxOptionsExtra
- * @property {number} [gasRetryLimit=2] - max number of autofix retries after gas error
- * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
- * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
-
 
 /**
- *               AutoNumeric.js
- *
- * @version      4.9.0
- * @date         2023-05-17 UTC 20:45
- *
- * @authors      2016-2023 Alexandre Bonneau <alexandre.bonneau@linuxfr.eu>
- *               2009-2016 Bob Knothe <bob.knothe@gmail.com>
- * @contributors Sokolov Yura and others, cf. AUTHORS
- * @copyright    Alexandre Bonneau & Robert J. Knothe
- * @since        2009-08-09
- *
- * @summary      AutoNumeric is a standalone Javascript library
- *               that provides live *as-you-type* formatting for
- *               international numbers and currencies.
- *
- * @link         http://autonumeric.org
- * @docs         https://docs.autonumeric.org
- *
- *               Note : Some functions are borrowed from big.js
- * @see          https://github.com/MikeMcl/big.js/
- *
- * Please report any bugs to https://github.com/autoNumeric/autoNumeric
- *
- * @license      Released under the MIT License
- * @link         http://www.opensource.org/licenses/mit-license.php
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sub license, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
+/**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
 /*!
  * qrcode.vue v1.7.0
  * A Vue component to generate QRCode.
  * © 2017-2019 @scopewu(https://github.com/scopewu)
  * MIT License.
+ */
+
+
+/*!
+	autosize 4.0.4
+	license: MIT
+	http://www.jacklmoore.com/autosize
+*/
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.8.0
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2018
+ * @license MIT
  */
