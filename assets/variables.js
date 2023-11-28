@@ -37,7 +37,7 @@ export const HUB_API_URL = process.env.APP_HUB_API_URL;
 export const ETHEREUM_API_URL = process.env.APP_ETHEREUM_API_URL;
 export const BSC_API_URL = process.env.APP_BSC_API_URL;
 export const MEGACHAIN_API_URL = process.env.APP_MEGACHAIN_API_URL;
-export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 3;
+export const ETHEREUM_CHAIN_ID = NETWORK === MAINNET ? 1 : 11155111;
 export const BSC_CHAIN_ID = NETWORK === MAINNET ? 56 : 97;
 export const MEGACHAIN_CHAIN_ID = NETWORK === MAINNET ? 0 : 3333;
 export const ETHERSCAN_API_URL = NETWORK === MAINNET ? 'https://api.etherscan.io/api/' : 'https://api-sepolia.etherscan.io/api/';
