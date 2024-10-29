@@ -57,6 +57,7 @@ const adapter = (($ = getDefaultAdapter()) => {
 const instance = axios.create({
     baseURL: EXPLORER_API_URL,
     adapter,
+    timeout: 20000,
 });
 addToCamelInterceptor(instance);
 addTimeInterceptor(instance);
