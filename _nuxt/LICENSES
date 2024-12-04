@@ -1,4 +1,40 @@
 /*!
+ * @overview es6-promise - a tiny implementation of Promises/A+.
+ * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
+ * @license   Licensed under MIT license
+ *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
+ * @version   v4.2.8+1e68dce6
+ */
+
+/*!
+ * v2.1.4-104-gc868b3a
+ * 
+ */
+
+/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
+
+/*! https://mths.be/punycode v1.4.1 by @mathias */
+
+/**
+     * @license
+     * Lodash <https://lodash.com/>
+     * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+     * Released under MIT license <https://lodash.com/license>
+     * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+     * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+     */
+
+/**
+ * [js-sha3]{@link https://github.com/emn178/js-sha3}
+ *
+ * @version 0.5.7
+ * @author Chen, Yi-Cyuan [emn178@gmail.com]
+ * @copyright Chen, Yi-Cyuan 2015-2016
+ * @license MIT
+ */
+
+
+/*!
 	autosize 4.0.4
 	license: MIT
 	http://www.jacklmoore.com/autosize
@@ -34,14 +70,6 @@
  * @property {number} [nonceRetryLimit=0] - max number of autofix retries after nonce error
  * @preserve {number} [mempoolRetryLimit=0] - max number of retries after "already exists in mempool" error
  */
-
-
-/*!
-	autosize 4.0.4
-	license: MIT
-	http://www.jacklmoore.com/autosize
-*/
-
 
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
@@ -211,23 +239,6 @@ object-assign
  */
 
 
-/*!
- * @overview es6-promise - a tiny implementation of Promises/A+.
- * @copyright Copyright (c) 2014 Yehuda Katz, Tom Dale, Stefan Penner and contributors (Conversion to ES6 API by Jake Archibald)
- * @license   Licensed under MIT license
- *            See https://raw.githubusercontent.com/stefanpenner/es6-promise/master/LICENSE
- * @version   v4.2.8+1e68dce6
- */
-
-/*!
- * v2.1.4-104-gc868b3a
- * 
- */
-
-/*! crc32.js (C) 2014-present SheetJS -- http://sheetjs.com */
-
-/*! https://mths.be/punycode v1.4.1 by @mathias */
-
 /**
  * [js-sha3]{@link https://github.com/emn178/js-sha3}
  *
@@ -236,7 +247,6 @@ object-assign
  * @copyright Chen, Yi-Cyuan 2015-2016
  * @license MIT
  */
-
 
 /**
  *               AutoNumeric.js
@@ -286,15 +296,6 @@ object-assign
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
-/**
-     * @license
-     * Lodash <https://lodash.com/>
-     * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
-     * Released under MIT license <https://lodash.com/license>
-     * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-     * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-     */
 
 
 /*!
