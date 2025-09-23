@@ -320,16 +320,16 @@ export function subscribeTransfer(hash, timestamp) {
 
 /**
  * @param {Array<HubPriceItem>} priceList
+ * @param {HUB_NETWORK_SLUG} [network='eth']
  * @return {number}
  */
-export function getGasPriceGwei(priceList) {
-    //@TODO ETH/BNB
-    const priceItem = priceList.find((item) => item.name === 'eth/gas');
+export function getGasPriceGwei(priceList, network = 'eth') {
+    const priceItem = priceList.find((item) => item.name === `${network}/gas`);
     let gasPriceGwei;
     if (!priceItem) {
         gasPriceGwei = 100;
     } else {
-        gasPriceGwei = priceItem.value / 10 ** 18;
+        gasPriceGwei = priceItem.value / 10 ** 18 * 2;
     }
 
     return NETWORK === MAINNET ? gasPriceGwei : new Big(gasPriceGwei).times(10).toNumber();

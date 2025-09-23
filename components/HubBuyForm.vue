@@ -13,7 +13,7 @@ import autosize from 'v-autosize';
 import {TX_TYPE} from 'minterjs-util/src/tx-types.js';
 import {convertFromPip} from 'minterjs-util/src/converter.js';
 import web3, {fromErcDecimals, subscribeTransaction, toErcDecimals} from '~/api/web3.js';
-import {getOracleCoinList, getOraclePriceList, subscribeTransfer} from '@/api/hub.js';
+import {getOracleCoinList, getOraclePriceList, subscribeTransfer, getGasPriceGwei} from '@/api/hub.js';
 import {getTransaction} from '~/api/explorer.js';
 import {estimateCoinSell, postTx} from '~/api/gate.js';
 import Big from '~/assets/big.js';
@@ -181,15 +181,7 @@ export default {
         },
         // @TODO gasPrice not updated during isFormSending and may be too low/high after waiting pin gasPrice on submit
         ethGasPriceGwei() {
-            const priceItem = this.priceList.find((item) => item.name === 'eth/gas');
-            let gasPriceGwei;
-            if (!priceItem) {
-                gasPriceGwei = 100;
-            } else {
-                gasPriceGwei = priceItem.value / 10 ** 18;
-            }
-
-            return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
+            return getGasPriceGwei(this.priceList);
         },
         ethTotalFee() {
             const unlockGasLimit = this.isCoinApproved ? 0 : GAS_LIMIT_UNLOCK;

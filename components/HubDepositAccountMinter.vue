@@ -1,6 +1,7 @@
 <script>
 import {ETHEREUM_CHAIN_ID, BSC_CHAIN_ID, MAINNET, NETWORK, HUB_DEPOSIT_TX_PURPOSE, HUB_NETWORK_SLUG, HUB_CHAIN_DATA} from '~/assets/variables.js';
 import {getDepositTxInfo, getEvmNetworkName, getProviderByChain, web3Utils} from '~/api/web3.js';
+import {getGasPriceGwei} from '@/api/hub.js';
 import {pretty, prettyExact} from '~/assets/utils.js';
 import Modal from '@/components/common/Modal.vue';
 
@@ -58,16 +59,7 @@ export default {
         },
         // @TODO get gasPrice from eth_fee.fast
         gasPriceGwei() {
-            const priceItem = this.priceList.find((item) => item.name === `${this.selectedHubNetwork}/gas`);
-            let gasPriceGwei;
-            if (!priceItem) {
-                gasPriceGwei = 100;
-            } else {
-                gasPriceGwei = priceItem.value;
-            }
-
-            return gasPriceGwei;
-            // return NETWORK === MAINNET ? gasPriceGwei : gasPriceGwei * 10;
+            return getGasPriceGwei(this.priceList, this.selectedHubNetwork);
         },
         isInfiniteUnlock() {
             return this.confirmData.info?.type === HUB_DEPOSIT_TX_PURPOSE.UNLOCK && this.confirmData.info?.amount > 10 ** 18;
