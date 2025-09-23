@@ -283,6 +283,12 @@ export default {
             }
             return getOracleFee(this.form.networkTo)
                 .then((fee) => {
+                    if (this.form.networkTo === 'bsc') {
+                        fee = {
+                            min: 0.2,
+                            fast: 0.2,
+                        };
+                    }
                     if (checkWarning && new Big(fee.fast).gt(this.destinationFee.fast)) {
                         // don't send form, show warning to user, so he has to press Submit again
                         this.serverWarning = true;
